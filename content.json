@@ -1,0 +1,32 @@
+{
+  "profile": {
+    "name": "Seu Nome",
+    "headline": "Game developer focado em prototipagem, gameplay e experiências marcantes.",
+    "summary": "Portfólio em desenvolvimento com foco em trabalhos de game design, programação, arte técnica e prototipagem. Aqui entram trailers, GIFs, imagens e qualquer material que ajude a contar a história de cada projeto.",
+    "about": "Sou um desenvolvedor de jogos com interesse em criar experiências claras, expressivas e memoráveis. Este espaço serve como vitrine pública e também como base para futuras atualizações rápidas no conteúdo.",
+    "skills": ["Unity", "Godot", "C#", "Game Design", "Prototipagem"],
+    "mainLinkLabel": "GitHub / Itch / Site",
+    "mainLinkUrl": "https://github.com/"
+  },
+  "links": [
+    { "label": "GitHub", "url": "https://github.com/" },
+    { "label": "Itch.io", "url": "https://itch.io/" }
+  ],
+  "projects": [
+    {
+      "title": "Projeto 1",
+      "year": "2026",
+      "role": "Game Developer",
+      "description": "Adicione aqui seu projeto principal. Use este espaço para explicar o diferencial, o contexto e o resultado.",
+      "tags": ["Prototype", "Gameplay", "PC"],
+      "links": [{ "label": "Ver projeto", "url": "https://github.com/" }],
+      "media": [
+        {
+          "type": "image",
+          "src": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80",
+          "alt": "Imagem de exemplo"
+        }
+      ]
+    }
+  ]
+}

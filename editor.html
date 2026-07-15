@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; media-src 'self' data:; style-src 'self'; script-src 'self'" />
+    <title>Checkpoint Portfolio</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="editor-page">
+    <header class="topbar app-topbar">
+      <div>
+        <p class="eyebrow">Checkpoint Portfolio</p>
+        <h1>Seu portfólio, no seu GitHub.</h1>
+        <p class="subtitle">Edite localmente e publique com um commit. Sem conta extra e sem painel remoto.</p>
+      </div>
+      <div class="connection-state" id="connectionState">Nenhum repositório conectado</div>
+    </header>
+
+    <main class="app-shell">
+      <section class="panel connect-panel">
+        <div>
+          <p class="eyebrow">Repositório</p>
+          <h2>Conectar ao GitHub</h2>
+          <p>Use um repositório dedicado. O app criará apenas a pasta <code>portfolio</code>, um marcador e o workflow de publicação.</p>
+        </div>
+        <form id="connectForm" class="connect-form">
+          <label for="repositoryUrl">URL do repositório</label>
+          <div class="input-action">
+            <input id="repositoryUrl" type="url" required placeholder="https://github.com/usuario/meu-portfolio" />
+            <button class="button primary" type="submit" id="connectBtn">Conectar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="workspace-actions" id="workspaceActions" hidden>
+        <button class="button" id="previewBtn">Visualizar</button>
+        <button class="button" id="openRepoBtn">Abrir repositório</button>
+        <button class="button" id="pagesBtn">Configurar Pages</button>
+        <button class="button primary publish-button" id="publishBtn">Publicar alterações</button>
+      </section>
+
+      <div id="workspace" class="editor-layout" hidden>
+        <section class="panel">
+          <div class="section-head"><p class="eyebrow">Identidade</p><h3>Perfil público</h3></div>
+          <label>Nome <input id="nameInput" type="text" /></label>
+          <label>Headline <input id="headlineInput" type="text" /></label>
+          <label>Resumo <textarea id="summaryInput" rows="4"></textarea></label>
+          <label>Sobre <textarea id="aboutInput" rows="5"></textarea></label>
+          <label>Habilidades separadas por vírgula <input id="skillsInput" type="text" /></label>
+          <label>Link principal <input id="mainLinkInput" type="url" /></label>
+        </section>
+
+        <section class="panel">
+          <div class="section-head"><p class="eyebrow">Novo projeto</p><h3>Adicionar à vitrine</h3></div>
+          <form id="projectForm" class="editor-form">
+            <label>Título <input id="projectTitle" type="text" required /></label>
+            <label>Ano <input id="projectYear" type="text" placeholder="2026" /></label>
+            <label>Função <input id="projectRole" type="text" placeholder="Game Designer, Programmer..." /></label>
+            <label>Descrição <textarea id="projectDescription" rows="4" required></textarea></label>
+            <label>Tags separadas por vírgula <input id="projectTags" type="text" /></label>
+            <label>Links separados por vírgula <input id="projectLinks" type="text" placeholder="https://itch.io/..., https://github.com/..." /></label>
+            <div class="media-picker">
+              <button type="button" id="mediaBtn" class="button secondary">Selecionar mídia</button>
+              <span id="mediaSummary">Nenhum arquivo selecionado</span>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="button primary">Adicionar projeto</button>
+              <button type="button" id="clearBtn" class="button secondary">Limpar</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel panel-wide">
+          <div class="section-head library-heading">
+            <div><p class="eyebrow">Vitrine atual</p><h3>Projetos e ordem de exibição</h3></div>
+            <span class="save-state" id="saveState">Salvo localmente</span>
+          </div>
+          <div id="projectList" class="editor-list"></div>
+          <div id="emptyState" class="empty-state">Adicione seu primeiro projeto para começar a vitrine.</div>
+        </section>
+      </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <template id="editorProjectTemplate">
+      <article class="editor-item">
+        <div class="editor-item-head">
+          <div><h4 class="item-title"></h4><p class="item-subtitle"></p></div>
+          <div class="item-actions">
+            <button class="button secondary item-up" type="button">Subir</button>
+            <button class="button secondary item-down" type="button">Descer</button>
+            <button class="button danger item-delete" type="button">Remover</button>
+          </div>
+        </div>
+        <div class="item-media"></div>
+      </article>
+    </template>
+    <script src="./editor.js"></script>
+  </body>
+</html>
