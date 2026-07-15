@@ -26,6 +26,33 @@
   ],
   "projects": [
     {
+      "title": "Checkpoint Portfolio",
+      "year": "2026",
+      "role": "",
+      "description": "Aplicativo desktop que transforma um repositório do GitHub em um portfólio editável e publicado. O usuário conecta seu repositório, gerencia projetos, imagens, GIFs e vídeos sem editar código e publica tudo por meio de commits automáticos. A solução utiliza Electron, GitHub Actions e GitHub Pages, mantendo autenticação, versionamento e segurança sob responsabilidade do próprio GitHub.",
+      "tags": [
+        "Electron",
+        "JavaScript",
+        "Node.js",
+        "Git",
+        "GitHub Actions",
+        "GitHub Pages",
+        "CI/CD",
+        "Desktop App"
+      ],
+      "links": [
+        {
+          "label": "Ver projeto",
+          "url": "https://github.com/ItsDeimox/checkpoint-portfolio"
+        },
+        {
+          "label": "Link 2",
+          "url": "https://itsdeimox.github.io/checkpoint-portfolio/"
+        }
+      ],
+      "media": []
+    },
+    {
       "title": "Teste",
       "year": "2026",
       "role": "C#",
