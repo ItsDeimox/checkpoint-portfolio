@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Portfólio de game development." />
+    <title>Portfólio de Gamedev</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="backdrop backdrop-a"></div><div class="backdrop backdrop-b"></div>
+    <header class="topbar">
+      <div><p class="eyebrow">Portfolio / Game Developer</p><h1 id="nameTitle">Seu Nome</h1><p class="subtitle" id="headline"></p></div>
+      <nav class="top-actions"><a href="#projects">Projetos</a><a href="#about">Sobre</a></nav>
+    </header>
+    <main>
+      <section class="hero">
+        <div class="hero-copy"><p class="eyebrow">Vitrine selecionada</p><h2>Jogos, experimentos e sistemas feitos para serem jogados.</h2><p id="summary" class="lead"></p><div class="chips" id="skills"></div></div>
+        <div class="hero-card">
+          <div class="hero-stat"><span>Projetos</span><strong id="projectCount">0</strong></div>
+          <div class="hero-stat"><span>Mídias</span><strong id="mediaCount">0</strong></div>
+          <div class="hero-stat"><span>Link principal</span><strong id="mainLinkLabel">GitHub / Itch / Site</strong></div>
+        </div>
+      </section>
+      <section class="section" id="projects"><div class="section-head"><p class="eyebrow">Projetos</p><h3>Seleção de trabalhos</h3></div><div class="project-grid" id="projectGrid"></div></section>
+      <section class="section" id="about"><div class="section-head"><p class="eyebrow">Sobre</p><h3>Resumo profissional</h3></div><div class="about-card"><p id="aboutText"></p><div class="links" id="profileLinks"></div></div></section>
+    </main>
+    <template id="projectTemplate">
+      <article class="project-card"><div class="project-media"></div><div class="project-body"><div class="project-meta"><span class="project-year"></span><span class="project-role"></span></div><h4 class="project-title"></h4><p class="project-description"></p><div class="project-tags"></div><div class="project-links"></div></div></article>
+    </template>
+    <script src="./site.js"></script>
+  </body>
+</html>
