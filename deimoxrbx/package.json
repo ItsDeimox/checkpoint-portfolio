@@ -7,7 +7,7 @@
     "start": "node server.mjs",
     "dev": "node server.mjs",
     "test": "node --test tests/*.test.mjs",
-    "build": "node tools/vendor.mjs && node tools/fetch-videos.mjs && node tools/build.mjs && npm test",
+    "build": "node tools/vendor.mjs && node tools/build.mjs && npm test",
     "prepare": "node tools/vendor.mjs"
   },
   "engines": {
