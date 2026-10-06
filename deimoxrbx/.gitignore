@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.superpowers/
+*.log
+Deimox-Portfolio.html
+preview/debug-raw.png
+preview/small.png
+preview/desktop-test.png
+
+.vercel/
+vendor/deps.js

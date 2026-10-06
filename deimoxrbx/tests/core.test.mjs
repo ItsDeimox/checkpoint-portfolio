@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+let Motion, VertexEnergyField, SurfaceImpulseTracker;
+try { ({GalleryMotion:Motion}=await import('../src/core/motion.js')); } catch {}
+try { ({VertexEnergyField,SurfaceImpulseTracker}=await import('../src/core/vertex-energy.js')); } catch {}
+test('a galeria expõe um estado navegável',()=>{ assert.equal(typeof Motion,'function'); });
+test('navegação bloqueia reentrada e troca o par uma vez',()=>{assert.ok(Motion);const s=new Motion(4);assert.equal(s.advance(1),true);assert.equal(s.advance(1),false);for(let i=0;i<130;i++)s.update(1/60);assert.equal(s.index,1);assert.equal(s.phase,'idle');assert.ok(Math.abs(s.rotation-Math.PI/2)<.001);});
+test('índice dá volta e zoom bloqueia scroll',()=>{assert.ok(Motion);const s=new Motion(4);s.advance(-1);for(let i=0;i<130;i++)s.update(1/60);assert.equal(s.index,3);assert.equal(s.focus(0),true);assert.equal(s.advance(1),false);for(let i=0;i<90;i++)s.update(1/60);assert.equal(s.phase,'focused');s.close();for(let i=0;i<90;i++)s.update(1/60);assert.equal(s.phase,'idle');assert.equal(s.selected,-1);});
+test('movimento reduzido termina sem overshoot nem animação contínua',()=>{assert.ok(Motion);const s=new Motion(4,true);s.advance(1);s.update(.016);assert.equal(s.index,1);assert.equal(s.phase,'idle');s.focus(1);s.update(.016);assert.equal(s.focusAmount,1);s.close();s.update(.016);assert.equal(s.focusAmount,0);});
+test('energia é nula sem interação, se propaga e dissipa',()=>{assert.equal(typeof VertexEnergyField,'function');const f=new VertexEnergyField({columns:20,rows:12,width:4.8,height:2.8});f.step(1/60);assert.equal(f.inspect().peakGlow,0);f.addStroke({from:[.5,.5],to:[.5,.5],velocity:[0,0],distance:0,entered:true});const initial=f.inspect().activeNodes;for(let i=0;i<25;i++)f.step(1/60);assert.ok(f.inspect().peakDisplacement>0);assert.ok(f.inspect().activeNodes>initial);for(let i=0;i<600;i++)f.step(1/60);assert.equal(f.inspect().awake,false);assert.equal(f.inspect().peakDisplacement,0);});
+test('cursor parado não injeta energia por frame',()=>{assert.equal(typeof SurfaceImpulseTracker,'function');const s=new SurfaceImpulseTracker(4.8,2.8);assert.ok(s.sample(0,[.5,.5],100,[20,20]));assert.equal(s.sample(0,[.51,.5],116,[20,20]),null);assert.equal(s.sample(0,[.5,.5],100,[22,20]),null);});

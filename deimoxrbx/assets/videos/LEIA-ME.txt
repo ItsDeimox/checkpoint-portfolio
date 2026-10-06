@@ -1,0 +1,4 @@
+Os vídeos originais dos projetos não estão incluídos.
+Coloque seus arquivos nesta pasta e configure o campo src em src/projects.js.
+Também é possível testar sem upload pelo botão CARREGAR VÍDEO LOCAL.
+Nenhum vídeo de demonstração aleatório foi colocado no lugar dos seus projetos.

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#050d22"><meta name="description" content="Deimox. Sistemas, programação e efeitos visuais para Roblox em uma galeria tridimensional."><title>Deimox · Script & VFX para Roblox</title><link rel="icon" href="assets/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="src/ui/styles.css"></head>
+<body>
+<a class="skip-link" href="#about">Ir para informações e contato</a>
+<main>
+<section id="gallery" class="gallery" aria-label="Galeria 3D de projetos Roblox" data-phase="idle" data-pair="0">
+ <canvas id="scene" aria-label="Ambiente tridimensional, núcleo Roblox e dois painéis de vidro" role="img"></canvas>
+ <div class="scene-fallback" id="fallback" hidden><h2>Projetos em destaque</h2><p id="fallback-reason">Visualização sem WebGL.</p><div id="fallback-projects"></div></div>
+ <div class="scene-loader" id="loader" role="status"><img src="assets/mark.svg" alt=""><span>CONSTRUINDO O AMBIENTE</span><span class="loading-line"></span></div>
+ <header class="header">
+  <a class="brand" href="#gallery" aria-label="Deimox, início"><img src="assets/mark.svg" alt=""><span>DEIMOX</span></a>
+  <nav aria-label="Navegação principal"><a class="active" href="#gallery" id="nav-work">TRABALHOS</a><a href="#about">SOBRE</a></nav>
+  <a class="contact-button" href="#contacts">CONTATO <span>↗</span></a>
+ </header>
+ <div class="hero-heading"><p class="eyebrow">CONSTRUA O EXTRAORDINÁRIO</p><h1>Deimox<span>.</span></h1><p>Desenvolvimento de jogos no Roblox<br>com foco em sistemas, VFX e experiências imersivas.</p></div>
+ <div class="side-note left" aria-hidden="true"><i></i>GAME DEV<br>VFX<br>UI/UX<br>SCRIPT<br>SYSTEMS<br>ROBLOX</div>
+ <div class="side-note right" aria-hidden="true">IDEIAS<br>EM<br>EXPERIÊNCIAS<i></i></div>
+ <button id="project-left" class="project-hit" aria-label="Abrir Roblox VFX em 3D"><span class="sr-only">Abrir vídeo da esquerda</span></button>
+ <button id="project-right" class="project-hit" aria-label="Abrir Space Fabric em 3D"><span class="sr-only">Abrir vídeo da direita</span></button>
+ <div class="gallery-bottom">
+  <div class="pagination"><span id="pair-count">01 / 03</span><div>PROJETOS EM DESTAQUE <b class="progress-track"><b id="pair-progress"></b></b></div></div>
+  <button class="scroll-hint" id="explore" aria-label="Próximo par de projetos"><span class="mouse-shape"></span><span>ROLE PARA EXPLORAR</span><b>↓</b></button>
+  <div class="arrows"><button id="previous" aria-label="Par anterior">←</button><button id="next" aria-label="Próximo par">→</button></div>
+ </div>
+ <div class="viewer-controls" id="viewer" hidden role="region" aria-label="Reprodução no painel 3D">
+  <button class="back-button" id="close-video">← VOLTAR <kbd>ESC</kbd></button>
+  <div class="viewer-label"><span id="viewer-category">PROJETO</span><strong id="viewer-title"></strong></div>
+  <div class="play-controls">
+   <p id="media-notice">O vídeo original não está incluído neste pacote.</p>
+   <div class="play-row"><button id="play-video" class="primary-button">REPRODUZIR <span>▷</span></button><label class="attach-button" for="local-video" tabindex="0">CARREGAR VÍDEO LOCAL<input id="local-video" type="file" accept="video/*" hidden></label><button id="mute-video" class="small-button" aria-label="Ativar ou desativar áudio" hidden>ÁUDIO ON</button></div>
+   <div class="time-control" hidden id="time-control"><span id="current-time">0:00</span><input type="range" id="seek-video" min="0" max="1000" value="0" aria-label="Posição no vídeo"><span id="duration">0:00</span></div>
+  </div>
+ </div>
+</section>
+<section id="about" class="about" aria-labelledby="about-name">
+ <svg class="floor-accent" viewBox="0 0 1672 230" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="floor-rim"><stop stop-color="#1b3e83" stop-opacity="0"/><stop offset=".2" stop-color="#4c80d6" stop-opacity=".35"/><stop offset=".5" stop-color="#71a5ff" stop-opacity=".48"/><stop offset=".8" stop-color="#4c80d6" stop-opacity=".35"/><stop offset="1" stop-color="#1b3e83" stop-opacity="0"/></linearGradient></defs><path class="rim" d="M0 178 Q836 210 1672 178"/><path class="trace" d="M0 175 Q836 207 1672 175"/></svg>
+ <div class="about-grid">
+  <div class="identity-emblem" aria-hidden="true"><img src="assets/mark.svg" alt=""></div>
+  <div class="identity"><p class="eyebrow">OLÁ, EU SOU</p><h2 id="about-name">Deimox<span>.</span></h2><p>Game Dev Full Stack</p></div>
+  <p class="bio">Penso no jogo como um fluxo completo: da ideia e do game design à produção e execução. Já me aprofundei em programação, VFX, animação, mapas, UI e música. Neste portfólio, mostro especialmente sistemas em Luau que criam efeitos visuais e experiências para Roblox, além de experimentos como o VoxelMine, com geração procedural e terreno por chunks.</p>
+  <address id="contacts" class="contacts"><button id="copy-discord"><svg class="social-symbol" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 5.5 9 5l.6 1h4.8l.6-1 3 .5c2.3 3.4 3.6 7 3 10.5l-4.5 2-1.2-1.8 1.3-.7c-3 1.2-6.2 1.2-9.2 0l1.3.7L7.5 18 3 16c-.6-3.5.7-7.1 3-10.5Z"/><ellipse fill="#071327" cx="8.5" cy="11.6" rx="1.4" ry="1.8"/><ellipse fill="#071327" cx="15.5" cy="11.6" rx="1.4" ry="1.8"/></svg><strong>DISCORD</strong><span>itsdeimox_</span><b>⧉</b></button><a href="https://www.youtube.com/@ItsDeimox" target="_blank" rel="noopener noreferrer"><svg class="social-symbol" viewBox="0 0 24 24" aria-hidden="true"><rect fill="currentColor" x="2" y="5" width="20" height="14" rx="4"/><path fill="#071327" d="m10 8 6 4-6 4Z"/></svg><strong>YOUTUBE</strong><span>@ItsDeimox</span><b>↗</b></a><a href="https://deimox.vercel.app/" target="_blank" rel="noopener noreferrer"><svg class="social-symbol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 7h14M5 17h14"/></svg><strong>PORTFÓLIO<br>GAME DEV</strong><span>deimox.vercel.app</span><b>↗</b></a></address>
+ </div>
+ <footer><span>DEIMOX / ROBLOX <i></i></span><button id="quality" aria-label="Alternar qualidade gráfica">GRÁFICOS: ALTO</button><span><i></i>TRANSFORMANDO IDEIAS EM MUNDOS</span></footer>
+</section>
+</main>
+<div id="toast" role="status" class="toast" hidden></div>
+<noscript><p class="noscript">Ative JavaScript para navegar pela galeria 3D. Contato: itsdeimox_ no Discord.</p></noscript>
+<script type="module" src="src/main.js"></script>
+</body></html>
