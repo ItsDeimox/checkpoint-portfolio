@@ -3,6 +3,7 @@ import {readFile,writeFile} from 'node:fs/promises';
 const edit=async(path,modify)=>{const old=await readFile(path,'utf8');await writeFile(path,modify(old));};
 const replaceOnce=(s,a,b)=>{if(s.split(a).length!==2)throw Error('Template mismatch: '+a);return s.replace(a,b);};
 const replaceRange=(s,a,b,body)=>{const start=s.indexOf(a),end=s.indexOf(b,start);if(start<0||end<start)throw Error('Missing template range: '+a);return s.slice(0,start)+body+s.slice(end);};
+await edit('src/config.js',s=>replaceOnce(s,'https://portfolio-roblox-20260928-portfolio.deimox.chatgpt.site/','https://deimoxrbx.vercel.app/'));
 await edit('src/rendering/renderer.js',s=>{
  s="import {drawProcessSurfaces} from './process-pass.js';\n"+s;
  return replaceRange(s,' drawSurfaces(scene){',' drawButtons(scene){',' drawSurfaces(scene){drawProcessSurfaces(this,scene);}\n');
