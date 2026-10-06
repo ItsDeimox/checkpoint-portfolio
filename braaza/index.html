@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080604"><meta name="description" content="Braaza. Uma galeria em brasa, entre matéria, movimento e criação."><title>BRAAZA / Galeria</title><link rel="icon" href="assets/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="src/style.css"></head>
+<body>
+ <main id="forge" aria-label="Galeria tridimensional de Braaza">
+  <canvas id="scene" tabindex="0" aria-label="Galeria interativa. Role ou arraste para explorar os quatro painéis. Setas para navegar; Enter abre o painel em destaque."></canvas>
+  <header><a class="brand" href="#" aria-label="Braaza, início"><img src="assets/mark.svg" alt="" draggable="false"><span>BRAAZA</span></a><div class="controls"><button id="pause" aria-pressed="false" aria-label="Pausar animações">Ⅱ</button><button id="quality" aria-label="Alternar qualidade gráfica">AUTO <span aria-hidden="true">◈</span></button><button id="gallery" aria-label="Abrir lista de trabalhos">GALERIA <span aria-hidden="true">↗</span></button></div></header>
+  <div id="loader" role="status"><img src="assets/mark.svg" alt=""><span>ACENDENDO A FORJA</span><i></i></div>
+  <div class="bottom"><button id="previous" aria-label="Painel anterior">↑</button><span id="hint">ROLE PARA EXPLORAR</span><button id="next" aria-label="Próximo painel">↓</button></div>
+  <span class="sr-only" id="status" aria-live="polite"></span>
+  <section id="fallback" hidden><h1>BRAAZA</h1><p>A visualização 3D não está disponível neste navegador. A galeria continua acessível abaixo.</p><div id="fallback-list"></div></section>
+ </main>
+ <dialog id="viewer" aria-labelledby="viewer-title"><button id="close" aria-label="Fechar visualização">FECHAR <span>×</span></button><div id="viewer-content"></div></dialog>
+ <noscript><section class="noscript"><h1>BRAAZA</h1><p>Ative JavaScript para explorar a galeria interativa.</p></section></noscript>
+ <script type="module" src="src/main.js"></script>
+</body></html>

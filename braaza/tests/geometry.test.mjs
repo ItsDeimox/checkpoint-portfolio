@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {rock,tube,panel,cube} from '../src/geometry.js';import{CONTENT}from'../src/content.js';
+for(const [name,g] of [['rock',rock()],['chain',tube()],['panel',panel()],['cube',cube()]]){test(name+' vertices, normals and triangle indices are valid',()=>{assert.ok(g.positions.every(Number.isFinite));assert.ok(g.normals.every(Number.isFinite));assert.equal(g.normals.length,g.positions.length);assert.ok(g.indices.every(i=>i>=0&&i<g.positions.length/3));});}
+test('closed chain path has no open seam',()=>{const g=tube();for(let i=0;i<33;i++)assert.ok(Math.abs(g.positions[i]-g.positions[g.positions.length-33+i])<1e-5);});
+test('no fabricated Braaza projects or other artists in content',()=>{assert.equal(CONTENT.name,'BRAAZA');assert.ok(CONTENT.projects.every(p=>p.kind==='demo'&&p.src===null));assert.ok(!JSON.stringify(CONTENT).match(/HYPNNO|KODE|CORTEX|DEIMOX/i));});

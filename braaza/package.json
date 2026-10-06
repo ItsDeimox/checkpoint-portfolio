@@ -1,0 +1,1 @@
+{"name":"braaza-forge","version":"1.0.0","private":true,"type":"module","engines":{"node":"22.x"},"scripts":{"dev":"node tools/server.mjs","build":"node tools/build.mjs","test":"node --test tests/*.test.mjs"}}
