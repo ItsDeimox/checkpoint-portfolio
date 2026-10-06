@@ -16,9 +16,21 @@ test('extended viewport handles hidden, fractional, and invalid layout dimension
  const hidden=viewportModule.sceneViewport(NaN,Infinity,NaN);
  assert.ok(Object.values(hidden).every(Number.isFinite));
 });
-test('video hover light has a bounded low HDR gain independently of mesh displacement',()=>{
- assert.ok(glassModule.GLASS_HOVER,'glass hover response is exported for verification');
- assert.ok(glassModule.GLASS_HOVER.gain>0 && glassModule.GLASS_HOVER.gain<=.25);
- assert.ok(glassModule.GLASS_HOVER.limit>0 && glassModule.GLASS_HOVER.limit<=1.2);
- assert.ok(glassModule.GLASS_HOVER.gain*glassModule.GLASS_HOVER.limit<.3);
+test('video hover remains visibly emissive above the bloom threshold, with a bounded peak',()=>{
+ const settings=glassModule.GLASS_HOVER;
+ assert.ok(settings,'glass hover response is exported for verification');
+ assert.ok(settings.gain>0 && settings.gain<=1);
+ assert.ok(settings.limit>0 && settings.limit<=2.5);
+ // The blue channel is 1.8; the optical prefilter clips each channel at .78.
+ // The old .22 gain / 1.2 clamp peaked at .4752, so hover contributed no bloom.
+ const peakBlue=1.8*settings.gain*settings.limit;
+ assert.ok(peakBlue>1.5,'hover must exceed the .78 bloom threshold with usable headroom');
+ assert.ok(peakBlue<=4,'peak stays far below the original 24.48 blue radiance');
+ assert.ok(.9*settings.gain*1.8>.78,'a normal stroke also blooms, not only a saturated swipe');
+});
+test('weak propagated cells fade out optically without changing mesh density or physics',()=>{
+ const settings=glassModule.GLASS_HOVER;
+ assert.ok(Number.isFinite(settings.onset) && settings.onset>=.1 && settings.onset<=.3);
+ assert.ok(Number.isFinite(settings.full) && settings.full>=.6 && settings.full<=1);
+ assert.ok(settings.full>settings.onset,'the GLSL smoothstep must have a valid increasing interval');
 });

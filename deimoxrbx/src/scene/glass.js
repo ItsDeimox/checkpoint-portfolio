@@ -3,7 +3,8 @@ import {VertexEnergyField} from '../core/vertex-energy.js';
 import {projects,pairs} from '../projects.js';
 
 // Optical gain is independent of the displacement simulation. A swipe never becomes a floodlight.
-export const GLASS_HOVER=Object.freeze({gain:.22,limit:1.2});
+// Keep hot cells above the .78 optical threshold; suppress only weak diffuse tails.
+export const GLASS_HOVER=Object.freeze({gain:.85,limit:2.2,onset:.16,full:.72});
 
 const vertex=`
 uniform sampler2D uEnergy;uniform vec2 uGrid;uniform float uTime,uFocus;
@@ -24,7 +25,7 @@ void main(){
 const fragment=`
 precision highp float;
 uniform sampler2D uBackground,uMedia,uLabels,uEnergy;
-uniform vec2 uResolution,uGrid;uniform float uTime,uMirror,uFocus,uPlaying,uMediaAspect,uHoverGlowGain,uHoverGlowLimit;
+uniform vec2 uResolution,uGrid;uniform float uTime,uMirror,uFocus,uPlaying,uMediaAspect,uHoverGlowGain,uHoverGlowLimit,uHoverGlowOnset,uHoverGlowFull;
 varying vec2 vUv;varying vec3 vWorld;varying vec3 vNormal;varying float vEnergy;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float boxDistance(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return min(max(q.x,q.y),0.)+length(max(q,0.))-r;}
@@ -79,7 +80,9 @@ void main(){
    +3.5*exp(-pow((vUv.x-.95)*30.,2.))*smoothstep(0.,.3,1.-vUv.y)
    +1.7*exp(-pow((vUv.x-.67-.05*sin(uTime*.6))*26.,2.));
  vec3 edgeColor=vec3(.38,.66,1.75)*edge*hotspots;
- color+=edgeColor+vec3(.11,.35,1.8)*min(glowEnergy,uHoverGlowLimit)*uHoverGlowGain*(1.-uPlaying*.85);
+ // Fewer faint squares, not a blanket reduction that removes bloom from every cell.
+ float hoverEnergy=min(glowEnergy,uHoverGlowLimit)*smoothstep(uHoverGlowOnset,uHoverGlowFull,glowEnergy);
+ color+=edgeColor+vec3(.11,.35,1.8)*hoverEnergy*uHoverGlowGain*(1.-uPlaying*.85);
  color+=vec3(.2,.9,3.8)*contact*(.25+hash(vUv)*.6);
  vec4 label=texture2D(uLabels,vUv);color=mix(color,label.rgb,label.a*(1.-uPlaying));
  gl_FragColor=vec4(color,(1.-smoothstep(-aa,aa,d)));
@@ -98,7 +101,7 @@ function labelTexture(project,index,side){return canvasTexture((ctx,w,h)=>{
 class GlassPanel{
  constructor(side){this.side=side;this.group=new THREE.Group();this.group.name=side===0?'LeftVideoGlass':'RightVideoGlass';this.energy=new VertexEnergyField({columns:64,rows:38,width:4.8,height:2.8,seed:side+21,displacementLimit:.16});this.texture=new THREE.DataTexture(this.energy.data,this.energy.textureWidth,this.energy.textureHeight,THREE.RGBAFormat,THREE.FloatType);this.texture.minFilter=this.texture.magFilter=THREE.NearestFilter;this.texture.needsUpdate=true;
   const blank=new THREE.DataTexture(new Uint8Array([16,26,46,255]),1,1);blank.needsUpdate=true;
-  this.uniforms={uEnergy:{value:this.texture},uGrid:{value:new THREE.Vector2(this.energy.textureWidth,this.energy.textureHeight)},uTime:{value:0},uBackground:{value:blank},uMedia:{value:blank},uLabels:{value:blank},uResolution:{value:new THREE.Vector2(1672,720)},uMirror:{value:0},uFocus:{value:0},uPlaying:{value:0},uMediaAspect:{value:16/9},uHoverGlowGain:{value:GLASS_HOVER.gain},uHoverGlowLimit:{value:GLASS_HOVER.limit}};
+  this.uniforms={uEnergy:{value:this.texture},uGrid:{value:new THREE.Vector2(this.energy.textureWidth,this.energy.textureHeight)},uTime:{value:0},uBackground:{value:blank},uMedia:{value:blank},uLabels:{value:blank},uResolution:{value:new THREE.Vector2(1672,720)},uMirror:{value:0},uFocus:{value:0},uPlaying:{value:0},uMediaAspect:{value:16/9},uHoverGlowGain:{value:GLASS_HOVER.gain},uHoverGlowLimit:{value:GLASS_HOVER.limit},uHoverGlowOnset:{value:GLASS_HOVER.onset},uHoverGlowFull:{value:GLASS_HOVER.full}};
   this.material=new THREE.ShaderMaterial({uniforms:this.uniforms,vertexShader:vertex,fragmentShader:fragment,transparent:true,side:THREE.DoubleSide,depthWrite:true});
   this.mesh=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.8,64,38),this.material);this.mesh.name=this.group.name+'Surface';this.mesh.userData.side=side;this.group.add(this.mesh);
   // Tangible thickness behind the refractive subdivided surface.
