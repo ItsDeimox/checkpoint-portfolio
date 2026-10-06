@@ -1,0 +1,1 @@
+{"version":2,"framework":null,"installCommand":"echo No dependencies required","buildCommand":"npm run build","outputDirectory":"dist","headers":[{"source":"/build-info.json","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]}]}

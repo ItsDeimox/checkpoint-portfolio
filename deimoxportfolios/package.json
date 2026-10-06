@@ -1,0 +1,13 @@
+{
+  "name":"deimox-portfolios",
+  "version":"3.3.2",
+  "private":true,
+  "type":"module",
+  "description":"Deimox portfolio showcase: approved R4 with reduced cube glow",
+  "engines":{"node":">=22"},
+  "scripts":{
+    "unpack":"node release/assemble.mjs",
+    "build":"node release/assemble.mjs && node tools/build.mjs && node release/mark.mjs",
+    "dev":"node release/assemble.mjs && node tools/server.mjs"
+  }
+}
