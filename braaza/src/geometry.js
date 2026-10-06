@@ -16,3 +16,21 @@ export function tube(kind='chain',radius=1){const d=data(),segments=kind==='chai
  for(let i=0;i<segments;i++)for(let j=0;j<sides;j++){const a=i*(sides+1)+j,b=a+sides+1;d.indices.push(a,b,a+1,b,b+1,a+1);}return d;
 }
 export function cube(){const d=data(),v=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];for(const [a,b,c,e] of [[4,5,6,7],[1,0,3,2],[0,4,7,3],[5,1,2,6],[3,7,6,2],[0,1,5,4]]){tri(d,v[a],v[b],v[c]);tri(d,v[a],v[c],v[e]);}return d;}
+
+/** Rounded front aperture and beveled sidewall share the same .08 corner radius. */
+export function glassPanel(w=4.8,h=2.25){
+ const d=panel(w,h),points=[];
+ for(let c=0;c<4;c++)for(let j=0;j<=8;j++){
+  const a=(c+j/8)*Math.PI/2,r=.08;
+  const cx=(c===0||c===3?1:-1)*(w/2-.016-r),cy=(c<2?1:-1)*(h/2-.016-r);
+  points.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r]);
+ }
+ for(let layer=0;layer<2;layer++)for(let i=0;i<points.length;i++){
+  const a=points[i],b=points[(i+1)%points.length],depth=[0,-.035,-.11],scale=[1,.996,.984];
+  const ps=[[a[0]*scale[layer],a[1]*scale[layer],depth[layer]],[b[0]*scale[layer],b[1]*scale[layer],depth[layer]],[b[0]*scale[layer+1],b[1]*scale[layer+1],depth[layer+1]],[a[0]*scale[layer+1],a[1]*scale[layer+1],depth[layer+1]]];
+  const edge=ps[1].map((v,j)=>v-ps[0][j]),side=ps[3].map((v,j)=>v-ps[0][j]);
+  const n=[edge[1]*side[2]-edge[2]*side[1],edge[2]*side[0]-edge[0]*side[2],edge[0]*side[1]-edge[1]*side[0]],len=Math.hypot(...n);if(len<1e-9)continue;
+  const base=d.positions.length/3;for(const p of ps){d.positions.push(...p);d.normals.push(...n.map(v=>-v/len));d.uvs.push(p[0]/w+.5,p[1]/h+.5);}d.indices.push(base,base+2,base+1,base,base+3,base+2);
+ }
+ return d;
+}

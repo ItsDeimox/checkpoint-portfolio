@@ -5,15 +5,16 @@ export const slotY=(i,position,count=4)=>1.7+wrap(i+position,count)*2.40;
 export const chainOffset=(position,side)=>position===0?0:position*2.55*(side<0?1:-1);
 export const dragGesture=(x,y)=>Math.hypot(x,y)>7;
 export class Motion{
- constructor(count){this.count=count;this.value=0;this.target=0;this.velocity=0;}
- reset(){this.value=0;this.target=0;this.velocity=0;}
+ constructor(count){this.count=count;this.offset=0;this.value=0;this.target=0;this.velocity=0;}
+ get travel(){return this.value+this.offset;}
+ reset(){this.offset=0;this.value=0;this.target=0;this.velocity=0;}
  advance(delta){if(Number.isFinite(delta))this.target+=clamp(delta,-3,3);}
  step(dt,reduced=false){
   if(reduced){this.value=this.target;this.velocity=0;return;}
   dt=clamp(dt,0,.05);const old=this.value;this.value=damp(this.value,this.target,9,dt);
   this.velocity=dt>0?clamp((this.value-old)/dt,-25,25):0;
   if(Math.abs(this.target-this.value)<1e-5){this.value=this.target;this.velocity=0;}
-  if(Math.abs(this.value)>1000){const shift=Math.floor(this.value/this.count)*this.count;this.value-=shift;this.target-=shift;}
+  if(Math.abs(this.value)>1000){const shift=Math.floor(this.value/this.count)*this.count;this.value-=shift;this.target-=shift;this.offset+=shift;}
  }
 }
 export function random(seed=7){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
