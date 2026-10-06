@@ -1,0 +1,43 @@
+/* Etapa 4. Only the final chapter changes; one shared rigid transform for text and glass. */
+.process-section{left:32.5%;width:62.8%;top:20%;}
+.process-grid{gap:clamp(19px,1.8vw,32px);padding:16px 12px 18px;overflow:visible;align-items:stretch;}
+.process-card{height:min(58svh,570px);min-height:410px;border:0;border-radius:0;transition:none;transform-origin:50% 50%;will-change:transform;isolation:isolate;outline:none;}
+.process-card:hover,.process-card:focus-visible{transform:none;}
+.process-number{left:23px;top:24px;font-size:10px;letter-spacing:1.4px;color:#bdc7cb;}
+.process-plus{right:23px;top:17px;color:#9fb2ba;transition:color .25s,text-shadow .25s;}
+.process-card.is-illuminated .process-plus{color:#e7faff;text-shadow:0 0 12px rgb(var(--process-rgb)/.7);}
+.process-info{left:23px;right:22px;top:58%;}
+.process-title{font-size:clamp(13px,1.10vw,19px);line-height:1.42;letter-spacing:1.65px;margin-bottom:15px;}
+.process-description{font-size:clamp(13px,1.00vw,17px);line-height:1.53;color:#aab9c2;}
+.process-bottom{left:23px;right:22px;bottom:22px;padding-top:15px;font-size:6.5px;letter-spacing:1.4px;border-color:#8da2ad38;}
+.process-card:focus-visible .process-title{text-decoration:underline;text-underline-offset:7px;text-decoration-thickness:1px;text-decoration-color:rgb(var(--process-rgb)/.75);}
+.process-footnote{background:none!important;margin:32px 0 0;padding:0 5px;line-height:1.8;}
+.deadline-link{font-size:11px;color:#a8b5bc;}
+[data-engine="fallback"] .process-card{border:1px solid #6d838c88;border-radius:10px;background:radial-gradient(circle at 60% 30%,rgb(var(--process-rgb)/.10),#060b0ed9 62%);}
+@media(min-width:901px) and (max-width:1150px){
+ .process-section{left:37%;width:59%;top:22%;}.process-grid{gap:14px;padding:14px 8px;}
+ .process-card{height:55svh;min-height:380px;}.process-info{left:17px;right:16px;top:55%;}
+ .process-title{font-size:12px;letter-spacing:1px;margin-bottom:13px;}.process-description{font-size:12px;line-height:1.5;}
+ .process-bottom{left:17px;right:16px;font-size:5.8px;letter-spacing:.6px;}.process-number{left:17px;}
+}
+@media(max-width:900px) and (orientation:portrait){
+ .process-section{left:4%;width:92%;top:41.5%;}.process-grid{display:flex;overflow-x:auto;overflow-y:hidden;gap:18px;padding:15px 14px 18px;scroll-padding-inline:14px;}
+ .process-card{flex:0 0 80%;height:clamp(287px,40svh,366px);min-height:0;scroll-snap-align:center;}
+ .process-number{left:20px;top:19px;font-size:9px;}.process-plus{right:19px;top:11px;}
+ .process-info{left:20px;right:19px;top:49%;}.process-title{font-size:12px;line-height:1.35;letter-spacing:1.1px;margin-bottom:10px;}
+ .process-description{font-size:12px;line-height:1.46;}.process-bottom{left:20px;right:19px;bottom:17px;font-size:5.8px;letter-spacing:.8px;padding-top:11px;}
+ .process-footnote{margin-top:9px;font-size:5px;letter-spacing:.4px;}.deadline-link{font-size:9px;line-height:1.4;padding:3px;max-width:290px;}
+}
+@media(max-width:900px) and (max-height:720px) and (orientation:portrait){
+ .process-section{top:42%;}.process-card{height:275px;}.process-info{top:44%;}.process-title{font-size:11px;margin-bottom:10px;}.process-description{font-size:11px;}.process-bottom{font-size:5.5px;bottom:14px;}
+ .process-footnote{margin-top:0;}.deadline-link{font-size:8px;}
+}
+@media(max-height:560px) and (orientation:landscape){
+ .process-section{left:38%;width:57.5%;top:17%;}.process-grid{gap:14px;padding:12px 7px;}.process-card{height:64svh;min-height:245px;}
+ .process-info{left:14px;right:13px;top:43%;}.process-title{font-size:10px;margin-bottom:8px;letter-spacing:.7px;}.process-description{font-size:10px;line-height:1.42;}
+ .process-bottom{left:14px;right:13px;bottom:13px;font-size:5px;padding-top:9px;letter-spacing:.4px;}.process-number{left:14px;top:16px;font-size:8px;}
+ .process-footnote{margin-top:8px;font-size:5px;}.deadline-link{font-size:8px;}
+}
+@media(prefers-reduced-motion:reduce){.process-card{will-change:auto}.process-plus{transition:none}}
+
+.hero-copy[data-panel="2"] h1 .glyph{display:inline;font-size:inherit;line-height:inherit;letter-spacing:inherit;font-weight:inherit;}
