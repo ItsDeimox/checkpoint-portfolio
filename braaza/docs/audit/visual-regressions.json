@@ -1,0 +1,35 @@
+{
+  "baselineCommit": "0e434b8f7df455990f026c8001beb6cc0c9aa302",
+  "runtime": "Chromium 153.0.8010.0 / ANGLE SwiftShader / WebGL2 HDR",
+  "threshold": 0.85,
+  "before": {
+    "lowerRim": {
+      "control": 0.8876590728759766,
+      "withLabel": 0.178312,
+      "retained": 0.200879,
+      "passed": false
+    },
+    "focusedSpark": {
+      "control": 0.33432739868164063,
+      "distantBackground": 0.05687,
+      "retained": 0.170101,
+      "passed": false
+    }
+  },
+  "after": {
+    "lowerRim": {
+      "control": 0.8876590728759766,
+      "withLabel": 0.8653793334960938,
+      "retained": 0.9749005670525087,
+      "passed": true
+    },
+    "focusedSpark": {
+      "control": 0.33432739868164063,
+      "distantBackground": 0.33432739868164063,
+      "retained": 1.0,
+      "passed": true
+    }
+  },
+  "webglErrors": 0,
+  "javascriptErrors": []
+}

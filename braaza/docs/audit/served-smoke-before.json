@@ -1,0 +1,285 @@
+{
+  "root": "/workspace/scratch/295d08f49dd6/braaza-baseline",
+  "url": "http://127.0.0.1:5198/",
+  "server": "http://127.0.0.1:5198",
+  "http_status": 200,
+  "state": {
+    "version": "braaza-forge-1.1",
+    "api": "WebGL2",
+    "hdr": true,
+    "artHdr": true,
+    "glassTransmission": true,
+    "fire": "gradient Perlin / premultiplied sheets",
+    "frames": 22,
+    "drawCalls": 340,
+    "position": 0,
+    "target": 0,
+    "hover": -1,
+    "quality": "auto",
+    "reduced": false,
+    "width": 1440,
+    "height": 900,
+    "chainCount": 56,
+    "chains": [
+      0,
+      0
+    ],
+    "cards": [
+      {
+        "index": 0,
+        "y": 1.7,
+        "screen": [
+          720,
+          695.6176024935205
+        ]
+      },
+      {
+        "index": 1,
+        "y": 4.1,
+        "screen": [
+          720,
+          531.006157452397
+        ]
+      },
+      {
+        "index": 2,
+        "y": 6.5,
+        "screen": [
+          720,
+          374.2022144251882
+        ]
+      },
+      {
+        "index": 3,
+        "y": 8.899999999999999,
+        "screen": [
+          720,
+          224.66330515322278
+        ]
+      }
+    ]
+  },
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "screenshot": "/workspace/scratch/295d08f49dd6/braaza-baseline/previews/served-smoke.png",
+  "targets": [
+    {
+      "w": 1440,
+      "h": 900,
+      "bad": 0,
+      "max": 6.44921875,
+      "error": 0
+    },
+    {
+      "w": 720,
+      "h": 450,
+      "bad": 0,
+      "max": 2.5703125,
+      "error": 0
+    },
+    {
+      "w": 720,
+      "h": 450,
+      "bad": 0,
+      "max": 1.4228515625,
+      "error": 0
+    },
+    {
+      "w": 360,
+      "h": 225,
+      "bad": 0,
+      "max": 1.212890625,
+      "error": 0
+    },
+    {
+      "w": 360,
+      "h": 225,
+      "bad": 0,
+      "max": 1.0263671875,
+      "error": 0
+    },
+    {
+      "w": 180,
+      "h": 113,
+      "bad": 0,
+      "max": 0.89599609375,
+      "error": 0
+    },
+    {
+      "w": 180,
+      "h": 113,
+      "bad": 0,
+      "max": 0.6787109375,
+      "error": 0
+    },
+    {
+      "w": 1440,
+      "h": 900,
+      "bad": 0,
+      "max": 3.673828125,
+      "error": 0
+    },
+    {
+      "w": 1024,
+      "h": 480,
+      "bad": 0,
+      "max": 4.22265625,
+      "error": 0
+    },
+    {
+      "w": 1024,
+      "h": 480,
+      "bad": 0,
+      "max": 4.46875,
+      "error": 0
+    },
+    {
+      "w": 1024,
+      "h": 480,
+      "bad": 0,
+      "max": 7.0625,
+      "error": 0
+    },
+    {
+      "w": 1024,
+      "h": 480,
+      "bad": 0,
+      "max": 4.1953125,
+      "error": 0
+    }
+  ],
+  "media_decodes": true,
+  "dialog_closes": true,
+  "js_errors": [],
+  "request_failures": [],
+  "bad_responses": [],
+  "loaded_files": [
+    {
+      "url": "http://127.0.0.1:5198/",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/style.css",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/assets/mark.svg",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/main.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/engine.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/content.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/core.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/gl.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/shaders.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/geometry.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/materials.js",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5198/src/math.js",
+      "status": 200
+    }
+  ],
+  "build_info_status": 200,
+  "build_info": {
+    "version": "braaza-forge-1.1",
+    "commit": null,
+    "sources": {
+      "content.js": "639dec59e2e1c9643d0a657f52d787b3ad10d38a35a5b54ab03abc78c441cc6a",
+      "core.js": "250e2ef44bafec23c25add0d3e432a248b59e7d88dca8a3fafa73b6ad75a7c9f",
+      "engine.js": "6a1b0b16accb4da635a6a7accb316dbfffd33a4c698b3203869ae7a991b761e2",
+      "geometry.js": "2e151dcbd5a056a1fe1b1d9560193ed57e5275d778fcad7f79512a9618e0c3d2",
+      "gl.js": "89aba3ed92feac66e83b75a5f6be7f279ec2b93f89f560be56829af0b438e17f",
+      "main.js": "ac7cc6756efb81b443ef4475abeccb0fe078586745f628d35d6246f9bed53d41",
+      "materials.js": "fa2fd9697146cc52af644a761087cf738a025ef31f22abc59dbca4b6b20e5f76",
+      "math.js": "d9814ab39a111ca9e324553a04a48241d3efa118c082dadc5dfb07887585a8d9",
+      "shaders.js": "e61955f34ad9beb20dda3a14e3f6def1b465e1e71454d8d1d471bcccae7bf05a",
+      "style.css": "5db22b5f6890f76e061cdb49e563db2f4ae9a5c6b8527ecec5c173616b297ffd"
+    }
+  },
+  "checksums": {
+    "content.js": {
+      "status": 200,
+      "hash": "639dec59e2e1c9643d0a657f52d787b3ad10d38a35a5b54ab03abc78c441cc6a",
+      "matches_manifest": true,
+      "matches_baseline": true
+    },
+    "core.js": {
+      "status": 200,
+      "hash": "250e2ef44bafec23c25add0d3e432a248b59e7d88dca8a3fafa73b6ad75a7c9f",
+      "matches_manifest": true,
+      "matches_baseline": true
+    },
+    "engine.js": {
+      "status": 200,
+      "hash": "6a1b0b16accb4da635a6a7accb316dbfffd33a4c698b3203869ae7a991b761e2",
+      "matches_manifest": true,
+      "matches_baseline": true
+    },
+    "geometry.js": {
+      "status": 200,
+      "hash": "2e151dcbd5a056a1fe1b1d9560193ed57e5275d778fcad7f79512a9618e0c3d2",
+      "matches_manifest": true,
+      "matches_baseline": true
+    },
+    "gl.js": {
+      "status": 200,
+      "hash": "89aba3ed92feac66e83b75a5f6be7f279ec2b93f89f560be56829af0b438e17f",
+      "matches_manifest": true,
+      "matches_baseline": true
+    },
+    "main.js": {
+      "status": 200,
+      "hash": "ac7cc6756efb81b443ef4475abeccb0fe078586745f628d35d6246f9bed53d41",
+      "matches_manifest": true,
+      "matches_baseline": true
+    },
+    "materials.js": {
+      "status": 200,
+      "hash": "fa2fd9697146cc52af644a761087cf738a025ef31f22abc59dbca4b6b20e5f76",
+      "matches_manifest": true,
+      "matches_baseline": true
+    },
+    "math.js": {
+      "status": 200,
+      "hash": "d9814ab39a111ca9e324553a04a48241d3efa118c082dadc5dfb07887585a8d9",
+      "matches_manifest": true,
+      "matches_baseline": true
+    },
+    "shaders.js": {
+      "status": 200,
+      "hash": "e61955f34ad9beb20dda3a14e3f6def1b465e1e71454d8d1d471bcccae7bf05a",
+      "matches_manifest": true,
+      "matches_baseline": true
+    },
+    "style.css": {
+      "status": 200,
+      "hash": "5db22b5f6890f76e061cdb49e563db2f4ae9a5c6b8527ecec5c173616b297ffd",
+      "matches_manifest": true,
+      "matches_baseline": true
+    }
+  },
+  "pass": true
+}

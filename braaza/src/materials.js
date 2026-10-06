@@ -101,13 +101,15 @@ void main(){
  col+=vec3(.065,.080,.095)*(sheen*.4+ribbon*.12)*(1.-smoothstep(.1,.9,lum));
  float rim=exp(-abs(d+.022)*145.),inner=exp(-abs(d+.06)*68.),bevel=exp(-abs(d+.105)*45.);
  float edgeFlow=pow(.5+.5*sin(atan(p.y,p.x)*2.-uTime*.40+uIndex),16.);
- vec3 hot=ember(.32);col+=hot*(rim*(1.8+edgeFlow*1.8+lamp*1.9)+inner*(.22+lamp*.6));
+ vec3 hot=ember(.32),perimeter=hot*(rim*(1.8+edgeFlow*1.8+lamp*1.9)+inner*(.22+lamp*.6));
  col+=vec3(.32,.35,.38)*bevel*(.15+sheen*.50+fres*.2);
  float seam=cells(vUv*vec2(12.,5.6)+uIndex*11.);float cracks=1.-smoothstep(.004,.004+max(fwidth(seam)*.65,.001),seam);
  float mask=smoothstep(.53,.76,noise(vUv*vec2(9.,4.)+uIndex));
  col+=vec3(.25,.23,.21)*cracks*mask*.12;
  col+=hot*(lamp*.028+warmth*.019+cracks*mask*(lamp*.45+warmth*.20));
  vec4 text=texture(uLabel,vUv);col=mix(col,text.rgb,text.a);
+ // The title matte belongs to the media surface, behind the emitting glass edge.
+ col+=perimeter;
  float burning=exp(-abs(edgeCut-(1.-burn))*110.)*step(.01,burn);col+=ember(.65)*burning*3.4;
  outColor=vec4(max(col,0.),smoothstep(0.,.06,1.-uBurn));
 }`;
@@ -123,11 +125,14 @@ void main(){vec2 p=gl_PointCoord-.5;float angle=(vSeed-.5)*.8;p=mat2(cos(angle),
  float env=smoothstep(0.,.08,vLife)*(1.-smoothstep(.72,1.,vLife));vec3 tint=mix(vec3(1.8,.19,.008),vec3(2.9,.65,.065),vSeed);
  float alpha=(trail*.64+halo*.12)*env;outColor=vec4(tint*(trail+core*.60+halo*.10)*env,alpha);}
 `;
-export const output=H+`in vec2 vUv;uniform sampler2D uScene,uDepth,uNear,uFar,uAir;uniform vec2 uResolution;uniform float uTime,uReduced,uQuality,uFocusDistance;out vec4 outColor;
+export const output=H+`in vec2 vUv;uniform sampler2D uScene,uBase,uDepth,uNear,uFar,uAir;uniform vec2 uResolution;uniform float uTime,uReduced,uQuality,uFocusDistance;out vec4 outColor;
 vec3 aces(vec3 c){return clamp((c*(2.51*c+.03))/(c*(2.43*c+.59)+.14),0.,1.);}
 float viewZ(float d){return .1*70./(70.-d*(70.-.1));}
-void main(){vec2 uv=vUv;float z=viewZ(texture(uDepth,uv).r);float coc=clamp(abs(z-uFocusDistance)-2.8,0.,5.)*uQuality;vec3 c=texture(uScene,uv).rgb;
- if(coc>.1){vec3 sum=c;float total=1.;for(int i=0;i<12;i++){float a=float(i)*2.399963;vec2 off=vec2(cos(a),sin(a))*sqrt(float(i)+.5)*coc*.7/uResolution;float nz=viewZ(texture(uDepth,clamp(uv+off,0.,1.)).r);float w=step(z-1.8,nz);sum+=texture(uScene,clamp(uv+off,0.,1.)).rgb*w;total+=w;}c=sum/total;}
+void main(){vec2 uv=vUv;float z=viewZ(texture(uDepth,uv).r);float coc=clamp(abs(z-uFocusDistance)-2.8,0.,5.)*uQuality;vec3 c=texture(uBase,uv).rgb;
+ vec3 sparks=max(texture(uScene,uv).rgb-c,0.);
+ if(coc>.1){vec3 sum=c;float total=1.;for(int i=0;i<12;i++){float a=float(i)*2.399963;vec2 off=vec2(cos(a),sin(a))*sqrt(float(i)+.5)*coc*.7/uResolution;float nz=viewZ(texture(uDepth,clamp(uv+off,0.,1.)).r);float w=step(z-1.8,nz);sum+=texture(uBase,clamp(uv+off,0.,1.)).rgb*w;total+=w;}c=sum/total;}
+ // Sprites keep their own soft profile; their emission still feeds HDR bloom.
+ c+=sparks;
  vec3 near=texture(uNear,uv).rgb,far=texture(uFar,uv).rgb,air=texture(uAir,uv).rgb;
  c+=near*.40+far*.29+air*.24;
  vec3 streak=vec3(0.);for(int i=-3;i<=3;i++)streak+=texture(uAir,uv+vec2(float(i)*.006,0.)).rgb*exp(-float(i*i)*.45);c+=streak*.012;

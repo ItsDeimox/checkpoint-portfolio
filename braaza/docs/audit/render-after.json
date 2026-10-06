@@ -1,0 +1,118 @@
+[
+  {
+    "name": "WebGL2 initialized",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "HDR media target enabled",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "separate glass transmission target enabled",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "all scene, transmission and bloom texels finite and nonnegative",
+    "passed": true,
+    "detail": [
+      {
+        "bad": 0,
+        "max": 6.84375
+      },
+      {
+        "bad": 0,
+        "max": 2.388671875
+      },
+      {
+        "bad": 0,
+        "max": 1.2978515625
+      },
+      {
+        "bad": 0,
+        "max": 1.1083984375
+      },
+      {
+        "bad": 0,
+        "max": 0.91064453125
+      },
+      {
+        "bad": 0,
+        "max": 0.828125
+      },
+      {
+        "bad": 0,
+        "max": 0.6015625
+      },
+      {
+        "bad": 0,
+        "max": 6.84375
+      }
+    ]
+  },
+  {
+    "name": "HDR peak controlled below 40",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "media retains emissive highlight above display white",
+    "passed": true,
+    "detail": {
+      "peak": 4.22265625,
+      "error": 0
+    }
+  },
+  {
+    "name": "popup preview supports HDR readback",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "Perlin fire evolves between frames",
+    "passed": true,
+    "detail": [
+      {
+        "bad": 0,
+        "coverage": 0.301922607421875,
+        "edge": 0.022216796875,
+        "peak": 2.673828125,
+        "hash": 1209360.3394128084
+      },
+      {
+        "bad": 0,
+        "coverage": 0.27309977213541664,
+        "edge": 0.022491455078125,
+        "peak": 2.572265625,
+        "hash": 1090804.0087542534
+      }
+    ]
+  },
+  {
+    "name": "fire sheets fade to transparent borders",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "fire silhouette has tongues, not a filled rectangle",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "fire shader produces only finite positive values",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "no WebGL errors",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "no JavaScript errors",
+    "passed": true,
+    "detail": []
+  }
+]

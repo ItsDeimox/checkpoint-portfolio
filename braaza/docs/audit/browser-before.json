@@ -1,0 +1,152 @@
+[
+  {
+    "name": "WebGL2 ready",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "four media cards preserved",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "wheel raises the gallery",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "chains have opposing velocities",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "drag advances without opening viewer",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "no selected text after drag",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "Home resets gallery and chain travel",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "keyboard navigation moves gallery",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "keyboard opens dialog",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "preview media decodes successfully",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "demo is not attributed as real work",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "Escape restores scene focus",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "raycast selects intended card",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "cursor injects a dissipating heat trail",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "click opens the pointed card",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "low quality resizes render targets",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "high quality resizes render targets",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "auto quality resizes render targets",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "quality changes preserve valid framebuffers",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "pause freezes procedural animation",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "chain coverage stays continuous across 365 phase samples",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "scroll sweep has no WebGL errors",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "reduced motion freezes noise and emitters",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "no JavaScript or shader errors on desktop",
+    "passed": true,
+    "detail": []
+  },
+  {
+    "name": "mobile initializes WebGL2",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "mobile has no horizontal overflow",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "mobile swipe advances without accidental click",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "mobile gallery navigation works",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "mobile media remains centered",
+    "passed": true,
+    "detail": null
+  },
+  {
+    "name": "no mobile JS or WebGL errors",
+    "passed": true,
+    "detail": []
+  }
+]

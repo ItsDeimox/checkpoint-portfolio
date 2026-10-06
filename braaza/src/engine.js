@@ -102,10 +102,15 @@ export class Forge{
   for(const c of [...this.cards].sort((a,b)=>b.y-a.y)){
    if(c.video&&c.video.readyState>=2&&c.videoPlaying){if(!c.videoTex)c.videoTex=imageTexture(g,c.video);else{bind(g,c.videoTex,0);g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL,true);g.texImage2D(g.TEXTURE_2D,0,g.SRGB8_ALPHA8,g.RGBA,g.UNSIGNED_BYTE,c.video);g.generateMipmap(g.TEXTURE_2D);}c.tex=c.videoTex;}
    const burn=clamp((c.y-9.6)/1.7,0,1);bind(g,c.tex,0);bind(g,c.label,1);cp.use({uModel:c.model,uPointer:c.pointer,uHover:c.hover,uTrail:c.trails,uBurn:burn,uIndex:c.index});this.draw(this.meshes.panel);}
+  // Glass has finished sampling this attachment. Reuse it for the scene before
+  // additive sparks, so depth of field cannot scatter them using the wall depth.
+  g.bindFramebuffer(g.READ_FRAMEBUFFER,this.sceneTarget.f);g.bindFramebuffer(g.DRAW_FRAMEBUFFER,this.behindTarget.f);
+  g.blitFramebuffer(0,0,this.canvas.width,this.canvas.height,0,0,this.canvas.width,this.canvas.height,g.COLOR_BUFFER_BIT,g.NEAREST);
+  this.setTarget(this.sceneTarget);
   g.depthMask(false);g.blendFunc(g.ONE,g.ONE);this.programs.particles.use({uVP:this.vp,uTime:this.time,uReduced:+this.reduced,uDpr:this.dpr,uMotion:this.motion.velocity});g.bindVertexArray(this.sparkVao);g.drawArrays(g.POINTS,0,this.mobile?480:this.sparkCount);g.depthMask(true);g.disable(g.BLEND);g.disable(g.DEPTH_TEST);
   let source=this.sceneTarget;for(let i=0;i<this.blooms.length;i++){const [a,b]=this.blooms[i];this.setTarget(a);bind(g,source.t,0);this.programs.blur.use({uMap:0,uStep:[1/source.w,0],uExtract:+(i===0)});this.full();this.setTarget(b);bind(g,a.t,0);this.programs.blur.use({uMap:0,uStep:[0,1/a.h],uExtract:0});this.full();source=b;}
-  this.setTarget(null);bind(g,this.sceneTarget.t,0);bind(g,this.sceneTarget.depth,1);bind(g,this.blooms[0][1].t,2);bind(g,this.blooms[1][1].t,3);bind(g,this.blooms[2][1].t,4);
-  this.programs.output.use({uScene:0,uDepth:1,uNear:2,uFar:3,uAir:4,uResolution:[this.canvas.width,this.canvas.height],uTime:this.time,uReduced:+this.reduced,uFocusDistance:this.mobile?18.1:13.6,uQuality:this.quality==='low'?0:1});this.full();this.frames++;
+  this.setTarget(null);bind(g,this.sceneTarget.t,0);bind(g,this.sceneTarget.depth,1);bind(g,this.blooms[0][1].t,2);bind(g,this.blooms[1][1].t,3);bind(g,this.blooms[2][1].t,4);bind(g,this.behindTarget.t,5);
+  this.programs.output.use({uScene:0,uBase:5,uDepth:1,uNear:2,uFar:3,uAir:4,uResolution:[this.canvas.width,this.canvas.height],uTime:this.time,uReduced:+this.reduced,uFocusDistance:this.mobile?18.1:13.6,uQuality:this.quality==='low'?0:1});this.full();this.frames++;
  }
  preview(index){
   const g=this.gl,t=this.cards[index].demoTarget,bytes=this.artHdr?new Float32Array(t.w*t.h*4):new Uint8Array(t.w*t.h*4);

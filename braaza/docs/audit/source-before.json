@@ -1,0 +1,18 @@
+{
+  "url": "https://braaza.vercel.app/build-info.json",
+  "httpStatus": 200,
+  "version": "braaza-forge-1.1",
+  "commit": "0e434b8f7df455990f026c8001beb6cc0c9aa302",
+  "sources": {
+    "content.js": "639dec59e2e1c9643d0a657f52d787b3ad10d38a35a5b54ab03abc78c441cc6a",
+    "core.js": "250e2ef44bafec23c25add0d3e432a248b59e7d88dca8a3fafa73b6ad75a7c9f",
+    "engine.js": "6a1b0b16accb4da635a6a7accb316dbfffd33a4c698b3203869ae7a991b761e2",
+    "geometry.js": "2e151dcbd5a056a1fe1b1d9560193ed57e5275d778fcad7f79512a9618e0c3d2",
+    "gl.js": "89aba3ed92feac66e83b75a5f6be7f279ec2b93f89f560be56829af0b438e17f",
+    "main.js": "ac7cc6756efb81b443ef4475abeccb0fe078586745f628d35d6246f9bed53d41",
+    "materials.js": "fa2fd9697146cc52af644a761087cf738a025ef31f22abc59dbca4b6b20e5f76",
+    "math.js": "d9814ab39a111ca9e324553a04a48241d3efa118c082dadc5dfb07887585a8d9",
+    "shaders.js": "e61955f34ad9beb20dda3a14e3f6def1b465e1e71454d8d1d471bcccae7bf05a",
+    "style.css": "5db22b5f6890f76e061cdb49e563db2f4ae9a5c6b8527ecec5c173616b297ffd"
+  }
+}

@@ -1,5 +1,7 @@
 # BRAAZA / validação da primeira versão
 
+> Registro histórico do commit `0a3729e`. Para a auditoria do deploy posterior, correções pontuais e novas evidências, veja [VISUAL-AUDIT.md](VISUAL-AUDIT.md).
+
 Node.js: 16 testes passaram. Navegador: 25 verificações passaram, com Chromium/WebGL2/HDR em desktop 1440x900 e toque emulado 390x844. O relatório está em browser-tests.json. A carga do navegador foi feita com os módulos reais via Blob URLs, sem mocks de renderização, porque navegação local é bloqueada no ambiente de teste.
 
 Verificado: correntes opostas, scroll, arraste, seleção sem drag de texto, clique e fechamento de mídia, teclado, Home, modo leve, pausa, redução de movimento, raycast, toque e ausência de overflow horizontal. Todos os pixels dos buffers HDR e bloom verificados eram finitos. Não houve erro JavaScript/GLSL/WebGL nesses cenários.
