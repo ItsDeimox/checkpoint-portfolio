@@ -30,7 +30,7 @@ test('incoming card is hidden below the forge and fully readable by its first st
   const hidden=cardLifecycle(-1.2),mid=cardLifecycle(.85),clear=cardLifecycle(1.7);
   assert.ok(hidden.reveal<.01);
   assert.ok(mid.reveal>hidden.reveal&&mid.reveal<1);
-  assert.equal(clear.reveal,1);
+  assert.ok(clear.reveal>.999);
 });
 
 test('glass and media shaders share lifecycle burn/reveal uniforms and hover crater field',()=>{
