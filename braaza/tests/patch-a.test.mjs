@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {qualityProfile} from '../src/render/quality.js';
-import {cardLifecycle} from '../src/render/card-lifecycle.js';
+import {cardLifecycle,wrapCardVisualY} from '../src/render/card-lifecycle.js';
 
 test('ultra preset supersamples above DPR 1 and raises explicit desktop budget',()=>{
   const p=qualityProfile('ultra',false,1,0);
-  assert.ok(p.scale>=1.9,'ultra should target ~2x internal resolution on DPR1 desktop');
-  assert.ok(p.memoryBudget>=384*1024**2,'ultra needs its own opt-in framebuffer budget');
+  assert.ok(p.scale>=1.2&&p.scale<=1.45,'ultra should use moderate supersampling, not brute-force 2x');
+  assert.ok(p.memoryBudget<=384*1024**2,'ultra should stay inside a bounded opt-in framebuffer budget');
   assert.ok(p.shadow>=2048);
   assert.equal(p.motion,true);
 });
@@ -16,6 +16,7 @@ test('high remains sharper than auto on DPR1',()=>{
   const auto=qualityProfile('auto',false,1,0);
   const high=qualityProfile('high',false,1,0);
   assert.ok(high.scale>auto.scale);
+  assert.ok(high.scale<=1.2,'high should not brute-force 1.45x+ supersampling');
 });
 
 test('top dissolve starts later and does not eat a normal top card',()=>{
@@ -42,4 +43,19 @@ test('glass and media shaders share lifecycle burn/reveal uniforms and hover cra
   assert.match(crystal,/crater/i);
   assert.match(crystal,/revealBand/);
   assert.match(crystal,/burnBand/);
+});
+
+test('wrapped incoming card starts below the lower flame instead of teleporting into view',()=>{
+  const state=wrapCardVisualY(1.72,11.28,11.28,1/60,false);
+  assert.equal(state.wrapped,true);
+  assert.ok(state.visualY<0,'first wrapped frame should remain below the lower forge');
+  let next=state;
+  for(let i=0;i<5;i++)next=wrapCardVisualY(1.72+i*.06,next.rawY,next.visualY,1/60,false);
+  assert.ok(next.visualY<1.45,'card should still be below the reveal threshold after a few frames');
+});
+
+test('final optics uses edge-aware AA rather than relying on resolution alone',()=>{
+  const out=fs.readFileSync(new URL('../src/glsl/optics/output.frag',import.meta.url),'utf8');
+  assert.match(out,/uAaStrength/);
+  assert.match(out,/fxaa/i);
 });
