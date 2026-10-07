@@ -1,9 +1,12 @@
-/** Presets bound framebuffer cost while keeping the same authored scene. */
+/** Presets bound framebuffer cost while keeping the same authored scene.
+ * Edge-aware post AA now does the heavy lifting; resolution scale is only a modest support layer.
+ */
 export function qualityProfile(name,mobile=false,dpr=1,pressure=0){
  const low=name==='low'||(name==='auto'&&pressure>=2),high=name==='high',ultra=name==='ultra';
- const scale=low?.75:mobile?1:ultra?Math.min(Math.max(dpr,2),2):high?Math.min(Math.max(dpr,1.45),1.6):pressure===1?.90:Math.min(dpr,1);
- const memoryBudget=(mobile?72:ultra?512:high?256:192)*1024**2;
- return {name,mobile,scale,shadow:low?512:ultra?3072:high?2048:1024,reflection:low?.25:ultra?.65:.5,volume:low?.25:ultra?.6:.5,steps:low?10:ultra?28:24,bloomLevels:5,motion:!low&&!mobile,probe:ultra?256:128,low,ultra,memoryBudget};
+ const scale=low?.75:mobile?1:ultra?Math.min(Math.max(dpr,1.28),1.40):high?Math.min(Math.max(dpr,1.08),1.16):pressure===1?.90:Math.min(dpr,1);
+ const memoryBudget=(mobile?72:ultra?320:high?224:192)*1024**2;
+ const aaStrength=low?.64:mobile?.72:ultra?.98:high?.92:.82;
+ return {name,mobile,scale,shadow:low?512:ultra?2048:high?1536:1024,reflection:low?.25:ultra?.55:high?.48:.5,volume:low?.25:ultra?.50:high?.46:.5,steps:low?10:ultra?24:high?21:20,bloomLevels:5,motion:!low&&!mobile,probe:ultra?192:128,aaStrength,low,ultra,memoryBudget};
 }
 export function estimateBytes(width,height,p){const pixels=Math.ceil(width*p.scale)*Math.ceil(height*p.scale);return Math.ceil(pixels*(8*4+4+8+4*2+8*p.reflection**2+16*p.volume**2+8*2/3)+p.shadow**2*8+p.probe**2*6*8*1.34+4*1200*495*8);}
 export class QualityGovernor{
