@@ -1,15 +1,18 @@
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*Math.max(0,dt)));
+const LOWER_RECYCLE_Y=-4.20;
+const UPPER_RECYCLE_Y=13.40;
 /** Both forges own the lifecycle. A card is fully hidden before any logical recycle. */
 export function cardLifecycle(y){
-  const reveal=clamp((y-.35)/1.20);
+  const reveal=clamp((y+1.15)/2.85);
   const exitBurn=clamp((y-9.70)/1.35);
   return {reveal,exitBurn,visibility:Math.min(reveal,1-exitBurn)};
 }
 export function createCardWrapState(){return {mode:'track'};}
 /**
- * Logical slots wrap immediately, but the rendered card finishes travelling into the
- * active forge first. Only once fully occluded does it teleport to the opposite forge.
+ * Logical slots wrap immediately, but the rendered card keeps travelling through
+ * the active forge. Recycling happens far outside the visible corridor so the
+ * returning card has room to rise smoothly before its lower-edge reveal begins.
  */
 export function wrapCardVisualY(rawY,previousRawY,visualY,dt,reduced=false,state=createCardWrapState()){
   if(!Number.isFinite(previousRawY)||!Number.isFinite(visualY)){state.mode='track';return {rawY,visualY:rawY,wrapped:false,state};}
@@ -20,15 +23,15 @@ export function wrapCardVisualY(rawY,previousRawY,visualY,dt,reduced=false,state
   let y=visualY,wrapped=false;
   if(state.mode==='exitTop'){
     y=damp(y,11.65,14,h);
-    if(y>11.52){y=-1.30;state.mode='enterBottom';wrapped=true;}
+    if(y>11.52){y=LOWER_RECYCLE_Y;state.mode='enterBottom';wrapped=true;}
   }else if(state.mode==='enterBottom'){
-    y=damp(y,rawY,6.5,h);
+    y=damp(y,rawY,3.8,h);
     if(Math.abs(y-rawY)<.025)state.mode='track';
   }else if(state.mode==='exitBottom'){
-    y=damp(y,-1.30,14,h);
-    if(y<-1.17){y=12.55;state.mode='enterTop';wrapped=true;}
+    y=damp(y,LOWER_RECYCLE_Y,14,h);
+    if(y<LOWER_RECYCLE_Y+.15){y=UPPER_RECYCLE_Y;state.mode='enterTop';wrapped=true;}
   }else if(state.mode==='enterTop'){
-    y=damp(y,rawY,6.5,h);
+    y=damp(y,rawY,3.8,h);
     if(Math.abs(y-rawY)<.025)state.mode='track';
   }else y=damp(y,rawY,10,h);
   return {rawY,visualY:y,wrapped,state};

@@ -10,6 +10,13 @@ test('card is fully dissolved before the logical top slot wraps',()=>{
 test('card is hidden below the lower forge and fully readable at the first slot',()=>{
  assert.ok(cardLifecycle(-1.2).visibility<.01);assert.ok(cardLifecycle(1.7).visibility>.99);
 });
+test('recycled card gets a long lower entry corridor instead of popping into view',()=>{
+ const state=createCardWrapState();let r=wrapCardVisualY(1.72,11.28,11.40,1/60,false,state);
+ for(let i=0;i<24&&!r.wrapped;i++)r=wrapCardVisualY(1.72,1.72,r.visualY,1/60,false,state);
+ assert.equal(r.wrapped,true);assert.ok(r.visualY<-4);
+ for(let i=0;i<8;i++)r=wrapCardVisualY(1.72,1.72,r.visualY,1/60,false,state);
+ assert.ok(r.visualY<-1.2);assert.equal(cardLifecycle(r.visualY).visibility,0);
+});
 test('top recycle finishes exiting before teleporting below the forge',()=>{
  const state=createCardWrapState();let r=wrapCardVisualY(1.72,11.12,10.35,1/60,false,state);
  assert.equal(r.wrapped,false);assert.ok(r.visualY>10.35);
