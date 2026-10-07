@@ -1,5 +1,5 @@
-node_modules/
 dist/
+node_modules/
+__pycache__/
 previews/
-docs/*log
-docs/test-*.txt
+assets/world/far-vista-right.webp

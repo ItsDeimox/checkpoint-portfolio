@@ -1,0 +1,11 @@
+import {compose,multiply} from '../math.js';
+import {wrap,chainOffset} from '../core.js';
+export const CHAIN_COUNT=56;
+export function buildChains(){const links=[];for(const secondary of[false,true])for(const side of[-1,1])for(let i=0;i<CHAIN_COUNT;i++)links.push({side,i,secondary,id:side+':'+secondary+':'+i});return links;}
+export function sampleChainPose(link,travel,weight=0){const y=-14+wrap(link.i*.88+chainOffset(travel,link.side),CHAIN_COUNT*.88),side=link.side;const pos=[side*(6.65-.14*y)+(link.secondary?side*3.2:0)+weight*.08,y,4.45-.39*y-(link.secondary?7.2:0)];const scale=link.secondary?.95:1.28,rot=[-.368,0,side*.13];return {pos,scale,rot,model:multiply(compose(pos,rot,scale),compose([0,0,0],[0,link.i%2?Math.PI/2:0,0],1))};}
+export class ChainInstances{
+ constructor(g,mesh,count){this.gl=g;this.mesh=mesh;this.count=count;this.buffers=[];g.bindVertexArray(mesh.vao);for(let set=0;set<2;set++){const b=g.createBuffer();this.buffers.push(b);g.bindBuffer(g.ARRAY_BUFFER,b);g.bufferData(g.ARRAY_BUFFER,count*64,g.DYNAMIC_DRAW);for(let col=0;col<4;col++){const at=4+set*4+col;g.enableVertexAttribArray(at);g.vertexAttribPointer(at,4,g.FLOAT,false,64,col*16);g.vertexAttribDivisor(at,1);}}const b=g.createBuffer();this.buffers.push(b);g.bindBuffer(g.ARRAY_BUFFER,b);g.bufferData(g.ARRAY_BUFFER,count*16,g.DYNAMIC_DRAW);g.enableVertexAttribArray(12);g.vertexAttribPointer(12,4,g.FLOAT,false,0,0);g.vertexAttribDivisor(12,1);g.bindVertexArray(null);}
+ update(links,travel,previousTravel,historyValid,weight=0){const arrays=[new Float32Array(links.length*16),new Float32Array(links.length*16),new Float32Array(links.length*4)];links.forEach((link,i)=>{const now=sampleChainPose(link,travel,weight),previous=sampleChainPose(link,previousTravel,weight);arrays[0].set(now.model,i*16);arrays[1].set(historyValid&&Math.abs(now.pos[1]-previous.pos[1])<1?previous.model:now.model,i*16);arrays[2].set([1,link.secondary?.08:.14,link.i*.8,1],i*4);});arrays.forEach((a,i)=>{this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffers[i]);this.gl.bufferData(this.gl.ARRAY_BUFFER,a,this.gl.DYNAMIC_DRAW);});}
+ draw(){const g=this.gl;g.bindVertexArray(this.mesh.vao);g.drawElementsInstanced(g.TRIANGLES,this.mesh.count,g.UNSIGNED_INT,0,this.count);}
+ dispose(){this.buffers.forEach(b=>this.gl.deleteBuffer(b));}
+}

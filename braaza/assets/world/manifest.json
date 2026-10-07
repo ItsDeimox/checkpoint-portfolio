@@ -1,0 +1,53 @@
+{
+  "asset": "world/far-vista-right.webp",
+  "source": "User-approved generated concept in this conversation",
+  "sourceSha256": "0c2703d7c141a1d3de109e419eff48137bd90ab7e2a97d5ab7d4716cb4bf5261",
+  "crop": [
+    1288,
+    126,
+    1450,
+    380
+  ],
+  "maskPolygon": [
+    [
+      1302,
+      178
+    ],
+    [
+      1330,
+      150
+    ],
+    [
+      1376,
+      133
+    ],
+    [
+      1397,
+      134
+    ],
+    [
+      1420,
+      204
+    ],
+    [
+      1438,
+      300
+    ],
+    [
+      1440,
+      363
+    ],
+    [
+      1326,
+      371
+    ],
+    [
+      1319,
+      286
+    ]
+  ],
+  "width": 162,
+  "height": 254,
+  "use": "Distant tower/sky on a depth-positioned mesh, not a full-image backdrop",
+  "sha256": "ff3eb49dddc0e0be24fcf6949e0781e1990328b2d691cc1aaf390af2d3dc8235"
+}
