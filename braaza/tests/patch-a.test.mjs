@@ -19,19 +19,17 @@ test('high remains sharper than auto on DPR1',()=>{
   assert.ok(high.scale<=1.2,'high should not brute-force 1.45x+ supersampling');
 });
 
-test('top dissolve starts later and does not eat a normal top card',()=>{
-  assert.equal(cardLifecycle(8.9).exitBurn,0);
-  assert.equal(cardLifecycle(10.15).exitBurn,0);
-  assert.ok(cardLifecycle(10.9).exitBurn>0);
-  assert.ok(cardLifecycle(12.2).exitBurn>.95);
+test('top dissolve completes before the logical slot can recycle',()=>{
+  assert.equal(cardLifecycle(9.6).exitBurn,0);
+  assert.ok(cardLifecycle(10.15).exitBurn>0);
+  assert.ok(cardLifecycle(10.8).exitBurn>.8);
+  assert.ok(cardLifecycle(11.2).exitBurn>.99);
 });
 
-test('incoming card grows out of the lower flame zone instead of popping fully visible',()=>{
-  const first=cardLifecycle(1.7);
-  const mid=cardLifecycle(2.15);
-  const clear=cardLifecycle(2.7);
-  assert.ok(first.reveal>0&&first.reveal<.35);
-  assert.ok(mid.reveal>first.reveal&&mid.reveal<1);
+test('incoming card is hidden below the forge and fully readable by its first stable slot',()=>{
+  const hidden=cardLifecycle(-1.2),mid=cardLifecycle(.85),clear=cardLifecycle(1.7);
+  assert.ok(hidden.reveal<.01);
+  assert.ok(mid.reveal>hidden.reveal&&mid.reveal<1);
   assert.equal(clear.reveal,1);
 });
 
@@ -45,13 +43,14 @@ test('glass and media shaders share lifecycle burn/reveal uniforms and hover cra
   assert.match(crystal,/burnBand/);
 });
 
-test('wrapped incoming card starts below the lower flame instead of teleporting into view',()=>{
-  const state=wrapCardVisualY(1.72,11.28,11.28,1/60,false);
+test('wrapped card finishes its top exit before recycling below the forge',()=>{
+  const wrapState={mode:'track'};
+  let state=wrapCardVisualY(1.72,11.28,10.35,1/60,false,wrapState);
+  assert.equal(state.wrapped,false);
+  assert.ok(state.visualY>10.35,'first wrapped frame must continue upward instead of disappearing');
+  for(let i=0;i<30&&!state.wrapped;i++)state=wrapCardVisualY(1.72,1.72,state.visualY,1/60,false,wrapState);
   assert.equal(state.wrapped,true);
-  assert.ok(state.visualY<0,'first wrapped frame should remain below the lower forge');
-  let next=state;
-  for(let i=0;i<5;i++)next=wrapCardVisualY(1.72+i*.06,next.rawY,next.visualY,1/60,false);
-  assert.ok(next.visualY<1.45,'card should still be below the reveal threshold after a few frames');
+  assert.ok(state.visualY<-1,'the invisible recycle happens below the lower forge');
 });
 
 test('final optics uses edge-aware AA rather than relying on resolution alone',()=>{

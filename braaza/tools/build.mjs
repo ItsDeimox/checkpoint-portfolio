@@ -1,7 +1,9 @@
 import './restore-assets.mjs';
 import {readFile,writeFile,cp,mkdir,rm,readdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {VERSION} from '../src/render/contracts.js';
+execFileSync('npm',['test'],{stdio:'inherit',env:{...process.env,npm_lifecycle_event:'braaza-build-test'}});
 await rm('dist',{recursive:true,force:true});await mkdir('dist');for(const f of['index.html','src','assets'])await cp(f,'dist/'+f,{recursive:true});
 async function walk(dir){const out=[];for(const e of await readdir(dir,{withFileTypes:true})){const p=dir+'/'+e.name;if(e.isDirectory())out.push(...await walk(p));else out.push(p);}return out;}
 const sources={};let bytes=0;for(const file of['index.html',...await walk('src'),...await walk('assets')].sort()){const data=await readFile(file);sources[file]=createHash('sha256').update(data).digest('hex');bytes+=data.length;}

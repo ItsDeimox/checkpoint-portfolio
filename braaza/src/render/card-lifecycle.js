@@ -1,27 +1,35 @@
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*Math.max(0,dt)));
-/**
- * Gallery-space lifecycle used by tests/debug. GLSL mirrors these constants so the
- * reveal/burn fronts stay spatially stable even while the card itself is moving.
- */
+/** Both forges own the lifecycle. A card is fully hidden before any logical recycle. */
 export function cardLifecycle(y){
-  return {
-    reveal: clamp((y-1.45)/1.15),
-    exitBurn: clamp((y-10.35)/1.55)
-  };
+  const reveal=clamp((y-.35)/1.20);
+  const exitBurn=clamp((y-9.70)/1.35);
+  return {reveal,exitBurn,visibility:Math.min(reveal,1-exitBurn)};
 }
+export function createCardWrapState(){return {mode:'track'};}
 /**
- * The logical carousel wraps instantly. The rendered card must not.
- * When a card recycles from the top to the bottom it is placed below the forge and
- * springs toward the new logical slot, so the existing fire/reveal shader can expose it.
+ * Logical slots wrap immediately, but the rendered card finishes travelling into the
+ * active forge first. Only once fully occluded does it teleport to the opposite forge.
  */
-export function wrapCardVisualY(rawY,previousRawY,visualY,dt,reduced=false){
-  if(!Number.isFinite(previousRawY)||!Number.isFinite(visualY))return {rawY,visualY:rawY,wrapped:false};
-  const jump=rawY-previousRawY;
+export function wrapCardVisualY(rawY,previousRawY,visualY,dt,reduced=false,state=createCardWrapState()){
+  if(!Number.isFinite(previousRawY)||!Number.isFinite(visualY)){state.mode='track';return {rawY,visualY:rawY,wrapped:false,state};}
+  if(reduced){state.mode='track';return {rawY,visualY:rawY,wrapped:false,state};}
+  const jump=rawY-previousRawY,h=Math.min(Math.max(dt,0),.05);
+  if(jump<-6)state.mode='exitTop';
+  else if(jump>6)state.mode='exitBottom';
   let y=visualY,wrapped=false;
-  if(jump<-6){y=-1.05;wrapped=true;}
-  else if(jump>6){y=12.70;wrapped=true;}
-  if(reduced)y=rawY;
-  else y=damp(y,rawY,wrapped?5.5:10,Math.min(Math.max(dt,0),.05));
-  return {rawY,visualY:y,wrapped};
+  if(state.mode==='exitTop'){
+    y=damp(y,11.65,14,h);
+    if(y>11.52){y=-1.30;state.mode='enterBottom';wrapped=true;}
+  }else if(state.mode==='enterBottom'){
+    y=damp(y,rawY,6.5,h);
+    if(Math.abs(y-rawY)<.025)state.mode='track';
+  }else if(state.mode==='exitBottom'){
+    y=damp(y,-1.30,14,h);
+    if(y<-1.17){y=12.55;state.mode='enterTop';wrapped=true;}
+  }else if(state.mode==='enterTop'){
+    y=damp(y,rawY,6.5,h);
+    if(Math.abs(y-rawY)<.025)state.mode='track';
+  }else y=damp(y,rawY,10,h);
+  return {rawY,visualY:y,wrapped,state};
 }

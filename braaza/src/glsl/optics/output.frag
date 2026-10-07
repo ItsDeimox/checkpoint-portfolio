@@ -21,9 +21,12 @@ vec3 fxaa(vec2 uv){
 void main(){
  vec2 uv=lensUv(vUv);
  vec3 c=fxaa(vUv);
+ vec2 px=1./uResolution;
+ vec3 local=(sceneAt(vUv+vec2(px.x,0.))+sceneAt(vUv-vec2(px.x,0.))+sceneAt(vUv+vec2(0.,px.y))+sceneAt(vUv-vec2(0.,px.y)))*.25;
+ vec3 detail=clamp(c-local,vec3(-.08),vec3(.08));c=max(c+detail*(.09+.07*uAaStrength),0.);
  vec2 ca=(vUv-.5)*pow(length(vUv-.5)*1.414,3.)*uAberration/uResolution;
  vec3 chroma=vec3(sceneAt(vUv+ca).r,c.g,sceneAt(vUv-ca).b);
- c=mix(c,chroma,.58);
+ c=mix(c,chroma,.34);
  vec3 bloom=texture(uBloom0,uv).rgb*.24+texture(uBloom1,uv).rgb*.24+texture(uBloom2,uv).rgb*.22+texture(uBloom3,uv).rgb*.18+texture(uBloom4,uv).rgb*.12;c+=bloom*uBloomGain;
  for(int i=0;i<2;i++){vec2 src=uFlare[i].xy;float visibility=texture(uVisibility,vec2((float(i)+.5)/2.,.5)).r*uFlareGain;vec2 dp=(uv-src)*vec2(uAspect,1.);float streak=exp(-abs(dp.x)*9.)*exp(-abs(dp.y)*1200.);float halo=exp(-dot(dp,dp)*130.);c+=vec3(1.,.35,.04)*(streak*.45+halo*.04)*visibility;
   for(int j=0;j<3;j++){vec2 ghost=.5+(.5-src)*(.32+float(j)*.38);float radius=.018+float(j)*.008;float d=length((uv-ghost)*vec2(uAspect,1.));float shape=exp(-pow(d/radius,4.));c+=vec3(.024,.010,.002)*shape*visibility/(1.+float(j));}}
