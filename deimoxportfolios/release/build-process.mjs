@@ -8,7 +8,10 @@ const overrides=new Map(await Promise.all(paths.map(async path=>[path,await read
 const run=path=>execFileSync(process.execPath,[path],{stdio:'inherit'});
 run('release/assemble.mjs');
 for(const [path,bytes] of overrides){await mkdir(dirname(path),{recursive:true});await writeFile(path,bytes);}
-run('release/process-stage4.mjs');run('tools/build.mjs');
+run('release/process-stage4.mjs');
+await mkdir('assets/icons',{recursive:true});
+await writeFile('assets/icons/brand.svg',await readFile('release/deimox-logo.svg'));
+run('tools/build.mjs');
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 async function files(dir){const entries=await readdir(dir,{withFileTypes:true});let result=[];for(const e of entries){const p=dir+'/'+e.name;result.push(...(e.isDirectory()?await files(p):[p]));}return result.sort();}
 const sourceFiles={};for(const path of ['index.html',...await files('src')])sourceFiles[path]=sha(await readFile(path));
