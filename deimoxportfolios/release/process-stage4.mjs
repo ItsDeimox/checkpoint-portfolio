@@ -22,4 +22,7 @@ await edit('tools/build.mjs',s=>{
  s=replaceOnce(s,"'rendering/gl.js',","'rendering/gl.js','rendering/process-pass.js',");
  return replaceOnce(s,"'ui/experience.js',","'ui/process-cards.js','ui/experience.js',");
 });
+await edit('src/ui/experience.js',s=>s+"\nimport {installShaderUI} from './shader-ui.js';\ninstallShaderUI();\n");
+await edit('src/styles.css',s=>s+"\n"+await readFile('src/styles-glsl-ui.css','utf8'));
+await edit('tools/build.mjs',s=>replaceOnce(s,"'ui/process-cards.js','ui/experience.js',","'ui/process-cards.js','ui/shader-ui.js','ui/experience.js',"));
 console.log('Process glass stage 4: modules, shader, CSS and portable entry point assembled.');

@@ -1,0 +1,9 @@
+/* GPU material pass behind native dialog contents and interactive controls. */
+.sheet{isolation:isolate;background:#080d10f2;border-color:#6d929e71;box-shadow:0 38px 110px #000c,0 0 45px #70d3e50b;overflow:auto;}
+.sheet>.glsl-ui-layer{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;border-radius:inherit;opacity:.98;}
+.sheet .button,.sheet .contact-option,.sheet .close-sheet{position:relative;isolation:isolate;overflow:hidden;transition:border-color .25s ease,box-shadow .25s ease,transform .25s ease;}
+.sheet .button:hover,.sheet .contact-option:hover{border-color:#a2dfedb0;box-shadow:0 0 26px #5bd6f026,inset 0 0 22px #5bd6f012;transform:translateY(-1px);}
+.sheet .button .glsl-ui-layer,.sheet .contact-option .glsl-ui-layer,.sheet .close-sheet .glsl-ui-layer{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;border-radius:inherit;}
+.sheet .project-detail>img{box-shadow:0 0 30px #5fcde81a,0 0 2px #fff5;transition:filter .3s ease,box-shadow .3s ease;}
+.sheet .project-detail>img:hover{box-shadow:0 0 36px #68dbf03c;filter:brightness(1.1);}
+@media(prefers-reduced-motion:reduce){.sheet .button,.sheet .contact-option{transition:none;transform:none!important}}
