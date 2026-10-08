@@ -3,7 +3,7 @@ import {readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
 import {dirname} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-const paths=['src/shaders/cube.frag','src/shaders/orbit.frag','src/shaders/line.frag','src/shaders/output.frag','src/shaders/background.frag','src/shaders/process.frag','src/core/process-surface.js','src/ui/process-cards.js','src/rendering/process-pass.js','src/styles-process.css','src/ui/shader-ui.js','src/styles-glsl-ui.css'];
+const paths=['src/shaders/cube.frag','src/shaders/orbit.frag','src/shaders/line.frag','src/shaders/output.frag','src/shaders/background.frag','src/shaders/process.frag','src/core/process-surface.js','src/ui/process-cards.js','src/rendering/process-pass.js','src/styles-process.css'];
 const overrides=new Map(await Promise.all(paths.map(async path=>[path,await readFile(path)])));
 const run=path=>execFileSync(process.execPath,[path],{stdio:'inherit'});
 run('release/assemble.mjs');
