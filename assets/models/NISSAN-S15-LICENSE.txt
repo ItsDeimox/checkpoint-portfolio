@@ -1,0 +1,17 @@
+Model Information:
+* title:	Nissan Silvia S15 LBWK Super Silhouette
+* source:	https://sketchfab.com/3d-models/nissan-silvia-s15-lbwk-super-silhouette-faa3ea6d43f14cec93eda98963bf9a5f
+* author:	kevin (ケビン) (https://sketchfab.com/sohyalebret)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+DXT modifications:
+* Repacked as a self-contained GLB without changing source mesh data.
+* Runtime red body/hood paint, dark wheels and wing, glass and light materials.
+* Runtime front-wheel steering and emissive inserts over the modeled headlamp lenses.
+* Runtime recentering, scale and orientation for the DXT showroom.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Nissan Silvia S15 LBWK Super Silhouette" (https://sketchfab.com/3d-models/nissan-silvia-s15-lbwk-super-silhouette-faa3ea6d43f14cec93eda98963bf9a5f) by kevin (ケビン) (https://sketchfab.com/sohyalebret) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

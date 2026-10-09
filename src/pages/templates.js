@@ -1,4 +1,4 @@
-import {home} from './home-reference.js';export {home};
+import {home} from './home-room.js';export {home};
 import {CONTENT as C} from '../content.js';import {icon,logo,ext} from '../ui/icons.js';
 export const socialItems=[['discord','Discord','Berserk community'],['instagram','Instagram','@matheus.dxt'],['youtube','YouTube','@xaudriy'],['roblox','Roblox','DXT’s profile']];
 export function socials(cls=''){return `<div class="social-grid ${cls}">${socialItems.map(([key,title,sub])=>ext(C.links[key],`<span class="social-icon ${key}">${icon(key)}</span><span><strong>${title}</strong><small>${sub}</small></span>${icon('external','social-arrow')}`,'social material')).join('')}</div>`;}
