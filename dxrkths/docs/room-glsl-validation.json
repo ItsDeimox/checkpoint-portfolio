@@ -1,0 +1,87 @@
+{
+  "checkedAt": "2026-10-09T22:26:17.428039+00:00",
+  "threeRevision": "180",
+  "method": "Installed native EGL/GLES compiler and linker; no browser or frame rendering.",
+  "scope": "Actual custom shaders and a representative Three MeshStandard fog/light/environment/shadow variant.",
+  "limitations": "Does not validate browser appearance, framebuffer behavior, GPU performance, or every material variant.",
+  "compiler": {
+    "eglVersion": "1.5",
+    "shadingLanguage": "OpenGL ES GLSL ES 3.20",
+    "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)"
+  },
+  "checks": [
+    {
+      "shader": "display",
+      "status": "compiled_and_linked",
+      "sourceSha256": "dad919038379277d5123bfbf0e8a20239e234296e08e4a5ca52ce1f850e6c24a",
+      "errors": []
+    },
+    {
+      "shader": "floor",
+      "status": "compiled_and_linked",
+      "sourceSha256": "b091f1e52df0bdc49721cd3ea080b7304f46712b464b451210c26fe138b21fda",
+      "errors": []
+    },
+    {
+      "shader": "smoke",
+      "status": "compiled_and_linked",
+      "sourceSha256": "95536e4415f370f8c142f0f1c28faf4369e9708f5723aa7e2828c873aea4c25e",
+      "errors": []
+    },
+    {
+      "shader": "beam",
+      "status": "compiled_and_linked",
+      "sourceSha256": "dec38a4f1a05f9b70a5925f7d53314c16d299c0f8c316ac9d6310f2655459dc8",
+      "errors": []
+    },
+    {
+      "shader": "contact",
+      "status": "compiled_and_linked",
+      "sourceSha256": "74054b2d74128e574ebb0573c5bab228b99e16e7227e32e08272c047afabf9c0",
+      "errors": []
+    },
+    {
+      "shader": "DXT.DepthLens",
+      "status": "compiled_and_linked",
+      "sourceSha256": "56573b978fa445c6ed548dd3b11f001b72d9582539cefe893a3056e1b8d6571b",
+      "errors": []
+    },
+    {
+      "shader": "DXT.LensGrade",
+      "status": "compiled_and_linked",
+      "sourceSha256": "a1e170140880b6971e99a20ce3c5e95e32f7c3ea95d9339413a6d3db74c940d3",
+      "errors": []
+    },
+    {
+      "shader": "DXT.SoftThreshold",
+      "status": "compiled_and_linked",
+      "sourceSha256": "eca3a74df4d1ee9aeb157fb06d6c1e2ee9687f3d63d5937e5e8798de79579850",
+      "errors": []
+    },
+    {
+      "shader": "DXT.SmallGaussian",
+      "status": "compiled_and_linked",
+      "sourceSha256": "83cd9a69842aa2f93d04d493a2ec9819ff41d013f08e06b768dc3395d1c00a0a",
+      "errors": []
+    },
+    {
+      "shader": "DXT.HorizontalStreak",
+      "status": "compiled_and_linked",
+      "sourceSha256": "9f6ddfe5800759b9ba55e1efe231ae9a5fd83b46fd419e3ceec87f9237094405",
+      "errors": []
+    },
+    {
+      "shader": "OutputPass.ACES.sRGB",
+      "status": "compiled_and_linked",
+      "sourceSha256": "ca1630808a34c6a2c36aeebf67b5ae2833612d50ee194211995a675f761af355",
+      "errors": []
+    },
+    {
+      "shader": "Weathered.MeshStandard.Fog.Lights.Env.Shadows",
+      "status": "compiled_and_linked",
+      "sourceSha256": "73fb7e7167923843aa1ff091a7a52e88ec5dcdd31895d162ed1d9b187ba15656",
+      "errors": []
+    }
+  ],
+  "status": "passed"
+}
