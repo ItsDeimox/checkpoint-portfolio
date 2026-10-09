@@ -1,0 +1,77 @@
+/* Barlow Project Authors, SIL OFL 1.1. Source and license: /assets/fonts/. */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/barlow-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/barlow-latin-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/barlow-condensed-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/barlow-condensed-latin-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/assets/fonts/barlow-condensed-latin-600.woff2') format('woff2');
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #030405;
+  --text: #f4f1ef;
+  --heading: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+  --body: 'Barlow', Arial, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; color: var(--text); background: var(--bg); font: 400 14px var(--body); }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { border: 0; color: inherit; font: inherit; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-family: var(--heading); }
+svg.icon { width: 19px; height: 19px; flex: none; vertical-align: middle; }
+.logo { object-fit: contain; }
+[hidden] { display: none !important; }
+main:focus { outline: none; }
+::selection { background: #ff303d99; color: #fff; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.skip-link { position: fixed; z-index: 100; left: 15px; top: -100px; padding: 12px 20px; background: #fff; color: #000; }
+.skip-link:focus { top: 15px; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid #fff0e7; outline-offset: 5px; }
+canvas:focus-visible { outline: 1px solid #ffffff70; outline-offset: -8px; }
+.noscript { position: relative; z-index: 100; display: grid; align-content: center; justify-items: start; gap: 20px; min-height: 100svh; padding: 8%; }
+.noscript h1 { font-size: clamp(30px, 6vw, 54px); font-weight: 600; }
+.noscript a { text-decoration: underline; text-underline-offset: 4px; }

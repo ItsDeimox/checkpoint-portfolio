@@ -1,6 +1,26 @@
-import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
-const css=fs.readFileSync(new URL('../src/styles.css',import.meta.url),'utf8');
-const shell=fs.readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
-test('footer logo has an explicit compact size instead of its source-image width',()=>{assert.match(css,/\.footer-brand\s*\{[^}]*width:\s*42px/);assert.match(css,/\.footer-brand\s+img\s*\{[^}]*height:\s*28px/);});
-test('quality and pause use the same styled toolbar control',()=>{assert.match(shell,/id="quality" class="tool quality-tool"/);assert.match(shell,/id="pause" class="tool"/);});
-test('header preserves compact social navigation',()=>{assert.match(shell,/header-socials/);assert.doesNotMatch(shell,/class="button header-cta material"/);});
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {renderRoomHeader, renderRoomFooter} from '../src/ui/room-shell.js';
+
+const css = fs.readFileSync(new URL('../src/styles-room.css', import.meta.url), 'utf8');
+test('room brand has an explicit compact size instead of its source-image width', () => {
+  assert.match(css, /\.room-brand-logo\s*\{[^}]*width:\s*87px/);
+  assert.match(css, /\.room-brand-logo\s*\{[^}]*height:\s*49px/);
+  assert.match(renderRoomHeader(), /class="logo room-brand-logo"/);
+});
+test('quality and pause live in the same accessible room settings panel', () => {
+  const header = renderRoomHeader({quality: 'low', paused: true});
+  assert.match(header, /<details class="room-settings">/);
+  assert.match(header, /id="quality"[^>]*aria-label="Rendering quality: low/);
+  assert.match(header, /id="pause"[^>]*aria-pressed="true"/);
+  assert.match(header, /data-reset-room aria-label="Reset showroom camera"/);
+});
+test('room navigation and five panel controls keep native keyboard targets', () => {
+  const header = renderRoomHeader(), footer = renderRoomFooter();
+  assert.match(header, /aria-label="Main navigation"/);
+  assert.match(header, /data-open-panel="3"[^>]*aria-haspopup="dialog"/);
+  assert.doesNotMatch(header, /header-socials|menu-toggle|data-route/);
+  assert.equal((footer.match(/data-focus-panel="/g) || []).length, 5);
+  assert.match(footer, /aria-label="Showroom panels"/);
+});

@@ -1,0 +1,159 @@
+{
+  "method": "Five fresh Node processes per variant, pre-read local GLB, real GLTF parsing with inert textures; medians in milliseconds. No GPU/image/network timing.",
+  "summary": {
+    "original": {
+      "totalMs": 180.14034900000001,
+      "parseMs": 81.720336,
+      "prepareMs": 105.08632999999998,
+      "arrayBufferMiB": 30.00739288330078
+    },
+    "prepared": {
+      "totalMs": 32.75699800000001,
+      "parseMs": 32.36228299999999,
+      "prepareMs": 0.4799639999999954,
+      "arrayBufferMiB": 20.928802490234375
+    }
+  },
+  "measurements": [
+    {
+      "mode": "original",
+      "totalMs": 180.14034900000001,
+      "parseMs": 82.47613999999999,
+      "prepareMs": 97.66420900000003,
+      "arrayBufferMiB": 30.00739288330078,
+      "operations": {
+        "clone": 43,
+        "applyMatrix4": 90,
+        "computeBoundingBox": 178,
+        "computeBoundingSphere": 137
+      },
+      "visibleTriangles": 231983
+    },
+    {
+      "mode": "prepared",
+      "totalMs": 23.631034999999997,
+      "parseMs": 23.151071,
+      "prepareMs": 0.4799639999999954,
+      "arrayBufferMiB": 20.92880630493164,
+      "operations": {
+        "clone": 0,
+        "applyMatrix4": 0,
+        "computeBoundingBox": 0,
+        "computeBoundingSphere": 0
+      },
+      "visibleTriangles": 231983
+    },
+    {
+      "mode": "original",
+      "totalMs": 128.827723,
+      "parseMs": 29.26128299999999,
+      "prepareMs": 99.56644,
+      "arrayBufferMiB": 30.00739288330078,
+      "operations": {
+        "clone": 43,
+        "applyMatrix4": 90,
+        "computeBoundingBox": 178,
+        "computeBoundingSphere": 137
+      },
+      "visibleTriangles": 231983
+    },
+    {
+      "mode": "prepared",
+      "totalMs": 52.46285499999999,
+      "parseMs": 51.86386200000001,
+      "prepareMs": 0.5989929999999788,
+      "arrayBufferMiB": 20.92880630493164,
+      "operations": {
+        "clone": 0,
+        "applyMatrix4": 0,
+        "computeBoundingBox": 0,
+        "computeBoundingSphere": 0
+      },
+      "visibleTriangles": 231983
+    },
+    {
+      "mode": "original",
+      "totalMs": 156.864464,
+      "parseMs": 42.027916000000005,
+      "prepareMs": 114.836548,
+      "arrayBufferMiB": 30.00739288330078,
+      "operations": {
+        "clone": 43,
+        "applyMatrix4": 90,
+        "computeBoundingBox": 178,
+        "computeBoundingSphere": 137
+      },
+      "visibleTriangles": 231983
+    },
+    {
+      "mode": "prepared",
+      "totalMs": 97.42318700000004,
+      "parseMs": 97.00369400000002,
+      "prepareMs": 0.419493000000017,
+      "arrayBufferMiB": 20.928802490234375,
+      "operations": {
+        "clone": 0,
+        "applyMatrix4": 0,
+        "computeBoundingBox": 0,
+        "computeBoundingSphere": 0
+      },
+      "visibleTriangles": 231983
+    },
+    {
+      "mode": "original",
+      "totalMs": 196.19635300000002,
+      "parseMs": 82.85832500000001,
+      "prepareMs": 113.33802800000001,
+      "arrayBufferMiB": 30.00739288330078,
+      "operations": {
+        "clone": 43,
+        "applyMatrix4": 90,
+        "computeBoundingBox": 178,
+        "computeBoundingSphere": 137
+      },
+      "visibleTriangles": 231983
+    },
+    {
+      "mode": "prepared",
+      "totalMs": 30.473948000000007,
+      "parseMs": 29.881586,
+      "prepareMs": 0.5923620000000085,
+      "arrayBufferMiB": 20.928802490234375,
+      "operations": {
+        "clone": 0,
+        "applyMatrix4": 0,
+        "computeBoundingBox": 0,
+        "computeBoundingSphere": 0
+      },
+      "visibleTriangles": 231983
+    },
+    {
+      "mode": "original",
+      "totalMs": 186.80666599999998,
+      "parseMs": 81.720336,
+      "prepareMs": 105.08632999999998,
+      "arrayBufferMiB": 30.00739288330078,
+      "operations": {
+        "clone": 43,
+        "applyMatrix4": 90,
+        "computeBoundingBox": 178,
+        "computeBoundingSphere": 137
+      },
+      "visibleTriangles": 231983
+    },
+    {
+      "mode": "prepared",
+      "totalMs": 32.75699800000001,
+      "parseMs": 32.36228299999999,
+      "prepareMs": 0.39471500000001924,
+      "arrayBufferMiB": 20.928802490234375,
+      "operations": {
+        "clone": 0,
+        "applyMatrix4": 0,
+        "computeBoundingBox": 0,
+        "computeBoundingSphere": 0
+      },
+      "visibleTriangles": 231983
+    }
+  ]
+}

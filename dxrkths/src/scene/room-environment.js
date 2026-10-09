@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {homography,ROOM_PANELS} from './room-core.js';
+import {homography,ROOM_PANELS,ROOM_SHELL,roomShellAngles,ROOM_FOREGROUND_TIRES} from './room-core.js';
 import {roomVertex,displayFragment,floorVertex,floorFragment,noiseGLSL,contactFragment} from './room-shaders.js';
 
 const up=new T.Vector3(0,1,0);
@@ -45,14 +45,20 @@ function referencePlane(points,camera,z,yaw){
  const corners=points.map(([x,y])=>{const ray=new T.Raycaster();ray.setFromCamera(new T.Vector2(x*2-1,1-y*2),camera);return ray.ray.intersectPlane(plane,new T.Vector3());});
  return {normal,corners,center:origin};
 }
+export function createFixedPanelLayout(){
+ // Author the display planes once from the original calibration camera. The
+ // user's live camera, drag orientation and responsive FOV never enter here.
+ const camera=createReferenceCamera();
+ return ROOM_PANELS.map((data,index)=>{const shape=referencePlane(data.corners,camera,data.z,data.yaw);shape.index=index;shape.center=shape.corners.reduce((p,c)=>p.add(c),new T.Vector3()).multiplyScalar(.25);return shape;});
+}
 function buildPanels(view){
- const texture=new T.TextureLoader().load('/assets/images/showroom-reference.png',()=>view.wake());texture.colorSpace=T.SRGBColorSpace;texture.anisotropy=Math.min(8,view.renderer.capabilities.getMaxAnisotropy());view.textures.push(texture);
+ const texture=new T.TextureLoader(view.loadingManager).load('/assets/images/showroom-reference.png',()=>view.wake());texture.colorSpace=T.SRGBColorSpace;texture.anisotropy=Math.min(8,view.renderer.capabilities.getMaxAnisotropy());view.textures.push(texture);
  const black=material({color:0x060708,metalness:.82,roughness:.28}),edge=material({color:0x47494e,metalness:.96,roughness:.22});
  const red=new T.MeshBasicMaterial({color:new T.Color(5,.008,.017),toneMapped:false});
  const dimRed=new T.MeshBasicMaterial({color:new T.Color(.45,.001,.003)});
- view.panels=[];
+ view.panels=[];const layout=createFixedPanelLayout();
  for(const [index,data] of ROOM_PANELS.entries()){
-  const shape=referencePlane(data.corners,view.referenceCamera,data.z,data.yaw),{normal,corners}=shape;
+  const shape=layout[index],{normal,corners}=shape;
   const frame=new T.Group();frame.name=`Portal ${index+1}: ${data.title}`;view.scene.add(frame);
   const ring=ringGeometry(corners,normal,.938,.22),outer=new T.Mesh(ring.geometry,black);outer.castShadow=true;outer.receiveShadow=true;frame.add(outer);
   const bevelCorners=ring.inner.map(p=>p.clone().addScaledVector(normal,.005)),bevel=ringGeometry(bevelCorners,normal,.986,.045);frame.add(new T.Mesh(bevel.geometry,edge));
@@ -69,7 +75,8 @@ function buildPanels(view){
   const side=index<3?0:1,lower=index<3?3:2;
   lineBetween(corners[side].clone().lerp(corners[lower],.71).addScaledVector(normal,.08),corners[side].clone().lerp(corners[lower],.91).addScaledVector(normal,.08),.015,red,frame);
   const center=corners.reduce((v,p)=>v.add(p),new T.Vector3()).multiplyScalar(.25);
-  const hoverLight=new T.PointLight(0xff1225,0,4,2);hoverLight.position.copy(center).addScaledVector(normal,.4);frame.add(hoverLight);
+  // Keep the controller handle without adding five zero-intensity shader lights.
+  const hoverLight=new T.PointLight(0xff1225,0,4,2);hoverLight.position.copy(center).addScaledVector(normal,.4);
   view.panels.push({index,screen,frame,center,corners,normal,material:mat,hoverLight,hover:0});
  }
 }
@@ -87,17 +94,26 @@ function buildFloor(view){
  for(const r of [5.26,5.59,5.83]){const ring=new T.Mesh(new T.TorusGeometry(r*.964340418,.047,8,160),metal);ring.rotation.x=Math.PI/2;ring.position.set(0,.037,1.458534911);view.scene.add(ring);}
  // Distressed real ground decals, cut from existing transparent identity assets.
  for(const [x,z,rot,key] of [[-5.65,-5.2,.16,'dxt'],[5.65,-5.3,-.18,'berserk']]){
-  new T.TextureLoader().load(`/assets/icons/${key}.webp`,tex=>{if(view.disposed){tex.dispose();return;}tex.colorSpace=T.SRGBColorSpace;view.textures.push(tex);const m=new T.MeshStandardMaterial({map:tex,transparent:true,opacity:.24,depthWrite:false,roughness:.72,metalness:.25,color:0x888888,polygonOffset:true,polygonOffsetFactor:-1});const o=new T.Mesh(new T.PlaneGeometry(3.0,2.35),m);o.rotation.set(-Math.PI/2,0,rot);o.position.set(x,.04,z);view.scene.add(o);view.wake();});
+  new T.TextureLoader(view.loadingManager).load(`/assets/icons/${key}.webp`,tex=>{if(view.disposed){tex.dispose();return;}tex.colorSpace=T.SRGBColorSpace;view.textures.push(tex);const m=new T.MeshStandardMaterial({map:tex,transparent:true,opacity:.24,depthWrite:false,roughness:.72,metalness:.25,color:0x888888,polygonOffset:true,polygonOffsetFactor:-1});const o=new T.Mesh(new T.PlaneGeometry(3.0,2.35),m);o.rotation.set(-Math.PI/2,0,rot);o.position.set(x,.04,z);view.scene.add(o);view.wake();});
  }
 }
-function buildArchitecture(view){
- const wall=weatheredMetal(),metal=material({color:0x1c1d22,roughness:.38}),silver=material({color:0x73767c,roughness:.25}),red=new T.MeshBasicMaterial({color:new T.Color(5.5,.008,.018)});
- const walls=new T.Mesh(new T.CylinderGeometry(12.2,12.2,8.4,100,6,true),wall);walls.position.set(0,4.2,2);walls.material.side=T.BackSide;view.scene.add(walls);
+export function createRoomShell({wall=weatheredMetal(),metal=material({color:0x1c1d22,roughness:.38})}={}){
+ const shell=new T.Group();shell.name='Open room structural shell';
+ const {radius,centerZ,height,thetaStart,thetaLength}=ROOM_SHELL;
+ const walls=new T.Mesh(new T.CylinderGeometry(radius,radius,height,68,6,true,thetaStart,thetaLength),wall);walls.name='Side and back wall';walls.position.set(0,height*.5,centerZ);walls.material.side=T.BackSide;shell.add(walls);
  for(const y of [.48,1.0,5.15,6.05,7.1,8.15]){
-  const ring=new T.Mesh(new T.TorusGeometry(12.07,.062,8,120),metal);ring.rotation.x=Math.PI/2;ring.position.set(0,y,2);view.scene.add(ring);
+  // Cylinder angle a maps to torus angle PI/2-a after its floor rotation.
+  const geometry=new T.TorusGeometry(12.07,.062,8,80,thetaLength);geometry.rotateZ(Math.PI/2-thetaStart-thetaLength);
+  const ring=new T.Mesh(geometry,metal);ring.name='Open wall rail';ring.rotation.x=Math.PI/2;ring.position.set(0,y,centerZ);shell.add(ring);
  }
- const ribs=new T.InstancedMesh(new T.BoxGeometry(.20,8.25,.20),metal,32),trim=new T.InstancedMesh(new T.BoxGeometry(.025,.48,.033),red,24);
- for(let i=0;i<32;i++){const a=i*Math.PI*2/32,m=new T.Matrix4().compose(new T.Vector3(Math.sin(a)*12.01,4.12,2+Math.cos(a)*12.01),new T.Quaternion().setFromAxisAngle(up,a),new T.Vector3(1,1,1));ribs.setMatrixAt(i,m);}view.scene.add(ribs);
+ const angles=roomShellAngles(),ribs=new T.InstancedMesh(new T.BoxGeometry(.20,8.25,.20),metal,angles.length);ribs.name='Side and back wall ribs';
+ for(const [i,a]of angles.entries()){const m=new T.Matrix4().compose(new T.Vector3(Math.sin(a)*12.01,4.12,centerZ+Math.cos(a)*12.01),new T.Quaternion().setFromAxisAngle(up,a),new T.Vector3(1,1,1));ribs.setMatrixAt(i,m);}ribs.instanceMatrix.needsUpdate=true;shell.add(ribs);
+ return shell;
+}
+export function buildRoomArchitecture(view){
+ const wall=weatheredMetal(),metal=material({color:0x1c1d22,roughness:.38}),silver=material({color:0x73767c,roughness:.25}),red=new T.MeshBasicMaterial({color:new T.Color(5.5,.008,.018)});
+ view.structure=createRoomShell({wall,metal});view.scene.add(view.structure);
+ const trim=new T.InstancedMesh(new T.BoxGeometry(.025,.48,.033),red,24);
  for(let i=0;i<24;i++){const a=-1.7+i*.148,m=new T.Matrix4().makeTranslation(Math.sin(a)*11.8,3.9+(i%2)*1.2,2+Math.cos(a)*11.8);trim.setMatrixAt(i,m);}view.scene.add(trim);
  // Vertical practical lights in the narrow gaps between the displays.
  for(const x of [-10,-6.8,-3.8,3.8,6.8,10]){
@@ -116,12 +132,12 @@ function buildArchitecture(view){
  // Blurred foreground tire stacks are geometry and therefore carry real depth.
  const rubber=material({color:0x08090c,metalness:.06,roughness:.54});
  const gs=[];
- for(const x of [4.05,-3.90])for(let j=0;j<3;j++){
-  const tire=new T.TorusGeometry(.65,.185,12,44);tire.rotateX(Math.PI/2);tire.scale(1,.74,1);tire.translate(x,j*.30+.21,-7.75);gs.push(tire);
-  for(const band of [-.12,.12]){const tread=new T.TorusGeometry(.735,.016,5,44);tread.rotateX(Math.PI/2);tread.translate(x,j*.30+.21+band,-7.75);gs.push(tread);}
+ for(const x of ROOM_FOREGROUND_TIRES.x)for(let j=0;j<ROOM_FOREGROUND_TIRES.levels;j++){
+  const tire=new T.TorusGeometry(.65,.185,12,44);tire.rotateX(Math.PI/2);tire.scale(1,.74,1);tire.translate(x,j*.30+.21,ROOM_FOREGROUND_TIRES.z);gs.push(tire);
+  for(const band of [-.12,.12]){const tread=new T.TorusGeometry(.735,.016,5,44);tread.rotateX(Math.PI/2);tread.translate(x,j*.30+.21+band,ROOM_FOREGROUND_TIRES.z);gs.push(tread);}
  }
- const tires=new T.Mesh(mergeGeometries(gs),rubber);gs.forEach(g=>g.dispose());tires.castShadow=true;view.scene.add(tires);
+ const tires=new T.Mesh(mergeGeometries(gs),rubber);tires.name='Foreground tire stacks';gs.forEach(g=>g.dispose());tires.castShadow=true;view.scene.add(tires);
 }
 export function buildShowroom(view){
- view.textures=[];buildFloor(view);buildArchitecture(view);buildPanels(view);
+ view.textures=[];buildFloor(view);buildRoomArchitecture(view);buildPanels(view);
 }
