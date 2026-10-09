@@ -1,0 +1,43 @@
+name: Import verified DXT source
+on:
+  push:
+    branches: [build/dxt-site-20261009]
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Fetch exact source bundle and validate
+        env:
+          SOURCE_URL: https://sb-mng0ap5fvclb.vercel.run/import-package.zip
+          SOURCE_SHA256: 0bbcf3f6fcebeb16fdd14f9c24c70cf8896753878e79243564cc733697c8a31d
+        run: |
+          set -euo pipefail
+          git init work
+          cd work
+          git remote add origin https://github.com/ItsDeimox/checkpoint-portfolio.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout -b build/dxt-site-20261009 FETCH_HEAD
+          curl --fail --location --retry 2 "$SOURCE_URL" -o /tmp/dxt.zip
+          echo "$SOURCE_SHA256  /tmp/dxt.zip" | sha256sum -c -
+          mkdir dxrkths
+          unzip -q /tmp/dxt.zip -d dxrkths
+          sed -i 's/header a\[href=/header nav a[href=/g' dxrkths/tests/browser.cjs
+          cd dxrkths
+          node --version
+          npm test
+          npm run build
+      - name: Store source on the temporary integration branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd work
+          git config user.name 'Deimox'
+          git config user.email '123704758+ItsDeimox@users.noreply.github.com'
+          git add dxrkths
+          git commit -m 'Stage DXT website source and original assets [skip ci]'
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/build/dxt-site-20261009
