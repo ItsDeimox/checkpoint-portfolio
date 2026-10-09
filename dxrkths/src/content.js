@@ -5,4 +5,4 @@ export const CONTENT=Object.freeze({
  groups:[{id:35542723,key:'revline',name:"RevLine Entertainment’s",text:'Home of Berserk Drift X.',tone:'red'},{id:379822883,key:'frost',name:'Frost Mammoth Games',text:'Another space for games and new ideas.',tone:'ice'}],
  upcoming:[{name:'Games',description:'New worlds. New experiences.',icon:'game',type:'Roblox & beyond'},{name:'Addons',description:'Small additions. More possibilities.',icon:'layers',type:'Tools & extensions'},{name:'Systems',description:'The things that make it all work.',icon:'code',type:'Experiments & development'}]
 });
-export const navigation=[['home','Berserk Drift X','/'],['groups','Games & groups','/groups'],['projects','Projects','/projects'],['about','Who is DXT?','/about'],['contact','Contact','/contact']];
+export const navigation=[['home','Home','/'],['groups','Games','/groups'],['projects','Projects','/projects'],['about','About','/about'],['contact','Contact','/contact']];

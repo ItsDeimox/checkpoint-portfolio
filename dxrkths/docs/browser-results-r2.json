@@ -1,0 +1,282 @@
+{
+  "browser": "156.0.8078.4",
+  "backend": "ANGLE SwiftShader",
+  "checks": [
+    {
+      "name": "hero uses a real WebGL2 renderer",
+      "pass": true
+    },
+    {
+      "name": "two independent volumetric car models",
+      "pass": true
+    },
+    {
+      "name": "real reflection target and multiple lighting/shadow passes",
+      "pass": true
+    },
+    {
+      "name": "no fake depth-mapped car planes",
+      "pass": true
+    },
+    {
+      "name": "hero has no GL errors",
+      "pass": true
+    },
+    {
+      "name": "diagonal editorial bands replace the rejected dashboard",
+      "pass": true
+    },
+    {
+      "name": "diagonal strips use actual clip paths",
+      "pass": true
+    },
+    {
+      "name": "every group logo belongs to the supplied groups",
+      "pass": true
+    },
+    {
+      "name": "header/footer dimensions remain restrained",
+      "pass": true
+    },
+    {
+      "name": "Berserk CTA preserves the supplied place",
+      "pass": true
+    },
+    {
+      "name": "hero retains the reference wide aspect and first-screen prominence",
+      "pass": true,
+      "data": {
+        "x": 0,
+        "y": 59,
+        "width": 1440,
+        "height": 331.1875
+      }
+    },
+    {
+      "name": "drag rotates the physical camera, not a texture",
+      "pass": true
+    },
+    {
+      "name": "drag releases its captured pointer",
+      "pass": true
+    },
+    {
+      "name": "reset restores reference yaw",
+      "pass": true
+    },
+    {
+      "name": "expanded 3D viewer fills viewport",
+      "pass": true
+    },
+    {
+      "name": "3D view has keyboard controls",
+      "pass": true
+    },
+    {
+      "name": "Escape restores the editorial page",
+      "pass": true
+    },
+    {
+      "name": "low quality reduces render pixels",
+      "pass": true
+    },
+    {
+      "name": "high quality remains explicitly selectable",
+      "pass": true
+    },
+    {
+      "name": "groups retains its dedicated route",
+      "pass": true
+    },
+    {
+      "name": "groups has one primary heading",
+      "pass": true
+    },
+    {
+      "name": "groups active navigation is unique",
+      "pass": true
+    },
+    {
+      "name": "groups fits desktop",
+      "pass": true
+    },
+    {
+      "name": "projects retains its dedicated route",
+      "pass": true
+    },
+    {
+      "name": "projects has one primary heading",
+      "pass": true
+    },
+    {
+      "name": "projects active navigation is unique",
+      "pass": true
+    },
+    {
+      "name": "projects fits desktop",
+      "pass": true
+    },
+    {
+      "name": "about retains its dedicated route",
+      "pass": true
+    },
+    {
+      "name": "about has one primary heading",
+      "pass": true
+    },
+    {
+      "name": "about active navigation is unique",
+      "pass": true
+    },
+    {
+      "name": "about fits desktop",
+      "pass": true
+    },
+    {
+      "name": "About retains the provided GLB geometry",
+      "pass": true
+    },
+    {
+      "name": "logo shader still compiles",
+      "pass": true
+    },
+    {
+      "name": "contact retains its dedicated route",
+      "pass": true
+    },
+    {
+      "name": "contact has one primary heading",
+      "pass": true
+    },
+    {
+      "name": "contact active navigation is unique",
+      "pass": true
+    },
+    {
+      "name": "contact fits desktop",
+      "pass": true
+    },
+    {
+      "name": "actual social destinations only",
+      "pass": true
+    },
+    {
+      "name": "no fabricated email/metrics",
+      "pass": true
+    },
+    {
+      "name": "external links have opener protection",
+      "pass": true
+    },
+    {
+      "name": "hover illumination transitions smoothly",
+      "pass": true,
+      "data": {
+        "early": 0.5934376584474405,
+        "late": 0.9938997040952257
+      }
+    },
+    {
+      "name": "hover dissipates on leave",
+      "pass": true
+    },
+    {
+      "name": "browser Back works",
+      "pass": true
+    },
+    {
+      "name": "browser Forward works",
+      "pass": true
+    },
+    {
+      "name": "home has no horizontal overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "mobile hero canvas has a real scene at 390",
+      "pass": true
+    },
+    {
+      "name": "touch page scroll is not trapped",
+      "pass": true
+    },
+    {
+      "name": "groups has no horizontal overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "projects has no horizontal overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "about has no horizontal overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "contact has no horizontal overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "mobile menu opens at 390",
+      "pass": true
+    },
+    {
+      "name": "mobile menu closes with Escape at 390",
+      "pass": true
+    },
+    {
+      "name": "home has no horizontal overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "mobile hero canvas has a real scene at 320",
+      "pass": true
+    },
+    {
+      "name": "touch page scroll is not trapped",
+      "pass": true
+    },
+    {
+      "name": "groups has no horizontal overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "projects has no horizontal overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "about has no horizontal overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "contact has no horizontal overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "mobile menu opens at 320",
+      "pass": true
+    },
+    {
+      "name": "mobile menu closes with Escape at 320",
+      "pass": true
+    },
+    {
+      "name": "reduced-motion renderer sleeps after settling",
+      "pass": true
+    },
+    {
+      "name": "no-WebGL retains original project art and navigation",
+      "pass": true
+    },
+    {
+      "name": "fallback contacts remain usable",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript errors in tested routes",
+      "pass": true,
+      "data": []
+    }
+  ],
+  "errors": []
+}
