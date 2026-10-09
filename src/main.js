@@ -1,32 +1,198 @@
-import {renderRoomHeader,renderRoomFooter} from './ui/room-shell.js';
-import {CONTENT,navigation as nav} from './content.js';import {pages} from './pages/templates.js';import {icon,logo,ext} from './ui/icons.js';import {routeName,advance,clamp,elapsedFrameTime} from './core.js';import {hydrateProfile} from './ui/profile.js';
-const main=document.querySelector('#main'),header=document.querySelector('#header'),footer=document.querySelector('#footer');
-let scene=null,cardOptics=null,route='',generation=0;let stored={};try{stored=JSON.parse(localStorage.getItem('dxt-settings')||'{}');}catch{}
-const settings={quality:['auto','low','high'].includes(stored.quality)?stored.quality:'auto',paused:!!stored.paused,sound:false};const save=()=>{try{localStorage.setItem('dxt-settings',JSON.stringify(settings));}catch{}};
-function shell(){
- if(route==='home'){
-  header.innerHTML=renderRoomHeader(settings);footer.innerHTML=renderRoomFooter();
-  header.querySelector('#quality').onclick=()=>{const q=['auto','low','high'];settings.quality=q[(q.indexOf(settings.quality)+1)%3];save();scene?.setSettings();shell();scene?.selectPanel(scene.activePanel);};
-  header.querySelector('#pause').onclick=()=>{settings.paused=!settings.paused;save();scene?.setSettings();shell();scene?.selectPanel(scene.activePanel);};
-  header.querySelector('#reset-view').onclick=()=>scene?.reset();
-  header.querySelector('#sound-toggle').onclick=async()=>{try{settings.sound=await scene?.setSound(!settings.sound)||false;}catch{settings.sound=false;}shell();scene?.selectPanel(scene.activePanel);};
-  return;
- }
-header.innerHTML=`<a href="/" data-route class="brand" aria-label="DXT home">${logo('dxt')}</a><nav class="navigation" id="navigation" aria-label="Main navigation">${nav.map(([key,title])=>`<a href="${key==='home'?'/':'/'+key}" data-route ${key===route?'aria-current="page"':''}>${title}</a>`).join('')}</nav><div class="header-right"><span class="header-motto">BUILD / DRIVE / CREATE / BEYOND</span><div class="toolbar"><button id="quality" class="tool quality-tool" aria-label="Rendering quality: ${settings.quality}">${icon('quality')}<span>${settings.quality}</span></button><button id="pause" class="tool" aria-label="${settings.paused?'Resume':'Pause'} animated effects" aria-pressed="${settings.paused}">${icon(settings.paused?'play':'pause')}</button></div><div class="header-socials"><a href="${CONTENT.links.youtube}" target="_blank" rel="noopener noreferrer" aria-label="youtube">${icon('youtube')}</a><a href="${CONTENT.links.instagram}" target="_blank" rel="noopener noreferrer" aria-label="instagram">${icon('instagram')}</a><a href="${CONTENT.links.discord}" target="_blank" rel="noopener noreferrer" aria-label="discord">${icon('discord')}</a></div><button class="menu-toggle" aria-controls="navigation" aria-expanded="false" aria-label="Open navigation">${icon('menu')}</button></div>`;
- footer.innerHTML=`<a href="/" data-route class="footer-brand" aria-label="Home">${logo('dxt')}</a><span>DXT / A PERSONAL SPACE FOR GAMES, PEOPLE AND IDEAS.</span><div class="footer-right"><a href="/contact" data-route>GET IN TOUCH ${icon('external')}</a><span>DXRKTHS.VERCEL.APP</span></div>`;
- header.querySelector('#quality').onclick=()=>{const names=['auto','low','high'];settings.quality=names[(names.indexOf(settings.quality)+1)%names.length];save();scene?.setSettings();if(cardOptics){cardOptics.dirty=true;cardOptics.wake();}shell();};
- header.querySelector('#pause').onclick=()=>{settings.paused=!settings.paused;save();scene?.setSettings();if(cardOptics){cardOptics.dirty=true;cardOptics.wake();}shell();};
- header.querySelector('.menu-toggle').onclick=()=>{const nav=header.querySelector('nav'),button=header.querySelector('.menu-toggle'),open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',(open?'Close':'Open')+' navigation');};
+import { home, ROOM_PANELS, renderPanelOptions } from './pages/home-room.js';
+import { renderRoomHeader, renderRoomFooter } from './ui/room-shell.js';
+import { panelFromPath, pathForPanel } from './ui/room-navigation.js';
+
+const main = document.querySelector('#main');
+const header = document.querySelector('#header');
+const footer = document.querySelector('#footer');
+const announcer = document.querySelector('#announcer');
+let stored = {};
+try { stored = JSON.parse(localStorage.getItem('dxt-settings') || '{}'); } catch {}
+const settings = {
+  quality: ['auto', 'low', 'high'].includes(stored?.quality) ? stored.quality : 'auto',
+  paused: Boolean(stored?.paused), sound: false,
+};
+const save = () => { try { localStorage.setItem('dxt-settings', JSON.stringify(settings)); } catch {} };
+let scene = null, phase = 'loading', selectedPanel = null, navigation = 0, restoreFocus = null;
+
+document.body.dataset.page = 'home';
+main.innerHTML = home();
+footer.innerHTML = renderRoomFooter();
+const host = main.querySelector('.room-hero');
+const options = main.querySelector('#room-panel-options');
+const canvas = main.querySelector('#hero-canvas');
+const nativeTargets = main.querySelector('.room-panel-targets');
+const mobileContext = main.querySelector('.room-mobile-context');
+
+function updateHeader() {
+  const open = header.querySelector('.room-settings')?.open;
+  const focusedId = header.contains(document.activeElement) ? document.activeElement.id : null;
+  header.innerHTML = renderRoomHeader(settings);
+  header.querySelector('#quality').disabled = phase === 'loading';
+  if (open) header.querySelector('.room-settings').open = true;
+  if (focusedId) header.querySelector(`#${focusedId}`)?.focus({ preventScroll: true });
 }
-async function render(path,focus=false){const token=++generation;scene?.dispose();cardOptics?.dispose();scene=null;cardOptics=null;settings.sound=false;route=routeName(path);document.body.dataset.page=route;main.innerHTML=pages[route]();main.classList.remove('page-enter');void main.offsetWidth;main.classList.add('page-enter');shell();document.title=route==='home'?'DXT | Berserk Drift X':`${nav.find(([k])=>k===route)?.[1]||'Off the track'} | DXT`;document.querySelector('#announcer').textContent=document.title;
- if(focus){window.scrollTo({top:0,behavior:'instant'});main.focus({preventScroll:true});}if(route!=='home')hydrateProfile(main);
- try{if(route==='home'){const {HeroScene}=await import('./render/showroom.bundle.js');if(token===generation)scene=new HeroScene(document.querySelector('#hero-canvas'),settings);}else if(route==='about'){const {LogoScene}=await import('./render/logo.js');if(token===generation)scene=new LogoScene(document.querySelector('#logo-canvas'),settings);}}catch(e){console.warn('[DXT] Optical layer unavailable:',e.message);if(token===generation&&route==='home'){const host=main.querySelector('.room-hero');host?.classList.remove('scene-ready');host?.classList.add('scene-unavailable');if(host)host.dataset.sceneStatus='unavailable';}}
+updateHeader();
+
+function setLocation(index, mode = 'push') {
+  const path = index === null ? '/' : pathForPanel(index);
+  if (location.pathname !== path && mode !== 'none') {
+    history[mode === 'replace' ? 'replaceState' : 'pushState']({ roomPanel: index }, '', path);
+  }
+  document.title = index === null ? 'DXT | Berserk Drift X' : `${ROOM_PANELS[index].title} | DXT`;
 }
-document.addEventListener('click',e=>{const a=e.target.closest('a[data-route]');if(!a||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;const u=new URL(a.href);if(u.origin!==location.origin)return;e.preventDefault();if(u.pathname!==location.pathname){history.pushState({},'',u.pathname);render(u.pathname,true);}else{header.querySelector('nav')?.classList.remove('open');header.querySelector('.menu-toggle')?.setAttribute('aria-expanded','false');window.scrollTo({top:0,behavior:'smooth'});}});
-window.addEventListener('popstate',()=>render(location.pathname,true));document.addEventListener('keydown',e=>{if(e.key==='Escape'){header.querySelector('nav')?.classList.remove('open');header.querySelector('.menu-toggle')?.setAttribute('aria-expanded','false');}});
-// Pointer response is interpolated rather than changing brightness on :hover alone.
-let materialRAF=0;const materials=new Map();function animateMaterials(now){materialRAF=0;let active=false;for(const [el,s]of materials){if(!el.isConnected){materials.delete(el);continue;}const dt=elapsedFrameTime(now,s.last);s.last=now;s.light=advance(s.light,s.goal,9,dt);s.x=advance(s.x,s.tx,13,dt);s.y=advance(s.y,s.ty,13,dt);el.style.setProperty('--mx',s.x+'px');el.style.setProperty('--my',s.y+'px');el.style.setProperty('--glow',s.light);if(Math.abs(s.light-s.goal)>.002||Math.abs(s.x-s.tx)>.1||Math.abs(s.y-s.ty)>.1)active=true;else if(s.goal===0)materials.delete(el);}if(active)materialRAF=requestAnimationFrame(animateMaterials);}
-function light(e,goal){const el=e.target.closest('.material');if(!el)return;const rect=el.getBoundingClientRect(),s=materials.get(el)||{x:rect.width/2,y:rect.height/2,light:0,last:performance.now()};s.tx=e.clientX!=null?clamp(e.clientX-rect.left,0,rect.width):rect.width/2;s.ty=e.clientY!=null?clamp(e.clientY-rect.top,0,rect.height):rect.height/2;s.goal=goal;materials.set(el,s);if(!materialRAF){s.last=performance.now();materialRAF=requestAnimationFrame(animateMaterials);}}
-document.addEventListener('pointermove',e=>light(e,1),{passive:true});document.addEventListener('pointerout',e=>{const el=e.target.closest('.material');if(el&&!el.contains(e.relatedTarget))light(e,0);},{passive:true});document.addEventListener('focusin',e=>light(e,.7));document.addEventListener('focusout',e=>light(e,0));
-window.addEventListener('pagehide',e=>{if(!e.persisted)scene?.dispose();else scene?.sleep();cardOptics?.sleep();cancelAnimationFrame(materialRAF);materialRAF=0;});window.addEventListener('pageshow',()=>scene?.wake());
-render(location.pathname);if(new URLSearchParams(location.search).has('debug'))window.__DXT__={inspect:()=>({route,settings:{...settings},scene:scene?.inspect()??null,materials:materials.size,cards:cardOptics?.inspect()??null}),scene:()=>scene,cards:()=>cardOptics};
+
+function setModalActive(active) {
+  [header, footer, canvas, nativeTargets, mobileContext].forEach(element => { element.inert = active; });
+  host.classList.toggle('panel-options-open', active);
+}
+
+function revealOptions(index, token) {
+  if (token !== navigation || selectedPanel !== index) return;
+  options.innerHTML = renderPanelOptions(index);
+  options.hidden = false;
+  options.scrollTop = 0;
+  setModalActive(true);
+  options.querySelector('h2').focus({ preventScroll: true });
+  announcer.textContent = `${ROOM_PANELS[index].title}. Options are open.`;
+}
+
+function openPanel(index, trigger, historyMode = 'push') {
+  index = Number(index);
+  if (!Number.isInteger(index) || index < 0 || index >= ROOM_PANELS.length) return;
+  const token = ++navigation;
+  if (options.hidden) restoreFocus = trigger instanceof HTMLElement ? trigger : document.activeElement;
+  options.hidden = true;
+  setModalActive(false);
+  selectedPanel = index;
+  setLocation(index, historyMode);
+  announcer.textContent = `Opening ${ROOM_PANELS[index].title}.`;
+  if (phase === 'ready' && scene?.ready) {
+    scene.approach(index, () => revealOptions(index, token));
+  } else if (phase === 'unavailable') {
+    revealOptions(index, token);
+  }
+  // During initial loading, onReady continues this request without reloading.
+}
+
+function closePanel(historyMode = 'push') {
+  const token = ++navigation;
+  const wasOpen = selectedPanel !== null;
+  selectedPanel = null;
+  options.hidden = true;
+  setModalActive(false);
+  setLocation(null, historyMode);
+  host.classList.remove('camera-travelling');
+  const finish = () => {
+    if (token !== navigation) return;
+    if (wasOpen) {
+      const target = phase === 'ready' ? canvas : (restoreFocus?.isConnected && restoreFocus.getClientRects().length ? restoreFocus : nativeTargets.querySelector('a'));
+      target?.focus({ preventScroll: true });
+    }
+    announcer.textContent = 'Showroom overview.';
+  };
+  if (phase === 'ready' && scene?.ready) scene.reset(finish);
+  else finish();
+}
+
+function unavailable(error) {
+  if (scene?.disposed) return;
+  phase = 'unavailable';
+  console.warn('[DXT] Showroom unavailable:', error?.message || error);
+  host.classList.remove('scene-ready', 'camera-travelling');
+  host.classList.add('scene-unavailable');
+  host.dataset.sceneStatus = 'unavailable';
+  if (selectedPanel !== null) revealOptions(selectedPanel, navigation);
+}
+
+function onReady() {
+  phase = 'ready';
+  updateHeader();
+  if (selectedPanel !== null) {
+    const token = navigation;
+    // A restored context can already have an open, accessible dialog.
+    if (!options.hidden) scene.approach(selectedPanel);
+    else scene.approach(selectedPanel, () => revealOptions(selectedPanel, token));
+  } else if (scene?.cameraRig?.mode !== 'overview') {
+    scene?.reset();
+  }
+}
+
+document.addEventListener('click', async event => {
+  const target = event.target instanceof Element ? event.target : null;
+  if (!target || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  const open = target.closest('[data-open-panel]');
+  if (open) { event.preventDefault(); openPanel(open.dataset.openPanel, open); return; }
+  const fallback = target.closest('[data-fallback-panel]');
+  if (fallback) {
+    event.preventDefault();
+    openPanel(fallback.dataset.fallbackPanel, fallback);
+    return;
+  }
+  if (target.closest('[data-close-panel], [data-reset-room]')) {
+    event.preventDefault(); closePanel(); return;
+  }
+  const focus = target.closest('[data-focus-panel]');
+  if (focus) { scene?.focusPanel(Number(focus.dataset.focusPanel)); return; }
+  if (target.closest('#quality')) {
+    const values = ['auto', 'low', 'high'];
+    settings.quality = values[(values.indexOf(settings.quality) + 1) % values.length];
+    save(); scene?.setSettings(); updateHeader();
+  } else if (target.closest('#pause')) {
+    settings.paused = !settings.paused;
+    save(); scene?.setSettings(); updateHeader();
+  } else if (target.closest('#sound-toggle')) {
+    try { settings.sound = await scene?.setSound(!settings.sound) || false; }
+    catch { settings.sound = false; }
+    updateHeader();
+  }
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    if (selectedPanel !== null || !options.hidden) { event.preventDefault(); closePanel(); }
+    else header.querySelector('.room-settings')?.removeAttribute('open');
+  }
+  if (event.key === 'Tab' && !options.hidden) {
+    const controls = [...options.querySelectorAll('a[href], button:not([disabled])')].filter(element => element.getClientRects().length);
+    const first = controls[0], last = controls.at(-1);
+    if (!first) { event.preventDefault(); options.focus(); return; }
+    if (event.shiftKey && (document.activeElement === first || !controls.includes(document.activeElement))) {
+      event.preventDefault(); last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault(); first.focus();
+    }
+  }
+});
+window.addEventListener('popstate', () => {
+  const panel = panelFromPath(location.pathname);
+  if (panel === null) closePanel('none');
+  else openPanel(panel, null, 'none');
+});
+window.addEventListener('pagehide', event => {
+  if (event.persisted) scene?.sleep();
+  else scene?.dispose();
+});
+window.addEventListener('pageshow', () => scene?.wake());
+
+const initialPanel = panelFromPath(location.pathname);
+if (initialPanel !== null) openPanel(initialPanel, null, 'none');
+else setLocation(null, 'none');
+
+async function start() {
+  // The UI and fallback links are usable while the renderer bundle downloads.
+  try {
+    const { HeroScene } = await import('./render/showroom.bundle.js');
+    scene = new HeroScene(canvas, settings, {
+      onPanelRequest: openPanel, onResetRequest: closePanel, onReady, onUnavailable: unavailable,
+    });
+    await scene.readyPromise;
+  } catch (error) {
+    unavailable(error);
+    if (scene && !scene.lost) await scene.dispose();
+  }
+}
+start();
+if (new URLSearchParams(location.search).has('debug')) {
+  window.__DXT__ = { inspect: () => ({ phase, selectedPanel, settings: { ...settings }, scene: scene?.inspect() ?? null }) };
+}

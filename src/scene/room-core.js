@@ -10,6 +10,15 @@ export function homography(points){
 }
 export function applyHomography(m,[x,y]){const w=m[6]*x+m[7]*y+m[8];return [(m[0]*x+m[1]*y+m[2])/w,(m[3]*x+m[4]*y+m[5])/w];}
 export const panelIndex=i=>((Math.round(i)%5)+5)%5;
+// The camera enters through an open front bay. Every structural layer uses the
+// same 240-degree side/back arc, so a hidden wall cannot leave rails across it.
+export const ROOM_SHELL=Object.freeze({radius:12.2,centerZ:2,height:8.4,thetaStart:-Math.PI*2/3,thetaLength:Math.PI*4/3});
+export function roomShellAngles(segments=32){
+ const count=Math.max(3,Math.floor(segments)),end=ROOM_SHELL.thetaStart+ROOM_SHELL.thetaLength;
+ return Array.from({length:count},(_,i)=>{const a=i*Math.PI*2/count;return Math.atan2(Math.sin(a),Math.cos(a));})
+  .filter(a=>a>=ROOM_SHELL.thetaStart-1e-9&&a<=end+1e-9);
+}
+export const ROOM_FOREGROUND_TIRES=Object.freeze({x:Object.freeze([3.48,-3.35]),z:-7.75,levels:3});
 export function renderBudget(width,height,dpr=1,quality='auto'){
  const maxPixels=quality==='high'?2900000:quality==='low'?900000:1900000;
  const ratio=Math.min(dpr,quality==='high'?1.6:quality==='low'?.82:1.15,Math.sqrt(maxPixels/Math.max(1,width*height)));

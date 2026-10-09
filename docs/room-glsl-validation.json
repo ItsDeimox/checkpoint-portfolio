@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-09T22:26:17.428039+00:00",
+  "checkedAt": "2026-10-09T23:02:21.286297+00:00",
   "threeRevision": "180",
   "method": "Installed native EGL/GLES compiler and linker; no browser or frame rendering.",
   "scope": "Actual custom shaders and a representative Three MeshStandard fog/light/environment/shadow variant.",
