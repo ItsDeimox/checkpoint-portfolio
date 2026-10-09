@@ -1,0 +1,7 @@
+{
+ "buildCommand":"npm run build",
+ "outputDirectory":"dist",
+ "functions":{"api/roblox.js":{"maxDuration":10}},
+ "rewrites":[{"source":"/groups","destination":"/groups/index.html"},{"source":"/projects","destination":"/projects/index.html"},{"source":"/about","destination":"/about/index.html"},{"source":"/contact","destination":"/contact/index.html"},{"source":"/berserk","destination":"/berserk/index.html"}],
+ "headers":[{"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"},{"key":"Permissions-Policy","value":"camera=(), microphone=(), geolocation=()"}]},{"source":"/assets/(.*)","headers":[{"key":"Cache-Control","value":"public, max-age=3600, must-revalidate"}]}]
+}

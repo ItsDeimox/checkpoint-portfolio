@@ -1,0 +1,42 @@
+[
+  {
+    "file": "assets/images/race.webp",
+    "source": "image(10).png",
+    "sha256": "ae0cf66369884edf229d0f6e2ebd9f080c81717e0f06f43ebeda27552690a34c"
+  },
+  {
+    "file": "assets/images/trophy.webp",
+    "source": "image(9).png",
+    "sha256": "1ebbd69c3b9e3cd6bcf4c0a764bca4cd112da5fd954eef53224e880d88dbae50"
+  },
+  {
+    "file": "assets/images/game-icon.webp",
+    "source": "image(20261009-093353).png",
+    "sha256": "5b7f9a2a8c4cb044a490805ee872eabbd8b92d4a77699913ab248e556cc29087"
+  },
+  {
+    "file": "assets/images/frost-card.webp",
+    "source": "image(20261009-093411).png",
+    "sha256": "9e5e9e8526af6d1a5e336a2d56dc24b8e547783a81c5a4158c3fe5ee4d93c459"
+  },
+  {
+    "file": "assets/images/dxt-card.webp",
+    "source": "image(5).png",
+    "sha256": "5bf03dc29140d84367cb35b9384cf1091c55e2e40d4d7e30e70de855a233c9b8"
+  },
+  {
+    "file": "assets/images/pattern-dark.webp",
+    "source": "image(20261009-093659).png",
+    "sha256": "c506faa1710fceb809c26848ae040a39d01c8d7098378d5a801b704a9b261ab3"
+  },
+  {
+    "file": "assets/images/pattern-orange.webp",
+    "source": "image(20261009-093649).png",
+    "sha256": "aa0f7e2ff05ce1a2443e78e531aa935c7762247c59e74b179a3c9f26d0e9e8ce"
+  },
+  {
+    "file": "assets/images/revline-pattern.webp",
+    "source": "image(20261009-093400).png",
+    "sha256": "7d5c795ba3d8cf73f94960fd68d0ef1f1d71ab79813bb80d948f3037ad920e6c"
+  }
+]
