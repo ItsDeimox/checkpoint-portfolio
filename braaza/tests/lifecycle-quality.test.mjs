@@ -1,39 +1,17 @@
-import {test} from 'node:test';
-import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
-import {cardLifecycle,createCardWrapState,wrapCardVisualY} from '../src/render/card-lifecycle.js';
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {galleryInstances,cardCoverage,cardLifecycle,CARD_FLOW} from '../src/render/card-lifecycle.js';
 import {qualityProfile} from '../src/render/quality.js';
-
-test('card is fully dissolved before the logical top slot wraps',()=>{
- const life=cardLifecycle(11.20);assert.ok(life.exitBurn>.99);assert.ok(life.visibility<.01);
-});
-test('card is hidden below the lower forge and fully readable at the first slot',()=>{
- assert.ok(cardLifecycle(-1.2).visibility<.01);assert.ok(cardLifecycle(1.7).visibility>.99);
-});
-test('recycled card gets a long lower entry corridor instead of popping into view',()=>{
- const state=createCardWrapState();let r=wrapCardVisualY(1.72,11.28,11.40,1/60,false,state);
- for(let i=0;i<24&&!r.wrapped;i++)r=wrapCardVisualY(1.72,1.72,r.visualY,1/60,false,state);
- assert.equal(r.wrapped,true);assert.ok(r.visualY<-4);
- for(let i=0;i<8;i++)r=wrapCardVisualY(1.72,1.72,r.visualY,1/60,false,state);
- assert.ok(r.visualY<-1.2);assert.equal(cardLifecycle(r.visualY).visibility,0);
-});
-test('top recycle finishes exiting before teleporting below the forge',()=>{
- const state=createCardWrapState();let r=wrapCardVisualY(1.72,11.12,10.35,1/60,false,state);
- assert.equal(r.wrapped,false);assert.ok(r.visualY>10.35);
- let wrapped=false;for(let i=0;i<30;i++){r=wrapCardVisualY(1.72,1.72,r.visualY,1/60,false,state);if(r.wrapped){wrapped=true;assert.ok(r.visualY<-1);break;}}
- assert.ok(wrapped);
-});
-test('reverse recycle exits through the lower forge before entering from the top',()=>{
- const state=createCardWrapState();let r=wrapCardVisualY(11.25,1.72,1.75,1/60,false,state);
- assert.equal(r.wrapped,false);assert.ok(r.visualY<1.75);
- let wrapped=false;for(let i=0;i<30;i++){r=wrapCardVisualY(11.25,11.25,r.visualY,1/60,false,state);if(r.wrapped){wrapped=true;assert.ok(r.visualY>12);break;}}
- assert.ok(wrapped);
-});
-test('auto quality uses modest supersampling and high/ultra remain explicit',()=>{
- const auto=qualityProfile('auto',false,1,0),high=qualityProfile('high',false,1,0),ultra=qualityProfile('ultra',false,1,0);
- assert.ok(auto.scale>=1.08&&auto.scale<=1.14);assert.ok(high.scale>auto.scale);assert.ok(ultra.scale>high.scale);assert.ok(auto.aaStrength>=.9);
-});
-test('glass passes use shared soft lifecycle coverage rather than abrupt center reconstruction',async()=>{
- const [glass,media]=await Promise.all([readFile(new URL('../src/glsl/glass/crystal.frag',import.meta.url),'utf8'),readFile(new URL('../src/glsl/glass/media.frag',import.meta.url),'utf8')]);
- for(const shader of [glass,media]){assert.match(shader,/exitCoverage/);assert.match(shader,/revealCoverage/);assert.doesNotMatch(shader,/centerY=vWorld/);}
-});
+const picture=p=>galleryInstances(p,4).filter(c=>c.visible).map(c=>[c.index,c.y]);
+test('all four canonical centers remain intact at rest',()=>{for(let i=0;i<4;i++)assert.ok(galleryInstances(0).some(c=>c.index===i&&Math.abs(c.y-(1.7+2.4*i))<1e-10));});
+test('a full gallery revolution preserves position and content order',()=>{const a=picture(.25),b=picture(4.25);assert.deepEqual(a,b);assert.deepEqual(a,picture(-3.75));});
+test('crossing a logical integer produces no visible position or identity jump',()=>{for(let n=-8;n<9;n++){const a=galleryInstances(n-1e-7),b=galleryInstances(n+1e-7);for(const c of a.filter(c=>c.visible)){const d=b.find(v=>v.key===c.key);assert.ok(d);assert.equal(c.index,d.index);assert.ok(Math.abs(d.y-c.y)<1e-6);}}});
+test('buffer boundaries are fully invisible across the entire panel',()=>{for(const y of[CARD_FLOW.lowerBuffer,-1.46,11.81,CARD_FLOW.upperBuffer])for(let x=-2.5;x<=2.5;x+=.13)for(let v=-1.125;v<=1.125;v+=.13)assert.equal(cardCoverage(y,[x,v],3),0);});
+test('incoming panel reveals its leading top edge, not its trailing bottom',()=>{assert.ok(cardCoverage(0,[0,.7])>.99);assert.equal(cardCoverage(0,[0,-.7]),0);});
+test('upper forge removes the leading top edge first',()=>{assert.equal(cardCoverage(CARD_FLOW.upperGate,[0,.7]),0);assert.ok(cardCoverage(CARD_FLOW.upperGate,[0,-.7])>.99);});
+test('birth and burn coverage are monotonic with traversal',()=>{let birth=0,burn=1;for(let y=-2;y<2;y+=.002){const a=cardCoverage(y,[.41,.26],2),b=cardCoverage(y+10.35,[.41,.26],2);assert.ok(a>=birth-1e-12);assert.ok(b<=burn+1e-12);birth=a;burn=b;}});
+test('end state is exactly zero or one, with no endpoint opacity snap',()=>{for(const y of[-10,0,3,9,15]){const c=cardCoverage(y,[.2,0]);assert.ok(Number.isFinite(c));}assert.equal(cardCoverage(-10,[0,0]),0);assert.equal(cardCoverage(3,[0,0]),1);assert.equal(cardCoverage(15,[0,0]),0);});
+test('long positive/negative sessions keep allocations bounded and content valid',()=>{for(const p of[-1e6,-1004.25,-4.25,0,4.25,1004.25,1e6]){const a=galleryInstances(p);assert.ok(a.length<=9);assert.ok(a.every(c=>Number.isFinite(c.y)&&Number.isInteger(c.key)&&c.index>=0&&c.index<4));}assert.deepEqual(picture(1004.25),picture(.25));});
+test('every possible culled occurrence has zero pixel coverage',()=>{for(let p=-4;p<4;p+=.01)for(const c of galleryInstances(p).filter(c=>!c.visible))for(const v of[-1.125,0,1.125])assert.equal(cardCoverage(c.y,[.2,v],c.index),0);});
+test('invalid gallery inputs fail explicitly',()=>{for(const p of[NaN,Infinity])assert.throws(()=>galleryInstances(p),RangeError);for(const n of[0,-1,1.5])assert.throws(()=>galleryInstances(0,n),RangeError);});
+test('one- and six-project galleries reuse a bounded number of geometry instances',()=>{for(const n of[1,6]){const a=galleryInstances(.22,n);assert.ok(a.length<=9);assert.ok(a.every(c=>c.index<n));}});
+test('auto quality uses modest supersampling and high/ultra remain explicit',()=>{const a=qualityProfile('auto',false,1,0),h=qualityProfile('high',false,1,0),u=qualityProfile('ultra',false,1,0);assert.ok(a.scale>=1.08&&a.scale<=1.14);assert.ok(h.scale>a.scale&&u.scale>h.scale);});

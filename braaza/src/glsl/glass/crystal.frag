@@ -3,29 +3,18 @@ precision highp float;
 in vec3 vWorld,vNormal,vLocal;in vec2 vUv;in vec4 vSurface,vCurrent,vPrevious;
 layout(location=0) out vec4 outColor;layout(location=1) out vec4 outNormal;layout(location=2) out vec4 outVelocity;
 uniform float uMediaAspect;uniform sampler2D uArt,uLabel,uBehind;uniform vec2 uResolution,uPointer;
-uniform vec4 uTrail[6];uniform float uHover,uBurn,uReveal,uIndex,uHasInternalScene;
+uniform vec4 uTrail[6];uniform float uHover,uCardY,uIndex,uHasInternalScene;
 #include "common/noise.glsl"
 #include "common/lighting.glsl"
+#include "glass/lifecycle.glsl"
 vec3 readMedia(vec2 uv){float aspect=max(uMediaAspect,.01),panelAspect=4.8/(2.25*.88);vec2 q=uv-.5;if(aspect>panelAspect)q.y*=aspect/panelAspect;else q.x*=panelAspect/aspect;q+=.5;if(min(q.x,q.y)<0.||max(q.x,q.y)>1.)return vec3(.001);return texture(uArt,q).rgb;}
 void main(){
  vec2 size=vec2(4.8,2.25),p=(vUv-.5)*size;float d=sdRoundBox(p,size*.5-.016,.08),aa=max(fwidth(d),.001);if(d>aa)discard;
  if(uReflection>.5&&vWorld.y< -1.10)discard;
 
- // JS and GLSL share the same lifecycle. Both forges can hide/reveal a card,
- // and the recycler only teleports while coverage is effectively zero.
- float reveal=clamp(uReveal,0.,1.),burn=clamp(uBurn,0.,1.);
- float lifeNoise=fbm(vUv*vec2(8.5,5.2)+vec2(uIndex*2.7,uTime*.055));
- lifeNoise+=flow(vUv*vec2(17.,8.)+vec2(-uTime*.08,uIndex))*0.22;
- float exitField=vUv.y+lifeNoise*.14;
- float revealField=vUv.y+lifeNoise*.11;
- float burnFront=1.08-burn*1.16;
- float revealFront=mix(-.06,1.08,reveal);
- float exitCoverage=burn<.001?1.:1.-smoothstep(burnFront-.028,burnFront+.028,exitField);
- float revealCoverage=reveal>.999?1.:1.-smoothstep(revealFront-.028,revealFront+.028,revealField);
- float coverage=min(exitCoverage,revealCoverage);
- if(coverage<.012)discard;
- float burnBand=exp(-abs(exitField-burnFront)*60.)*smoothstep(.001,.12,burn);
- float revealBand=exp(-abs(revealField-revealFront)*56.)*(1.-smoothstep(.92,1.,reveal));
+ vec4 life=forgeLifecycle(vLocal.xy,uCardY,uIndex);float coverage=life.x;
+ if(coverage<.001)discard;
+ float revealBand=life.y,burnBand=life.z;
 
  vec3 n=normalize(vNormal),v=normalize(uCamera-vWorld);if(!gl_FrontFacing)n=-n;
  float ndv=clamp(abs(dot(n,v)),0.,1.),fres=.04+.96*pow(1.-ndv,5.);
@@ -61,9 +50,9 @@ void main(){
 
  float fractures=exp(-cells(vUv*vec2(13.5,6.4)+uIndex*11.)*145.)*smoothstep(.45,.79,noise(vUv*vec2(9,4)+uIndex));
  col+=hot*(lamp*.030+warmth*.020+fractures*(lamp*.72+warmth*.26));
- col+=hotColor(.98)*(burnBand*6.2+revealBand*5.0);
- float charBand=exp(-abs(exitField-burnFront)*18.)*burn+exp(-abs(revealField-revealFront)*18.)*(1.-reveal);
+ col+=hotColor(.98)*(burnBand*1.65+revealBand*1.35);
+ float charBand=life.w;
  col*=1.-charBand*.10;
  outColor=vec4(max(col,0.),coverage);outNormal=vec4(n*.5+.5,.75*coverage);
- outVelocity=vec4((vCurrent.xy/max(vCurrent.w,.001)-vPrevious.xy/max(vPrevious.w,.001))*.5,1.,1.);
+ outVelocity=vec4((vCurrent.xy/max(vCurrent.w,.001)-vPrevious.xy/max(vPrevious.w,.001))*.5,1.,coverage);
 }

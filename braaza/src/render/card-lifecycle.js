@@ -1,38 +1,28 @@
-const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
-const damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*Math.max(0,dt)));
-const LOWER_RECYCLE_Y=-4.20;
-const UPPER_RECYCLE_Y=13.40;
-/** Both forges own the lifecycle. A card is fully hidden before any logical recycle. */
-export function cardLifecycle(y){
-  const reveal=clamp((y+1.15)/2.85);
-  const exitBurn=clamp((y-9.70)/1.35);
-  return {reveal,exitBurn,visibility:Math.min(reveal,1-exitBurn)};
+/** One scroll coordinate for the whole conveyor. No per-card catch-up or teleport animation. */
+export const CARD_FLOW=Object.freeze({first:1.7,spacing:2.4,lowerBuffer:-4.2,upperBuffer:14.2,lowerGate:0,upperGate:10.35,feather:.18,axisScale:1.02});
+const clamp=v=>Math.max(0,Math.min(1,v));
+const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};
+const modulo=(i,n)=>((i%n)+n)%n;
+/** Buffered occurrences share the original media resources; keys survive crossing an integer. */
+export function galleryInstances(position,count=4){
+ if(!Number.isFinite(position)||!Number.isInteger(count)||count<1)throw new RangeError('Invalid gallery position/count');
+ const whole=Math.floor(position),phase=position-whole,instances=[];
+ const first=Math.ceil((CARD_FLOW.lowerBuffer-CARD_FLOW.first)/CARD_FLOW.spacing-phase);
+ const last=Math.floor((CARD_FLOW.upperBuffer-CARD_FLOW.first)/CARD_FLOW.spacing-phase);
+ for(let slot=first;slot<=last;slot++){
+  const key=slot-whole,y=CARD_FLOW.first+(slot+phase)*CARD_FLOW.spacing;
+  instances.push({key,index:modulo(key,count),y,visible:y> -1.45&&y<11.8});
+ }
+ return instances;
 }
-export function createCardWrapState(){return {mode:'track'};}
-/**
- * Logical slots wrap immediately, but the rendered card keeps travelling through
- * the active forge. Recycling happens far outside the visible corridor so the
- * returning card has room to rise smoothly before its lower-edge reveal begins.
- */
-export function wrapCardVisualY(rawY,previousRawY,visualY,dt,reduced=false,state=createCardWrapState()){
-  if(!Number.isFinite(previousRawY)||!Number.isFinite(visualY)){state.mode='track';return {rawY,visualY:rawY,wrapped:false,state};}
-  if(reduced){state.mode='track';return {rawY,visualY:rawY,wrapped:false,state};}
-  const jump=rawY-previousRawY,h=Math.min(Math.max(dt,0),.05);
-  if(jump<-6)state.mode='exitTop';
-  else if(jump>6)state.mode='exitBottom';
-  let y=visualY,wrapped=false;
-  if(state.mode==='exitTop'){
-    y=damp(y,11.65,14,h);
-    if(y>11.52){y=LOWER_RECYCLE_Y;state.mode='enterBottom';wrapped=true;}
-  }else if(state.mode==='enterBottom'){
-    y=damp(y,rawY,3.8,h);
-    if(Math.abs(y-rawY)<.025)state.mode='track';
-  }else if(state.mode==='exitBottom'){
-    y=damp(y,LOWER_RECYCLE_Y,14,h);
-    if(y<LOWER_RECYCLE_Y+.15){y=UPPER_RECYCLE_Y;state.mode='enterTop';wrapped=true;}
-  }else if(state.mode==='enterTop'){
-    y=damp(y,rawY,3.8,h);
-    if(Math.abs(y-rawY)<.025)state.mode='track';
-  }else y=damp(y,rawY,10,h);
-  return {rawY,visualY:y,wrapped,state};
+/** Keep this analytic field paired with glsl/glass/lifecycle.glsl. It is time independent. */
+export function cardCoverage(y,local,index=0){
+ const [x,v]=local;
+ const irregular=Math.sin(x*7.1+index*1.7)*.045+Math.sin(x*15.3+v*2.4+index*3.1)*.025;
+ const axis=y+v*CARD_FLOW.axisScale;
+ return smooth(-CARD_FLOW.feather,CARD_FLOW.feather,axis-CARD_FLOW.lowerGate-irregular)*smooth(-CARD_FLOW.feather,CARD_FLOW.feather,CARD_FLOW.upperGate-axis+irregular);
+}
+export function cardLifecycle(y){
+ // Conservative visibility for culling. The shader/picker evaluate actual fragment coverage.
+ return {visible:y> -1.45&&y<11.8,visibility:cardCoverage(y,[0,0]),reveal:smooth(-1.4,1.4,y),exitBurn:smooth(8.95,11.75,y)};
 }
