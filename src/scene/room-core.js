@@ -24,10 +24,14 @@ export function renderBudget(width,height,dpr=1,quality='auto'){
  const ratio=Math.min(dpr,quality==='high'?1.6:quality==='low'?.82:1.15,Math.sqrt(maxPixels/Math.max(1,width*height)));
  return {width:Math.max(2,Math.floor(width*ratio)),height:Math.max(2,Math.floor(height*ratio)),ratio,maxPixels,reflection:quality==='high'?1024:quality==='low'?384:768};
 }
+// Physical, upright rectangles facing into the room. Position/dimensions/yaw
+// were fitted offline to the reference at its original camera and fixed depth.
+// Keep the image outlines only as composition references: their imperfect
+// perspective must never become a trapezoidal mesh or a live camera transform.
 export const ROOM_PANELS=[
- {title:'Berserk Drift X',detail:'CARS × CREATIVITY × NO LIMITS',corners:[[.011,.079],[.205,.204],[.197,.592],[.006,.613]],art:[[.026,.109],[.198,.220],[.192,.573],[.016,.591]],z:1.2,yaw:.66},
- {title:'Groups & Games',detail:'COMMUNITY / EVENTS / PLAY',corners:[[.216,.203],[.391,.255],[.389,.584],[.215,.594]],art:[[.227,.232],[.382,.273],[.381,.568],[.226,.578]],z:4.5,yaw:.36},
- {title:'Future Projects',detail:'BIGGER ROADS AHEAD',corners:[[.407,.270],[.596,.270],[.600,.581],[.407,.581]],art:[[.416,.283],[.589,.283],[.592,.566],[.416,.566]],z:6.4,yaw:0},
- {title:'About DXT',detail:'PEOPLE / VISION / IMPACT',corners:[[.614,.254],[.779,.205],[.794,.593],[.614,.583]],art:[[.623,.275],[.773,.225],[.783,.576],[.623,.566]],z:4.5,yaw:-.36},
- {title:'Socials & Contact',detail:'LET’S STAY CONNECTED',corners:[[.795,.209],[.983,.079],[.999,.610],[.801,.593]],art:[[.805,.232],[.973,.116],[.986,.591],[.811,.577]],z:1.2,yaw:-.66}
+ {title:'Berserk Drift X',detail:'CARS × CREATIVITY × NO LIMITS',corners:[[.011,.079],[.205,.204],[.197,.592],[.006,.613]],art:[[.026,.109],[.198,.220],[.192,.573],[.016,.591]],position:[6.959897,3.672058,1.2],width:4.474449,height:4.682116,yaw:1.236135},
+ {title:'Groups & Games',detail:'COMMUNITY / EVENTS / PLAY',corners:[[.216,.203],[.391,.255],[.389,.584],[.215,.594]],art:[[.227,.232],[.382,.273],[.381,.568],[.226,.578]],position:[4.251762,3.730512,4.5],width:4.193786,height:4.518478,yaw:.685378},
+ {title:'Future Projects',detail:'BIGGER ROADS AHEAD',corners:[[.407,.270],[.596,.270],[.600,.581],[.407,.581]],art:[[.416,.283],[.589,.283],[.592,.566],[.416,.566]],position:[-.061554,3.747925,6.4],width:4.697771,height:4.326768,yaw:-.000336},
+ {title:'About DXT',detail:'PEOPLE / VISION / IMPACT',corners:[[.614,.254],[.779,.205],[.794,.593],[.614,.583]],art:[[.623,.275],[.773,.225],[.783,.576],[.623,.566]],position:[-4.328008,3.734785,4.5],width:4.092976,height:4.505286,yaw:-.662359},
+ {title:'Socials & Contact',detail:'LET’S STAY CONNECTED',corners:[[.795,.209],[.983,.079],[.999,.610],[.801,.593]],art:[[.805,.232],[.973,.116],[.986,.591],[.811,.577]],position:[-6.933881,3.660907,1.2],width:4.638287,height:4.638472,yaw:-1.267039}
 ];

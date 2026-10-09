@@ -1,8 +1,72 @@
 # DXT circular showroom
 
-## Current state — r2, 2026-10-09
+## Current state — r3, 2026-10-09
 
-The production revision is **`dxt-showroom-r2`**: one persistent 3D room with five content panels. The r1 record below remains as historical context; its camera measurements, loading fallback and separate-page ownership do not describe the current runtime.
+The production revision is **`dxt-showroom-r3`**. This correction makes all five
+display surfaces and frames rigid, upright rectangles in the room. The existing
+persistent scene, camera controller, loading preparation, optics and navigation
+remain the r2 implementation described below.
+
+### Why the artwork bent during approach
+
+The previous layout intersected the four outline coordinates from the reference
+image with an arbitrarily oriented plane. That guaranteed a flat quadrilateral,
+but did not guarantee a rectangle. The outer left frame had vertical edges of
+approximately **6.54 m and 3.48 m**; its corner angles ranged from **66.9° to
+108.9°**. Its orientation also faced away from the central viewing area.
+
+The screen assigned ordinary square UV coordinates to the two triangles of that
+irregular shape. Their world-to-UV mappings therefore had different slopes at the
+shared diagonal. Applying the same artwork homography to each side did not remove
+that crease. The camera enlarged an existing geometry/mapping error. The screen
+vertices, frames and artwork uniforms were already fixed during the movement.
+
+`ROOM_PANELS` now supplies an explicit position, width, height and yaw for each
+display. `createFixedPanelLayout()` constructs its four corners from orthogonal
+horizontal/vertical axes. The displays face inward and their opposing edges are
+parallel and equal. Frames, bevels and physical thickness derive from those same
+corners. This gives the screen one affine world-to-UV mapping across both
+triangles, so the existing projective artwork shader preserves straight lines.
+
+The physical dimensions were fitted offline to the original four outline points
+at the original calibration camera, keeping the depth of each panel fixed. Each
+new corner is within **10 source-image pixels** of its reference; the maximum is
+approximately **9.60 px at 1672 × 941**. Image outline coordinates remain only a
+composition test reference, never the runtime mesh shape. There is no runtime
+fitting, geometry deformation, per-frame reorientation or additional rendering
+pass.
+
+The camera audit found no view-dependent distortion in the display shader. FOV
+changes alter framing, while the irregular mesh caused the line kink. The
+existing approach and return paths continue to pass their framing and car
+clearance checks with the corrected screens, so this revision retains that
+camera controller.
+
+### Regression verification
+
+`tests/room-panel-mapping.test.mjs` builds the actual production meshes with only
+image loading replaced by in-memory textures. Its tests inspect real geometry,
+UVs, transforms and material projection uniforms. Before the fix, all five
+rectangle checks and the interior line-mapping check failed; after it, all seven
+checks pass.
+
+The mapping test uses Three's indexed-mesh raycaster for **10,710 samples** across
+all five screens and both texture axes. It checks desktop and two portrait sizes,
+the overview, three intermediate approach positions, the focused pose, halfway
+return and the returned pose. It verifies straight lines across the triangle
+boundary and confirms the exact preservation of geometry, UVs, frame matrices
+and artwork uniforms during movement. Existing geometry tests additionally
+check source composition, inward normals, complete focused framing, car
+occlusion, architecture clearance and approach/return collision paths.
+
+These are CPU geometry and mapping checks. The available cloud browser still
+cannot create a WebGL context. They establish the mathematical correction but
+do not substitute for a GPU-rendered visual inspection or a device frame-rate
+measurement.
+
+## r2 baseline — 2026-10-09
+
+Revision **`dxt-showroom-r2`** established one persistent 3D room with five content panels. Its display calibration is superseded by r3 above. The r1 record below remains as historical context; its camera measurements, loading fallback and separate-page ownership do not describe the current runtime.
 
 ### Camera and the open front bay
 
