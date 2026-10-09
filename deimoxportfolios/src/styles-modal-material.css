@@ -5,15 +5,20 @@
 .sheet-material-canvas[hidden]{display:none;}
 .sheet-material .close-sheet{position:absolute;z-index:3;}
 .sheet-material #sheet-content{position:relative;}
-.sheet-material .button,.sheet-material .contact-option,.sheet-material summary{transition:border-color .2s ease,box-shadow .2s ease;}
-.sheet-material[data-material="webgl2"] .button,.sheet-material[data-material="webgl2"] .contact-option{background:transparent;}
-.sheet-material .button-primary{color:#121b1e;}
-.sheet-material .button-primary:hover{box-shadow:0 0 0 2px #10191c,0 0 0 3px #c2e3eb99,0 0 18px #69cef21a;}
-.sheet-material .button-outline:hover,.sheet-material .contact-option:hover{border-color:#8dbccdb0;box-shadow:0 0 16px #56bbdf10;}
+.sheet-material .button,.sheet-material .contact-option,.sheet-material summary{transition:transform .28s cubic-bezier(.22,.7,.2,1),border-color .28s ease,box-shadow .32s ease,color .24s ease;}
+.sheet-material .button-primary{color:#121b1e;box-shadow:0 3px 12px #0004;}
+.sheet-material .button-primary:hover{transform:translateY(-1px);box-shadow:0 3px 16px #0003,0 0 20px #69cef218;}
+.sheet-material .button-outline:hover,.sheet-material .contact-option:hover{transform:translateY(-1px);border-color:#8dbccdb0;box-shadow:0 0 18px #56bbdf18;}
+/* Keep border width for identical layout. The shader alone draws the visible glass edge. */
+.sheet.sheet-material[data-material="webgl2"]{border-color:transparent;}
+.sheet-material[data-material="webgl2"] .button,.sheet-material[data-material="webgl2"] .contact-option{background:transparent;border-color:transparent;}
+.sheet-material[data-material="webgl2"] .button:before{display:none;}
+.sheet-material[data-material="webgl2"] .button-outline{box-shadow:none;}
+.sheet-material[data-material="webgl2"] .button-outline:hover{box-shadow:0 0 18px #56bbdf18;}
 .sheet-material .button:focus-visible,.sheet-material .contact-option:focus-visible,.sheet-material summary:focus-visible{outline:2px solid #9be8f4;outline-offset:4px;}
 .sheet-material .close-sheet:focus-visible{outline:1px solid #92c1ce80;outline-offset:1px;border-radius:4px;}
 .sheet-material .project-detail>img{box-shadow:0 10px 30px #0006,0 0 20px #91c6d414;}
 .sheet-material .contact-option{overflow-wrap:anywhere;}
 @media(max-width:900px) and (orientation:portrait){.sheet-material .sheet-scroll{padding:44px 25px 30px;max-height:calc(100svh - 42px);}}
 @media(max-width:360px){.sheet-material .sheet-scroll{padding:44px 19px 26px;}.sheet-material .button{min-width:0;max-width:100%;white-space:normal;}}
-@media(prefers-reduced-motion:reduce){.sheet-material .button,.sheet-material .contact-option,.sheet-material summary{transition:none;}}
+@media(prefers-reduced-motion:reduce){.sheet-material .button,.sheet-material .contact-option,.sheet-material summary{transition:none;transform:none!important;}}

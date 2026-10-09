@@ -17,5 +17,5 @@ run('tools/build.mjs');
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 async function files(dir){const entries=await readdir(dir,{withFileTypes:true});let result=[];for(const e of entries){const p=dir+'/'+e.name;result.push(...(e.isDirectory()?await files(p):[p]));}return result.sort();}
 const sourceFiles={};for(const path of ['index.html',...await files('src')])sourceFiles[path]=sha(await readFile(path));
-const info={version:'modal-material-r3',commit:process.env.VERCEL_GIT_COMMIT_SHA??null,sourceSha256:sha(JSON.stringify(sourceFiles)),sourceFiles,processShaderSha256:sourceFiles['src/shaders/process.frag'],cubeShaderSha256:sourceFiles['src/shaders/cube.frag']};
-await writeFile('dist/build-info.json',JSON.stringify(info,null,2)+'\n');console.log('Verified modal-material-r3: '+info.sourceSha256);
+const info={version:'modal-material-r4',commit:process.env.VERCEL_GIT_COMMIT_SHA??null,sourceSha256:sha(JSON.stringify(sourceFiles)),sourceFiles,processShaderSha256:sourceFiles['src/shaders/process.frag'],cubeShaderSha256:sourceFiles['src/shaders/cube.frag']};
+await writeFile('dist/build-info.json',JSON.stringify(info,null,2)+'\n');console.log('Verified modal-material-r4: '+info.sourceSha256);

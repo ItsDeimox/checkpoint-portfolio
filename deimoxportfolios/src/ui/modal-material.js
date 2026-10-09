@@ -4,6 +4,28 @@ import {Program,shaderSource,target,bindTexture} from '../rendering/gl.js';
 // DOM geometry is measured in CSS pixels; simulation and raster scale are independent.
 export function modalLocalPoint(x,y,rect){return [(x-rect.left)/Math.max(1,rect.width),1-(y-rect.top)/Math.max(1,rect.height)];}
 export function modalTextureSize(width,height,dpr=1){const s=Math.min(Math.max(1,dpr),1.5,1260/width,1000/height);return [Math.max(2,Math.round(width*s)),Math.max(2,Math.round(height*s))];}
+/** Per-control light: continuous enter/leave, with the last local anchor retained on exit. */
+export class ModalHoverResponse {
+ constructor(){this.level=0;this.point=[.5,.5];this.targetPoint=[.5,.5];this.initialized=false;}
+ update(goal,point,dt,reduced=false){
+  const target=Math.min(1,Math.max(0,goal)),h=Math.min(.05,Math.max(0,dt));
+  if(target>0){
+   this.targetPoint=point.map(v=>Math.min(1,Math.max(0,v)));
+   if(!this.initialized||this.level===0){this.point=[...this.targetPoint];this.initialized=true;}
+  }
+  if(reduced){this.level=target;this.point=[...this.targetPoint];return false;}
+  // A slightly longer release lets the glow dissipate instead of following another control.
+  const tau=target>this.level?.115:.175;
+  this.level+=(target-this.level)*(1-Math.exp(-h/tau));
+  if(Math.abs(target-this.level)<.001)this.level=target;
+  for(let i=0;i<2;i++){
+   this.point[i]+=(this.targetPoint[i]-this.point[i])*(1-Math.exp(-h/.06));
+   if(Math.abs(this.point[i]-this.targetPoint[i])<.00001)this.point[i]=this.targetPoint[i];
+  }
+  return this.level!==target||this.point.some((v,i)=>v!==this.targetPoint[i]);
+ }
+}
+
 export class ModalEnergy {
  constructor(width,height){
   const unit=110;
@@ -31,6 +53,9 @@ export class ModalMaterial {
    if(!this.reduced.matches)this.energy?.stroke(this.pointer,event.timeStamp,[event.clientX,event.clientY]);this.wake();
   });
   listen(dialog,'pointerleave',()=>{this.goal=0;this.energy?.leave();this.wake();});
+  // Enter/leave and CSS motion can start without a second pointermove event.
+  listen(dialog,'pointerover',()=>this.wake());listen(dialog,'pointerout',()=>this.wake());
+  listen(dialog,'transitionrun',()=>this.wake());listen(dialog,'transitionend',()=>this.wake());
   listen(dialog,'focusin',event=>{this.focusTarget=event.target;this.wake();});
   listen(dialog,'focusout',()=>{this.focusTarget=null;this.wake();});
   listen(this.scroll,'scroll',()=>{this.energy?.leave();this.wake();});
@@ -101,9 +126,13 @@ export class ModalMaterial {
    let moving=Math.abs(this.goal-this.hover)>.005;
    for(const el of this.controls){if(!el.isConnected)continue;const b=el.getBoundingClientRect();if(b.bottom<css.top||b.top>css.bottom||b.width<2)continue;
     const focus=el===this.focusTarget&&el.matches(':focus-visible')&&!el.classList.contains('close-sheet');
-    const goal=el.matches(':hover')||focus?1:0,prior=this.levels.get(el)??0,level=prior+(goal-prior)*(1-Math.exp(-12*dt));this.levels.set(el,level);moving ||= Math.abs(level-goal)>.005;
+    const goal=el.matches(':hover')||focus?1:0;
+    const response=this.levels.get(el)??new ModalHoverResponse();this.levels.set(el,response);
+    const local=focus?[.5,.5]:[(css.left+this.pointer[0]*css.width-b.left)/b.width,(b.bottom-(css.bottom-this.pointer[1]*css.height))/b.height];
+    // Always update every response, even while the background envelope is already moving.
+    const settling=response.update(goal,local,dt,this.reduced.matches);moving=settling||moving;
     const sx=this.cssSize[0]/css.width,sy=this.cssSize[1]/css.height;
-    this.material.setAll({uRect:[(b.left-css.left)*sx,(css.bottom-b.bottom)*sy,b.width*sx,b.height*sy],uKind:el.classList.contains('close-sheet')?4:el.tagName==='IMG'?3:el.classList.contains('button-primary')?1:2,uLevel:level});this.draw();
+    this.material.setAll({uRect:[(b.left-css.left)*sx,(css.bottom-b.bottom)*sy,b.width*sx,b.height*sy],uControlPointer:response.point,uKind:el.classList.contains('close-sheet')?4:el.tagName==='IMG'?3:el.classList.contains('button-primary')?1:2,uLevel:response.level});this.draw();
    }
    this.blurInto(this.scene,this.nearA,[1,0],1);this.blurInto(this.nearA,this.nearB,[0,1],0);this.blurInto(this.nearB,this.wideA,[2,0],0);this.blurInto(this.wideA,this.wideB,[0,2],0);
    this.bind(null);bindTexture(gl,this.scene.texture,0);bindTexture(gl,this.nearB.texture,1);bindTexture(gl,this.wideB.texture,2);
