@@ -38,5 +38,17 @@
     "file": "assets/images/revline-pattern.webp",
     "source": "image(20261009-093400).png",
     "sha256": "7d5c795ba3d8cf73f94960fd68d0ef1f1d71ab79813bb80d948f3037ad920e6c"
+  },
+  {
+    "file": "src/scene/car.js",
+    "source": "Original procedural volumetric meshes authored for this website; not original game vehicle assets"
+  },
+  {
+    "file": "src/scene/shaders.js",
+    "source": "Original GLSL atmosphere, smoke and wet ground"
+  },
+  {
+    "file": "src/render/showroom.bundle.js",
+    "source": "Three.js 0.180.0 MIT plus original scene code bundled with esbuild 0.25.10"
   }
 ]
