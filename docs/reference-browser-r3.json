@@ -1,0 +1,320 @@
+{
+  "browser": "156.0.8078.4",
+  "checks": [
+    {
+      "name": "actual HDR environment loaded into the material lighting",
+      "pass": true
+    },
+    {
+      "name": "six independent cards share exactly one optical canvas",
+      "pass": true
+    },
+    {
+      "name": "card and hero GLSL programs compile and draw without WebGL error",
+      "pass": true
+    },
+    {
+      "name": "original car geometry is preserved",
+      "pass": true
+    },
+    {
+      "name": "native captions remain above the optical layer",
+      "pass": true
+    },
+    {
+      "name": "faces have actual projective foreshortening rather than skew",
+      "pass": true
+    },
+    {
+      "name": "24 HTML corners match GLSL projection within 2px",
+      "pass": true,
+      "detail": 0.35055641453885905
+    },
+    {
+      "name": "hero CTA is visible and clickable above the diagonal band",
+      "pass": true
+    },
+    {
+      "name": "hero occupies the measured reference proportion",
+      "pass": true,
+      "detail": {
+        ".hero": {
+          "top": 48.109375,
+          "height": 294.984375,
+          "bottom": 343.09375
+        },
+        ".games-band": {
+          "top": 278.828125,
+          "height": 232.359375,
+          "bottom": 511.1875
+        },
+        ".projects-band": {
+          "top": 448.578125,
+          "height": 197.75,
+          "bottom": 646.328125
+        },
+        ".biography-strip": {
+          "top": 641.390625,
+          "height": 154.90625,
+          "bottom": 796.296875
+        },
+        ".contact-strip": {
+          "top": 796.296875,
+          "height": 115.359375,
+          "bottom": 911.65625
+        }
+      }
+    },
+    {
+      "name": "diagonal bands overlap without whitespace gaps",
+      "pass": true
+    },
+    {
+      "name": "biography band is straight as requested",
+      "pass": true
+    },
+    {
+      "name": "document has no desktop horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "hover advances and rotates selected plane",
+      "pass": true
+    },
+    {
+      "name": "cursor movement injects finite shader waves",
+      "pass": true
+    },
+    {
+      "name": "hover and illumination settle back to rest",
+      "pass": true
+    },
+    {
+      "name": "optics sleep after impulses dissipate",
+      "pass": true
+    },
+    {
+      "name": "keyboard focus uses the same 3D response",
+      "pass": true
+    },
+    {
+      "name": "Berserk project destination preserved",
+      "pass": true
+    },
+    {
+      "name": "route change disposes previous optics",
+      "pass": true
+    },
+    {
+      "name": "groups content accessible",
+      "pass": true
+    },
+    {
+      "name": "groups no overflow",
+      "pass": true
+    },
+    {
+      "name": "projects content accessible",
+      "pass": true
+    },
+    {
+      "name": "projects no overflow",
+      "pass": true
+    },
+    {
+      "name": "about content accessible",
+      "pass": true
+    },
+    {
+      "name": "about no overflow",
+      "pass": true
+    },
+    {
+      "name": "contact content accessible",
+      "pass": true
+    },
+    {
+      "name": "contact no overflow",
+      "pass": true
+    },
+    {
+      "name": "phone 390 card is readable-sized",
+      "pass": true
+    },
+    {
+      "name": "phone 390 has native gallery pan",
+      "pass": true
+    },
+    {
+      "name": "phone 390 optics track gallery pan",
+      "pass": true
+    },
+    {
+      "name": "phone 390 no document overflow",
+      "pass": true
+    },
+    {
+      "name": "phone 320 card is readable-sized",
+      "pass": true
+    },
+    {
+      "name": "phone 320 has native gallery pan",
+      "pass": true
+    },
+    {
+      "name": "phone 320 optics track gallery pan",
+      "pass": true
+    },
+    {
+      "name": "phone 320 no document overflow",
+      "pass": true
+    },
+    {
+      "name": "reduced motion avoids perpetual rendering",
+      "pass": true
+    },
+    {
+      "name": "WebGL fallback keeps artwork and perspective",
+      "pass": true
+    },
+    {
+      "name": "fallback project links work",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript or shader errors in tested routes",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "layout": {
+    ".hero": {
+      "top": 48.109375,
+      "height": 294.984375,
+      "bottom": 343.09375
+    },
+    ".games-band": {
+      "top": 278.828125,
+      "height": 232.359375,
+      "bottom": 511.1875
+    },
+    ".projects-band": {
+      "top": 448.578125,
+      "height": 197.75,
+      "bottom": 646.328125
+    },
+    ".biography-strip": {
+      "top": 641.390625,
+      "height": 154.90625,
+      "bottom": 796.296875
+    },
+    ".contact-strip": {
+      "top": 796.296875,
+      "height": 115.359375,
+      "bottom": 911.65625
+    }
+  },
+  "geometry": {
+    "max": 0.35055641453885905,
+    "projective": true,
+    "corners": [
+      [
+        626.1365086126252,
+        331.13349292162945
+      ],
+      [
+        868.2606131216933,
+        325.4439418386661
+      ],
+      [
+        830.2454241477393,
+        456.79825982880675
+      ],
+      [
+        606.7481431751607,
+        472.01490201436025
+      ],
+      [
+        896.8943211126252,
+        318.28974292162945
+      ],
+      [
+        1139.0184256216933,
+        312.6001918386661
+      ],
+      [
+        1101.0032366477394,
+        443.95450982880675
+      ],
+      [
+        877.5059556751607,
+        459.17115201436025
+      ],
+      [
+        1167.6599461126252,
+        306.75849292162945
+      ],
+      [
+        1409.7840506216933,
+        301.0689418386661
+      ],
+      [
+        1371.7688616477394,
+        432.42325982880675
+      ],
+      [
+        1148.2715806751607,
+        447.63990201436025
+      ],
+      [
+        625.7616122641762,
+        486.3029095243488
+      ],
+      [
+        867.5305046617002,
+        480.4120064651101
+      ],
+      [
+        830.8617573815296,
+        607.113949044949
+      ],
+      [
+        607.0603558368124,
+        622.1915880098757
+      ],
+      [
+        896.5194247641762,
+        473.4591595243488
+      ],
+      [
+        1138.2883171617002,
+        467.5682564651101
+      ],
+      [
+        1101.6195698815297,
+        594.270199044949
+      ],
+      [
+        877.8181683368124,
+        609.3478380098757
+      ],
+      [
+        1167.2850497641762,
+        461.9279095243488
+      ],
+      [
+        1409.0539421617002,
+        456.0370064651101
+      ],
+      [
+        1372.3851948815297,
+        582.738949044949
+      ],
+      [
+        1148.5837933368123,
+        597.8165880098757
+      ]
+    ]
+  }
+}
