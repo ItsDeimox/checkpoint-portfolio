@@ -1,0 +1,43 @@
+{
+  "results": [
+    {
+      "name": "Drag rotates true scene camera",
+      "pass": true
+    },
+    {
+      "name": "Reset settles to reference angle",
+      "pass": true
+    },
+    {
+      "name": "Expanded scene fills viewport",
+      "pass": true
+    },
+    {
+      "name": "Escape restores panoramic hero",
+      "pass": true
+    },
+    {
+      "name": "Quality control retains real renderer",
+      "pass": true
+    },
+    {
+      "name": "Touch scroll stays on the home route",
+      "pass": true
+    },
+    {
+      "name": "Touch actually moves the gallery",
+      "pass": true
+    },
+    {
+      "name": "No GL errors after resize, expand and touch",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "No JavaScript errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

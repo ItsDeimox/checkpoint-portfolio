@@ -44,3 +44,9 @@ A função Roblox limita consultas ao usuário 1980621685 e aos grupos 35542723 
 As verificações em Chromium/ANGLE SwiftShader e viewports emulados não certificam GPU física, Safari ou telefone real. A fidelidade da composição foi o alvo; modelos autorais não são réplicas exatas da fotografia/concept.
 
 Three.js usa MIT, preservada em `docs/THREE-LICENSE.txt`. Fontes são carregadas por CSS; nenhum arquivo de fonte é redistribuído.
+
+## Reference refinement R3
+
+The active home layout and optical materials now follow the approved diagonal concept. See [REFERENCE-R3.md](docs/REFERENCE-R3.md) for current design decisions, testing and exact file locations. The older R2 screenshots and reports are historical; current captures end in `r3`.
+
+The header and native links remain HTML. Tilted card artwork uses a shared real perspective matrix with GLSL lighting, waves and bloom. `src/scene/car.js` is unchanged; framing and environment were refined instead. The existing API/profile/social links remain the same.
