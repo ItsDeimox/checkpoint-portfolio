@@ -1,0 +1,43 @@
+name: Stage verified DXT reference rebuild
+on:
+  push:
+    branches: [build/dxt-reference-r2-20261009]
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Import the hash-verified tested source
+        env:
+          SOURCE_URL: https://sb-2jrdvvi75wdm.vercel.run/import-package.tar.gz
+          SOURCE_SHA256: d375efcd8775025aeeb6be1254210ee19da7055fad1010a10e0d9ddd9b2a2321
+        run: |
+          set -euo pipefail
+          git init work
+          cd work
+          git remote add origin https://github.com/ItsDeimox/checkpoint-portfolio.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout -b build/dxt-reference-r2-20261009 FETCH_HEAD
+          curl --fail --location --retry 2 "$SOURCE_URL" -o /tmp/dxt.tar.gz
+          echo "$SOURCE_SHA256  /tmp/dxt.tar.gz" | sha256sum -c -
+          rm -rf dxrkths
+          mkdir dxrkths
+          tar -xzf /tmp/dxt.tar.gz -C dxrkths
+          cd dxrkths
+          npm ci --no-audit --no-fund
+          npm test
+          npm run build
+      - name: Store the tested source on the integration branch only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd work
+          git config user.name 'Deimox'
+          git config user.email '123704758+ItsDeimox@users.noreply.github.com'
+          git add dxrkths
+          git commit -m 'Stage DXT diagonal reference rebuild and volumetric scene [skip ci]'
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/build/dxt-reference-r2-20261009
