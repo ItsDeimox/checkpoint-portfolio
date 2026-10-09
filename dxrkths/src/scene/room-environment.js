@@ -37,19 +37,17 @@ function weatheredMetal(){
 export function createReferenceCamera(){
  const camera=new T.PerspectiveCamera(38,1672/941,.08,100);camera.position.set(0,1.48,-13.6);camera.lookAt(0,2.31,0);camera.updateMatrixWorld(true);return camera;
 }
-function referencePlane(points,camera,z,yaw){
- const cx=points.reduce((s,p)=>s+p[0],0)/4,cy=points.reduce((s,p)=>s+p[1],0)/4;
- const centerRay=new T.Raycaster();centerRay.setFromCamera(new T.Vector2(cx*2-1,1-cy*2),camera);
- const distance=(z-centerRay.ray.origin.z)/centerRay.ray.direction.z,origin=centerRay.ray.at(distance,new T.Vector3());
- const normal=new T.Vector3(Math.sin(yaw),0,-Math.cos(yaw)),plane=new T.Plane().setFromNormalAndCoplanarPoint(normal,origin);
- const corners=points.map(([x,y])=>{const ray=new T.Raycaster();ray.setFromCamera(new T.Vector2(x*2-1,1-y*2),camera);return ray.ray.intersectPlane(plane,new T.Vector3());});
- return {normal,corners,center:origin};
-}
 export function createFixedPanelLayout(){
- // Author the display planes once from the original calibration camera. The
- // user's live camera, drag orientation and responsive FOV never enter here.
- const camera=createReferenceCamera();
- return ROOM_PANELS.map((data,index)=>{const shape=referencePlane(data.corners,camera,data.z,data.yaw);shape.index=index;shape.center=shape.corners.reduce((p,c)=>p.add(c),new T.Vector3()).multiplyScalar(.25);return shape;});
+ // Build from dimensions in metres, not four image rays. Rectangular geometry
+ // makes the two triangles share one affine world-to-UV map: printed lines
+ // stay straight from every camera angle without a diagonal texture crease.
+ return ROOM_PANELS.map((data,index)=>{
+  const center=new T.Vector3(...data.position);
+  const normal=new T.Vector3(-Math.sin(data.yaw),0,-Math.cos(data.yaw));
+  const right=new T.Vector3().crossVectors(up,normal);
+  const corners=[[-1,1],[1,1],[1,-1],[-1,-1]].map(([x,y])=>center.clone().addScaledVector(right,x*data.width*.5).addScaledVector(up,y*data.height*.5));
+  return {index,center,normal,corners};
+ });
 }
 function buildPanels(view){
  const texture=new T.TextureLoader(view.loadingManager).load('/assets/images/showroom-reference.png',()=>view.wake());texture.colorSpace=T.SRGBColorSpace;texture.anisotropy=Math.min(8,view.renderer.capabilities.getMaxAnisotropy());view.textures.push(texture);

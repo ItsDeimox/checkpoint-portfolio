@@ -58,15 +58,20 @@ test('rays toward the car remain clear along approach paths to all five fixed pa
  assert.equal(checked,1500);
 });
 
-test('fixed display planes retain their original calibration and world-space normals',()=>{
+test('physical display rectangles retain the reference composition and face into the room',()=>{
  const camera=createReferenceCamera(),layout=createFixedPanelLayout();
  for(const [index,panel]of layout.entries()){
   for(const [i,corner]of panel.corners.entries()){
    const projected=corner.clone().project(camera),expected=ROOM_PANELS[index].corners[i];
-   assert.ok(Math.abs(projected.x*.5+.5-expected[0])<1e-8);
-   assert.ok(Math.abs(.5-projected.y*.5-expected[1])<1e-8);
+   // The drawing is not a physically exact perspective rectangle. Fitting an
+   // upright screen may move a reference corner by at most ten source pixels;
+   // reproducing the irregular outline exactly was the deformation regression.
+   const dx=(projected.x*.5+.5-expected[0])*1672,dy=(.5-projected.y*.5-expected[1])*941;
+   assert.ok(Math.hypot(dx,dy)<10,`panel ${index}, corner ${i}: ${Math.hypot(dx,dy)}px composition drift`);
    assert.ok(Math.abs(corner.clone().sub(panel.center).dot(panel.normal))<1e-8,'screen must be one fixed plane');
   }
+  const inward=new T.Vector3(0,panel.center.y,-1).sub(panel.center).normalize();
+  assert.ok(panel.normal.dot(inward)>.99,`panel ${index} must face the room's viewing area`);
  }
  // The live home view uses a different eye/lens; screen vertices stay authored
  // in the room instead of being recomputed to match camera-facing rectangles.
