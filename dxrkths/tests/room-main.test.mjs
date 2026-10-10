@@ -4,7 +4,9 @@ import { readFile } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 import { transform } from 'esbuild';
 import * as homePage from '../src/pages/home-room.js';
-import * as roomShell from '../src/ui/room-shell.js';
+import * as roomShell from '../src/ui/room-visitor-shell.js';
+import * as visitorSettings from '../src/ui/room-visitor-settings.js';
+import * as introModule from '../src/ui/room-intro.js';
 import * as navigation from '../src/ui/room-navigation.js';
 import * as musicSettings from '../src/scene/room-music-settings.js';
 import * as visualSettings from '../src/scene/room-visual-settings.js';
@@ -145,6 +147,15 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
   }]));
   window.open = (...args) => { opened.push(args); return null; };
   let scene;
+  class PageMusic {
+    constructor({settings,onState}){this.settings=settings;this.onState=onState;this.enabled=false;this.status='idle';}
+    setEnabled(value){this.enabled=value;this.status=value?'playing':'paused';this.onState(this.inspect());return Promise.resolve(value);}
+    inspect(){return {enabled:this.enabled,status:this.status,title:'DJ ROOTS - Lagoon',hasTrack:true,error:null};}
+    setSettings(values){this.settings=values;calls.push({music:{...values}});}
+    suspend(){calls.push({audioSuspend:true});return Promise.resolve();}
+    resume(){calls.push({audioResume:true});return Promise.resolve();}
+    close(){calls.push({audioClose:true});return Promise.resolve();}
+  }
   class HeroScene {
     constructor(canvas, settings, callbacks) {
       scene = this;
@@ -168,12 +179,12 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
     dispose() { this.disposed = true; this.ready = false; calls.push({ dispose: true }); return Promise.resolve(); }
   }
   const dependencies = {
-    './pages/home-room.js': homePage, './ui/room-shell.js': roomShell,
+    './pages/home-room.js': homePage, './ui/room-visitor-shell.js': roomShell, './ui/room-intro.js':introModule, './ui/room-visitor-settings.js':visitorSettings, './scene/room-music.js':{RoomMusic:PageMusic},
     './ui/room-navigation.js': navigation, './scene/room-visual-settings.js': visualSettings, './scene/room-music-settings.js': musicSettings,
   };
   runInNewContext(source.code, {
     document, window, location, history, localStorage,
-    Element: ElementStub, HTMLElement: ElementStub, URLSearchParams,
+    Element: ElementStub, HTMLElement: ElementStub, URLSearchParams, setTimeout, clearTimeout,
     console: { warn: (...values) => calls.push({ warning: values }) },
     require(name) {
       if (name === './render/showroom.bundle.js') {
@@ -304,38 +315,25 @@ test('surface links authorize cloned bundle actions by authored id and href and 
   f.scene.callbacks.onPanelAction(clone); assert.equal(f.opened.length, 1);
 });
 
-test('sliders update the scene and output without replacing the focused input, then persist on change', async () => {
-  const f = harness({ stored: { quality: 'high', visual: { exposure: 1.2, bloom: 0, lens: -1 } } });
-  const input = f.get('#visual-exposure'); input.focus(); input.value = '1.19';
-  fire(input, 'input');
-  assert.equal(f.get('#visual-exposure'), input); assert.equal(f.document.activeElement, input);
-  assert.equal(f.get('[data-visual-value="exposure"]').textContent, '1.19');
-  assert.equal(f.writes.length, 0);
-  await f.ready();
-  assert.equal(f.scene.settings.visual.exposure, 1.19, 'Changes made while loading must reach the scene');
-  assert.equal(f.scene.settings.visual.lens, 0);
-  const current = f.get('#visual-exposure'); current.focus(); current.value = '1.24';
-  fire(current, 'input');
-  assert.equal(f.get('#visual-exposure'), current); assert.equal(f.document.activeElement, current);
-  assert.equal(f.calls.at(-1).visual.exposure, 1.24); assert.equal(f.writes.length, 0);
-  fire(current, 'change');
-  assert.equal(f.writes.length, 1); assert.equal(f.writes[0].visual.exposure, 1.24); assert.equal(f.writes[0].visual.bloom, 0);
-  const reloaded = harness({ stored: f.writes[0] }); await settle();
-  assert.equal(reloaded.get('#visual-exposure').value, '1.24');
-  const details = f.get('.room-settings'); details.open = true;
-  const quality = f.get('#quality'); quality.focus(); fire(quality, 'click');
-  assert.equal(f.get('.room-settings').open, true); assert.equal(f.document.activeElement, f.get('#quality'));
-  assert.equal(f.get('#visual-exposure').value, '1.24');
-  fire(f.get('[data-reset-visuals]'), 'click');
-  assert.deepEqual(f.writes.at(-1).visual, { ...visualSettings.DEFAULT_VISUAL_SETTINGS });
-  assert.equal(f.get('#visual-exposure').value, String(visualSettings.DEFAULT_VISUAL_SETTINGS.exposure));
+test('visitor controls preserve approved optics and cycle exactly Medium, High and Low',async()=>{
+  const f=harness({stored:{quality:'high',paused:true,visual:{exposure:1.2,bloom:0}}});await f.ready();
+  assert.equal(f.get('#visual-exposure'),null);assert.equal(f.get('.room-settings'),null);
+  assert.equal(f.inspect().settings.quality,'auto');assert.equal(f.inspect().settings.music.volume,.2);assert.equal(f.inspect().settings.music.reactivity,.85);
+  assert.equal(f.inspect().settings.visual.exposure,1.2);assert.equal(f.inspect().settings.visual.bloom,0);
+  const menu=f.get('.room-audio-menu');menu.open=true;
+  for(const quality of ['high','low','auto']){
+    const button=f.get('#quality');button.focus();fire(button,'click');
+    assert.equal(f.inspect().settings.quality,quality);assert.equal(f.document.activeElement,f.get('#quality'));
+    assert.equal(f.inspect().settings.visual.exposure,1.2);
+  }
+  const reloaded=harness({stored:f.writes.at(-1)});await settle();assert.equal(reloaded.inspect().settings.quality,'auto');
 });
 
 test('page lifecycle sleeps a cached scene and disposes only a noncached exit', async () => {
   const f = harness(); await f.ready();
-  fire(f.window, 'pagehide', { persisted: true }); assert.equal(f.calls.at(-1).sleep, true);
+  fire(f.window, 'pagehide', { persisted: true }); assert.ok(f.calls.some(c=>c.sleep));assert.ok(f.calls.some(c=>c.audioSuspend));
   assert.equal(f.scene.disposed, false);
-  fire(f.window, 'pageshow'); assert.equal(f.calls.at(-1).wake, true);
+  fire(f.window, 'pageshow'); assert.ok(f.calls.some(c=>c.wake));assert.ok(f.calls.some(c=>c.audioResume));
   fire(f.window, 'pagehide', { persisted: false }); assert.equal(f.scene.disposed, true);
 });
 
@@ -346,7 +344,7 @@ test('logo click is independent of Home and never resets an open panel',async()=
 });
 test('music controls keep the active slider, persist only controls and render file names as text',async()=>{
  const f=harness();await f.ready();const slider=f.get('#music-volume');slider.focus();slider.value='.72';fire(slider,'input');
- assert.equal(f.document.activeElement,slider);assert.equal(f.calls.at(-1).music.volume,.72);assert.equal(f.get('[data-music-value="volume"]').textContent,'72%');
+ assert.equal(f.document.activeElement,slider);assert.equal(f.calls.findLast(c=>c.music).music.volume,.72);assert.equal(f.get('[data-music-value="volume"]').textContent,'72%');
  fire(slider,'change');assert.equal(f.writes.at(-1).music.volume,.72);
  f.scene.callbacks.onMusicState({enabled:true,status:'playing',title:'<img src=x onerror=alert(1)>',hasTrack:true,error:null});
  assert.equal(f.get('[data-music-title]').textContent,'<img src=x onerror=alert(1)>');assert.equal(f.get('[data-music-title]').children.length,0);

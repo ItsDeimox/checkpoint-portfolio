@@ -1,8 +1,11 @@
 import { DEFAULT_TRACK, normalizeMusicSettings } from './scene/room-music-settings.js';
 import { home, ROOM_PANELS, renderPanelOptions } from './pages/home-room.js';
-import { renderRoomHeader, renderRoomFooter } from './ui/room-shell.js';
+import { renderRoomHeader, renderRoomFooter } from './ui/room-visitor-shell.js';
+import { mountIntro } from './ui/room-intro.js';
+import { restoreVisitorSettings, QUALITY_VALUES } from './ui/room-visitor-settings.js';
+import { RoomMusic } from './scene/room-music.js';
 import { panelFromPath, pathForPanel } from './ui/room-navigation.js';
-import { normalizeVisualSettings, DEFAULT_VISUAL_SETTINGS, VISUAL_PRESET_VERSION, restoreVisualSettings } from './scene/room-visual-settings.js';
+import { VISUAL_PRESET_VERSION, restoreVisualSettings } from './scene/room-visual-settings.js';
 
 const main = document.querySelector('#main');
 const header = document.querySelector('#header');
@@ -11,14 +14,14 @@ const announcer = document.querySelector('#announcer');
 let stored = {};
 try { stored = JSON.parse(localStorage.getItem('dxt-settings') || '{}'); } catch {}
 const settings = {
-  quality: ['auto', 'low', 'high'].includes(stored?.quality) ? stored.quality : 'auto',
-  paused: Boolean(stored?.paused), sound: false,
-  music: normalizeMusicSettings(stored?.music),
+  ...restoreVisitorSettings(stored),
+  paused: false, sound: false,
   visual: restoreVisualSettings(stored),
   visualPreset: VISUAL_PRESET_VERSION,
 };
 const save = () => { try { localStorage.setItem('dxt-settings', JSON.stringify(settings)); } catch {} };
 let musicState = {enabled:false,status:'idle',title:DEFAULT_TRACK.title,error:null,hasTrack:Boolean(DEFAULT_TRACK.url)};
+let intro = null, bootTimedOut = false, startupTimeout = null;
 let scene = null, phase = 'loading', selectedPanel = null, navigation = 0, restoreFocus = null;
 
 document.body.dataset.page = 'home';
@@ -31,13 +34,11 @@ const nativeTargets = main.querySelector('.room-panel-targets');
 const mobileContext = main.querySelector('.room-mobile-context');
 
 function updateHeader() {
-  const open = header.querySelector('.room-settings')?.open;
-  const musicOpen = header.querySelector('.room-music-controls')?.open;
+  const musicOpen = header.querySelector('.room-audio-menu')?.open;
   const focusedId = header.contains(document.activeElement) ? document.activeElement.id : null;
   header.innerHTML = renderRoomHeader(settings);
   header.querySelector('#quality').disabled = phase === 'loading';
-  if (open) header.querySelector('.room-settings').open = true;
-  if (musicOpen) header.querySelector('.room-music-controls').open = true;
+  if (musicOpen) header.querySelector('.room-audio-menu').open = true;
   updateMusicUI();
   if (focusedId) header.querySelector(`#${focusedId}`)?.focus({ preventScroll: true });
 }
@@ -46,11 +47,13 @@ updateHeader();
 function updateMusicUI() {
   const sound=header.querySelector('#sound-toggle');
   if(sound){
-    sound.disabled=phase!=='ready';sound.setAttribute('aria-pressed',String(musicState.enabled));
+    sound.disabled=false;sound.setAttribute('aria-pressed',String(musicState.enabled));
     sound.setAttribute('aria-label',musicState.enabled?'Pause music':'Play music');
     sound.title=musicState.error||musicState.title;
     sound.dataset.musicState=musicState.status;
   }
+  const introSound=document.querySelector('#intro-sound-toggle');
+  if(introSound){introSound.hidden=!intro?.activated;introSound.textContent=musicState.enabled?'Pause music':'Resume music';introSound.setAttribute('aria-pressed',String(musicState.enabled));}
   const spin=header.querySelector('#brand-spin');
   if(spin)spin.disabled=phase!=='ready'||Boolean(scene&&!scene.brandLogo?.ready);
   const title=header.querySelector('[data-music-title]');
@@ -59,6 +62,21 @@ function updateMusicUI() {
   const message=musicState.error||(musicState.status==='playing'?'Playing':musicState.status==='loading'?'Loading track...':'Press Sound to play.');
   if(status&&status.textContent!==message)status.textContent=message;
 }
+
+// Music belongs to the page, so the first gesture works even while WebGL loads.
+const soundtrack = new RoomMusic({settings:settings.music,onState(state){
+  musicState=state;settings.sound=state.enabled;updateMusicUI();scene?.wake();
+}});
+intro=mountIntro(document,{
+  onActivate(){save();return soundtrack.setEnabled(true);},
+  onDismiss(){
+    setPanelPresentation(!options.hidden,phase==='ready');
+    const focus=!options.hidden?options.querySelector('h2'):phase==='ready'?canvas:nativeTargets.querySelector('a');
+    focus?.focus({preventScroll:true});scene?.wake();
+  },
+});
+const entryNote=document.querySelector('.intro-audio-note');
+if(entryNote)entryNote.textContent=`Click to enter · Music starts at ${Math.round(settings.music.volume*100)}%`;
 
 function setLocation(index, mode = 'push') {
   const path = index === null ? '/' : pathForPanel(index);
@@ -137,13 +155,14 @@ function unavailable(error) {
   host.classList.remove('scene-ready', 'camera-travelling');
   host.classList.add('scene-unavailable');
   host.dataset.sceneStatus = 'unavailable';
-  updateMusicUI();
+  updateMusicUI();intro?.fail();
   if (selectedPanel !== null) revealOptions(selectedPanel, navigation);
 }
 
 function onReady() {
+  if(bootTimedOut)return;clearTimeout(startupTimeout);
   phase = 'ready';
-  updateHeader();
+  updateHeader();intro?.ready();
   if (selectedPanel !== null) {
     const token = navigation;
     // A restored context replaces the native fallback with the surface menu.
@@ -172,21 +191,14 @@ document.addEventListener('click', async event => {
   }
   const focus = target.closest('[data-focus-panel]');
   if (focus) { scene?.focusPanel(Number(focus.dataset.focusPanel)); return; }
-  if (target.closest('[data-reset-visuals]')) {
-    settings.visual = { ...DEFAULT_VISUAL_SETTINGS };
-    save(); scene?.setVisualSettings(settings.visual); updateHeader(); return;
-  }
   if (target.closest('#quality')) {
-    const values = ['auto', 'low', 'high'];
+    const values = QUALITY_VALUES;
     settings.quality = values[(values.indexOf(settings.quality) + 1) % values.length];
     save(); scene?.setSettings(); updateHeader();
-  } else if (target.closest('#pause')) {
-    settings.paused = !settings.paused;
-    save(); scene?.setSettings(); updateHeader();
-  } else if (target.closest('#sound-toggle')) {
+  } else if (target.closest('#sound-toggle, #intro-sound-toggle')) {
     // Intent changes synchronously. Late play promises never overwrite a newer click.
     settings.sound = !settings.sound;
-    try {await scene?.setSound(settings.sound);}
+    try {await soundtrack.setEnabled(settings.sound);}
     catch {settings.sound=false;musicState={...musicState,enabled:false,status:'error',error:'Unable to play music. Try again.'};updateMusicUI();}
   }
 });
@@ -198,19 +210,14 @@ header.addEventListener('input', event => {
     settings.music=normalizeMusicSettings({...settings.music,[key]:Number(music.value)});
     const output=header.querySelector(`[data-music-value="${key}"]`);
     if(output)output.textContent=`${Math.round(settings.music[key]*100)}%`;
-    scene?.setMusicSettings(settings.music);return;
+    soundtrack.setSettings(settings.music);scene?.wake();return;
   }
-  const input = event.target.closest?.('[data-visual-setting]');
-  if (!input) return;
-  const key = input.dataset.visualSetting;
-  settings.visual = normalizeVisualSettings({ [key]: Number(input.value) }, settings.visual);
-  const output = header.querySelector(`[data-visual-value="${key}"]`);
-  if (output) output.textContent = settings.visual[key].toFixed(2);
-  scene?.setVisualSettings(settings.visual);
 });
-header.addEventListener('change', async event => {
-  if (event.target.matches?.('[data-visual-setting],[data-music-setting]')) save();
-
+header.addEventListener('change', event => {
+  if (event.target.matches?.('[data-music-setting]')) save();
+});
+document.addEventListener('click',event=>{
+  if(!event.target.closest?.('.room-audio-controls'))header.querySelector('.room-audio-menu')?.removeAttribute('open');
 });
 options.addEventListener('focusin', event => {
   if (!options.classList.contains('is-world-content')) return;
@@ -223,7 +230,7 @@ options.addEventListener('focusout', event => {
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
     if (selectedPanel !== null || !options.hidden) { event.preventDefault(); closePanel(); }
-    else header.querySelector('.room-settings')?.removeAttribute('open');
+    else {const menu=header.querySelector('.room-audio-menu');if(menu?.open){menu.removeAttribute('open');header.querySelector('#music-settings-toggle')?.focus();}}
   }
   if (event.key === 'Tab' && !options.hidden && options.getAttribute('role') === 'dialog') {
     const controls = [...options.querySelectorAll('a[href], button:not([disabled])')].filter(element => element.getClientRects().length);
@@ -242,10 +249,11 @@ window.addEventListener('popstate', () => {
   else openPanel(panel, null, 'none');
 });
 window.addEventListener('pagehide', event => {
-  if (event.persisted) scene?.sleep();
-  else scene?.dispose();
+  if (event.persisted) {scene?.sleep();soundtrack.suspend();}
+  else {clearTimeout(startupTimeout);intro?.dispose();scene?.dispose();soundtrack.close();}
 });
-window.addEventListener('pageshow', () => scene?.wake());
+window.addEventListener('pageshow', () => {scene?.wake();if(!document.hidden)soundtrack.resume();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)soundtrack.suspend();else soundtrack.resume();});
 
 const initialPanel = panelFromPath(location.pathname);
 if (initialPanel !== null) openPanel(initialPanel, null, 'none');
@@ -253,10 +261,19 @@ else setLocation(null, 'none');
 
 async function start() {
   // The UI and fallback links are usable while the renderer bundle downloads.
+  startupTimeout=setTimeout(()=>{
+    if(phase!=='loading')return;
+    bootTimedOut=true;unavailable(new Error('Showroom preparation timed out.'));
+    scene?.dispose();
+  },60000);
+  startupTimeout.unref?.();
   try {
     const { HeroScene } = await import('./render/showroom.bundle.js');
+    if(bootTimedOut)return;
     scene = new HeroScene(canvas, settings, {
       onPanelRequest: openPanel, onResetRequest: closePanel, onReady, onUnavailable: unavailable,
+      music:soundtrack,introPending:()=>!intro.dismissed,
+      onProgress:caption=>intro.progress(caption),
       onMusicState(state) {musicState=state;settings.sound=state.enabled;updateMusicUI();},
       onPanelAction(action) {
         if (selectedPanel === null) return;
@@ -273,9 +290,9 @@ async function start() {
   } catch (error) {
     unavailable(error);
     if (scene && !scene.lost) await scene.dispose();
-  }
+  } finally {clearTimeout(startupTimeout);}
 }
 start();
 if (new URLSearchParams(location.search).has('debug')) {
-  window.__DXT__ = { inspect: () => ({ phase, selectedPanel, settings: { ...settings }, scene: scene?.inspect() ?? null }) };
+  window.__DXT__ = { inspect: () => ({ phase, selectedPanel, settings: { ...settings }, intro:{entered:intro.activated,closed:intro.dismissed},music:soundtrack.inspect(),scene: scene?.inspect() ?? null }) };
 }

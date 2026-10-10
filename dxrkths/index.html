@@ -14,15 +14,32 @@
   <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/barlow-condensed-latin-500.woff2" crossorigin>
   <link rel="stylesheet" href="/src/styles-base.css">
   <link rel="stylesheet" href="/src/styles-room.css">
+  <link rel="stylesheet" href="/src/styles-experience.css">
+  <style>body.intro-pending{background:#070708}.intro-pending>#header,.intro-pending>#main,.intro-pending>#footer{visibility:hidden}#room-intro{position:fixed;inset:0;z-index:100;background:#070708}#room-intro[hidden]{display:none}</style>
   <script type="module" src="/src/main.js"></script>
 </head>
-<body data-page="home">
+<body data-page="home" class="intro-pending">
+  <section id="room-intro" role="dialog" aria-modal="true" aria-labelledby="intro-title" aria-describedby="intro-status" aria-busy="true" data-stage="0">
+    <div class="intro-topline"><span>DXT / DIGITAL SHOWROOM</span><span>CREATOR · DRIFTER · BUILDER</span></div>
+    <div class="intro-orbit" aria-hidden="true"></div>
+    <div class="intro-content">
+      <img class="intro-wordmark" src="/assets/icons/dxt.webp" width="132" height="84" alt="DXT">
+      <p class="intro-kicker">Berserk Drift X &amp; beyond</p>
+      <h1 id="intro-title">Same passion.<br><span>Different roads.</span></h1>
+      <div class="intro-loader" aria-hidden="true"><i></i><i></i><i></i></div>
+      <p id="intro-status" role="status" aria-live="polite">Loading the showroom</p>
+      <button id="intro-enter" type="button" disabled>Enter DXT</button>
+      <p class="intro-audio-note">Click to enter · Music starts at 20%</p>
+    </div>
+    <button id="intro-sound-toggle" class="intro-sound-toggle" type="button" hidden>Pause music</button>
+    <div class="intro-bottom"><span>REAL-TIME 3D EXPERIENCE</span><span>BUILT DIFFERENT</span></div>
+  </section>
   <a class="skip-link" href="#main">Skip to content</a>
   <header id="header"></header>
   <main id="main" tabindex="-1"></main>
   <footer id="footer"></footer>
   <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
-  <noscript>
+  <noscript><style>#room-intro{display:none}.intro-pending>#main,.intro-pending>#header,.intro-pending>#footer{visibility:visible}</style>
     <section class="noscript">
       <h1>DXT / Berserk Drift X</h1>
       <p>Enable JavaScript to explore the showroom.</p>
