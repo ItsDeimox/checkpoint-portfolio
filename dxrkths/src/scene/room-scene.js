@@ -1,3 +1,5 @@
+import {FramePacer,frameRateLimit} from './room-performance.js';
+import {ReflectionBudget} from './room-reflection-budget.js';
 import * as T from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { loadShowroomCar } from './room-car.js';
@@ -39,6 +41,7 @@ export class HeroScene {
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)');
     this.startedAt = performance.now();
     this.startup = {};
+    this.framePacer = new FramePacer();
     this.workController = new AbortController();
     this.controller.signal.addEventListener('abort', () => this.workController.abort(), { once: true });
     this.readyPromise = this.initialize();
@@ -105,7 +108,13 @@ export class HeroScene {
     this.optics.attachTurntable(this.turntable.group);
     this.composer = this.optics.composer;
     this.optics.setQuality(this.settings.quality);
+    this.reflectionBudget?.configure(this.settings.quality);
+    this.framePacer?.reset();
+    this.applyAtmosphereQuality();
     this.optics.setVisualSettings(this.settings.visual);
+    this.reflectionBudget = new ReflectionBudget(this);
+    this.reflectionBudget.configure(this.settings.quality);
+    this.applyAtmosphereQuality();
     this.renderer.shadowMap.enabled = this.settings.quality !== 'low';
     this.resize();
     this.raycaster = new T.Raycaster();
@@ -425,6 +434,9 @@ export class HeroScene {
   setSettings() {
     if (!this.ready || !this.optics) return;
     this.optics.setQuality(this.settings.quality);
+    this.reflectionBudget?.configure(this.settings.quality);
+    this.framePacer?.reset();
+    this.applyAtmosphereQuality();
     this.optics.setVisualSettings(this.settings.visual);
     for(const beam of this.beams ?? [])beam.material.uniforms.beamSamples.value=this.settings.quality==='high'?32:this.settings.quality==='low'?12:20;
     if(this.settings.paused || this.reduced.matches)this.turntable?.end(false);
@@ -479,13 +491,23 @@ export class HeroScene {
     });
   }
 
+  applyAtmosphereQuality() {
+    const low=this.settings.quality==='low';
+    for(const [i,smoke]of (this.smokes??[]).entries()){
+      smoke.visible=!low||i%5<2;
+      if(smoke.material.uniforms.smokeDetail)smoke.material.uniforms.smokeDetail.value=low?2:4;
+    }
+    this.dust?.geometry.setDrawRange(0,low?48:160);
+  }
+
   updateAtmosphere() { updateRoomAtmosphere(this); }
 
   render(dt, motion) {
     this.renderer.info.reset();
+    this.reflectionBudget?.advance(dt);
     this.optics.render(dt, {
       time: this.time, motion, focusDistance: this.cameraRig.focusDistance,
-      turntableDelta:this.turntable?.frameDelta ?? 0,
+      turntableDelta:this.settings.quality==='low'?0:this.turntable?.frameDelta ?? 0,
       paused: this.settings.paused || this.reduced.matches,
       projectionAnimated: this.cameraRig.mode === 'approaching' || this.cameraRig.mode === 'returning',
     });
@@ -496,11 +518,15 @@ export class HeroScene {
     if (!this.ready || this.disposed || this.raf || this.inFrame || document.hidden || this.lost) return;
     this.last = performance.now(); this.raf = requestAnimationFrame(now => this.frame(now));
   }
-  sleep() { cancelAnimationFrame(this.raf); this.raf = 0; }
+  sleep() { cancelAnimationFrame(this.raf); this.raf = 0; this.framePacer?.reset(); this.reflectionBudget?.invalidate(); }
 
   frame(now) {
     this.raf = 0;
     if (!this.ready || this.disposed || this.lost || document.hidden) return;
+    const limit=frameRateLimit(this.settings.quality,this.settings.mobileDevice);
+    if(!this.framePacer.take(now,limit)){
+      this.raf=requestAnimationFrame(time=>this.frame(time));return;
+    }
     // Surface redraws and arrival callbacks can call wake() synchronously.
     // Keep one frame owner so those callbacks cannot fork animation loops.
     this.inFrame = true;
@@ -538,7 +564,10 @@ export class HeroScene {
       quality: this.settings.quality, fixedPanels: true, contentPanel: this.contentPanel,
       sceneSamples: this.optics?.sceneTarget.samples, visual: this.optics?.visualSettings,
       turntableAngle:this.turntable?.angle,turntableVelocity:this.turntable?.velocity,
-      hoverPanel:this.hoverPanel,bloomLevels:this.optics?.bloomPass.levels.length,
+      hoverPanel:this.hoverPanel,bloomLevels:this.optics?.bloomPass.activeLevels??this.optics?.bloomPass.levels.length,
+      frameLimit:frameRateLimit(this.settings.quality,this.settings.mobileDevice),
+      skippedRefreshes:this.framePacer?.skipped,reflectionCaptures:this.reflectionBudget?.captures,
+      reflectionSamples:this.ground?.getRenderTarget().samples,visibleSmoke:this.smokes?.filter(x=>x.visible).length,
       beamSamples:this.beams?.[0]?.material.uniforms.beamSamples.value,
       motionShutter:this.optics?.lensPass.uniforms.uShutter.value,
       objectMotion:this.optics?.lensPass.uniforms.uObjectMotion.value,

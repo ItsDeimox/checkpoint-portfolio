@@ -193,6 +193,7 @@ document.addEventListener('click', async event => {
   if (focus) { scene?.focusPanel(Number(focus.dataset.focusPanel)); return; }
   if (target.closest('#quality')) {
     const values = QUALITY_VALUES;
+    settings.qualityPreference='manual';
     settings.quality = values[(values.indexOf(settings.quality) + 1) % values.length];
     save(); scene?.setSettings(); updateHeader();
   } else if (target.closest('#sound-toggle, #intro-sound-toggle')) {

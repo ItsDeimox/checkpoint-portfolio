@@ -21,7 +21,7 @@ test('visitor defaults migrate once to medium, 20 percent music, and 85 percent 
  assert.equal(typeof visitor.restoreVisitorSettings,'function');
  const result=visitor.restoreVisitorSettings({quality:'high',paused:true,music:{volume:.45,reactivity:.65}});
  assert.equal(result.quality,'auto');assert.deepEqual(result.music,{volume:.2,reactivity:.85});
- const saved=visitor.restoreVisitorSettings({...result,quality:'low',music:{volume:0,reactivity:.4}});
+ const saved=visitor.restoreVisitorSettings({...result,quality:'low',qualityPreference:'manual',music:{volume:0,reactivity:.4}});
  assert.equal(saved.quality,'low');assert.deepEqual(saved.music,{volume:0,reactivity:.4});
  assert.deepEqual(visitor.QUALITY_VALUES,['low','auto','high']);assert.equal(visitor.qualityLabel('auto'),'Medium');
 });

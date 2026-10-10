@@ -122,7 +122,7 @@ export class RoomBrandLogo {
   }
   async prepare(environment){
     if(this.disposed)return;
-    this.ready=false;this.scene.environment=environment;
+    this.ready=false;this.cachedAngle=null;this.scene.environment=environment;
     const renderer=this.renderer,target=renderer.getRenderTarget();
     try{
       renderer.initRenderTarget(this.target);
@@ -154,6 +154,7 @@ export class RoomBrandLogo {
       this.layout={x:(rect.left-host.left)*sx,y:(host.bottom-rect.bottom)*sy,w:rect.width*sx,h:rect.height*sy};
       Object.assign(this.camera,brandFrustum(rect.width/rect.height));this.camera.updateProjectionMatrix();
       const ratio=renderer.getPixelRatio();
+      this.cachedAngle=null;
       this.target.setSize(Math.max(2,Math.min(384,Math.ceil(rect.width*ratio*2))),Math.max(2,Math.min(256,Math.ceil(rect.height*ratio*2))));
     }
     const {x,y,w,h}=this.layout;
@@ -162,8 +163,11 @@ export class RoomBrandLogo {
     renderer.getViewport(this.savedViewport);renderer.getScissor(this.savedScissor);
     renderer.getClearColor(this.savedColor);const alpha=renderer.getClearAlpha();
     try{
-      renderer.autoClear=false;renderer.setScissorTest(false);renderer.setRenderTarget(this.target);
-      renderer.setClearColor(0,0);renderer.clear(true,true,false);renderer.render(this.scene,this.camera);
+      renderer.autoClear=false;renderer.setScissorTest(false);
+      if(this.cachedAngle!==this.mount.rotation.y){
+        renderer.setRenderTarget(this.target);renderer.setClearColor(0,0);renderer.clear(true,true,false);renderer.render(this.scene,this.camera);
+        this.cachedAngle=this.mount.rotation.y;this.captureCount=(this.captureCount??0)+1;
+      }
       renderer.setRenderTarget(null);renderer.setViewport(x,y,w,h);renderer.setScissor(x,y,w,h);renderer.setScissorTest(true);
       renderer.render(this.overlayScene,this.overlayCamera);
       anchor.style.opacity='0';return true;

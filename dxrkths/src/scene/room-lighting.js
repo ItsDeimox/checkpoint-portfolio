@@ -69,7 +69,7 @@ export function buildRoomAtmosphere(view) {
     const x = (i % 2 ? 1 : -1) * (2.7 + random() * 2), z = -1 + random() * 3.8, y = .4 + random() * .8;
     const material = new T.ShaderMaterial({
       vertexShader: roomVertex, fragmentShader: smokeFragment,
-      uniforms: { time: { value: 0 }, seed: { value: random() * 19 }, density: { value: .42 + random() * .24 }, tint: { value: new T.Color(i % 4 === 0 ? 0x926168 : 0x8493a7) } },
+      uniforms: { smokeDetail: { value: view.settings?.quality==='low'?2:4 }, time: { value: 0 }, seed: { value: random() * 19 }, density: { value: .42 + random() * .24 }, tint: { value: new T.Color(i % 4 === 0 ? 0x926168 : 0x8493a7) } },
       transparent: true, depthWrite: false, side: T.DoubleSide,
     });
     const mesh = new T.Mesh(new T.PlaneGeometry(2.6 + random() * 1.3, 1.5 + random() * .8), material);
@@ -95,6 +95,7 @@ export function buildRoomAtmosphere(view) {
 
 export function updateRoomAtmosphere(view) {
   for (const smoke of view.smokes) {
+    if(!smoke.visible)continue;
     smoke.quaternion.copy(view.camera.quaternion); smoke.material.uniforms.time.value = view.time;
     smoke.position.x = smoke.userData.base.x + Math.sin(view.time * .18 + smoke.userData.phase) * .23;
     smoke.position.y = smoke.userData.base.y + Math.sin(view.time * .23 + smoke.userData.phase) * .07;

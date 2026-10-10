@@ -31,6 +31,7 @@ export class RoomTurntable {
   update(deltaTime) {
     this.frameDelta = 0;
     if (!Number.isFinite(deltaTime) || deltaTime <= 0) return false;
+    if(!this.dragging&&this.velocity===0){this.moving=false;return false;}
     const dt = Math.min(deltaTime, .05), before = this.angle;
     if (this.dragging) {
       const step = (this.target - this.angle) * (1 - Math.exp(-22 * dt));
@@ -79,7 +80,7 @@ export class TurntableMotionPass extends Pass {
       if (!source.isMesh || !source.visible) return;
       if ([source.material].flat().every(m => m.transparent && m.opacity < .5)) return;
       const proxy = new T.Mesh(source.geometry, this.material);proxy.matrixAutoUpdate = false;
-      proxy.frustumCulled = false; this.scene.add(proxy);this.links.push({source,proxy});
+      proxy.frustumCulled = true; this.scene.add(proxy);this.links.push({source,proxy});
     });
     // The actual floor remains one reflector; its central material domain rotates.
     this.diskGeometry = new T.CircleGeometry(TURNTABLE_RADIUS, 96);
