@@ -81,7 +81,7 @@ header.addEventListener('change',event=>{if(event.target.matches?.('[data-music-
 document.addEventListener('click',event=>{if(!event.target.closest?.('.room-audio-controls'))header.querySelector('.room-audio-menu')?.removeAttribute('open');});
 document.addEventListener('keydown',event=>{
  if(event.key!=='Escape')return;
- if(selectedPanel!==null){event.preventDefault();sections.close();}
+ if(selectedPanel!==null||sections.returning){event.preventDefault();sections.close('push',sections.returning);}
  else{const menu=header.querySelector('.room-audio-menu');if(menu?.open){menu.removeAttribute('open');header.querySelector('#music-settings-toggle')?.focus();}}
 });
 window.addEventListener('popstate',()=>{const index=panelFromPath(location.pathname);if(index===null)sections.close('none');else sections.open(index,null,'none',true);});
@@ -103,4 +103,4 @@ async function start(){
 const initialPanel=panelFromPath(location.pathname);
 if(initialPanel!==null){phase='dormant';sections.open(initialPanel,null,'none',true);intro.ready();}
 else{setLocation(null,'none');start();}
-if(new URLSearchParams(location.search).has('debug'))window.__DXT__={inspect:()=>({phase,selectedPanel,settings:{...settings},intro:{entered:intro.activated,closed:intro.dismissed},section:{active:sections.page,travelling:sections.travelling},music:soundtrack.inspect(),scene:scene?.inspect()??null})};
+if(new URLSearchParams(location.search).has('debug'))window.__DXT__={inspect:()=>({phase,selectedPanel,settings:{...settings},intro:{entered:intro.activated,closed:intro.dismissed},section:{active:sections.page,travelling:sections.travelling,returning:sections.returning,waitingReturn:sections.waitingReturn},music:soundtrack.inspect(),scene:scene?.inspect()??null})};
