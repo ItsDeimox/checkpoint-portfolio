@@ -13,6 +13,7 @@ const layerCalls = HOLOGRAM_LAYERS.map(({lanes,cells,speed,depth,weight}, i) =>
 const FUNCTIONS = /* glsl */`
 // DXT_HOLOGRAM_V2: emissive layers, never vertex displacement.
 uniform vec2 holoView;
+uniform float musicTreble;
 float holoScanDistance(vec2 p) { return abs(p.y - fract(hoverTime * .19 + .07)); }
 vec2 holoWarp(vec2 p) {
   float activity = hover * pow(1. - contentMix, 2.);
@@ -37,7 +38,7 @@ vec2 holoLanes(vec2 p, float rows, float columns, float speed, float seed) {
   return vec2(line * (ends + tracer * .75), halo * ends) * gate;
 }
 vec3 holoLight(vec2 p) {
-  float activity = hover * (1. - contentMix * .94);
+  float activity = (hover + musicTreble * .16 * (1. - hover)) * (1. - contentMix * .94);
   vec2 shift = holoView + (hoverUv - .5) * .65;
   vec2 streams = ${layerCalls};
   float scanDistance = holoScanDistance(p);
@@ -51,7 +52,7 @@ vec3 holoLight(vec2 p) {
   float edgeFade = smoothstep(0., .012, edge);
   vec3 core = vec3(2.65,.018,.058) * (streams.x * .48 * edgeFade + scan * .72 + edgeCore * .35);
   vec3 halo = vec3(.34,.002,.014) * (streams.y * .8 + scanGlow * .75 + cursorGlow * .28);
-  return (core + halo) * activity;
+  return (core + halo) * activity * (1. + musicTreble * .5);
 }
 `;
 
@@ -72,6 +73,7 @@ export function configurePanelHologram(panel) {
   shader = shader.replace('float foregroundRoof(', `${FUNCTIONS}\nfloat foregroundRoof(`)
     .replace(projection, 'vec2 artUv=clamp(p+holoWarp(p),vec2(.001),vec2(.999));vec3 h=projection*vec3(artUv,1.);');
   material.uniforms.holoView = {value: new Vector2()};
+  material.uniforms.musicTreble = {value: 0};
   material.fragmentShader = shader;
   material.needsUpdate = true;
   panel.hologram = {

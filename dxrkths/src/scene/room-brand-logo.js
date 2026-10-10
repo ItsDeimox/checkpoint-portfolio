@@ -3,7 +3,7 @@ import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniform
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 export const BRAND_MODEL_URL = '/assets/models/DXTlogoPrinted.glb';
-const BRAND_REST_POSE = Object.freeze({pitch:-.12,yaw:Math.PI+.27});
+const BRAND_REST_POSE = Object.freeze({pitch:0,yaw:Math.PI});
 
 export function disposeBrandModel(root) {
   const geometries=new Set(), materials=new Set(), textures=new Set();
@@ -138,7 +138,7 @@ export class RoomBrandLogo {
     this.anchor=null;this.layout=null;
   }
   invalidateLayout(){this.layout=null;}
-  render(canvas,{yaw=0,pitch=0}={}){
+  render(canvas,{spinAngle=0}={}){
     if(!this.ready||this.disposed)return false;
     const anchor=this.getAnchor();
     if(!anchor||!anchor.isConnected){this.restoreFallback();return false;}
@@ -157,7 +157,7 @@ export class RoomBrandLogo {
       this.target.setSize(Math.max(2,Math.min(384,Math.ceil(rect.width*ratio*2))),Math.max(2,Math.min(256,Math.ceil(rect.height*ratio*2))));
     }
     const {x,y,w,h}=this.layout;
-    this.mount.rotation.set(BRAND_REST_POSE.pitch+Math.max(-.04,Math.min(.04,pitch)),BRAND_REST_POSE.yaw+Math.max(-.10,Math.min(.10,yaw)),0);
+    this.mount.rotation.set(BRAND_REST_POSE.pitch,BRAND_REST_POSE.yaw+(Number.isFinite(spinAngle)?spinAngle:0),0);
     const target=renderer.getRenderTarget(),autoClear=renderer.autoClear,scissorTest=renderer.getScissorTest();
     renderer.getViewport(this.savedViewport);renderer.getScissor(this.savedScissor);
     renderer.getClearColor(this.savedColor);const alpha=renderer.getClearAlpha();

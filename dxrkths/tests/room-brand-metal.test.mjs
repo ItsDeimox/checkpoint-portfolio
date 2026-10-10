@@ -23,12 +23,12 @@ test('supplied face and bevel use reflective silver metal instead of a diffuse w
   for(const [mesh,geometry,map]of original){assert.equal(mesh.geometry,geometry);assert.equal(mesh.material.normalMap,map);}
  }finally{disposeBrandModel(mount);}
 });
-test('more evident relief remains within the original header viewport at every pointer extreme',async()=>{
+test('head-on logo remains within the original header viewport during a complete rotation',async()=>{
  const mount=createBrandMount(await logo());
  try{
   const rest=mount.rotation.clone();
-  assert.ok(rest.y-Math.PI>=.22 && rest.y-Math.PI<=.35);
-  for(const aspect of [.8,1.2,1.78,2.4])for(const yaw of [-.10,0,.10])for(const pitch of [-.04,0,.04]){
+  assert.equal(rest.y,Math.PI);
+  for(const aspect of [.8,1.2,1.78,2.4])for(const yaw of Array.from({length:65},(_,i)=>i*Math.PI*2/64))for(const pitch of [0]){
    mount.rotation.set(rest.x+pitch,rest.y+yaw,0);mount.updateMatrixWorld(true);
    const box=new T.Box3().setFromObject(mount,true),f=brandFrustum(aspect);
    assert.ok(box.min.x>f.left && box.max.x<f.right);
