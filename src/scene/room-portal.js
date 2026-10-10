@@ -3,7 +3,7 @@ import {PORTAL_UNIFORMS,PORTAL_FUNCTIONS} from './room-portal-shader.js';
 import {PortalEffects} from './room-portal-effects.js';
 import {PortalShutterPass} from './room-portal-optics.js';
 import {RoomCamera} from './room-camera.js';
-export const PORTAL_APPROACH_SECONDS=1.2,PORTAL_FLIGHT_SECONDS=1.65;
+export const PORTAL_APPROACH_SECONDS=1.05,PORTAL_FLIGHT_SECONDS=1.15;
 const smooth=x=>{x=T.MathUtils.clamp(x,0,1);return x*x*x*(x*(x*6-15)+10);};
 
 export function portalBasis(panel){
@@ -16,10 +16,20 @@ export function portalBasis(panel){
 }
 export function portalTravelPose(basis,progress){
  const t=T.MathUtils.clamp(Number.isFinite(progress)?progress:0,0,1);
- const distance=T.MathUtils.lerp(-3.2,23,t*t);
+ const slope=14*PORTAL_FLIGHT_SECONDS/26.2;
+ // Cubic Hermite: carry 14 units/s through the doorway, brake only near arrival.
+ const travel=(slope-2)*t*t*t+(3-2*slope)*t*t+slope*t;
+ const distance=T.MathUtils.lerp(-3.2,23,travel);
  const position=basis.center.clone().addScaledVector(basis.forward,distance);
  const rotation=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().lookAt(position,position.clone().add(basis.forward),basis.up));
  return {position,rotation,fov:48+11*smooth(Math.min(1,t/.64))};
+}
+function configureApproach(rig,basis,onComplete){
+ const pose=portalTravelPose(basis,0);
+ rig.moveTo({position:pose.position,target:basis.center,fov:pose.fov},'portal',PORTAL_APPROACH_SECONDS,onComplete);
+ // Same elevated safe path, but a tangent aligned with the corridor at nonzero speed.
+ rig.transition.control2.copy(pose.position).addScaledVector(basis.forward,-14*PORTAL_APPROACH_SECONDS/3);
+ rig.transition.positionEasing=x=>x*x*(2-x);
 }
 function portalUniforms(panel){
  const b=portalBasis(panel);
@@ -91,8 +101,7 @@ export class BannerPortal {
   v.turntable?.end(false);v.release();v.clearHover();v.hidePanelContent();v.pendingPick=v.lastPointer=null;
   Object.assign(this.fullMaterial.uniforms,panel.portalUniforms,{artwork:panel.material.uniforms.artwork,projection:panel.material.uniforms.projection});
   v.cameraRig.panel=null;
-  const pose=portalTravelPose(this.basis,0);
-  v.cameraRig.moveTo({position:pose.position,target:this.basis.center,fov:pose.fov},'portal',PORTAL_APPROACH_SECONDS,()=>{this.stage='flight';this.elapsed=0;});
+  configureApproach(v.cameraRig,this.basis,()=>{this.stage='flight';this.elapsed=0;});
   v.optics.resetHistory();v.wake();return true;
  }
  /** Start behind the doorway and rewind the same camera path and shader clock. */
@@ -122,8 +131,7 @@ export class BannerPortal {
   }
   this.returnHome={position:camera.position.clone(),rotation:camera.quaternion.clone(),fov:camera.fov,
    focus:rig.focusTarget.clone(),width:rig.width,aspect:camera.aspect,yaw:rig.yaw,pitch:rig.pitch};
-  const dock=portalTravelPose(this.basis,0);
-  rig.moveTo({position:dock.position,target:this.basis.center,fov:dock.fov},'portal',PORTAL_APPROACH_SECONDS);
+  configureApproach(rig,this.basis);
   this.reverseRig=rig;this.reverseCurve=rig.transition;
  }
  updateReturn(dt){
@@ -139,17 +147,21 @@ export class BannerPortal {
     rig.transition.endRotation.copy(home.rotation);rig.transition.endFocus.copy(home.focus);this.returnRebased=true;
    }
   }
-  this.elapsed+=dt;
+  let remaining=dt;
   if(this.stage==='flight'){
+   const step=Math.min(remaining,Math.max(0,PORTAL_FLIGHT_SECONDS-this.elapsed));
+   this.elapsed+=step;remaining-=step;
    const progress=Math.max(0,1-this.elapsed/PORTAL_FLIGHT_SECONDS),pose=portalTravelPose(this.basis,progress);
    v.camera.position.copy(pose.position);v.camera.quaternion.copy(pose.rotation);v.cameraRig.setFov(pose.fov);
    v.cameraRig.focusTarget.copy(pose.position).addScaledVector(this.basis.forward,8);
    this.age=PORTAL_APPROACH_SECONDS+progress*PORTAL_FLIGHT_SECONDS;u.portalProgress.value=progress;
    this.interior=this.basis.toLocal(v.camera.position).z>=-v.camera.near*1.5;
    if(progress<=1e-9){this.stage='approach';this.elapsed=0;}
-  }else{
+  }
+  if(this.stage==='approach'){
+   this.elapsed+=remaining;
    const progress=Math.min(1,this.elapsed/PORTAL_APPROACH_SECONDS);this.age=PORTAL_APPROACH_SECONDS*(1-progress);
-   if(this.returnRebased)this.reverseRig.update(dt);
+   if(this.returnRebased)this.reverseRig.update(remaining);
    else{this.reverseCurve.elapsed=this.age;this.reverseRig.transition=this.reverseCurve;this.reverseRig.update(0);}
    v.camera.position.copy(this.reverseRig.camera.position);v.camera.quaternion.copy(this.reverseRig.camera.quaternion);
    v.cameraRig.setFov(this.reverseRig.camera.fov);v.cameraRig.focusTarget.copy(this.reverseRig.focusTarget);
@@ -177,9 +189,15 @@ export class BannerPortal {
   this.age+=dt;u.portalAge.value=this.age;u.portalMix.value=smooth(this.age/.75);
   u.portalLayerCount.value=v.settings.quality==='low'?12:v.settings.quality==='high'?24:18;
   if(v.reduced.matches){this.finish();return false;}
-  if(this.stage==='approach')this.originalUpdate(dt);
-  else{
-   this.elapsed+=dt;const t=Math.min(1,this.elapsed/PORTAL_FLIGHT_SECONDS),pose=portalTravelPose(this.basis,t);
+  let remaining=dt;
+  if(this.stage==='approach'){
+   const transition=v.cameraRig.transition;
+   const step=Math.min(remaining,Math.max(0,transition.duration-transition.elapsed));
+   if(transition.duration-transition.elapsed<=step+1e-10)transition.elapsed=transition.duration-step;
+   this.originalUpdate(step);remaining-=step;
+  }
+  if(this.stage==='flight'){
+   this.elapsed+=remaining;const t=Math.min(1,this.elapsed/PORTAL_FLIGHT_SECONDS),pose=portalTravelPose(this.basis,t);
    v.camera.position.copy(pose.position);v.camera.quaternion.copy(pose.rotation);v.cameraRig.setFov(pose.fov);
    v.cameraRig.focusTarget.copy(pose.position).addScaledVector(this.basis.forward,8);v.camera.updateMatrixWorld(true);
    u.portalProgress.value=t;

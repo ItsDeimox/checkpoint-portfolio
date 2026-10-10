@@ -179,11 +179,12 @@ export class RoomCamera {
       t.elapsed += Math.max(0, dt);
       const x = t.duration ? Math.min(1, t.elapsed / t.duration) : 1;
       const s = x * x * x * (x * (x * 6 - 15) + 10);
-      const a = 1 - s;
+      const positionS = t.positionEasing ? t.positionEasing(x) : s;
+      const a = 1 - positionS;
       this.camera.position.copy(t.start).multiplyScalar(a ** 3)
-        .addScaledVector(t.control1, 3 * a * a * s)
-        .addScaledVector(t.control2, 3 * a * s * s)
-        .addScaledVector(t.end, s ** 3);
+        .addScaledVector(t.control1, 3 * a * a * positionS)
+        .addScaledVector(t.control2, 3 * a * positionS * positionS)
+        .addScaledVector(t.end, positionS ** 3);
       this.camera.quaternion.slerpQuaternions(t.rotation, t.endRotation, s);
       this.setFov(MathUtils.lerp(t.fov, t.endFov, s));
       this.focusTarget.lerpVectors(t.focus, t.endFocus, s);

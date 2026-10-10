@@ -41,8 +41,8 @@ test('opening atmosphere is anchored to the selected 3D banner, reused, and invi
 });
 test('corridor motion is accelerating and the lens widens without moving the banner or leaving the centerline',()=>{
  const b=portalBasis(createFixedPanelLayout()[0]);
- const a=portalTravelPose(b,.1),c=portalTravelPose(b,.2),d=portalTravelPose(b,.7),e=portalTravelPose(b,.8);
- assert.ok(e.position.distanceTo(d.position)>c.position.distanceTo(a.position)*2);
+ const a=portalTravelPose(b,.02),c=portalTravelPose(b,.07),d=portalTravelPose(b,.45),e=portalTravelPose(b,.5);
+ assert.ok(e.position.distanceTo(d.position)>c.position.distanceTo(a.position)*1.3);
  assert.ok(d.fov>a.fov+5&&d.fov<=62);
  assert.ok(Math.abs(b.toLocal(e.position).x)<1e-8&&Math.abs(b.toLocal(e.position).y)<1e-8);
 });

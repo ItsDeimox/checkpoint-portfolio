@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {BannerPortal,portalTravelPose} from '../src/scene/room-portal.js';
+import {BannerPortal,portalTravelPose,PORTAL_APPROACH_SECONDS as A,PORTAL_FLIGHT_SECONDS as F} from '../src/scene/room-portal.js';
 import {RoomCamera} from '../src/scene/room-camera.js';
 import {createFixedPanelLayout} from '../src/scene/room-environment.js';
 import {SectionRoutes} from '../src/ui/room-section-routes.js';
@@ -34,16 +34,16 @@ test('all five doorways reverse across the plane exactly once and restore the or
 });
 test('reverse approach retraces the same Bezier and camera orientation, not a hard reset',()=>{
  const f=fixture();const samples=[];f.portal.enter(4,()=>{});
- for(let i=0;i<=12;i++){if(i)advance(f,.1);samples.push({p:f.camera.position.clone(),q:f.camera.quaternion.clone(),fov:f.camera.fov});}
- advance(f,2);assert.equal(typeof f.portal.returnToShowroom,'function');f.portal.returnToShowroom(4,()=>{});advance(f,1.65);
- for(let i=0;i<=12;i++){if(i)advance(f,.1);const s=samples[12-i];assert.ok(f.camera.position.distanceTo(s.p)<1e-5,`reverse sample ${i}`);assert.ok(f.camera.quaternion.angleTo(s.q)<1e-5);}
+ for(let i=0;i<=12;i++){if(i)advance(f,A/12);samples.push({p:f.camera.position.clone(),q:f.camera.quaternion.clone(),fov:f.camera.fov});}
+ advance(f,2);assert.equal(typeof f.portal.returnToShowroom,'function');f.portal.returnToShowroom(4,()=>{});advance(f,F);
+ for(let i=0;i<=12;i++){if(i)advance(f,A/12);const s=samples[12-i];assert.ok(f.camera.position.distanceTo(s.p)<1e-5,`reverse sample ${i}`);assert.ok(f.camera.quaternion.angleTo(s.q)<1e-5);}
  dispose(f);
 });
 test('reverse motion reuses signed camera reprojection and the existing effects without extra targets',()=>{
  const f=fixture();assert.equal(typeof f.portal.returnToShowroom,'function');f.portal.returnToShowroom(2,()=>{});const pass=f.portal.shutter;pass.setSize(960,640);
  advance(f,.3);f.portal.prepareFrame(1/60);assert.equal(pass.uniforms.uShutter.value,0);
  advance(f,1/60);f.portal.prepareFrame(1/60);assert.ok(pass.uniforms.uShutter.value>0);assert.ok(pass.uniforms.uChromaticPixels.value>0);
- const geometry=f.portal.effects.smoke.geometry;advance(f,1.9);assert.equal(f.portal.effects.smoke.geometry,geometry);
+ const geometry=f.portal.effects.smoke.geometry;advance(f,F-.3-1/60+.45);assert.equal(f.portal.effects.smoke.geometry,geometry);
  assert.equal(f.portal.effects.group.visible,true);assert.equal(pass.target,undefined);
  f.portal.cancel();assert.equal(pass.enabled,false);assert.equal(f.portal.returning,false);dispose(f);
 });

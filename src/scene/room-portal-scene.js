@@ -1,3 +1,4 @@
+export {PersistentBrand} from './room-persistent-brand.js';
 import {HeroScene as ShowroomScene} from './room-hologram-scene.js';
 import {BannerPortal} from './room-portal.js';
 import {portalImpactEnvelope} from './room-portal-effects.js';
