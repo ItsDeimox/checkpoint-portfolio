@@ -1,14 +1,14 @@
 /** Values shared by the small visual controls and the GPU uniform boundary. */
-export const VISUAL_PRESET_VERSION = 'dark-metal-v1';
+export const VISUAL_PRESET_VERSION = 'wet-showcase-v1';
 
-// User-supplied preset: contrast is 1.16 * 1.5.
+// Approved screenshot values; layered bloom supplies the wider glow.
 export const DEFAULT_VISUAL_SETTINGS = Object.freeze({
-  exposure: 1.15,
+  exposure: 1.13,
   bloom: .65,
   depthOfField: 1.5,
   motionBlur: 1,
   lens: 1,
-  contrast: 1.74,
+  contrast: 1.26,
   sharpness: .35,
 });
 
@@ -36,11 +36,12 @@ export function normalizeVisualSettings(input = {}, fallback = DEFAULT_VISUAL_SE
   }));
 }
 
-/** Migrate the old contrast ceiling without erasing other saved choices. */
+/** Preserve personal edits; replace only the previous experimental defaults. */
 export function restoreVisualSettings(stored) {
   const restored = normalizeVisualSettings(stored?.visual);
-  if (stored?.visualPreset !== VISUAL_PRESET_VERSION && stored?.visual?.contrast === 1.16) {
-    restored.contrast = DEFAULT_VISUAL_SETTINGS.contrast;
+  if (stored?.visualPreset !== VISUAL_PRESET_VERSION) {
+    if (stored?.visual?.contrast === 1.74 || stored?.visual?.contrast === 1.16) restored.contrast = DEFAULT_VISUAL_SETTINGS.contrast;
+    if (stored?.visual?.exposure === 1.15) restored.exposure = DEFAULT_VISUAL_SETTINGS.exposure;
   }
   return restored;
 }
