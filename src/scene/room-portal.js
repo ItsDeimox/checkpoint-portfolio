@@ -3,6 +3,7 @@ import {PORTAL_UNIFORMS,PORTAL_FUNCTIONS} from './room-portal-shader.js';
 import {PortalEffects} from './room-portal-effects.js';
 import {PortalShutterPass} from './room-portal-optics.js';
 import {RoomCamera} from './room-camera.js';
+import {smoothPortalTime,portalApproachSampler,portalFlightDistance} from './room-portal-path.js';
 export const PORTAL_APPROACH_SECONDS=1.05,PORTAL_FLIGHT_SECONDS=1.15;
 const smooth=x=>{x=T.MathUtils.clamp(x,0,1);return x*x*x*(x*(x*6-15)+10);};
 
@@ -16,20 +17,17 @@ export function portalBasis(panel){
 }
 export function portalTravelPose(basis,progress){
  const t=T.MathUtils.clamp(Number.isFinite(progress)?progress:0,0,1);
- const slope=14*PORTAL_FLIGHT_SECONDS/26.2;
- // Cubic Hermite: carry 14 units/s through the doorway, brake only near arrival.
- const travel=(slope-2)*t*t*t+(3-2*slope)*t*t+slope*t;
- const distance=T.MathUtils.lerp(-3.2,23,travel);
+ const distance=portalFlightDistance(t,PORTAL_FLIGHT_SECONDS);
  const position=basis.center.clone().addScaledVector(basis.forward,distance);
  const rotation=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().lookAt(position,position.clone().add(basis.forward),basis.up));
- return {position,rotation,fov:48+11*smooth(Math.min(1,t/.64))};
+ return {position,rotation,fov:48+11*smoothPortalTime(Math.min(1,t/.8))};
 }
 function configureApproach(rig,basis,onComplete){
  const pose=portalTravelPose(basis,0);
  rig.moveTo({position:pose.position,target:basis.center,fov:pose.fov},'portal',PORTAL_APPROACH_SECONDS,onComplete);
- // Same elevated safe path, but a tangent aligned with the corridor at nonzero speed.
- rig.transition.control2.copy(pose.position).addScaledVector(basis.forward,-14*PORTAL_APPROACH_SECONDS/3);
- rig.transition.positionEasing=x=>x*x*(2-x);
+ // Match velocity, acceleration and jerk without a stop at the doorway.
+ rig.transition.positionSampler=portalApproachSampler(rig.transition.start,pose.position,basis,PORTAL_APPROACH_SECONDS);
+ rig.transition.easing=smoothPortalTime;
 }
 function portalUniforms(panel){
  const b=portalBasis(panel);

@@ -178,10 +178,11 @@ export class RoomCamera {
       const t = this.transition;
       t.elapsed += Math.max(0, dt);
       const x = t.duration ? Math.min(1, t.elapsed / t.duration) : 1;
-      const s = x * x * x * (x * (x * 6 - 15) + 10);
+      const s = t.easing ? t.easing(x) : x * x * x * (x * (x * 6 - 15) + 10);
       const positionS = t.positionEasing ? t.positionEasing(x) : s;
       const a = 1 - positionS;
-      this.camera.position.copy(t.start).multiplyScalar(a ** 3)
+      if (t.positionSampler) t.positionSampler(x, this.camera.position);
+      else this.camera.position.copy(t.start).multiplyScalar(a ** 3)
         .addScaledVector(t.control1, 3 * a * a * positionS)
         .addScaledVector(t.control2, 3 * a * positionS * positionS)
         .addScaledVector(t.end, positionS ** 3);
