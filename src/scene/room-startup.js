@@ -140,6 +140,7 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
   const { renderer, scene, camera, optics } = view;
   const linearTarget = optics?.composer?.readBuffer;
   if (!linearTarget) throw new Error('Room startup requires the composer’s scene-linear readBuffer.');
+  const sceneTarget = optics.sceneTarget ?? linearTarget;
   const oldTarget = renderer.getRenderTarget();
   const oldFace = renderer.getActiveCubeFace?.() ?? 0;
   const oldMip = renderer.getActiveMipmapLevel?.() ?? 0;
@@ -156,8 +157,10 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
   ].filter(Boolean))];
   opticalMaterials.forEach(material => materials.add(material));
   if (optics.outputPass?.material) materials.add(optics.outputPass.material);
+  if (optics.aaPass?.material) materials.add(optics.aaPass.material);
   const textures = sourceTextures(view, materials);
   const targets = [...new Set([
+    sceneTarget,
     optics.composer.readBuffer, optics.composer.writeBuffer,
     optics.composer.renderTarget1, optics.composer.renderTarget2,
     ...(bloom?.targets ?? []), view.ground?.getRenderTarget?.(),
@@ -197,7 +200,7 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
         proxy.material = material;
         group.children.push(proxy);
       }
-      renderer.setRenderTarget(linearTarget);
+      renderer.setRenderTarget(sceneTarget);
       await renderer.compileAsync(group, camera, scene);
       group.children.length = 0;
       compiled += batch.length;
@@ -218,13 +221,26 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
       checkAbort(signal);
       prepareOutputDefines(optics.outputPass, renderer);
       const output = new Mesh(fullscreenGeometry, optics.outputPass.material);
-      renderer.setRenderTarget(null);
+      // The output shader writes tone-mapped sRGB into the intermediate color
+      // buffer when AA follows it. Match that domain during precompilation.
+      renderer.setRenderTarget(optics.aaPass?.material ? optics.composer.writeBuffer : null);
       await renderer.compileAsync(output, screenCamera, screenScene);
       report('output', 1, 1);
       await yieldToBrowser(signal);
     }
+    if (optics.aaPass?.material) {
+      checkAbort(signal);
+      const antialias = new Mesh(fullscreenGeometry, optics.aaPass.material);
+      renderer.setRenderTarget(null);
+      await renderer.compileAsync(antialias, screenCamera, screenScene);
+      report('antialias', 1, 1);
+      await yieldToBrowser(signal);
+    }
     report('ready', 1, 1);
-    return { textures: textures.length, targets: targets.length, sceneVariants: compiled, opticalMaterials: opticalMaterials.length + Number(Boolean(optics.outputPass?.material)) };
+    return {
+      textures: textures.length, targets: targets.length, sceneVariants: compiled,
+      opticalMaterials: opticalMaterials.length + Number(Boolean(optics.outputPass?.material)) + Number(Boolean(optics.aaPass?.material)),
+    };
   } finally {
     fullscreenGeometry.dispose();
     renderer.shadowMap.enabled = oldShadows;

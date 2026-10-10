@@ -1,21 +1,34 @@
 import { MathUtils, Matrix4, Quaternion, Vector3 } from 'three';
 import { advance, clamp } from '../core.js';
+import { ROOM_SHELL } from './room-core.js';
 
 const UP = new Vector3(0, 1, 0);
 const LOOK_MATRIX = new Matrix4();
 const CAR_FOCUS = new Vector3(0, 1.25, -.4);
+const LOOK_YAW = .055;
+const LOOK_PITCH = .025;
+const LOOK_DAMPING = 4;
 
-export function overviewPose(width) {
+export function overviewPose(width, aspect = 1) {
   const mobile = width < 741;
+  const position = new Vector3(0, mobile ? 1.88 : 1.48, mobile ? -23.5 : -12);
+  const openingAngle = Math.atan2(
+    Math.abs(Math.sin(ROOM_SHELL.thetaStart)) * ROOM_SHELL.radius,
+    ROOM_SHELL.centerZ + Math.cos(ROOM_SHELL.thetaStart) * ROOM_SHELL.radius - position.z,
+  );
+  // Allow for look yaw and the extra horizontal spread of pitched corners.
+  // The distant mobile eye needs a narrower cap when rotated to landscape.
+  const halfHorizontal = Math.min(Math.PI / 4, openingAngle - LOOK_YAW - .045);
   return {
-    position: new Vector3(0, mobile ? 1.88 : 1.48, mobile ? -23.5 : -12),
+    position,
     target: new Vector3(0, mobile ? 2.26 : 2.20, 0),
-    fov: 42,
+    // Keep the approved lens unless the opening needs a narrower view.
+    fov: Math.min(42, MathUtils.radToDeg(2 * Math.atan(Math.tan(halfHorizontal) / Math.max(.1, aspect)))),
   };
 }
 
 export function panelApproachPose(panel, width, aspect) {
-  const home = overviewPose(width);
+  const home = overviewPose(width, aspect);
   const mobile = width < 741;
   const index = Number.isInteger(panel.index) ? panel.index : 2;
   let fraction = (mobile ? [.4, .6, .65, .6, .4] : [.25, .45, .55, .45, .25])[index];
@@ -59,7 +72,7 @@ export class RoomCamera {
   }
 
   applyOverview() {
-    const home = overviewPose(this.width);
+    const home = overviewPose(this.width, this.camera.aspect);
     this.camera.position.copy(home.position);
     const direction = home.target.sub(home.position).normalize();
     const basePitch = Math.asin(direction.y);
@@ -78,15 +91,27 @@ export class RoomCamera {
 
   look(deltaYaw, deltaPitch) {
     if (this.mode !== 'overview') return;
-    this.targetYaw = clamp(this.targetYaw + deltaYaw, -.48, .48);
-    this.targetPitch = clamp(this.targetPitch + deltaPitch, -.15, .18);
+    this.targetYaw = clamp(this.targetYaw + deltaYaw, -LOOK_YAW, LOOK_YAW);
+    this.targetPitch = clamp(this.targetPitch + deltaPitch, -LOOK_PITCH, LOOK_PITCH);
+  }
+
+  /** Absolute canvas coordinates: right/down are positive before conversion. */
+  pointLook(x, y) {
+    if (this.mode !== 'overview') return;
+    this.targetYaw = -clamp(Number.isFinite(x) ? x : 0, -1, 1) * LOOK_YAW;
+    this.targetPitch = -clamp(Number.isFinite(y) ? y : 0, -1, 1) * LOOK_PITCH;
+  }
+
+  neutralLook() {
+    if (this.mode !== 'overview') return;
+    this.targetYaw = this.targetPitch = 0;
   }
 
   preview(panel) {
     if (this.mode !== 'overview') return;
-    const home = overviewPose(this.width);
+    const home = overviewPose(this.width, this.camera.aspect);
     const d = panel.center.clone().sub(home.position);
-    this.targetYaw = clamp(Math.atan2(d.x, d.z), -.48, .48);
+    this.targetYaw = clamp(Math.atan2(d.x, d.z), -LOOK_YAW, LOOK_YAW);
     this.targetPitch = 0;
   }
 
@@ -122,7 +147,7 @@ export class RoomCamera {
   reset({ reduced = false, onComplete } = {}) {
     this.panel = null;
     this.targetYaw = this.targetPitch = this.yaw = this.pitch = 0;
-    this.moveTo(overviewPose(this.width), 'returning', reduced ? 0 : 1.1, () => {
+    this.moveTo(overviewPose(this.width, this.camera.aspect), 'returning', reduced ? 0 : 1.1, () => {
       this.mode = 'overview';
       this.applyOverview();
       onComplete?.();
@@ -144,7 +169,7 @@ export class RoomCamera {
         this.camera.updateMatrixWorld(true);
       }
     } else if (this.transition) {
-      this.moveTo(overviewPose(width), 'returning', .35, this.transition.onComplete);
+      this.moveTo(overviewPose(width, this.camera.aspect), 'returning', .35, this.transition.onComplete);
     }
   }
 
@@ -172,8 +197,8 @@ export class RoomCamera {
     if (this.mode !== 'overview') return false;
     const moving = Math.abs(this.yaw - this.targetYaw) > .00001 || Math.abs(this.pitch - this.targetPitch) > .00001;
     if (moving) {
-      this.yaw = advance(this.yaw, this.targetYaw, 9, dt);
-      this.pitch = advance(this.pitch, this.targetPitch, 9, dt);
+      this.yaw = advance(this.yaw, this.targetYaw, LOOK_DAMPING, dt);
+      this.pitch = advance(this.pitch, this.targetPitch, LOOK_DAMPING, dt);
       this.applyOverview();
     }
     return moving;

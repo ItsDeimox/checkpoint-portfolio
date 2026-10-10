@@ -5,23 +5,48 @@ import {
   LinearSRGBColorSpace,
   Matrix4,
   NoBlending,
+  Quaternion,
   ShaderMaterial,
   UnsignedByteType,
   UnsignedIntType,
   Vector2,
+  Vector3,
   WebGLRenderTarget,
 } from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { FXAAPass } from 'three/addons/postprocessing/FXAAPass.js';
 import { Pass, FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
+import { renderBudget } from './room-core.js';
+import { normalizeVisualSettings } from './room-visual-settings.js';
+export { DEFAULT_VISUAL_SETTINGS, VISUAL_CONTROLS, normalizeVisualSettings } from './room-visual-settings.js';
 
 const PROFILES = {
-  low: { samples: 6, motionSamples: 3, maxBlur: 9, bloomEdge: 384, bloomScale: 0.25 },
-  auto: { samples: 8, motionSamples: 4, maxBlur: 12, bloomEdge: 512, bloomScale: 0.33 },
-  high: { samples: 12, motionSamples: 4, maxBlur: 14, bloomEdge: 768, bloomScale: 0.4 },
+  low: { samples: 6, motionSamples: 3, maxBlur: 8, msaaSamples: 0, bloomEdge: 384, bloomScale: 0.25 },
+  auto: { samples: 8, motionSamples: 4, maxBlur: 11, msaaSamples: 2, bloomEdge: 512, bloomScale: 0.33 },
+  high: { samples: 12, motionSamples: 4, maxBlur: 13, msaaSamples: 4, bloomEdge: 768, bloomScale: 0.4 },
 };
+
+function supportedSceneSamples(renderer, hdr) {
+  // MAX_SAMPLES alone is insufficient: RGBA16F and DEPTH_COMPONENT24 must
+  // support the same count. Query only WebGL2 renderable formats; no test FBO,
+  // state changes, extension guessing, or speculative invalid-enum probes.
+  const gl = renderer.getContext?.();
+  const maxSamples = renderer.capabilities?.maxSamples;
+  if (!gl?.getInternalformatParameter || !Number.isFinite(maxSamples) || maxSamples < 2) return [];
+  const colorFormat = hdr ? gl.RGBA16F : gl.RGBA8;
+  if (![gl.RENDERBUFFER, gl.SAMPLES, colorFormat, gl.DEPTH_COMPONENT24].every(Number.isFinite)) return [];
+  try {
+    const color = Array.from(gl.getInternalformatParameter(gl.RENDERBUFFER, colorFormat, gl.SAMPLES) ?? []);
+    const depth = Array.from(gl.getInternalformatParameter(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, gl.SAMPLES) ?? []);
+    return [4, 2].filter(count => count <= maxSamples && color.includes(count) && depth.includes(count));
+  } catch {
+    // FXAA remains available even if a lost context cannot answer the query.
+    return [];
+  }
+}
 
 const VERTEX = /* glsl */`
   varying vec2 vUv;
@@ -45,6 +70,19 @@ function colorTarget(name, type) {
   });
   target.texture.name = name;
   return target;
+}
+
+class SceneCapturePass extends RenderPass {
+  constructor(scene, camera, target) {
+    super(scene, camera);
+    this.target = target;
+  }
+
+  render(renderer, writeBuffer) {
+    // Geometry is drawn once. The lens reads this target directly, so capturing
+    // depth plus MSAA needs neither a scene copy nor multisampled effect buffers.
+    super.render(renderer, writeBuffer, this.target);
+  }
 }
 
 const LENS_FRAGMENT = /* glsl */`
@@ -86,8 +124,8 @@ const LENS_FRAGMENT = /* glsl */`
 
     // Signed thin-lens circle of confusion; focus and scene distances are metres.
     float signedCoc = uCocScale * (1.0 - uFocusDistance / distanceToCamera);
-    // Art-directed near-field gain matches the soft framing tires. It fades out
-    // by 72% of the focus distance; the car and screens keep the physical CoC.
+    // A restrained near-field gain softens the framing tires. It fades out
+    // by 72% of the focus distance; the car and selected screen keep their CoC.
     float nearField = 1.0 - smoothstep(0.48, 0.72, distanceToCamera / uFocusDistance);
     float coc = min(abs(signedCoc) * mix(1.0, uForegroundGain, nearField), uMaxBlur);
     // Subpixel defocus is left sharp instead of paying for an imperceptible gather.
@@ -125,14 +163,21 @@ const LENS_FRAGMENT = /* glsl */`
       float sampleDepth = texture2D(tSceneDepth, sampleUv).x;
       float sampleDistance = viewDistance(sampleUv, sampleDepth);
 
-      // A modest depth rejection limits foreground/background color leaking.
+      // Reject foreground silhouettes and background leakage more strongly as
+      // the gather grows, while retaining nearby samples on the same surface.
       // This is a single-layer optical approximation, not a layered bokeh solver.
       float delta = (sampleDistance - distanceToCamera) / max(distanceToCamera, 0.1);
+      float tolerance = 0.025 + min(coc * 0.008, 0.09);
       float rejection = signedCoc < 0.0
-        ? smoothstep(0.12, 0.8, delta) * 0.45
-        : smoothstep(0.08, 0.4, -delta) * 0.85;
+        ? smoothstep(tolerance, tolerance + 0.45, delta) * 0.72
+        : smoothstep(tolerance, tolerance + 0.24, -delta) * 0.97;
       float weight = 1.0 - rejection;
-      sum += texture2D(tDiffuse, sampleUv).rgb * weight;
+      vec3 sampleColor = texture2D(tDiffuse, sampleUv).rgb;
+      // A small, bounded highlight weighting preserves the soft light disks
+      // without amplifying bright pixels into unstable fireflies.
+      float highlight = max(sampleColor.r, max(sampleColor.g, sampleColor.b));
+      weight *= 1.0 + clamp(highlight - 1.0, 0.0, 2.0) * 0.08;
+      sum += sampleColor * weight;
       weightSum += weight;
     }
     gl_FragColor = vec4(sum / weightSum, center.a);
@@ -140,7 +185,7 @@ const LENS_FRAGMENT = /* glsl */`
 `;
 
 class DepthLensPass extends ShaderPass {
-  constructor() {
+  constructor(sceneTarget) {
     super(screenMaterial('DXT.DepthLens', LENS_FRAGMENT, {
       tDiffuse: { value: null }, tSceneDepth: { value: null },
       uResolution: { value: new Vector2(1, 1) }, uTexel: { value: new Vector2(1, 1) },
@@ -148,10 +193,11 @@ class DepthLensPass extends ShaderPass {
       uInverseViewProjection: { value: new Matrix4() },
       uPreviousViewProjection: { value: new Matrix4() },
       uZeroToOneDepth: { value: 0 }, uFocusDistance: { value: 12 },
-      uCocScale: { value: 1 }, uForegroundGain: { value: 8 }, uMaxBlur: { value: 12 },
+      uCocScale: { value: 1 }, uForegroundGain: { value: 4.5 }, uMaxBlur: { value: 11 },
       uSamples: { value: 8 }, uMotionSamples: { value: 4 },
       uShutter: { value: 0 }, uMotionLimit: { value: 8 },
     }));
+    this.sceneTarget = sceneTarget;
   }
 
   setSize(width, height) {
@@ -160,16 +206,18 @@ class DepthLensPass extends ShaderPass {
   }
 
   render(renderer, writeBuffer, readBuffer, deltaTime, maskActive) {
-    // RenderPass just filled this buffer. Its sibling is the destination, so
-    // neither the color nor the attached depth texture is sampled in place.
-    this.uniforms.tSceneDepth.value = readBuffer.depthTexture;
-    super.render(renderer, writeBuffer, readBuffer, deltaTime, maskActive);
+    // Three resolves color and depth after the scene render. The lens writes
+    // into a separate single-sample buffer and never samples in place.
+    this.uniforms.tSceneDepth.value = this.sceneTarget.depthTexture;
+    super.render(renderer, writeBuffer, this.sceneTarget, deltaTime, maskActive);
   }
 }
 
 const BRIGHT_FRAGMENT = /* glsl */`
   uniform sampler2D tInput;
   uniform vec2 uTexel;
+  uniform float uThreshold;
+  uniform float uKnee;
   varying vec2 vUv;
   void main() {
     vec2 d = uTexel * 0.5;
@@ -181,9 +229,11 @@ const BRIGHT_FRAGMENT = /* glsl */`
     ) * 0.25;
     // A quadratic soft knee on the peak channel retains saturated red LEDs.
     float brightness = max(color.r, max(color.g, color.b));
-    float soft = clamp(brightness - 0.85 + 0.4, 0.0, 0.8);
-    soft = soft * soft / 1.6;
-    float contribution = max(brightness - 0.85, soft) / max(brightness, 0.0001);
+    color *= min(1.0, 12.0 / max(brightness, 0.0001));
+    brightness = min(brightness, 12.0);
+    float soft = clamp(brightness - uThreshold + uKnee, 0.0, 2.0 * uKnee);
+    soft = soft * soft / max(4.0 * uKnee, 0.0001);
+    float contribution = max(brightness - uThreshold, soft) / max(brightness, 0.0001);
     gl_FragColor = vec4(color * contribution, 1.0);
   }
 `;
@@ -225,6 +275,7 @@ class BoundedBloomPass extends Pass {
     super();
     this.needsSwap = false;
     this.profile = PROFILES.auto;
+    this.lensEnabled = true;
     this.width = 1;
     this.height = 1;
     this.bright = colorTarget('DXT.Bloom.Threshold', type);
@@ -236,6 +287,8 @@ class BoundedBloomPass extends Pass {
     this.targets = [this.bright, this.temporary, this.bloom, this.wideTemporary, this.wide, this.streak];
     this.brightMaterial = screenMaterial('DXT.SoftThreshold', BRIGHT_FRAGMENT, {
       tInput: { value: null }, uTexel: { value: new Vector2() },
+      uThreshold: { value: type === HalfFloatType ? 1.05 : .82 },
+      uKnee: { value: type === HalfFloatType ? .3 : .18 },
     });
     this.blurMaterial = screenMaterial('DXT.SmallGaussian', BLUR_FRAGMENT, {
       tInput: { value: null }, uStep: { value: new Vector2() },
@@ -290,9 +343,11 @@ class BoundedBloomPass extends Pass {
       this.blur(renderer, this.temporary.texture, this.bloom, 0, 1 / this.temporary.height);
       this.blur(renderer, this.bloom.texture, this.wideTemporary, 2.5 / this.bloom.width, 0);
       this.blur(renderer, this.wideTemporary.texture, this.wide, 0, 1.25 / this.wideTemporary.height);
-      this.streakMaterial.uniforms.tInput.value = this.bloom.texture;
-      this.streakMaterial.uniforms.uStep.value.set(9 / this.bloom.width, 0);
-      this.draw(renderer, this.streakMaterial, this.streak);
+      if (this.lensEnabled) {
+        this.streakMaterial.uniforms.tInput.value = this.bloom.texture;
+        this.streakMaterial.uniforms.uStep.value.set(9 / this.bloom.width, 0);
+        this.draw(renderer, this.streakMaterial, this.streak);
+      }
     } finally {
       renderer.autoClear = oldAutoClear;
     }
@@ -315,6 +370,10 @@ const GRADE_FRAGMENT = /* glsl */`
   uniform vec2 uTexel;
   uniform float uPixelRatio;
   uniform float uTime;
+  uniform float uBloomStrength;
+  uniform float uLensStrength;
+  uniform float uContrast;
+  uniform float uSharpness;
   varying vec2 vUv;
 
   // Analytic LUT-equivalent grading in scene-linear RGB. There is no LUT asset.
@@ -327,38 +386,63 @@ const GRADE_FRAGMENT = /* glsl */`
     float red = smoothstep(0.05, 0.5, color.r - max(color.g, color.b));
     red *= smoothstep(0.08, 0.8, luminance + color.r * 0.2);
     color *= vec3(1.0 + red * 0.035, 1.0 - red * 0.009, 1.0 - red * 0.009);
+    // Contrast pivots around middle grey in linear light; ACES still owns the
+    // highlight shoulder and sRGB conversion, so whites do not hard-clip here.
+    color *= pow(max(luminance / 0.18, 0.0001), uContrast - 1.0);
     return color;
   }
 
   void main() {
     vec2 p = vUv - 0.5;
     float radius = length(p);
-    // Less than half a CSS pixel of lateral color separation at the corners.
+    // Optical dispersion stays below 0.6 CSS pixels even at the maximum setting.
     vec2 shift = p / max(radius, 0.001) * smoothstep(0.1, 0.67, radius)
-      * 0.45 * uPixelRatio * uTexel;
+      * 0.6 * uLensStrength * uPixelRatio * uTexel;
     vec4 center = texture2D(tDiffuse, vUv);
     vec3 color = vec3(
       texture2D(tDiffuse, clamp(vUv + shift, uTexel * 0.5, 1.0 - uTexel * 0.5)).r,
       center.g,
       texture2D(tDiffuse, clamp(vUv - shift, uTexel * 0.5, 1.0 - uTexel * 0.5)).b
     );
-    color += texture2D(tBloom, vUv).rgb * 0.19;
-    color += texture2D(tWideBloom, vUv).rgb * 0.13;
-    color += texture2D(tStreak, vUv).rgb * 0.025;
+    if (uSharpness > 0.0) {
+      vec3 north = texture2D(tDiffuse, vUv + vec2(0.0, uTexel.y)).rgb;
+      vec3 south = texture2D(tDiffuse, vUv - vec2(0.0, uTexel.y)).rgb;
+      vec3 east = texture2D(tDiffuse, vUv + vec2(uTexel.x, 0.0)).rgb;
+      vec3 west = texture2D(tDiffuse, vUv - vec2(uTexel.x, 0.0)).rgb;
+      vec3 average = (north + south + east + west) * 0.25;
+      vec3 detail = center.rgb - average;
+      float luminance = dot(center.rgb, vec3(0.2126, 0.7152, 0.0722));
+      float edge = length(detail) / (0.04 + luminance);
+      float detailLimit = 0.012 + luminance * 0.055;
+      // Recover texture detail while avoiding bright rims around LED/panel edges.
+      color += clamp(detail, vec3(-detailLimit), vec3(detailLimit))
+        * uSharpness * (1.0 - smoothstep(0.2, 0.9, edge));
+    }
+    if (uBloomStrength > 0.0) {
+      color += texture2D(tBloom, vUv).rgb * uBloomStrength * 0.72;
+      color += texture2D(tWideBloom, vUv).rgb * uBloomStrength * 0.28;
+      if (uLensStrength > 0.0) {
+        color += texture2D(tStreak, vUv).rgb * uBloomStrength * uLensStrength * 0.09;
+        // A very faint reversed ghost is driven only by actual bright sources.
+        vec2 ghostUv = clamp(0.5 - p * 0.72, uTexel * 0.5, 1.0 - uTexel * 0.5);
+        color += texture2D(tWideBloom, ghostUv).rgb * uBloomStrength * uLensStrength * 0.025;
+      }
+    }
     color = gradeLinear(color);
-    color *= 1.0 - smoothstep(0.12, 0.5, dot(p, p)) * 0.10;
+    color *= 1.0 - smoothstep(0.12, 0.5, dot(p, p)) * 0.12 * uLensStrength;
     float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))
       + floor(uTime * 24.0) * 0.71) * 43758.5453) - 0.5;
-    color = max(vec3(0.0), color + grain * 0.00015);
+    color = max(vec3(0.0), color + grain * 0.00012 * uLensStrength);
     // OutputPass alone applies renderer exposure, tone mapping, and sRGB transfer.
     gl_FragColor = vec4(color, center.a);
   }
 `;
 
 /**
- * Scene-linear optical pipeline. The ordinary RenderPass preserves scene fog and
- * captures opaque depth in the same draw. Transparent smoke uses underlying depth.
- * HDR is half-float when supported; the same pipeline has an 8-bit fallback.
+ * Scene-linear optical pipeline. One geometry draw captures resolved color and
+ * opaque depth; transparent smoke uses underlying depth. MSAA is restricted to
+ * that draw. Color-only effect buffers stay single-sampled, followed by ACES/sRGB
+ * and FXAA. HDR is half-float when supported, with the same 8-bit fallback.
  */
 export class RoomOptics {
   constructor(renderer, scene, camera) {
@@ -372,53 +456,81 @@ export class RoomOptics {
     this.time = 0;
     this.disposed = false;
     this.previousValid = false;
+    this.previousProjectionAnimated = false;
     this.currentViewProjection = new Matrix4();
     this.previousViewProjection = new Matrix4();
+    this.previousProjection = new Matrix4();
+    this.currentPosition = new Vector3();
+    this.previousPosition = new Vector3();
+    this.currentRotation = new Quaternion();
+    this.previousRotation = new Quaternion();
+    this.previousNear = camera.near;
+    this.previousFar = camera.far;
+    this.previousAspect = camera.aspect;
+    this.previousZoom = camera.zoom;
+    this.previousFilmOffset = camera.filmOffset;
+    this.visualSettings = normalizeVisualSettings();
     this.hdr = renderer.extensions.has('EXT_color_buffer_float');
+    this.supportedSamples = supportedSceneSamples(renderer, this.hdr);
     const type = this.hdr ? HalfFloatType : UnsignedByteType;
-    const target = new WebGLRenderTarget(1, 1, {
+    this.sceneTarget = new WebGLRenderTarget(1, 1, {
       type, colorSpace: LinearSRGBColorSpace, minFilter: LinearFilter, magFilter: LinearFilter,
-      depthBuffer: true, stencilBuffer: false, samples: 0,
+      depthBuffer: true, stencilBuffer: false,
+      samples: this.supportedSamples.find(count => count <= this.profile.msaaSamples) ?? 0,
+      resolveDepthBuffer: true, resolveStencilBuffer: false,
       depthTexture: new DepthTexture(1, 1, UnsignedIntType),
     });
-    target.texture.name = 'DXT.SceneLinear';
-    target.depthTexture.name = 'DXT.SceneDepth';
-    // Three.js clones the depth texture as well as color: the two are independent.
-    this.composer = new EffectComposer(renderer, target);
-    this.renderPass = new RenderPass(scene, camera);
-    this.lensPass = new DepthLensPass();
+    this.sceneTarget.texture.name = 'DXT.SceneLinear';
+    this.sceneTarget.depthTexture.name = 'DXT.SceneDepth';
+    this.composer = new EffectComposer(renderer, colorTarget('DXT.OpticsLinear', type));
+    this.renderPass = new SceneCapturePass(scene, camera, this.sceneTarget);
+    this.lensPass = new DepthLensPass(this.sceneTarget);
     this.bloomPass = new BoundedBloomPass(type);
     this.gradePass = new ShaderPass(screenMaterial('DXT.LensGrade', GRADE_FRAGMENT, {
       tDiffuse: { value: null }, tBloom: { value: this.bloomPass.bloom.texture },
       tWideBloom: { value: this.bloomPass.wide.texture }, tStreak: { value: this.bloomPass.streak.texture },
       uTexel: { value: new Vector2(1, 1) }, uPixelRatio: { value: 1 }, uTime: { value: 0 },
+      uBloomStrength: { value: 0 }, uLensStrength: { value: 0 },
+      uContrast: { value: 1 }, uSharpness: { value: 0 },
     }));
     this.outputPass = new OutputPass();
     this.outputPass.material.depthTest = false;
     this.outputPass.material.depthWrite = false;
+    this.aaPass = new FXAAPass();
+    Object.assign(this.aaPass.material, {
+      name: 'DXT.FXAA', depthTest: false, depthWrite: false, toneMapped: false, blending: NoBlending,
+    });
     this.composer.addPass(this.renderPass);
     this.composer.addPass(this.lensPass);
     this.composer.addPass(this.bloomPass);
     this.composer.addPass(this.gradePass);
     this.composer.addPass(this.outputPass);
+    // FXAA's luminance thresholds expect the sRGB output, not scene-linear HDR.
+    this.composer.addPass(this.aaPass);
+    this.setVisualSettings(this.visualSettings);
     const size = renderer.getSize(new Vector2());
     this.resize(size.x, size.y, renderer.getPixelRatio());
   }
 
   resize(width, height, pixelRatio = this.renderer.getPixelRatio()) {
     if (this.disposed) return;
-    this.width = Math.max(1, Math.round(Number.isFinite(width) ? width : 1));
-    this.height = Math.max(1, Math.round(Number.isFinite(height) ? height : 1));
-    this.pixelRatio = Math.max(0.1, Number.isFinite(pixelRatio) ? pixelRatio : 1);
-    this.composer.setPixelRatio(this.pixelRatio);
-    this.composer.setSize(this.width, this.height);
-    this.gradePass.uniforms.uTexel.value.set(
-      1 / (this.width * this.pixelRatio), 1 / (this.height * this.pixelRatio),
-    );
+    this.width = Math.max(2, Math.round(Number.isFinite(width) ? width : 2));
+    this.height = Math.max(2, Math.round(Number.isFinite(height) ? height : 2));
+    this.requestedPixelRatio = Number.isFinite(pixelRatio) && pixelRatio > 0 ? pixelRatio : 1;
+    const budget = renderBudget(this.width, this.height, this.requestedPixelRatio, this.quality);
+    this.pixelRatio = budget.ratio;
+    this.renderWidth = budget.width;
+    this.renderHeight = budget.height;
+    this.sceneTarget.setSize(this.renderWidth, this.renderHeight);
+    // Explicit physical sizes keep all pass texels identical to the framebuffer,
+    // including fractional DPR and the floor at the ultrawide pixel budget.
+    this.composer.setPixelRatio(1);
+    this.composer.setSize(this.renderWidth, this.renderHeight);
+    this.gradePass.uniforms.uTexel.value.set(1 / this.renderWidth, 1 / this.renderHeight);
     this.gradePass.uniforms.uPixelRatio.value = this.pixelRatio;
     this.lensPass.uniforms.uMaxBlur.value = this.profile.maxBlur * this.pixelRatio;
     this.lensPass.uniforms.uMotionLimit.value = (this.quality === 'low' ? 6 : 8) * this.pixelRatio;
-    this.previousValid = false;
+    this.resetHistory();
   }
 
   setQuality(quality) {
@@ -430,46 +542,117 @@ export class RoomOptics {
     this.lensPass.uniforms.uMaxBlur.value = this.profile.maxBlur * this.pixelRatio;
     this.lensPass.uniforms.uMotionLimit.value = (this.quality === 'low' ? 6 : 8) * this.pixelRatio;
     this.bloomPass.setProfile(this.profile);
+    const samples = this.supportedSamples.find(count => count <= this.profile.msaaSamples) ?? 0;
+    if (samples !== this.sceneTarget.samples) {
+      this.sceneTarget.dispose();
+      this.sceneTarget.samples = samples;
+    }
+    this.resize(this.width, this.height, this.requestedPixelRatio);
   }
 
-  render(deltaTime, { time, motion = 0, focusDistance = 12, paused = false } = {}) {
+  setVisualSettings(settings = {}) {
+    if (this.disposed) return { ...this.visualSettings };
+    this.visualSettings = normalizeVisualSettings(settings, this.visualSettings);
+    const values = this.visualSettings, uniforms = this.gradePass.uniforms;
+    this.renderer.toneMappingExposure = values.exposure;
+    uniforms.uBloomStrength.value = values.bloom;
+    uniforms.uLensStrength.value = values.lens;
+    uniforms.uContrast.value = values.contrast;
+    uniforms.uSharpness.value = values.sharpness;
+    this.bloomPass.enabled = values.bloom > 0;
+    this.bloomPass.lensEnabled = values.lens > 0;
+    this.resetHistory();
+    return { ...values };
+  }
+
+  resetHistory() {
+    this.previousValid = false;
+    this.previousProjectionAnimated = false;
+    this.lensPass.uniforms.uShutter.value = 0;
+  }
+
+  render(deltaTime, { time, motion = 0, focusDistance = 12, paused = false, projectionAnimated = false } = {}) {
     if (this.disposed) return;
-    const dt = Number.isFinite(deltaTime) && deltaTime > 0 ? deltaTime : 1 / 60;
+    const validDelta = Number.isFinite(deltaTime) && deltaTime > 0;
+    const dt = validDelta ? deltaTime : 1 / 60;
     if (!paused) this.time = Number.isFinite(time) ? time : this.time + Math.min(dt, 0.05);
     this.camera.updateWorldMatrix(true, false);
     this.currentViewProjection.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
-    let matrixChange = 0;
+    this.currentPosition.setFromMatrixPosition(this.camera.matrixWorld);
+    this.camera.getWorldQuaternion(this.currentRotation);
+    const animatedProjection = projectionAnimated === true;
+    let translation = 0;
+    let rotation = 0;
+    let projectionChange = 0;
+    let projectionShapeChange = 0;
+    let lensChange = 0;
+    let continuousProjection = true;
     if (this.previousValid) {
+      translation = this.currentPosition.distanceTo(this.previousPosition);
+      rotation = this.currentRotation.angleTo(this.previousRotation);
+      const current = this.camera.projectionMatrix.elements;
+      const previous = this.previousProjection.elements;
       for (let i = 0; i < 16; i++) {
-        matrixChange = Math.max(matrixChange,
-          Math.abs(this.currentViewProjection.elements[i] - this.previousViewProjection.elements[i]));
+        const change = Math.abs(current[i] - previous[i]);
+        projectionChange = Math.max(projectionChange, change);
+        if (i !== 0 && i !== 5) projectionShapeChange = Math.max(projectionShapeChange, change);
+      }
+      const fixedLensParameters = this.camera.near === this.previousNear && this.camera.far === this.previousFar
+        && this.camera.aspect === this.previousAspect && this.camera.zoom === this.previousZoom
+        && this.camera.filmOffset === this.previousFilmOffset;
+      continuousProjection = fixedLensParameters && projectionChange < 0.0000001;
+      if (!continuousProjection && fixedLensParameters && animatedProjection && this.camera.isPerspectiveCamera) {
+        const scaleX = current[0] / previous[0];
+        const scaleY = current[5] / previous[5];
+        lensChange = Math.abs(Math.log(scaleY));
+        // Only the rig's explicitly animated FOV may change. Isotropic lens
+        // scaling preserves aspect; clip planes, film/view offsets and zoom
+        // retain their own guards. A resize or an external FOV edit resets.
+        continuousProjection = scaleX > 0 && scaleY > 0 && Number.isFinite(lensChange)
+          && Math.abs(Math.log(scaleX / scaleY)) < 0.0000001
+          && projectionShapeChange < 0.0000001
+          && lensChange <= Math.min(0.08, 1.25 * dt);
       }
     }
-    const continuousMotion = this.previousValid && !paused && dt < 0.15
-      && matrixChange > 0.000001 && matrixChange < 0.35;
+    // World-space speed guards are independent of aspect and focal length.
+    // They admit the actual panel paths (under 35 m/s and .84 rad/s), while
+    // retaining absolute per-frame limits for camera cuts or a stalled frame.
+    const continuousMotion = this.previousValid && !paused && validDelta && dt < 0.15
+      && !(this.previousProjectionAnimated && !animatedProjection) && continuousProjection
+      && translation <= Math.min(3, 45 * dt) && rotation <= Math.min(0.25, 2.5 * dt)
+      && (translation > 0.000001 || rotation > 0.000001 || lensChange > 0.0000001);
     const uniforms = this.lensPass.uniforms;
     uniforms.uInverseProjection.value.copy(this.camera.projectionMatrixInverse);
     uniforms.uInverseViewProjection.value.copy(this.currentViewProjection).invert();
     uniforms.uPreviousViewProjection.value.copy(
-      this.previousValid ? this.previousViewProjection : this.currentViewProjection,
+      continuousMotion ? this.previousViewProjection : this.currentViewProjection,
     );
     uniforms.uZeroToOneDepth.value = this.renderer.capabilities.reversedDepthBuffer ? 1 : 0;
     const motionAmount = Math.min(1, Math.max(0, Number.isFinite(motion) ? motion : 0));
     uniforms.uShutter.value = continuousMotion
-      ? Math.min(0.65, (1 / 144) / dt) * (0.7 + motionAmount * 0.3) : 0;
+      ? Math.min(0.65, (1 / 144) / dt) * (0.7 + motionAmount * 0.3) * this.visualSettings.motionBlur : 0;
 
     const focus = Math.max(this.camera.near * 1.01,
       Math.min(this.camera.far * 0.95, Number.isFinite(focusDistance) ? focusDistance : 12));
     const focalLength = (this.camera.getFocalLength?.() ?? 40) * (this.camera.zoom ?? 1) / 1000;
     const filmHeight = (this.camera.getFilmHeight?.() ?? 24) / 1000;
-    const fNumber = 1.5;
+    const fNumber = 1.65;
     uniforms.uFocusDistance.value = focus;
-    uniforms.uCocScale.value = 0.5 * this.height * this.pixelRatio * focalLength * focalLength
+    uniforms.uCocScale.value = this.visualSettings.depthOfField * 0.5 * this.renderHeight * focalLength * focalLength
       / (fNumber * filmHeight * Math.max(focus - focalLength, 0.01));
     this.gradePass.uniforms.uTime.value = this.time;
     this.composer.render(Math.min(dt, 0.1));
     this.previousViewProjection.copy(this.currentViewProjection);
-    this.previousValid = true;
+    this.previousProjection.copy(this.camera.projectionMatrix);
+    this.previousPosition.copy(this.currentPosition);
+    this.previousRotation.copy(this.currentRotation);
+    this.previousNear = this.camera.near;
+    this.previousFar = this.camera.far;
+    this.previousAspect = this.camera.aspect;
+    this.previousZoom = this.camera.zoom;
+    this.previousFilmOffset = this.camera.filmOffset;
+    this.previousProjectionAnimated = animatedProjection;
+    this.previousValid = !paused && validDelta && dt < 0.15;
   }
 
   dispose() {
@@ -477,5 +660,6 @@ export class RoomOptics {
     this.disposed = true;
     this.composer.passes.forEach(pass => pass.dispose());
     this.composer.dispose();
+    this.sceneTarget.dispose();
   }
 }

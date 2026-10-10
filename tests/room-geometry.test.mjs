@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import * as T from 'three';
 import {buildRoomArchitecture,createFixedPanelLayout,createReferenceCamera} from '../src/scene/room-environment.js';
-import {ROOM_PANELS} from '../src/scene/room-core.js';
+import {ROOM_PANELS,ROOM_SHELL} from '../src/scene/room-core.js';
 import {RoomCamera,panelApproachPose} from '../src/scene/room-camera.js';
 import {parseCarOnCpu} from '../tools/car/glb-utils.mjs';
 
@@ -43,6 +43,34 @@ test('fixed-eye drag views leave every visible car sightline clear across the al
   }
  }
  assert.ok(checked>250,`insufficient visible-ray coverage: ${checked}`);
+});
+
+test('the physical ceiling closes the upper overview frustum at every aspect and look limit',()=>{
+ const wall=view.structure.getObjectByName('Side and back wall'),ceiling=view.structure.getObjectByName('Full room ceiling');
+ assert.ok(wall&&ceiling,'the real shell needs both its curved wall and a full ceiling');
+ const ray=new T.Raycaster();ray.near=.08;ray.far=100;
+ let checked=0;
+ for(const [width,height]of [[1920,1080],[2560,1080],[3840,1080],[390,844],[320,960],[740,320]]){
+  let formerlyOpen=0;
+  for(const x of [-1,0,1])for(const y of [-1,0,1]){
+   const camera=new T.PerspectiveCamera(42,width/height,.08,100),rig=new RoomCamera(camera,width);
+   rig.pointLook(x,y);rig.update(3);
+   for(const u of [-1,-.5,0,.5,1])for(const v of [0,.25,.5,.75,1]){
+    // Use full 3D camera rays. Flattening these onto the horizontal plane
+    // conceals the opening above the wall, even at the approved neutral view.
+    ray.setFromCamera(new T.Vector2(u,v),camera);
+    const wallHits=ray.intersectObject(wall),ceilingHits=ray.intersectObject(ceiling);
+    assert.ok(wallHits.length||ceilingHits.length,`${width}x${height}, pointer ${x},${y}, frustum ${u},${v}: open upper boundary`);
+    if(!wallHits.length){
+     formerlyOpen++;
+     assert.ok(Math.abs(ceilingHits[0].point.y-ROOM_SHELL.height)<1e-8,'a physical roof must close the sightline at room height');
+    }
+    checked++;
+   }
+  }
+  assert.ok(formerlyOpen>0,`${width}x${height}: coverage must detect the previous uncapped shell`);
+ }
+ assert.equal(checked,1350);
 });
 
 test('rays toward the car remain clear along approach paths to all five fixed panels',()=>{

@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-09T23:02:21.286297+00:00",
+  "checkedAt": "2026-10-10T00:08:44.414511+00:00",
   "threeRevision": "180",
   "method": "Installed native EGL/GLES compiler and linker; no browser or frame rendering.",
   "scope": "Actual custom shaders and a representative Three MeshStandard fog/light/environment/shadow variant.",
@@ -13,13 +13,13 @@
     {
       "shader": "display",
       "status": "compiled_and_linked",
-      "sourceSha256": "dad919038379277d5123bfbf0e8a20239e234296e08e4a5ca52ce1f850e6c24a",
+      "sourceSha256": "7a8d45c18c10bfe210881830828233adcc3d53cb13c9268ecd6158633f749d6d",
       "errors": []
     },
     {
       "shader": "floor",
       "status": "compiled_and_linked",
-      "sourceSha256": "b091f1e52df0bdc49721cd3ea080b7304f46712b464b451210c26fe138b21fda",
+      "sourceSha256": "2960bda93cbbb51e96967ac679a6acd70235af1374909c08657839a3e5090b9f",
       "errors": []
     },
     {
@@ -31,7 +31,7 @@
     {
       "shader": "beam",
       "status": "compiled_and_linked",
-      "sourceSha256": "dec38a4f1a05f9b70a5925f7d53314c16d299c0f8c316ac9d6310f2655459dc8",
+      "sourceSha256": "033544c0796e2118aea8fd03945749eea0cd1c18033697888b7f70aea258ee03",
       "errors": []
     },
     {
@@ -43,19 +43,25 @@
     {
       "shader": "DXT.DepthLens",
       "status": "compiled_and_linked",
-      "sourceSha256": "56573b978fa445c6ed548dd3b11f001b72d9582539cefe893a3056e1b8d6571b",
+      "sourceSha256": "8df16461c3e6d879e4d5deaf09ee57cf7688d4bd0dc57476973c0260bd0e65ea",
       "errors": []
     },
     {
       "shader": "DXT.LensGrade",
       "status": "compiled_and_linked",
-      "sourceSha256": "a1e170140880b6971e99a20ce3c5e95e32f7c3ea95d9339413a6d3db74c940d3",
+      "sourceSha256": "6882ae663d2d67190d563b8ef802f46636fa5d124aab1186dd68454d396f7056",
+      "errors": []
+    },
+    {
+      "shader": "DXT.FXAA",
+      "status": "compiled_and_linked",
+      "sourceSha256": "354ab61f5bf99f9a9d3c587a8aa1935a437379b69ffda832c6ad64b0b3bb95f7",
       "errors": []
     },
     {
       "shader": "DXT.SoftThreshold",
       "status": "compiled_and_linked",
-      "sourceSha256": "eca3a74df4d1ee9aeb157fb06d6c1e2ee9687f3d63d5937e5e8798de79579850",
+      "sourceSha256": "75c6c0b2c170758931bcb337a46dc76d695638887894e44bfabf14d4496753cc",
       "errors": []
     },
     {

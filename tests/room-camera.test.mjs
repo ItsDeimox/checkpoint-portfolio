@@ -19,7 +19,8 @@ test('free look changes orientation without moving the eye or any screen corner'
   controller.look(.35, .1);
   for (let i = 0; i < 120; i++) controller.update(1 / 60);
   assert.equal(controller.camera.position.distanceTo(eye), 0);
-  assert.ok(controller.camera.quaternion.angleTo(rotation) > .2);
+  const turn = controller.camera.quaternion.angleTo(rotation);
+  assert.ok(turn > .04 && turn < .065, `overview look must remain gentle: ${turn} radians`);
   assert.deepEqual(panels.map(panel => panel.corners.map(corner => corner.toArray())), corners);
 });
 

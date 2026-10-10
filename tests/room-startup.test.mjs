@@ -119,3 +119,41 @@ test('compilation failure restores a previously disabled shadow state and active
   assert.equal(view.renderer.getRenderTarget(), original);
   assert.equal(view.renderer.shadowMap.enabled, false);
 });
+
+test('startup prepares the dedicated scene capture and final AA in their actual rendering domains', async () => {
+  const { view, calls, original, linear } = fixture();
+  const sceneTarget = new WebGLRenderTarget(2, 2, { samples: 2 });
+  const aaMaterial = new ShaderMaterial({ toneMapped: false });
+  view.optics.sceneTarget = sceneTarget;
+  view.optics.aaPass = { material: aaMaterial };
+  const progress = [];
+  const result = await prepareRoomRenderer(view, { onProgress: event => progress.push(event) });
+  const initialized = calls.filter(call => call.type === 'init-target').map(call => call.value);
+  assert.equal(initialized.filter(target => target === sceneTarget).length, 1);
+  assert.equal(initialized.length, 3);
+  const compiled = calls.filter(call => call.type === 'compile');
+  assert.ok(compiled.filter(call => call.fullScene === view.scene).every(call => call.target === sceneTarget));
+  const withMaterial = material => compiled.find(call => call.objects.some(object => object.material === material));
+  assert.equal(withMaterial(view.optics.lensPass.material).target, linear);
+  assert.equal(withMaterial(view.optics.outputPass.material).target, view.optics.composer.writeBuffer);
+  assert.equal(withMaterial(aaMaterial).target, null);
+  assert.equal(compiled.at(-1), withMaterial(aaMaterial));
+  assert.equal(result.opticalMaterials, 3);
+  assert.equal(progress.at(-2).stage, 'antialias');
+  assert.equal(progress.at(-1).stage, 'ready');
+  assert.equal(view.renderer.getRenderTarget(), original);
+});
+
+test('abort after output compilation prevents final AA and never reports a ready renderer', async () => {
+  const { view, calls, original } = fixture();
+  const controller = new AbortController(), progress = [];
+  const aaMaterial = new ShaderMaterial({ toneMapped: false });
+  view.optics.aaPass = { material: aaMaterial };
+  await assert.rejects(prepareRoomRenderer(view, {
+    signal: controller.signal,
+    onProgress(event) { progress.push(event); if (event.stage === 'output') controller.abort(); },
+  }), { name: 'AbortError' });
+  assert.ok(!calls.some(call => call.type === 'compile' && call.objects.some(object => object.material === aaMaterial)));
+  assert.ok(!progress.some(event => event.stage === 'ready'));
+  assert.equal(view.renderer.getRenderTarget(), original);
+});
