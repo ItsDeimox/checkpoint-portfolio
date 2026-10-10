@@ -19,10 +19,10 @@ export class MusicLights {
   const amount=clamp(strength),bass=clamp(levels?.bass)*amount,high=clamp(levels?.treble)*amount;
   if(bass===0&&high===0)return;
   this.active=true;
-  for(const entry of this.lights){entry.base=entry.light.intensity;entry.light.intensity=entry.base*(1+bass*.65);}
-  for(const entry of this.materials){entry.base.copy(entry.material.color);entry.material.color.multiplyScalar(1+bass*.48+high*.08);}
+  for(const entry of this.lights){entry.base=entry.light.intensity;entry.light.intensity=entry.base*(1+bass*.73);}
+  for(const entry of this.materials){entry.base.copy(entry.material.color);entry.material.color.multiplyScalar(1+bass*.57+high*.10);}
   this.bloom=this.view.optics.gradePass.uniforms.uBloomStrength;this.baseBloom=this.bloom.value;
-  this.bloom.value=this.baseBloom*(1+bass*.24+high*.05);
+  this.bloom.value=this.baseBloom*(1+bass*.30+high*.07);
   for(const panel of this.view.panels)if(panel.material.uniforms.musicTreble)panel.material.uniforms.musicTreble.value=high;
  }
  restore(){

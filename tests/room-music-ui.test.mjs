@@ -9,7 +9,7 @@ test('the brand is a native spin button, Home retains camera reset, and audio co
  assert.match(html,/<button[^>]+data-spin-logo[^>]+aria-label="Rotate DXT logo"/);
  assert.match(html,/<a[^>]+data-reset-room[^>]+room-home-link/);
  assert.match(html,/data-music-setting="volume"/);assert.match(html,/data-music-setting="reactivity"/);
- assert.match(html,/id="music-file"[^>]*type="file"/);assert.match(html,/data-music-default/);
+ assert.doesNotMatch(html,/id="music-file"|data-music-choose|data-music-default/);assert.match(html,/DJ ROOTS - Lagoon/);
 });
 test('spin completion can keep the same frame chain active even when ambience is paused',()=>{
  assert.equal(typeof HeroScene.prototype.spinLogo,'function');

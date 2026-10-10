@@ -35,10 +35,7 @@ export function renderRoomHeader(settings = {}) {
           <p data-music-status role="status">Press Sound to play.</p>
           <label class="room-visual-control" for="music-volume"><span>Volume</span><output for="music-volume" data-music-value="volume">${Math.round(music.volume*100)}%</output><input id="music-volume" data-music-setting="volume" type="range" min="0" max="1" step=".01" value="${music.volume}"></label>
           <label class="room-visual-control" for="music-reactivity"><span>Light response</span><output for="music-reactivity" data-music-value="reactivity">${Math.round(music.reactivity*100)}%</output><input id="music-reactivity" data-music-setting="reactivity" type="range" min="0" max="1" step=".01" value="${music.reactivity}"></label>
-          <button id="choose-music" type="button" data-music-choose>Choose a local track ${icon('music')}</button>
-          <input id="music-file" class="sr-only" type="file" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm" tabindex="-1" aria-label="Choose a local audio file">
-          <button id="default-music" type="button" data-music-default>Clear local track ${icon('pause')}</button>
-          <p>Local files play only on this device. Motion off disables reactive lights.</p>
+          <p>Sound plays DJ ROOTS - Lagoon. Motion off disables reactive lights.</p>
         </details>
         <fieldset class="room-visual-controls"><legend>Light &amp; lens</legend>
           ${VISUAL_CONTROLS.map(control => `<label class="room-visual-control" for="visual-${control.key}"><span>${control.label}</span><output for="visual-${control.key}" data-visual-value="${control.key}">${visual[control.key].toFixed(2)}</output><input id="visual-${control.key}" data-visual-setting="${control.key}" type="range" min="${control.min}" max="${control.max}" step="${control.step}" value="${visual[control.key]}"></label>`).join('')}

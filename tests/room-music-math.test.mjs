@@ -13,3 +13,20 @@ test('reactivity modulates only existing red sources and restores exact baseline
  assert.equal(typeof reactive.MusicLights,'function');const scene=new T.Scene(),red=new T.PointLight(0xff1020,4),white=new T.PointLight(0xffffff,2);scene.add(red,white);const material=new T.MeshBasicMaterial({color:new T.Color(8,.01,.02)});scene.add(new T.Mesh(new T.BoxGeometry(),material));const holo={value:0},bloom={value:.65};const view={scene,screenLight:new T.PointLight(),panels:[{material:{uniforms:{musicTreble:holo}}}],optics:{gradePass:{uniforms:{uBloomStrength:bloom}}}};
  const fx=new reactive.MusicLights(view),original=material.color.clone();for(let i=0;i<100;i++){fx.apply({bass:1,treble:1},1);assert.ok(red.intensity>4 && red.intensity<=7);assert.equal(white.intensity,2);assert.ok(bloom.value>.65 && bloom.value<.9);fx.restore();assert.equal(red.intensity,4);assert.equal(bloom.value,.65);assert.ok(material.color.equals(original));assert.equal(holo.value,0);}fx.apply({bass:1,treble:1},0);assert.equal(red.intensity,4);fx.restore();assert.equal(scene.children.length,3);
 });
+
+test('bass and treble respond faster with a stronger, capped bloom and neon pulse',()=>{
+  const env=new bands.BandEnvelope(48000,2048);
+  assert.ok(env.bands[0].attack<=.027 && env.bands[0].release<=.18);
+  assert.ok(env.bands[1].attack<=.02 && env.bands[1].release<=.125);
+  const scene=new T.Scene(), red=new T.PointLight(0xff1020,4),white=new T.PointLight(0xffffff,2);
+  scene.add(red,white);
+  const view={scene,screenLight:new T.PointLight(),panels:[],optics:{gradePass:{uniforms:{uBloomStrength:{value:.65}}}}};
+  const fx=new reactive.MusicLights(view);
+  fx.apply({bass:1,treble:1},1);
+  assert.ok(red.intensity>=6.85 && red.intensity<=7.0,'stronger but limited neon pulse');
+  assert.ok(view.optics.gradePass.uniforms.uBloomStrength.value>=.88);
+  assert.equal(white.intensity,2);
+  fx.restore();
+  assert.equal(red.intensity,4);
+  assert.equal(view.optics.gradePass.uniforms.uBloomStrength.value,.65);
+});

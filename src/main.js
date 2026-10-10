@@ -53,7 +53,6 @@ function updateMusicUI() {
   }
   const spin=header.querySelector('#brand-spin');
   if(spin)spin.disabled=phase!=='ready'||Boolean(scene&&!scene.brandLogo?.ready);
-  for(const button of header.querySelectorAll('[data-music-choose],[data-music-default]'))button.disabled=phase!=='ready';
   const title=header.querySelector('[data-music-title]');
   if(title&&title.textContent!==musicState.title)title.textContent=musicState.title;
   const status=header.querySelector('[data-music-status]');
@@ -160,8 +159,6 @@ document.addEventListener('click', async event => {
   const target = event.target instanceof Element ? event.target : null;
   if (!target || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   if (target.closest('[data-spin-logo]')) {event.preventDefault();scene?.spinLogo();return;}
-  if (target.closest('[data-music-choose]')) {header.querySelector('#music-file')?.click();return;}
-  if (target.closest('[data-music-default]')) {await scene?.useDefaultMusic();return;}
   const open = target.closest('[data-open-panel]');
   if (open) { event.preventDefault(); openPanel(open.dataset.openPanel, open); return; }
   const fallback = target.closest('[data-fallback-panel]');
@@ -188,7 +185,6 @@ document.addEventListener('click', async event => {
     save(); scene?.setSettings(); updateHeader();
   } else if (target.closest('#sound-toggle')) {
     // Intent changes synchronously. Late play promises never overwrite a newer click.
-    if(!musicState.hasTrack){header.querySelector('#music-file')?.click();return;}
     settings.sound = !settings.sound;
     try {await scene?.setSound(settings.sound);}
     catch {settings.sound=false;musicState={...musicState,enabled:false,status:'error',error:'Unable to play music. Try again.'};updateMusicUI();}
@@ -214,11 +210,7 @@ header.addEventListener('input', event => {
 });
 header.addEventListener('change', async event => {
   if (event.target.matches?.('[data-visual-setting],[data-music-setting]')) save();
-  if (event.target.id==='music-file') {
-    const file=event.target.files?.[0];event.target.value='';if(!file)return;
-    try {const enabled=settings.sound;const selected=scene?.useLocalMusic(file);if(!enabled)await scene?.setSound(true);else await selected;}
-    catch(error) {const status=header.querySelector('[data-music-status]');if(status)status.textContent=error.message;}
-  }
+
 });
 options.addEventListener('focusin', event => {
   if (!options.classList.contains('is-world-content')) return;
