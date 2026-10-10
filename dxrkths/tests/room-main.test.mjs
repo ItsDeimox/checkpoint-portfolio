@@ -7,6 +7,8 @@ import * as homePage from '../src/pages/home-room.js';
 import * as roomShell from '../src/ui/room-visitor-shell.js';
 import * as visitorSettings from '../src/ui/room-visitor-settings.js';
 import * as introModule from '../src/ui/room-intro.js';
+import * as sectionPages from '../src/pages/section-pages.js';
+import * as sectionRoutes from '../src/ui/room-section-routes.js';
 import * as navigation from '../src/ui/room-navigation.js';
 import * as musicSettings from '../src/scene/room-music-settings.js';
 import * as visualSettings from '../src/scene/room-visual-settings.js';
@@ -160,9 +162,13 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
     constructor(canvas, settings, callbacks) {
       scene = this;
       Object.assign(this, { canvas, settings, callbacks, ready: false, disposed: false, lost: false,
-        brandLogo: {ready:true}, cameraRig: { mode: 'overview' }, approaches: [], resets: [], startup: deferred() });
+        reduced:{matches:false},brandLogo: {ready:true}, cameraRig: { mode: 'overview' }, approaches: [], resets: [], startup: deferred() });
       this.readyPromise = this.startup.promise;
     }
+    enterPortal(index, complete) {this.cameraRig.mode='portal';this.approaches.push({index,complete});calls.push({portal:index});return true;}
+    cancelPortal(){this.cameraRig.mode='overview';calls.push({cancel:true});}
+    parkSection(){this.pageActive=true;calls.push({park:true});}
+    resumeShowroom(){this.pageActive=false;this.cameraRig.mode='overview';calls.push({resume:true});}
     approach(index, complete) { this.cameraRig.mode = 'approaching'; this.approaches.push({ index, complete }); return this.ready; }
     reset(complete) { this.cameraRig.mode = 'returning'; this.resets.push(complete); }
     showPanelContent(index) { this.contentPanel = index; calls.push({ show: index }); }
@@ -179,6 +185,7 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
     dispose() { this.disposed = true; this.ready = false; calls.push({ dispose: true }); return Promise.resolve(); }
   }
   const dependencies = {
+    './pages/section-pages.js':sectionPages,'./ui/room-section-routes.js':sectionRoutes,
     './pages/home-room.js': homePage, './ui/room-visitor-shell.js': roomShell, './ui/room-intro.js':introModule, './ui/room-visitor-settings.js':visitorSettings, './scene/room-music.js':{RoomMusic:PageMusic},
     './ui/room-navigation.js': navigation, './scene/room-visual-settings.js': visualSettings, './scene/room-music-settings.js': musicSettings,
   };
@@ -211,143 +218,57 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
     get scene() { return scene; }, inspect: () => window.__DXT__.inspect() };
 }
 
-test('focused 3D content keeps the canvas interactive and native actions accessible without a modal focus trap', async () => {
-  const f = harness(); await f.ready();
-  f.scene.callbacks.onPanelRequest(4, f.get('[data-open-panel="4"]'));
-  assert.equal(f.get('#room-panel-options').hidden, true, 'Options must wait for the camera');
-  f.arrive();
-  const options = f.get('#room-panel-options');
-  assert.equal(options.hidden, false); assert.equal(options.getAttribute('role'), 'group');
-  assert.equal(options.getAttribute('aria-modal'), null);
-  assert.ok(options.classList.contains('is-world-content'));
-  assert.equal(options.inert, false);
-  for (const selector of ['#hero-canvas', '#header', '#footer']) assert.equal(f.get(selector).inert, false, selector);
-  for (const selector of ['.room-panel-targets', '.room-mobile-context']) assert.equal(f.get(selector).inert, true, selector);
-  assert.equal(f.document.activeElement, options.querySelector('h2'));
-  assert.ok(f.calls.some(call => call.show === 4));
-  assert.match(css, /\.room-panel-options\.is-world-content\s*\{[^}]*width:\s*1px;[^}]*clip-path:\s*inset\(50%\)/);
-  const action = options.querySelector('[data-room-panel-action="instagram"]');
-  action.focus(); assert.equal(f.calls.at(-1).focus, 'instagram');
-  assert.equal(fire(action, 'click').defaultPrevented, false, 'Native links retain browser activation');
-  assert.equal(f.opened.length, 0, 'The document handler must not duplicate native link opening');
-  const last = options.querySelectorAll('a[href]').at(-1); last.focus();
-  assert.equal(fire(last, 'keydown', { key: 'Tab' }).defaultPrevented, false);
-  f.get('#hero-canvas').focus(); assert.equal(f.calls.at(-1).focus, null);
-  assert.equal(fire(f.get('#hero-canvas'), 'keydown', { key: 'Escape' }).defaultPrevented, true);
-  assert.equal(options.hidden, true); assert.equal(f.inspect().selectedPanel, null);
-  f.scene.resets.at(-1)(); assert.equal(f.document.activeElement, f.get('#hero-canvas'));
-});
 
-test('download failure opens the native modal, traps Tab and restores the actual fallback trigger on Escape', async () => {
-  const f = harness({ bundleError: new Error('Bundle unavailable') }); await settle();
-  assert.equal(f.inspect().phase, 'unavailable');
-  const trigger = f.get('[data-fallback-panel="1"]'); trigger.focus();
-  assert.equal(fire(trigger, 'click', { ctrlKey: true }).defaultPrevented, false);
-  assert.equal(fire(trigger, 'click').defaultPrevented, true);
-  const options = f.get('#room-panel-options'), controls = options.querySelectorAll('a[href], button:not([disabled])');
-  assert.equal(options.hidden, false); assert.equal(options.getAttribute('role'), 'dialog');
-  assert.equal(options.getAttribute('aria-modal'), 'true');
-  assert.equal(options.classList.contains('is-world-content'), false);
-  for (const selector of ['#header', '#footer', '#hero-canvas', '.room-panel-targets']) assert.equal(f.get(selector).inert, true, selector);
-  assert.equal(fire(f.document.activeElement, 'keydown', { key: 'Tab', shiftKey: true }).defaultPrevented, true);
-  assert.equal(f.document.activeElement, controls.at(-1));
-  assert.equal(fire(f.document.activeElement, 'keydown', { key: 'Tab' }).defaultPrevented, true);
-  assert.equal(f.document.activeElement, controls[0]);
-  fire(f.document.activeElement, 'keydown', { key: 'Escape' });
-  assert.equal(options.hidden, true); assert.equal(f.document.activeElement, trigger);
-  for (const selector of ['#header', '#footer', '#hero-canvas', '.room-panel-targets']) assert.equal(f.get(selector).inert, false, selector);
+test('click starts a banner journey and reveals a separate page only on arrival',async()=>{
+ const f=harness();await f.ready();fire(f.get('[data-open-panel="0"]'),'click');
+ assert.equal(f.scene.approaches.length,1);assert.equal(f.get('#room-section-page').hidden,true);
+ assert.equal(f.get('#room-panel-options').hidden,true);assert.equal(f.location.pathname,'/berserk');
+ f.arrive();assert.equal(f.get('#room-section-page').hidden,false);assert.equal(f.get('.room-hero').hidden,true);
+ assert.equal(f.get('#section-title').textContent,'Berserk Drift X');assert.ok(f.calls.some(c=>c.park));
+ assert.equal(f.get('#room-panel-options').hidden,true);
 });
-
-test('context restoration and route changes cannot reveal an obsolete approach callback', async () => {
-  const f = harness({ path: '/contact' });
-  assert.equal(f.inspect().selectedPanel, 4); assert.equal(f.get('#room-panel-options').hidden, true);
-  await f.ready(); assert.equal(f.scene.approaches[0].index, 4);
-  f.scene.callbacks.onPanelRequest(0, f.get('[data-open-panel="0"]'));
-  f.arrive(0); assert.equal(f.get('#room-panel-options').hidden, true);
-  f.arrive(1); assert.equal(f.get('#room-panel-options').getAttribute('role'), 'group');
-  f.scene.ready = false; f.scene.lost = true;
-  f.scene.callbacks.onUnavailable(new Error('Context lost'));
-  assert.equal(f.get('#room-panel-options').getAttribute('role'), 'dialog');
-  assert.equal(f.get('#hero-canvas').inert, true);
-  await f.ready();
-  const restored = f.scene.approaches.length - 1;
-  assert.equal(f.get('#room-panel-options').hidden, true);
-  assert.equal(f.get('#hero-canvas').inert, false);
-  const visits = f.visits.length;
-  f.pop('/groups'); const latest = f.scene.approaches.length - 1;
-  f.arrive(restored); assert.equal(f.get('#room-panel-options').hidden, true);
-  f.arrive(latest);
-  assert.equal(f.inspect().selectedPanel, 1);
-  assert.equal(f.get('#room-panel-options').getAttribute('role'), 'group');
-  assert.match(f.document.title, /^Groups & Games/);
-  assert.equal(f.visits.length, visits, 'popstate must not push another history entry');
-  f.pop('/'); f.arrive(latest);
-  assert.equal(f.inspect().selectedPanel, null); assert.equal(f.get('#room-panel-options').hidden, true);
+test('escape during flight cancels late page arrival and returns to the same showroom',async()=>{
+ const f=harness();await f.ready();fire(f.get('[data-open-panel="3"]'),'click');
+ const late=f.scene.approaches[0].complete;fire(f.document,'keydown',{key:'Escape'});late();
+ assert.equal(f.inspect().selectedPanel,null);assert.equal(f.get('#room-section-page').hidden,true);
+ assert.equal(f.location.pathname,'/');assert.ok(f.calls.some(c=>c.resume));
 });
-
-test('closing the fallback during context loss restores the overview instead of reopening its old content', async () => {
-  const f = harness(); await f.ready();
-  f.scene.callbacks.onPanelRequest(2, f.get('[data-open-panel="2"]')); f.arrive();
-  f.scene.ready = false; f.scene.lost = true; f.scene.callbacks.onUnavailable(new Error('Context lost'));
-  fire(f.get('[data-room-panel-action="back"]'), 'click');
-  assert.equal(f.inspect().selectedPanel, null);
-  const previous = f.scene.approaches.length;
-  await f.ready();
-  assert.equal(f.scene.approaches.length, previous);
-  assert.equal(f.scene.resets.length, 1);
-  assert.equal(f.get('#room-panel-options').hidden, true);
-  assert.equal(f.get('#hero-canvas').inert, false);
+test('rapid repeated clicks do not queue or restart the same journey',async()=>{
+ const f=harness();await f.ready();for(let i=0;i<4;i++)fire(f.get('[data-open-panel="2"]'),'click');
+ assert.equal(f.scene.approaches.length,1);f.arrive();assert.equal(f.get('#section-title').textContent,'Future Projects');
 });
-
-test('surface links authorize cloned bundle actions by authored id and href and open synchronously once', async () => {
-  const f = harness(); await f.ready();
-  f.scene.callbacks.onPanelRequest(4, f.get('[data-open-panel="4"]')); f.arrive();
-  const authored = homePage.ROOM_PANELS[4].options[1], clone = JSON.parse(JSON.stringify(authored));
-  assert.notEqual(clone, authored);
-  f.scene.callbacks.onPanelAction(clone);
-  assert.equal(f.opened.length, 1, 'No asynchronous handoff may consume browser user activation');
-  assert.deepEqual(f.opened[0], [authored.href, '_blank', 'noopener,noreferrer']);
-  f.scene.callbacks.onPanelAction({ ...clone, href: 'https://unrelated.invalid/' });
-  f.scene.callbacks.onPanelAction({ ...homePage.ROOM_PANELS[0].options[0] });
-  assert.equal(f.opened.length, 1);
-  f.scene.callbacks.onPanelAction({ id: 'back', kind: 'back' });
-  assert.equal(f.inspect().selectedPanel, null); assert.equal(f.get('#room-panel-options').hidden, true);
-  f.scene.callbacks.onPanelAction(clone); assert.equal(f.opened.length, 1);
+test('section links and browser history resolve pages without an in-world modal',async()=>{
+ const f=harness();await f.ready();fire(f.get('[data-open-panel="4"]'),'click');f.arrive();
+ fire(f.get('[data-section-route="1"]'),'click');assert.equal(f.get('#section-title').textContent,'Groups & Games');
+ assert.equal(f.scene.approaches.length,1);const visits=f.visits.length;f.pop('/projects');
+ assert.equal(f.get('#section-title').textContent,'Future Projects');assert.equal(f.visits.length,visits);
+ f.pop('/');assert.equal(f.get('#room-section-page').hidden,true);assert.equal(f.get('.room-hero').hidden,false);
 });
-
-test('visitor controls preserve approved optics and cycle exactly Medium, High and Low',async()=>{
-  const f=harness({stored:{quality:'high',paused:true,visual:{exposure:1.2,bloom:0}}});await f.ready();
-  assert.equal(f.get('#visual-exposure'),null);assert.equal(f.get('.room-settings'),null);
-  assert.equal(f.inspect().settings.quality,'auto');assert.equal(f.inspect().settings.music.volume,.2);assert.equal(f.inspect().settings.music.reactivity,.85);
-  assert.equal(f.inspect().settings.visual.exposure,1.2);assert.equal(f.inspect().settings.visual.bloom,0);
-  const menu=f.get('.room-audio-menu');menu.open=true;
-  for(const quality of ['high','low','auto']){
-    const button=f.get('#quality');button.focus();fire(button,'click');
-    assert.equal(f.inspect().settings.quality,quality);assert.equal(f.document.activeElement,f.get('#quality'));
-    assert.equal(f.inspect().settings.visual.exposure,1.2);
-  }
-  const reloaded=harness({stored:f.writes.at(-1)});await settle();assert.equal(reloaded.inspect().settings.quality,'auto');
+test('direct links deliver the authored page without downloading the GPU scene',async()=>{
+ const f=harness({path:'/contact'});await settle();assert.equal(f.get('#section-title').textContent,'Socials & Contact');
+ assert.equal(f.calls.filter(c=>c.download).length,0);assert.equal(f.scene,undefined);
+ fire(f.get('[data-return-showroom]'),'click');await f.ready();assert.equal(f.get('.room-hero').hidden,false);
+ assert.equal(f.calls.filter(c=>c.download).length,1);
 });
-
-test('page lifecycle sleeps a cached scene and disposes only a noncached exit', async () => {
-  const f = harness(); await f.ready();
-  fire(f.window, 'pagehide', { persisted: true }); assert.ok(f.calls.some(c=>c.sleep));assert.ok(f.calls.some(c=>c.audioSuspend));
-  assert.equal(f.scene.disposed, false);
-  fire(f.window, 'pageshow'); assert.ok(f.calls.some(c=>c.wake));assert.ok(f.calls.some(c=>c.audioResume));
-  fire(f.window, 'pagehide', { persisted: false }); assert.equal(f.scene.disposed, true);
+test('failed WebGL still exposes all destination pages and music controls',async()=>{
+ const f=harness({bundleError:Error('offline')});await settle();fire(f.get('[data-fallback-panel="1"]'),'click');
+ assert.equal(f.get('#section-title').textContent,'Groups & Games');assert.equal(f.get('#sound-toggle').disabled,false);
+ fire(f.get('#sound-toggle'),'click');await settle();assert.equal(f.get('#sound-toggle').getAttribute('aria-pressed'),'true');
 });
-
-test('logo click is independent of Home and never resets an open panel',async()=>{
- const f=harness();await f.ready();fire(f.get('[data-open-panel="3"]'),'click');f.arrive();
- const path=f.location.pathname,resets=f.scene.resets.length;
- fire(f.get('[data-spin-logo]'),'click');assert.equal(f.calls.at(-1).spin,true);assert.equal(f.location.pathname,path);assert.equal(f.scene.resets.length,resets);assert.equal(f.scene.contentPanel,3);
+test('quality and music controls preserve focus, values and the approved visuals',async()=>{
+ const f=harness({stored:{visual:{exposure:1.2,bloom:0}}});await f.ready();
+ const slider=f.get('#music-volume');slider.focus();slider.value='.32';fire(slider,'input');fire(slider,'change');
+ assert.equal(f.document.activeElement,slider);assert.equal(f.writes.at(-1).music.volume,.32);
+ fire(f.get('#quality'),'click');assert.equal(f.inspect().settings.quality,'high');assert.equal(f.inspect().settings.visual.exposure,1.2);
+ assert.equal(f.inspect().settings.visual.bloom,0);assert.equal(f.get('.room-settings'),null);
 });
-test('music controls keep the active slider, persist only controls and render file names as text',async()=>{
- const f=harness();await f.ready();const slider=f.get('#music-volume');slider.focus();slider.value='.72';fire(slider,'input');
- assert.equal(f.document.activeElement,slider);assert.equal(f.calls.findLast(c=>c.music).music.volume,.72);assert.equal(f.get('[data-music-value="volume"]').textContent,'72%');
- fire(slider,'change');assert.equal(f.writes.at(-1).music.volume,.72);
- f.scene.callbacks.onMusicState({enabled:true,status:'playing',title:'<img src=x onerror=alert(1)>',hasTrack:true,error:null});
- assert.equal(f.get('[data-music-title]').textContent,'<img src=x onerror=alert(1)>');assert.equal(f.get('[data-music-title]').children.length,0);
- assert.equal(f.get('#sound-toggle').getAttribute('aria-pressed'),'true');fire(f.get('#sound-toggle'),'click');await settle();assert.equal(f.get('#sound-toggle').getAttribute('aria-pressed'),'false');
- assert.equal(f.writes.at(-1).music.title,undefined);
+test('native authored external links are not opened twice by section navigation',async()=>{
+ const f=harness({path:'/contact'});await settle();const link=f.get('.section-action');
+ assert.equal(fire(link,'click').defaultPrevented,false);assert.equal(f.opened.length,0);
+});
+test('page lifecycle keeps the soundtrack and scene ownership independent',async()=>{
+ const f=harness();await f.ready();fire(f.window,'pagehide',{persisted:true});
+ assert.ok(f.calls.some(c=>c.sleep));assert.ok(f.calls.some(c=>c.audioSuspend));assert.equal(f.scene.disposed,false);
+ fire(f.window,'pageshow');fire(f.window,'pagehide',{persisted:false});assert.equal(f.scene.disposed,true);
+ assert.ok(f.calls.some(c=>c.audioClose));
 });

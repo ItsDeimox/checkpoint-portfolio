@@ -1,0 +1,52 @@
+/* Real, scrollable destination pages. No continuously rendered scene behind text. */
+.section-page[hidden],.room-hero[hidden]{display:none!important}
+body.section-active{overflow:auto;min-height:100svh;background:#070709}
+body.section-active>#main{position:relative;height:auto;min-height:100svh;overflow:visible}
+body.section-active>#footer{display:none}
+body.section-active .room-header-bar{background:linear-gradient(#070709f5,#070709cc,transparent)}
+body.section-active .room-motto{display:none}
+body.section-active .room-brand-logo{opacity:1!important}
+body.portal-travelling .room-panel-targets,body.portal-travelling .room-mobile-context,body.portal-travelling>#footer{pointer-events:none;opacity:0}
+body.portal-travelling .room-header-nav .room-enter,body.portal-travelling .room-brand{pointer-events:none;opacity:.35}
+.section-page{min-height:100svh;background:radial-gradient(ellipse at 88% 17%,#53101833,transparent 49%),#070709;color:#eae5e4;padding:120px max(6vw,24px) 0}
+.section-layout{max-width:1280px;margin:0 auto;animation:section-arrive .65s cubic-bezier(.2,.7,.2,1) both}
+.section-top{display:flex;align-items:center;justify-content:space-between;margin:10px 0 65px;gap:20px}
+.section-return{display:flex;align-items:center;gap:14px;color:#c4b6b9;text-transform:uppercase;font:500 11px var(--heading);letter-spacing:2px;text-decoration:none}
+.section-return .icon{width:17px;transform:rotate(180deg)}
+.section-return:hover{color:#ff294c}.section-coordinate,.section-caption,.section-art-label{font:500 9px var(--heading);letter-spacing:3px;color:#77676c}
+.section-hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(240px,.75fr);gap:clamp(40px,8vw,120px);align-items:center;min-height:420px}
+.section-kicker{color:#c68a95;font:500 10px/1.7 var(--heading);letter-spacing:3px;text-transform:uppercase;margin:0 0 18px}
+#section-title{font:500 clamp(58px,6.6vw,106px)/.95 var(--heading);letter-spacing:-2px;margin:0 0 27px;max-width:650px;color:#f4edef;outline:none}
+.section-lead{max-width:530px;color:#ae9fa4;font:400 16px/1.8 var(--body);margin:0 0 17px}
+.section-status{display:inline-flex;align-items:center;gap:9px;margin:0 0 24px;color:#bd939b;border:1px solid #6b253438;border-radius:2px;padding:6px 12px;font:500 10px var(--heading);letter-spacing:1.5px;text-transform:uppercase}
+.section-status i{width:4px;height:4px;background:#ed2246;box-shadow:0 0 10px #ed224677}
+.section-rule{width:45px;height:1px;background:#e41b3d;margin:32px 0 21px}
+.section-art{position:relative;padding:20px 16px 31px}
+.section-art:before,.section-art:after{content:'';position:absolute;inset:0 8px 17px 0;border:1px solid #a1344838;pointer-events:none}
+.section-art:after{inset:10px 0 27px 10px;border-color:#5c344644}
+.section-art-frame{height:390px;border:1px solid #cf455744;background:#040304;overflow:hidden;box-shadow:0 0 75px #9e062614}
+.section-art-frame svg{width:100%;height:100%;filter:saturate(.85);opacity:.8;display:block}
+.section-art-label{position:absolute;bottom:0;right:16px;color:#a16776}
+.section-links{margin-top:72px}
+.section-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:35px}
+.section-action{display:flex;align-items:center;gap:20px;border-top:1px solid #4f354044;padding:24px 4px;text-decoration:none;transition:background .18s,color .18s;color:#b8a6ad}
+.section-action:hover{background:#b9172c0c;color:#ff3356}
+.section-action-number{font:500 10px var(--heading);color:#83404e}
+.section-action-copy{flex:1;display:grid;gap:7px}.section-action-copy strong{font:500 21px var(--heading);color:#e4d6dc}
+.section-action-copy>span{font:400 12px/1.5 var(--body);color:#95828a}.section-action>.icon{width:22px;height:22px}
+.section-upcoming{display:grid;grid-template-columns:repeat(3,1fr);gap:35px;margin-top:65px}
+.section-upcoming>div{border-top:1px solid #69404a66;padding-top:22px}.section-upcoming h2{font:500 33px var(--heading);margin:10px 0}
+.section-upcoming p{font:400 14px/1.7 var(--body);color:#a8959d}.section-pending{font:500 10px var(--heading);letter-spacing:1px;color:#845c67;text-transform:uppercase}
+.section-groups{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:65px}
+.section-groups>a{display:flex;gap:22px;align-items:center;padding:26px 0;border-top:1px solid #64374477;text-decoration:none}
+.section-groups img{object-fit:contain;width:65px;height:65px}.section-groups>a>span{flex:1;display:grid;gap:10px}.section-groups strong{font:500 25px var(--heading);color:#eee0e5}.section-groups span>span{font:400 13px var(--body);color:#a89099}.section-groups .icon{width:18px;color:#e12249}
+.section-navigation{display:flex;flex-wrap:wrap;gap:18px 35px;border-top:1px solid #56313e77;margin-top:80px;padding:27px 0}
+.section-navigation a{font:500 12px var(--heading);letter-spacing:1px;color:#97868c;text-decoration:none}.section-navigation a span{font-size:9px;margin-right:8px;color:#633948}
+.section-navigation a[aria-current],.section-navigation a:hover{color:#f12b50}
+.section-footer{display:flex;justify-content:space-between;padding:25px 0 35px;color:#66505a;font:500 9px var(--heading);letter-spacing:3px}
+@keyframes section-arrive{from{opacity:0;transform:translateY(18px) scale(1.018)}to{opacity:1;transform:none}}
+@media(max-width:740px){.section-page{padding:100px 7vw 0}.section-top{margin:5px 0 40px}.section-coordinate{font-size:8px;letter-spacing:1px}.section-return{font-size:10px;letter-spacing:1px}.section-hero{grid-template-columns:1fr;gap:35px}.section-art{max-width:390px;width:100%;margin:auto}.section-art-frame{height:240px}.section-lead{font-size:14px}.section-actions,.section-groups{grid-template-columns:1fr}.section-upcoming{grid-template-columns:1fr;gap:24px}.section-links{margin-top:45px}.section-navigation{margin-top:45px;gap:18px}.section-action-copy strong{font-size:20px}#section-title{font-size:64px}.section-groups{gap:10px}.section-art-label{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.section-layout{animation:none}.section-action{transition:none}}
+
+body.section-active .room-home{display:none!important}
+body.section-active .room-home-link::after{display:none}

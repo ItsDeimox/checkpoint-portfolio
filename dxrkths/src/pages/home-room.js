@@ -1,4 +1,5 @@
 import { ROOM_PANELS, getRoomPanel } from './room-panel-data.js';
+import {pathForPanel} from '../ui/room-navigation.js';
 import { icon, logo } from '../ui/icons.js';
 
 export { ROOM_PANELS } from './room-panel-data.js';
@@ -37,7 +38,7 @@ export function home() {
   return `<div class="home-page room-home">
     <section class="hero room-hero" aria-labelledby="room-title" data-active-panel="0">
       <h1 id="room-title" class="sr-only">DXT — Creator. Drifter. Builder.</h1>
-      <p id="room-instructions" class="sr-only">Explore the DXT showroom. Move the mouse to look around, touch and drag on mobile, or use the arrow keys. Home resets the view. Use Tab to reach the five project panels. Activate a panel to move closer and explore the options on its screen. Use Tab to select screen actions and Enter to open them. Escape returns to the showroom.</p>
+      <p id="room-instructions" class="sr-only">Explore the DXT showroom. Move the mouse to look around, touch and drag on mobile, or use the arrow keys. Home resets the view. Use Tab to reach the five project panels. Activate a panel to travel through its portal to a dedicated page. Use Tab to explore page links and Enter to open them. Escape returns to the showroom.</p>
       <div class="room-loading" role="status" aria-live="polite">
         ${logo('dxt', 'room-loading-logo')}
         <span class="room-loading-line" aria-hidden="true"></span>
@@ -50,13 +51,13 @@ export function home() {
       </div>
       <canvas id="hero-canvas" tabindex="0" aria-label="Interactive DXT showroom" aria-describedby="room-instructions"></canvas>
       <nav class="room-panel-targets" aria-label="Explore DXT">
-        ${ROOM_PANELS.map((panel, index) => `<button class="room-panel-link" type="button" data-panel="${index}" data-open-panel="${index}" data-panel-title="${escape(panel.title)}" aria-controls="room-panel-options" aria-label="Explore ${escape(panel.title)}">${panelCopy(panel, index)}</button>`).join('')}
-        ${ROOM_PANELS.map((panel, index) => `<a class="room-panel-fallback-link" data-fallback-panel="${index}" href="${escape(panel.href)}" ${panel.external ? 'target="_blank" rel="noopener noreferrer"' : ''} aria-label="${escape(panel.title)}${panel.external ? ' on Roblox (opens in a new tab)' : ''}">${panelCopy(panel, index)}</a>`).join('')}
+        ${ROOM_PANELS.map((panel, index) => `<button class="room-panel-link" type="button" data-panel="${index}" data-open-panel="${index}" data-panel-title="${escape(panel.title)}" aria-controls="room-section-page" aria-label="Explore ${escape(panel.title)}">${panelCopy(panel, index)}</button>`).join('')}
+        ${ROOM_PANELS.map((panel, index) => `<a class="room-panel-fallback-link" data-fallback-panel="${index}" href="${pathForPanel(index)}" aria-label="${escape(panel.title)}">${panelCopy(panel, index)}</a>`).join('')}
       </nav>
       <div class="room-mobile-context" aria-label="Selected panel">
         <span class="room-mobile-number" data-active-panel-number aria-hidden="true">01 <span>/ 05</span></span>
         <span class="room-mobile-title" data-active-panel-title aria-live="polite" aria-atomic="true">Berserk Drift X</span>
-        <button id="room-open-panel" class="room-mobile-open" type="button" data-active-panel-open data-open-panel="0" aria-controls="room-panel-options" aria-label="Explore Berserk Drift X"><span>Explore</span>${icon('external')}</button>
+        <button id="room-open-panel" class="room-mobile-open" type="button" data-active-panel-open data-open-panel="0" aria-controls="room-section-page" aria-label="Explore Berserk Drift X"><span>Explore</span>${icon('external')}</button>
       </div>
       <section id="room-panel-options" class="room-panel-options" data-panel-options hidden role="dialog" aria-modal="true" aria-labelledby="room-options-title" aria-describedby="room-options-description" tabindex="-1"></section>
     </section>
