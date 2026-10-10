@@ -25,7 +25,7 @@ import { normalizeVisualSettings } from './room-visual-settings.js';
 export { DEFAULT_VISUAL_SETTINGS, VISUAL_CONTROLS, normalizeVisualSettings } from './room-visual-settings.js';
 
 const PROFILES = {
-  low: { samples: 8, motionSamples: 4, maxBlur: 8, msaaSamples: 0, bloomEdge: 384, bloomScale: 0.25 },
+  low: { samples: 8, motionSamples: 4, maxBlur: 8, msaaSamples: 0, bloomEdge: 320, bloomScale: 0.25, bloomLevels: 3 },
   auto: { samples: 20, motionSamples: 6, maxBlur: 11, msaaSamples: 2, bloomEdge: 512, bloomScale: 0.33 },
   high: { samples: 32, motionSamples: 8, maxBlur: 13, msaaSamples: 4, bloomEdge: 768, bloomScale: 0.4 },
 };
@@ -123,6 +123,7 @@ const LENS_FRAGMENT = /* glsl */`
 
   void main() {
     vec4 center = texture2D(tDiffuse, vUv);
+    if(uCocScale<=0.0&&uShutter<=0.0){gl_FragColor=center;return;}
     float depth = texture2D(tSceneDepth, vUv).x;
     float distanceToCamera = viewDistance(vUv, depth);
 
@@ -288,7 +289,7 @@ const BLOOM_COMBINE_FRAGMENT = /* glsl */`
 `;
 class BoundedBloomPass extends Pass {
  constructor(type){
-  super();this.needsSwap=false;this.profile=PROFILES.auto;this.lensEnabled=true;this.width=this.height=1;
+  super();this.needsSwap=false;this.profile=PROFILES.auto;this.activeLevels=6;this.lensEnabled=true;this.width=this.height=1;
   this.bright=colorTarget('DXT.Bloom.Threshold',type);
   this.levels=Array.from({length:6},(_,i)=>({horizontal:colorTarget(`DXT.Bloom.Mip${i}.H`,type),vertical:colorTarget(`DXT.Bloom.Mip${i}.V`,type)}));
   this.bloom=colorTarget('DXT.Bloom.Combined',type);this.wide=this.levels[3].vertical;
@@ -300,14 +301,23 @@ class BoundedBloomPass extends Pass {
   this.combineMaterial=screenMaterial('DXT.SixScaleBloom',BLOOM_COMBINE_FRAGMENT,Object.fromEntries(this.levels.map((l,i)=>['mip'+i,{value:l.vertical.texture}])));
   this.quad=new FullScreenQuad(this.brightMaterial);
  }
- setProfile(profile){this.profile=profile;this.setSize(this.width,this.height);}
+ setProfile(profile){
+  this.profile=profile;this.activeLevels=profile.bloomLevels??6;
+  this.wide=this.levels[Math.min(3,this.activeLevels-1)].vertical;
+  this.levels.forEach((_,i)=>{this.combineMaterial.uniforms['mip'+i].value=this.levels[Math.min(i,this.activeLevels-1)].vertical.texture;});
+  this.setSize(this.width,this.height);
+ }
  setSize(width,height){
   this.width=width;this.height=height;
   const scale=Math.min(this.profile.bloomScale,this.profile.bloomEdge/Math.max(width,height));
   const w=Math.max(1,Math.round(width*scale)),h=Math.max(1,Math.round(height*scale));
   this.bright.setSize(w,h);this.bloom.setSize(w,h);
-  this.levels.forEach((l,i)=>{const x=Math.max(1,Math.round(w/2**i)),y=Math.max(1,Math.round(h/2**i));l.horizontal.setSize(x,y);l.vertical.setSize(x,y);});
-  this.streak.setSize(Math.max(1,Math.round(w*.5)),Math.max(1,Math.round(h*.5)));
+  this.levels.forEach((l,i)=>{
+   const divisor=2**(i*(this.activeLevels===3?2:1)),enabled=i<this.activeLevels;
+   const x=enabled?Math.max(1,Math.round(w/divisor)):1,y=enabled?Math.max(1,Math.round(h/divisor)):1;
+   l.horizontal.setSize(x,y);l.vertical.setSize(x,y);
+  });
+  this.streak.setSize(this.activeLevels===3?1:Math.max(1,Math.round(w*.5)),this.activeLevels===3?1:Math.max(1,Math.round(h*.5)));
  }
  draw(renderer,material,target){this.quad.material=material;renderer.setRenderTarget(target);this.quad.render(renderer);}
  blur(renderer,texture,target,x,y){this.blurMaterial.uniforms.tInput.value=texture;this.blurMaterial.uniforms.uStep.value.set(x,y);this.draw(renderer,this.blurMaterial,target);}
@@ -317,7 +327,8 @@ class BoundedBloomPass extends Pass {
    this.brightMaterial.uniforms.tInput.value=readBuffer.texture;this.brightMaterial.uniforms.uTexel.value.set(1/readBuffer.width,1/readBuffer.height);
    this.draw(renderer,this.brightMaterial,this.bright);
    let source=this.bright;
-   for(const level of this.levels){
+   for(let i=0;i<this.activeLevels;i++){
+    const level=this.levels[i];
     this.blur(renderer,source.texture,level.horizontal,1/level.horizontal.width,0);
     this.blur(renderer,level.horizontal.texture,level.vertical,0,1/level.vertical.height);source=level.vertical;
    }
@@ -515,12 +526,14 @@ export class RoomOptics {
     this.lensPass.uniforms.uMaxBlur.value = this.profile.maxBlur * this.pixelRatio;
     this.lensPass.uniforms.uMotionLimit.value = (this.quality === 'low' ? 6 : 8) * this.pixelRatio;
     this.bloomPass.setProfile(this.profile);
+    this.gradePass.uniforms.tWideBloom.value=this.bloomPass.wide.texture;
     const samples = this.supportedSamples.find(count => count <= this.profile.msaaSamples) ?? 0;
     if (samples !== this.sceneTarget.samples) {
       this.sceneTarget.dispose();
       this.sceneTarget.samples = samples;
     }
     this.resize(this.width, this.height, this.requestedPixelRatio);
+    this.setVisualSettings(this.visualSettings);
   }
 
   setVisualSettings(settings = {}) {
@@ -529,11 +542,11 @@ export class RoomOptics {
     const values = this.visualSettings, uniforms = this.gradePass.uniforms;
     this.renderer.toneMappingExposure = values.exposure;
     uniforms.uBloomStrength.value = values.bloom;
-    uniforms.uLensStrength.value = values.lens;
+    uniforms.uLensStrength.value = this.quality==='low'?0:values.lens;
     uniforms.uContrast.value = values.contrast;
     uniforms.uSharpness.value = values.sharpness;
     this.bloomPass.enabled = values.bloom > 0;
-    this.bloomPass.lensEnabled = values.lens > 0;
+    this.bloomPass.lensEnabled = this.quality!=='low'&&values.lens > 0;
     this.resetHistory();
     return { ...values };
   }
@@ -595,7 +608,7 @@ export class RoomOptics {
       && translation <= Math.min(3, 45 * dt) && rotation <= Math.min(0.25, 2.5 * dt);
     const continuousMotion = safeHistory
       && (translation > 0.000001 || rotation > 0.000001 || lensChange > 0.0000001);
-    const objectMoving=Boolean(this.turntableMotion && this.hdr && safeHistory && Number.isFinite(turntableDelta) && Math.abs(turntableDelta)>1e-6 && Math.abs(turntableDelta)<.15);
+    const objectMoving=Boolean(this.quality!=='low' && this.visualSettings.motionBlur>0 && this.turntableMotion && this.hdr && safeHistory && Number.isFinite(turntableDelta) && Math.abs(turntableDelta)>1e-6 && Math.abs(turntableDelta)<.15);
     if(this.turntableMotion){this.turntableMotion.enabled=objectMoving;if(objectMoving)this.turntableMotion.prepare(this.previousViewProjection,turntableDelta);}
     const uniforms = this.lensPass.uniforms;
     uniforms.uObjectMotion.value=objectMoving?1:0;uniforms.uFarPlane.value=this.camera.far;
@@ -615,7 +628,7 @@ export class RoomOptics {
     const filmHeight = (this.camera.getFilmHeight?.() ?? 24) / 1000;
     const fNumber = 1.65;
     uniforms.uFocusDistance.value = focus;
-    uniforms.uCocScale.value = this.visualSettings.depthOfField * 0.5 * this.renderHeight * focalLength * focalLength
+    uniforms.uCocScale.value = this.quality==='low'?0:this.visualSettings.depthOfField * 0.5 * this.renderHeight * focalLength * focalLength
       / (fNumber * filmHeight * Math.max(focus - focalLength, 0.01));
     this.gradePass.uniforms.uTime.value = this.time;
     this.composer.render(Math.min(dt, 0.1));

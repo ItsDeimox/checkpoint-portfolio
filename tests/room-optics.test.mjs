@@ -370,3 +370,18 @@ test('gentle pointer-look rotation receives camera motion blur without a panel a
   assert.equal(optics.lensPass.uniforms.uObjectMotion.value,0);
  }finally{optics.dispose();}
 });
+
+test('low uses three bloom scales and no cinematic DOF, streak or moving-object capture',()=>{
+ const {optics,draws}=fixture();
+ try{
+  optics.setQuality('low');optics.render(1/60);
+  assert.equal(optics.bloomPass.activeLevels,3);
+  assert.equal(optics.lensPass.uniforms.uCocScale.value,0);
+  assert.equal(optics.bloomPass.lensEnabled,false);
+  const active=optics.bloomPass.targets.filter(t=>t.width>1);
+  assert.ok(active.length<=9);
+  optics.setQuality('high');optics.render(1/60);
+  assert.equal(optics.bloomPass.activeLevels,6);assert.ok(optics.lensPass.uniforms.uCocScale.value>0);
+  assert.equal(optics.bloomPass.lensEnabled,true);
+ }finally{optics.dispose();}
+});

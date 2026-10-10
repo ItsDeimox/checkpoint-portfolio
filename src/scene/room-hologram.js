@@ -17,6 +17,7 @@ uniform float musicTreble;
 float holoScanDistance(vec2 p) { return abs(p.y - fract(hoverTime * .19 + .07)); }
 vec2 holoWarp(vec2 p) {
   float activity = hover * pow(1. - contentMix, 2.);
+  if(activity <= 0.0001)return vec2(0.);
   float band = exp(-pow(holoScanDistance(p) * 35., 2.));
   float tear = (noise2(vec2(p.y * 85., hoverTime * 1.1)) - .5) * .017;
   tear += sin(p.y * 170. + hoverTime * 7.) * .0028;
@@ -39,6 +40,7 @@ vec2 holoLanes(vec2 p, float rows, float columns, float speed, float seed) {
 }
 vec3 holoLight(vec2 p) {
   float activity = (hover + musicTreble * .16 * (1. - hover)) * (1. - contentMix * .94);
+  if(activity <= 0.0001)return vec3(0.);
   vec2 shift = holoView + (hoverUv - .5) * .65;
   vec2 streams = ${layerCalls};
   float scanDistance = holoScanDistance(p);

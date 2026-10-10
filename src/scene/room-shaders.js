@@ -97,8 +97,8 @@ void main(){
 #include <fog_fragment>
 }
 `;
-export const smokeFragment=`precision highp float;uniform float time;uniform float seed;uniform float density;uniform vec3 tint;varying vec2 vUv;${noiseGLSL}
-void main(){vec2 p=vUv;vec2 q=p*vec2(3.5,2.5)+vec2(seed-time*.028,time*.035);float n=fbm4(q*2.1+fbm4(q*1.6+time*.012)*2.8);float edge=pow(max(0.,1.-length((p-.5)*2.)),1.55);float a=smoothstep(.27,.79,n)*edge*density;vec3 c=tint*(.5+n*.7)+vec3(.13,.016,.020)*(1.-smoothstep(.05,.5,p.y));gl_FragColor=vec4(c,a);}`;
+export const smokeFragment=`precision highp float;uniform float smokeDetail;uniform float time;uniform float seed;uniform float density;uniform vec3 tint;varying vec2 vUv;${noiseGLSL}
+void main(){vec2 p=vUv;vec2 q=p*vec2(3.5,2.5)+vec2(seed-time*.028,time*.035);float n;if(smokeDetail<3.){n=.625*noise2(q*2.1+noise2(q*1.6+time*.012)*2.8)+.3125*noise2(q*4.2);}else{n=fbm4(q*2.1+fbm4(q*1.6+time*.012)*2.8);}float edge=pow(max(0.,1.-length((p-.5)*2.)),1.55);float a=smoothstep(.27,.79,n)*edge*density;vec3 c=tint*(.5+n*.7)+vec3(.13,.016,.020)*(1.-smoothstep(.05,.5,p.y));gl_FragColor=vec4(c,a);}`;
 export const beamFragment=`precision highp float;uniform float time;uniform vec3 apex;uniform float bottom;uniform float slope;uniform float beamSamples;varying vec3 vWorld;${noiseGLSL}
 void main(){
  vec3 origin=cameraPosition-apex,ray=normalize(vWorld-cameraPosition);

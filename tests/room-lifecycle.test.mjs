@@ -1,3 +1,5 @@
+import * as performanceBudget from '../src/scene/room-performance.js';
+import * as reflectionBudget from '../src/scene/room-reflection-budget.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -145,6 +147,8 @@ function harness(config = {}) {
     './room-input.js': { bindRoomPointer },
     './room-lighting.js': lighting,
     './room-turntable.js': turntable,
+    './room-performance.js': performanceBudget,
+    './room-reflection-budget.js': reflectionBudget,
     './room-startup.js': {
       waitForAsset,
       async yieldToBrowser(signal) { await Promise.resolve(); signal?.throwIfAborted(); },
@@ -560,4 +564,19 @@ test('disposal cancels scheduled rendering, clears captured gestures and blocks 
   assert.equal(events.filter(event => event === 'optics-disposed').length, 1);
   assert.equal(events.filter(event => event === 'content-disposed').length, 1);
   assert.equal(instance.drag, null);
+});
+
+test('real frame loop renders sixty updates at 180 Hz without duplicate callbacks or lost elapsed time',async()=>{
+ const f=harness({settings:{quality:'low',paused:false}}),v=f.instance;
+ try{
+  await v.readyPromise;const start=v.last,initial=v.frames;let maximum=0;
+  for(let i=1;i<=180;i++){
+   const pending=f.frames.entries().next().value;assert.ok(pending);
+   const [id,callback]=pending;f.frames.delete(id);callback(start+i*1000/180);
+   maximum=Math.max(maximum,f.frames.size);
+  }
+  assert.ok(v.frames-initial>=59&&v.frames-initial<=61);
+  assert.ok(v.time>.97&&v.time<=1.01,`elapsed simulation ${v.time}`);
+  assert.equal(maximum,1);v.sleep();assert.equal(f.frames.size,0);
+ }finally{await v.dispose();}
 });
