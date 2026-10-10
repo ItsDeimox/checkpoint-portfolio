@@ -9,12 +9,14 @@ import { waitForAsset } from './room-startup.js';
 /** Additive presentation extension: the approved r5 room/controller stays intact. */
 export class HeroScene extends ShowroomScene {
   async initialize(){
+    this.music=this.callbacks.music??null;
     this.logoSpin = new LogoSpin();
     this.brandModelTask=loadBrandModel(this.workController.signal).then(model=>{
       this.brandModel=model;return model;
     }).catch(error=>{this.brandError=error.message;return null;});
     return super.initialize();
   }
+  progress(caption){super.progress(caption);this.callbacks.onProgress?.(caption);}
   buildLights(){
     super.buildLights();
     this.panels.forEach(configurePanelHologram);
@@ -73,10 +75,11 @@ export class HeroScene extends ShowroomScene {
     const started=this.logoSpin.request(this.reduced.matches);
     if(started)this.wake();return started;
   }
-  sleep(){super.sleep();this.music?.suspend();}
+  sleep(){super.sleep();if(!this.callbacks.music)this.music?.suspend();}
   wake(){
+    if(this.callbacks?.introPending?.())return;
     super.wake();
-    if(this.ready&&!this.disposed&&!this.lost&&!document.hidden&&this.settings.sound&&this.music?.suspended)this.music.resume();
+    if(!this.callbacks.music&&this.ready&&!this.disposed&&!this.lost&&!document.hidden&&this.settings.sound&&this.music?.suspended)this.music.resume();
   }
   resize(){super.resize();this.brandLogo?.invalidateLayout();}
   render(dt,motion){
@@ -100,7 +103,7 @@ export class HeroScene extends ShowroomScene {
   async dispose(){
     this.brandObserver?.disconnect();this.brandLogo?.restoreFallback();
     await super.dispose();
-    await this.music?.close();this.musicLights?.restore();
+    if(!this.callbacks.music)await this.music?.close();this.musicLights?.restore();
     if(this.brandLogo)this.brandLogo.dispose();
     else if(this.brandModel){disposeBrandModel(this.brandModel);this.brandModel=null;}
   }

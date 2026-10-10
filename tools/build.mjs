@@ -6,7 +6,7 @@ import {createHash} from 'node:crypto';
 import {build} from 'esbuild';
 
 const PROJECT_ROOT = fileURLToPath(new URL('..', import.meta.url));
-export const BUILD_VERSION = 'dxt-showroom-r8';
+export const BUILD_VERSION = 'dxt-showroom-r9';
 export const ROOM_ALIASES = Object.freeze(['groups', 'projects', 'about', 'contact', 'berserk']);
 
 // Keep archived source/assets in the repository. Only the persistent room's
@@ -18,6 +18,11 @@ export const RUNTIME_FILES = Object.freeze([
   'src/content.js',
   'src/ui/icons.js',
   'src/ui/room-shell.js',
+  'src/ui/room-visitor-shell.js',
+  'src/ui/room-visitor-settings.js',
+  'src/ui/room-intro.js',
+  'src/scene/room-music.js',
+  'src/scene/room-audio-bands.js',
   'src/ui/room-navigation.js',
   'src/pages/home-room.js',
   'src/pages/room-panel-data.js',
@@ -25,6 +30,7 @@ export const RUNTIME_FILES = Object.freeze([
   'src/scene/room-music-settings.js',
   'src/styles-base.css',
   'src/styles-room.css',
+  'src/styles-experience.css',
   'src/render/showroom.bundle.js',
   'assets/models/nissan-s15-showroom.glb',
   'assets/models/DXTlogoPrinted.glb',
