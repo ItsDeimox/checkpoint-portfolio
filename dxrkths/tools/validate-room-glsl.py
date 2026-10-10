@@ -43,7 +43,7 @@ for (const [name, vertex, fragment] of [
   ['contact', S.roomVertex, S.contactFragment],
 ]) shaders.push({ name, vertex, fragment, fog: name === 'display' || name === 'floor' });
 for (const material of [
-  optics.lensPass.material, optics.gradePass.material,
+  optics.lensPass.material, optics.gradePass.material, optics.aaPass.material,
   optics.bloomPass.brightMaterial, optics.bloomPass.blurMaterial, optics.bloomPass.streakMaterial,
 ]) shaders.push({ name: material.name, vertex: material.vertexShader, fragment: material.fragmentShader });
 shaders.push({

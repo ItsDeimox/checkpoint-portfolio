@@ -1,6 +1,7 @@
 import { home, ROOM_PANELS, renderPanelOptions } from './pages/home-room.js';
 import { renderRoomHeader, renderRoomFooter } from './ui/room-shell.js';
 import { panelFromPath, pathForPanel } from './ui/room-navigation.js';
+import { normalizeVisualSettings, DEFAULT_VISUAL_SETTINGS } from './scene/room-visual-settings.js';
 
 const main = document.querySelector('#main');
 const header = document.querySelector('#header');
@@ -11,6 +12,7 @@ try { stored = JSON.parse(localStorage.getItem('dxt-settings') || '{}'); } catch
 const settings = {
   quality: ['auto', 'low', 'high'].includes(stored?.quality) ? stored.quality : 'auto',
   paused: Boolean(stored?.paused), sound: false,
+  visual: normalizeVisualSettings(stored?.visual),
 };
 const save = () => { try { localStorage.setItem('dxt-settings', JSON.stringify(settings)); } catch {} };
 let scene = null, phase = 'loading', selectedPanel = null, navigation = 0, restoreFocus = null;
@@ -42,9 +44,16 @@ function setLocation(index, mode = 'push') {
   document.title = index === null ? 'DXT | Berserk Drift X' : `${ROOM_PANELS[index].title} | DXT`;
 }
 
-function setModalActive(active) {
-  [header, footer, canvas, nativeTargets, mobileContext].forEach(element => { element.inert = active; });
-  host.classList.toggle('panel-options-open', active);
+function setPanelPresentation(active, inWorld = false) {
+  const modal = active && !inWorld;
+  [header, footer, canvas].forEach(element => { element.inert = modal; });
+  [nativeTargets, mobileContext].forEach(element => { element.inert = active; });
+  host.classList.toggle('panel-options-open', modal);
+  host.classList.toggle('panel-content-open', active && inWorld);
+  options.classList.toggle('is-world-content', active && inWorld);
+  options.setAttribute('role', inWorld ? 'group' : 'dialog');
+  if (inWorld) options.removeAttribute('aria-modal');
+  else options.setAttribute('aria-modal', 'true');
 }
 
 function revealOptions(index, token) {
@@ -52,7 +61,9 @@ function revealOptions(index, token) {
   options.innerHTML = renderPanelOptions(index);
   options.hidden = false;
   options.scrollTop = 0;
-  setModalActive(true);
+  const inWorld = phase === 'ready' && scene?.ready;
+  setPanelPresentation(true, inWorld);
+  if (inWorld) scene.showPanelContent(index);
   options.querySelector('h2').focus({ preventScroll: true });
   announcer.textContent = `${ROOM_PANELS[index].title}. Options are open.`;
 }
@@ -63,7 +74,7 @@ function openPanel(index, trigger, historyMode = 'push') {
   const token = ++navigation;
   if (options.hidden) restoreFocus = trigger instanceof HTMLElement ? trigger : document.activeElement;
   options.hidden = true;
-  setModalActive(false);
+  setPanelPresentation(false);
   selectedPanel = index;
   setLocation(index, historyMode);
   announcer.textContent = `Opening ${ROOM_PANELS[index].title}.`;
@@ -80,7 +91,7 @@ function closePanel(historyMode = 'push') {
   const wasOpen = selectedPanel !== null;
   selectedPanel = null;
   options.hidden = true;
-  setModalActive(false);
+  setPanelPresentation(false);
   setLocation(null, historyMode);
   host.classList.remove('camera-travelling');
   const finish = () => {
@@ -110,9 +121,10 @@ function onReady() {
   updateHeader();
   if (selectedPanel !== null) {
     const token = navigation;
-    // A restored context can already have an open, accessible dialog.
-    if (!options.hidden) scene.approach(selectedPanel);
-    else scene.approach(selectedPanel, () => revealOptions(selectedPanel, token));
+    // A restored context replaces the native fallback with the surface menu.
+    options.hidden = true;
+    setPanelPresentation(false);
+    scene.approach(selectedPanel, () => revealOptions(selectedPanel, token));
   } else if (scene?.cameraRig?.mode !== 'overview') {
     scene?.reset();
   }
@@ -134,6 +146,10 @@ document.addEventListener('click', async event => {
   }
   const focus = target.closest('[data-focus-panel]');
   if (focus) { scene?.focusPanel(Number(focus.dataset.focusPanel)); return; }
+  if (target.closest('[data-reset-visuals]')) {
+    settings.visual = { ...DEFAULT_VISUAL_SETTINGS };
+    save(); scene?.setVisualSettings(settings.visual); updateHeader(); return;
+  }
   if (target.closest('#quality')) {
     const values = ['auto', 'low', 'high'];
     settings.quality = values[(values.indexOf(settings.quality) + 1) % values.length];
@@ -148,12 +164,32 @@ document.addEventListener('click', async event => {
   }
 });
 
+header.addEventListener('input', event => {
+  const input = event.target.closest?.('[data-visual-setting]');
+  if (!input) return;
+  const key = input.dataset.visualSetting;
+  settings.visual = normalizeVisualSettings({ [key]: Number(input.value) }, settings.visual);
+  const output = header.querySelector(`[data-visual-value="${key}"]`);
+  if (output) output.textContent = settings.visual[key].toFixed(2);
+  scene?.setVisualSettings(settings.visual);
+});
+header.addEventListener('change', event => {
+  if (event.target.matches?.('[data-visual-setting]')) save();
+});
+options.addEventListener('focusin', event => {
+  if (!options.classList.contains('is-world-content')) return;
+  scene?.focusAction(event.target.closest?.('[data-room-panel-action]')?.dataset.roomPanelAction ?? null);
+});
+options.addEventListener('focusout', event => {
+  if (!options.contains(event.relatedTarget)) scene?.focusAction(null);
+});
+
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
     if (selectedPanel !== null || !options.hidden) { event.preventDefault(); closePanel(); }
     else header.querySelector('.room-settings')?.removeAttribute('open');
   }
-  if (event.key === 'Tab' && !options.hidden) {
+  if (event.key === 'Tab' && !options.hidden && options.getAttribute('role') === 'dialog') {
     const controls = [...options.querySelectorAll('a[href], button:not([disabled])')].filter(element => element.getClientRects().length);
     const first = controls[0], last = controls.at(-1);
     if (!first) { event.preventDefault(); options.focus(); return; }
@@ -185,6 +221,16 @@ async function start() {
     const { HeroScene } = await import('./render/showroom.bundle.js');
     scene = new HeroScene(canvas, settings, {
       onPanelRequest: openPanel, onResetRequest: closePanel, onReady, onUnavailable: unavailable,
+      onPanelAction(action) {
+        if (selectedPanel === null) return;
+        if (action.kind === 'back') { closePanel(); return; }
+        // Only an action already authored for the selected screen can navigate.
+        const authored = ROOM_PANELS[selectedPanel].options.find(option => option.id === action.id && option.href === action.href);
+        if (authored) {
+          if (authored.external) window.open(authored.href, '_blank', 'noopener,noreferrer');
+          else location.assign(authored.href);
+        }
+      },
     });
     await scene.readyPromise;
   } catch (error) {

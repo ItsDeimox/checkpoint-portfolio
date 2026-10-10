@@ -1,11 +1,119 @@
 # DXT circular showroom
 
-## Current state — r3, 2026-10-09
+## Current state — r4, 2026-10-10
 
-The production revision is **`dxt-showroom-r3`**. This correction makes all five
-display surfaces and frames rigid, upright rectangles in the room. The existing
-persistent scene, camera controller, loading preparation, optics and navigation
-remain the r2 implementation described below.
+Revision **`dxt-showroom-r4`** adds restrained mouse-follow navigation, interactive
+content on the physical screens, and a revised optical/material pipeline. The
+rigid geometry correction from r3 remains intact. The same repository, Vercel
+project and `dxrkths.vercel.app` domain are used.
+
+### Camera and screen interaction
+
+Moving a mouse over the scene steers the overview without a pressed button.
+Absolute viewport coordinates drive damped targets, bounded to ±0.055 radians of
+yaw and ±0.025 radians of pitch. Downward pointer movement reverses the old drag
+pitch. Leaving the scene eases back to neutral. Touch retains a gentle drag;
+secondary/cancelled pointers cannot release or activate another pointer's gesture.
+Pointer look is disabled while approaching, exploring or leaving a screen, and
+for the reduced-motion preference. Changing that preference also settles an
+already-running transition.
+
+The approved 42° vertical lens remains at desktop, ordinary ultrawide and portrait
+aspects. Extreme horizontal views are capped at 90°, with a tighter geometric
+cap for the more distant mobile camera in landscape. A physical ceiling at
+Y=8.4 closes rays that previously passed above the cylindrical wall. Regression
+tests cover 810 horizontal wall rays and 1,350 full 3D upper-frustum rays across
+six viewports and nine pointer positions. All tested sightlines remain within
+the room's physical enclosure.
+
+Each screen owns one stable 1024² sRGB CanvasTexture. Arriving at a panel fades
+its emitted artwork into a menu on the **same mesh and UVs**. The frame, bevel,
+glass and geometry do not move or deform. Button painting and raycast activation
+share UV regions; Back is also on the screen. Links retain the existing authored
+destinations. The renderer bundle and native page have independent module copies,
+so actions are matched by authored ID and URL rather than object identity.
+
+During normal WebGL operation, the visible menu is entirely in the scene. A
+clipped native action group provides keyboard navigation, direct links and
+screen-reader content; focusing an action highlights it on the screen. The
+canvas remains interactive. If WebGL is unavailable, the same content is shown
+in the existing native modal, with its focus trap and Escape behavior. URL
+history, deep links and restored contexts keep one persistent scene.
+
+Hover updates a surface halo, button artwork and one precompiled fill light.
+Textures upload only at creation, font readiness, or a changed action hover.
+The frame scheduler guards synchronous arrival/texture callbacks so they cannot
+fork additional animation loops. Hover and menu fades continue to completion
+when ambient motion is paused, then the renderer can sleep.
+
+### Rendering, lighting and material controls
+
+The scene now renders into a dedicated linear color/depth target. Low, Auto and
+High request 0, 2 and 4 MSAA samples, capped to counts supported by both the actual
+color format and depth attachment. Three resolves that target before the lens
+pass reads it. Postprocessing targets are color-only and single-sampled; there
+is no redundant scene copy. FXAA follows ACES tone mapping and sRGB output.
+Scene budgets remain 0.9, 1.9 and 2.9 megapixels, and bloom buffers remain bounded.
+
+Depth of field uses view-axis focus distance and depth rejection. The selected
+screen's text remains under the gather threshold in the tested focused poses,
+including maximum DOF. Motion blur uses current depth and the previous camera
+projection, with a bounded pixel length and no accumulated color history. Camera
+travel explicitly identifies continuous FOV changes so approach/return motion
+can blur; unannounced projection changes, camera jumps, resize, pause and quality
+changes invalidate that history. Stopping the camera stops motion blur.
+
+Bloom uses a selective HDR threshold and soft knee. Lens response combines small
+dispersion, highlight-driven streaks/ghosts and vignette. Contrast and bounded
+detail sharpening precede the final tone mapper. The optional **View settings →
+Light & lens** controls expose exposure, bloom, depth of field, motion blur, lens
+response, contrast and sharpness. Values are normalized, persisted locally and
+applied as uniforms without replacing the focused slider or reallocating render
+targets. Bloom, depth of field, motion blur and lens response each accept zero
+to disable that effect.
+
+Broad warm/cool softboxes and a red rim source shape the car and glass. Their
+reflection cards feed the bounded studio PMREM. Existing car materials are
+refined in place: the authored red stays exact, clearcoat and metal roughness are
+softened, and external glass receives stronger environment reflection. Geometry,
+texture identity, lamp materials and the prepared GLB remain unchanged; no
+transmission/refraction pass is added. Physical display cover glass and slightly
+clearer wet-floor reflections complete the surface changes.
+
+One finite world-space light cone replaces five camera-facing beam planes. Its
+shader integrates three samples over the analytic ray/cone interval. Ground fog
+uses fewer, lighter sprites. The cone is an inexpensive approximation: opaque
+depth at the exit face rejects the fragment instead of integrating a partially
+occluded foreground segment. It does not simulate multiple scattering or
+screen-space depth clipping.
+
+### Verification scope
+
+The final `npm run build` passed **146/146 tests** and packaged 36 files,
+including its build manifest, with nine browser modules. The motion regression
+exercises 120 real approach/return paths across five panels, four viewports and
+24/60/144 Hz updates, alongside separate history-reset cases.
+
+Automated coverage exercises real camera paths, rigid screen meshes and UV
+raycasts, material/vertex identity, hover scheduling, context/disposal lifecycle,
+MSAA/depth/pass ownership, optical history, settings, and the actual main module's
+navigation/accessibility logic. The menu textures were also drawn on a CPU canvas
+with the bundled Barlow fonts and visually inspected; all measured text bounds
+fit their safe areas. The native EGL/GLES compiler and linker accepted all 13
+custom/representative shader pairs in `room-glsl-validation.json`.
+
+The cloud browser's WebGL implementation is disabled. Native fallback navigation
+and keyboard behavior were checked there, but GPU appearance, framebuffer
+behavior and device frame rate remain unverified. The mathematical tests, source
+review and shader compilation do not replace a visual/performance pass on a
+WebGL-enabled device. No alternate browser or graphics-policy bypass was used.
+
+## r3 baseline — 2026-10-09
+
+Revision **`dxt-showroom-r3`** made all five display surfaces and frames rigid,
+upright rectangles in the room. At that revision, the persistent scene, camera
+controller, loading preparation, optics and navigation retained the r2
+implementation described below.
 
 ### Why the artwork bent during approach
 

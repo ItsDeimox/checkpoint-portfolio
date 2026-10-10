@@ -9,7 +9,7 @@ void main(){vUv=uv;vWorld=(modelMatrix*vec4(position,1.)).xyz;vec4 mvPosition=mo
 #include <fog_vertex>
 }`;
 export const displayFragment=`
-precision highp float;uniform sampler2D artwork;uniform mat3 projection;uniform float hover;uniform float eraseForeground;varying vec2 vUv;
+precision highp float;uniform sampler2D artwork;uniform sampler2D contentMap;uniform float contentMix;uniform mat3 projection;uniform float hover;uniform vec2 hoverUv;uniform float eraseForeground;varying vec2 vUv;
 #include <fog_pars_fragment>
 ${noiseGLSL}
 // Restore only artwork hidden by the photographed foreground car. This keeps a
@@ -24,7 +24,15 @@ float hidden=eraseForeground*smoothstep(.399,.403,source.x)*(1.-smoothstep(.691,
 float wallGrain=noise2(source*1024.);vec3 clean=vec3(.009,.010,.013)*(.65+wallGrain*.35);
 clean+=vec3(.035,.001,.002)*exp(-pow((source.y-.56)*20.,2.))*(.5+.5*noise2(source*80.));c=mix(c,clean,hidden);
 // The source is artwork printed on each physical display, never the scene backdrop.
-float edge=min(min(p.x,1.-p.x),min(p.y,1.-p.y));c*=1.13+hover*.18;c+=vec3(.085,.003,.006)*hover*exp(-edge*90.);gl_FragColor=vec4(c,1.);
+float edge=min(min(p.x,1.-p.x),min(p.y,1.-p.y));
+// Canvas content uses this same rigid mesh's UVs, including the reflection.
+// Only the emitted surface changes. No vertex or camera-facing transform.
+c=mix(c*1.13,texture2D(contentMap,vUv).rgb*1.1,contentMix);
+float halo=exp(-dot(vUv-hoverUv,vUv-hoverUv)*27.);
+c*=1.+hover*.11*(1.-contentMix*.65);
+c+=vec3(.16,.004,.014)*hover*exp(-edge*85.);
+c+=vec3(.055,.003,.008)*hover*halo*(1.-contentMix*.75);
+gl_FragColor=vec4(c,1.);
 #include <fog_fragment>
 }`;
 export const floorVertex=`uniform mat4 textureMatrix;varying vec4 vReflection;varying vec3 vWorld;
@@ -34,7 +42,7 @@ void main(){vWorld=(modelMatrix*vec4(position,1.)).xyz;vReflection=textureMatrix
 }`;
 export const floorFragment=`precision highp float;uniform sampler2D tDiffuse;uniform vec3 color;uniform float time;uniform vec2 reflectionResolution;varying vec4 vReflection;varying vec3 vWorld;${noiseGLSL}
 #include <fog_pars_fragment>
-void main(){vec2 p=vWorld.xz;float puddle=smoothstep(.25,.7,fbm4(p*.48+2.));float stone=noise2(p*125.);float patches=fbm4(p*6.2);float rough=mix(.42,.1,puddle);
+void main(){vec2 p=vWorld.xz;float puddle=smoothstep(.25,.7,fbm4(p*.48+2.));float grainVisibility=1.-smoothstep(.35,1.3,length(fwidth(p*125.)));float stone=mix(.5,noise2(p*125.),grainVisibility);float patches=fbm4(p*6.2);float rough=mix(.36,.085,puddle);
 vec2 n=vec2(noise2(p*17.1),noise2(p*19.7+11.))-.5;vec2 streak=vec2(noise2(p*vec2(37.,4.)),noise2(p*vec2(21.,7.)))-.5;
 vec2 uv=vReflection.xy/vReflection.w;uv+=(n*.0009+streak*vec2(.0018,.005))*(.3+rough*2.);vec2 texel=1./reflectionResolution;vec3 reflected=texture2D(tDiffuse,uv).rgb*.28;
 reflected+=texture2D(tDiffuse,uv+texel*vec2(1.4,1.1)*rough*3.).rgb*.18;
@@ -42,7 +50,7 @@ reflected+=texture2D(tDiffuse,uv-texel*vec2(1.4,1.1)*rough*3.).rgb*.18;
 reflected+=texture2D(tDiffuse,uv+texel*vec2(-2.4,1.8)*rough*3.).rgb*.18;
 reflected+=texture2D(tDiffuse,uv-texel*vec2(-2.4,1.8)*rough*3.).rgb*.18;
 vec3 view=normalize(cameraPosition-vWorld);float fresnel=.26+.67*pow(1.-max(view.y,0.),3.);float breakup=mix(.35,1.1,smoothstep(.19,.83,patches*.55+stone*.45));
-vec3 base=vec3(.012,.014,.018)*(0.32+patches*.8+stone*.18);vec3 c=base+reflected*fresnel*breakup*mix(.53,.9,puddle);
+vec3 base=vec3(.012,.014,.018)*(0.32+patches*.8+stone*.18);vec3 c=base+reflected*fresnel*breakup*mix(.57,.96,puddle);
 float seam=min(abs(fract(p.x*.245)-.5),abs(fract(p.y*.245)-.5));c*=.64+.36*smoothstep(0.,.008,seam);
 float streakGlow=pow(max(0.,1.-abs(p.x)/10.),5.)*.007;c+=vec3(.10,.005,.008)*streakGlow;gl_FragColor=vec4(c,1.);
 #include <fog_fragment>
@@ -50,6 +58,30 @@ float streakGlow=pow(max(0.,1.-abs(p.x)/10.),5.)*.007;c+=vec3(.10,.005,.008)*str
 `;
 export const smokeFragment=`precision highp float;uniform float time;uniform float seed;uniform float density;uniform vec3 tint;varying vec2 vUv;${noiseGLSL}
 void main(){vec2 p=vUv;vec2 q=p*vec2(3.5,2.5)+vec2(seed-time*.028,time*.035);float n=fbm4(q*2.1+fbm4(q*1.6+time*.012)*2.8);float edge=pow(max(0.,1.-length((p-.5)*2.)),1.55);float a=smoothstep(.27,.79,n)*edge*density;vec3 c=tint*(.5+n*.7)+vec3(.13,.016,.020)*(1.-smoothstep(.05,.5,p.y));gl_FragColor=vec4(c,a);}`;
-export const beamFragment=`precision highp float;uniform float time;varying vec2 vUv;${noiseGLSL}
-void main(){float y=vUv.y;float width=.16+(1.-y)*.34;float a=exp(-pow((vUv.x-.5)/width,2.)*3.);float fog=fbm4(vUv*vec2(14.,7.)+vec2(time*.01,-time*.028));a*=smoothstep(0.,.25,y)*(.018+.048*y)*(.7+fog*.6);gl_FragColor=vec4(vec3(.8,.84,.92),a);}`;
+export const beamFragment=`precision highp float;uniform float time;uniform vec3 apex;uniform float bottom;uniform float slope;varying vec3 vWorld;${noiseGLSL}
+void main(){
+ vec3 origin=cameraPosition-apex,ray=normalize(vWorld-cameraPosition);
+ float travel=length(vWorld-cameraPosition),height=apex.y-bottom;
+ float start=0.,finish=travel;
+ if(abs(ray.y)>.00001){float ya=(-height-origin.y)/ray.y,yb=-origin.y/ray.y;start=max(start,min(ya,yb));finish=min(finish,max(ya,yb));}
+ else if(origin.y>0.||origin.y< -height)discard;
+ float k=slope*slope,a=dot(ray.xz,ray.xz)-k*ray.y*ray.y;
+ float b=2.*(dot(origin.xz,ray.xz)-k*origin.y*ray.y),c=dot(origin.xz,origin.xz)-k*origin.y*origin.y;
+ if(abs(a)<.00001){if(abs(b)>.00001){float root=-c/b;if(b>0.)finish=min(finish,root);else start=max(start,root);}else if(c>0.)discard;}
+ else {float discriminant=b*b-4.*a*c;if(discriminant<0.){if(a>0.)discard;}
+ else {float root=sqrt(max(discriminant,0.)),ta=(-b-root)/(2.*a),tb=(-b+root)/(2.*a),nearHit=min(ta,tb),farHit=max(ta,tb);
+ if(a>0.){start=max(start,nearHit);finish=min(finish,farHit);}
+ else if(start<nearHit)finish=min(finish,nearHit);else start=max(start,farHit);}}
+ if(finish<=start)discard;
+ float density=0.;
+ for(int i=0;i<3;i++){
+  float t=mix(start,finish,(float(i)+.5)/3.);vec3 point=origin+ray*t;
+  float down=-point.y,radius=max(.025,down*slope),radial=length(point.xz)/radius;
+  float edge=1.-smoothstep(.5,1.,radial);
+  float fog=.8+.2*noise2(point.xz*2.7+vec2(point.y*.7-time*.025,time*.035));
+  density+=edge*fog*smoothstep(0.,.5,down)*smoothstep(0.,.8,height-down);
+ }
+ float alpha=1.-exp(-(finish-start)*density*.035/3.);
+ gl_FragColor=vec4(vec3(.69,.83,1.12),min(alpha,.34));
+}`;
 export const contactFragment=`varying vec2 vUv;void main(){vec2 p=(vUv-.5)*2.;float a=exp(-dot(p*vec2(1.,.8),p*vec2(1.,.8))*2.5)*.83;gl_FragColor=vec4(0.,0.,0.,a);}`;

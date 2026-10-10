@@ -6,7 +6,7 @@ import {createHash} from 'node:crypto';
 import {build} from 'esbuild';
 
 const PROJECT_ROOT = fileURLToPath(new URL('..', import.meta.url));
-export const BUILD_VERSION = 'dxt-showroom-r3';
+export const BUILD_VERSION = 'dxt-showroom-r4';
 export const ROOM_ALIASES = Object.freeze(['groups', 'projects', 'about', 'contact', 'berserk']);
 
 // Keep archived source/assets in the repository. Only the persistent room's
@@ -20,6 +20,8 @@ export const RUNTIME_FILES = Object.freeze([
   'src/ui/room-shell.js',
   'src/ui/room-navigation.js',
   'src/pages/home-room.js',
+  'src/pages/room-panel-data.js',
+  'src/scene/room-visual-settings.js',
   'src/styles-base.css',
   'src/styles-room.css',
   'src/render/showroom.bundle.js',

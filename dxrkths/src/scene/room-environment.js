@@ -62,8 +62,9 @@ function buildPanels(view){
   const bevelCorners=ring.inner.map(p=>p.clone().addScaledVector(normal,.005)),bevel=ringGeometry(bevelCorners,normal,.986,.045);frame.add(new T.Mesh(bevel.geometry,edge));
   // Map the inset printed artwork to a real planar screen. Each frame keeps its own depth.
   const screenCorners=bevel.inner.map(p=>p.clone().addScaledVector(normal,-.008));
-  const mapping=homography(data.art),mat=new T.ShaderMaterial({uniforms:{...T.UniformsUtils.clone(T.UniformsLib.fog),artwork:{value:texture},projection:{value:new T.Matrix3().set(...mapping)},hover:{value:0},eraseForeground:{value:index===2||index===3?1:0}},vertexShader:roomVertex,fragmentShader:displayFragment,side:T.DoubleSide,fog:true});
+  const mapping=homography(data.art),mat=new T.ShaderMaterial({uniforms:{...T.UniformsUtils.clone(T.UniformsLib.fog),artwork:{value:texture},contentMap:{value:texture},contentMix:{value:0},projection:{value:new T.Matrix3().set(...mapping)},hover:{value:0},hoverUv:{value:new T.Vector2(.5,.5)},eraseForeground:{value:index===2||index===3?1:0}},vertexShader:roomVertex,fragmentShader:displayFragment,side:T.DoubleSide,fog:true});
   const screen=new T.Mesh(planeGeometry(screenCorners),mat);screen.name=data.title;screen.userData.panel=index;frame.add(screen);
+  const glass=new T.Mesh(planeGeometry(screenCorners.map(p=>p.clone().addScaledVector(normal,.004))),new T.MeshPhysicalMaterial({color:0xa8b5ce,metalness:.08,roughness:.21,clearcoat:1,clearcoatRoughness:.16,envMapIntensity:.85,transparent:true,opacity:.035,depthWrite:false,side:T.DoubleSide}));glass.name='Display cover glass';frame.add(glass);
   for(let k=0;k<4;k++){
    const a=screenCorners[k].clone().addScaledVector(normal,.012),b=screenCorners[(k+1)%4].clone().addScaledVector(normal,.012);lineBetween(a,b,.006,dimRed,frame);
   }
@@ -73,9 +74,7 @@ function buildPanels(view){
   const side=index<3?0:1,lower=index<3?3:2;
   lineBetween(corners[side].clone().lerp(corners[lower],.71).addScaledVector(normal,.08),corners[side].clone().lerp(corners[lower],.91).addScaledVector(normal,.08),.015,red,frame);
   const center=corners.reduce((v,p)=>v.add(p),new T.Vector3()).multiplyScalar(.25);
-  // Keep the controller handle without adding five zero-intensity shader lights.
-  const hoverLight=new T.PointLight(0xff1225,0,4,2);hoverLight.position.copy(center).addScaledVector(normal,.4);
-  view.panels.push({index,screen,frame,center,corners,normal,material:mat,hoverLight,hover:0});
+  view.panels.push({index,screen,frame,center,corners,normal,material:mat,hover:0});
  }
 }
 function buildFloor(view){
@@ -99,6 +98,11 @@ export function createRoomShell({wall=weatheredMetal(),metal=material({color:0x1
  const shell=new T.Group();shell.name='Open room structural shell';
  const {radius,centerZ,height,thetaStart,thetaLength}=ROOM_SHELL;
  const walls=new T.Mesh(new T.CylinderGeometry(radius,radius,height,68,6,true,thetaStart,thetaLength),wall);walls.name='Side and back wall';walls.position.set(0,height*.5,centerZ);walls.material.side=T.BackSide;shell.add(walls);
+ // Close the real upper boundary: tall viewports can see above the cylindrical
+ // wall even at the approved camera angle. This roof stays in world space.
+ const roofMaterial=wall.clone();roofMaterial.side=T.FrontSide;
+ roofMaterial.onBeforeCompile=wall.onBeforeCompile;
+ const roof=new T.Mesh(new T.CircleGeometry(radius,96),roofMaterial);roof.name='Full room ceiling';roof.rotation.x=Math.PI/2;roof.position.set(0,height,centerZ);shell.add(roof);
  for(const y of [.48,1.0,5.15,6.05,7.1,8.15]){
   // Cylinder angle a maps to torus angle PI/2-a after its floor rotation.
   const geometry=new T.TorusGeometry(12.07,.062,8,80,thetaLength);geometry.rotateZ(Math.PI/2-thetaStart-thetaLength);

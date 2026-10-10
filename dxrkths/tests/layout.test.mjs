@@ -19,7 +19,7 @@ test('quality and pause live in the same accessible room settings panel', () => 
 test('room navigation and five panel controls keep native keyboard targets', () => {
   const header = renderRoomHeader(), footer = renderRoomFooter();
   assert.match(header, /aria-label="Main navigation"/);
-  assert.match(header, /data-open-panel="3"[^>]*aria-haspopup="dialog"/);
+  assert.match(header, /<button[^>]*data-open-panel="3"[^>]*aria-controls="room-panel-options"/);
   assert.doesNotMatch(header, /header-socials|menu-toggle|data-route/);
   assert.equal((footer.match(/data-focus-panel="/g) || []).length, 5);
   assert.match(footer, /aria-label="Showroom panels"/);
