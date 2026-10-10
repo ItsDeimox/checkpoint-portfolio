@@ -2,20 +2,19 @@
 
 ## Visitor controls
 
-The header Sound button opens the local music picker until a track is selected.
-Selecting a file starts playback. Further Sound clicks pause/resume at the same
-position. The settings menu includes Music & reactive lights, with volume,
-light-response strength, another-file selection and a clear-track action.
+The provided DJ ROOTS - Lagoon track is the site's sole, fixed soundtrack.
+Press Sound to start or pause it, resuming from the same position. Browser
+autoplay policies require the first playback to follow a visitor interaction.
 
-Files are played from a browser object URL, not uploaded by the website. Volume
-and effect strength persist; file paths, object URLs and playback permission do
-not. Playback never starts on a fresh page without visitor interaction. The
-player accepts browser-supported audio up to 64 MB, including MP3 and WAV.
+There is no music upload, local-file chooser or track-switching control. Under
+Music & reactive lights in the settings panel, visitors can adjust volume
+and light-response strength. Both settings persist, but audio never begins
+automatically after a page reload.
 
-No default soundtrack is bundled in this build. DEFAULT_TRACK in
-src/scene/room-music-settings.js is deliberately empty. The supplied Lagoon
-recording was used to exercise the player locally, not published as the site's
-default track.
+The original WAV was transcoded to a compact 3.07 MB MP3. At build time,
+tools/prepare-music.mjs caches the pinned SHA-256-verified user recording
+as assets/audio/lagoon.mp3. Clients stream that file from the site itself,
+without contacting the original upload host.
 
 The DXT brand now rests exactly facing the viewer. Click, Enter or Space starts
 one full eased turn, returning to the same rest pose. Repeated clicks during a
@@ -49,7 +48,7 @@ shared context and revokes local file URLs.
 
 Tests cover sample-rate-independent band isolation, zero/noise handling, FFT
 poll limits, pooled output, trusted-gesture call ordering, blocked play, rapid
-toggles, track changes, URL disposal, background suspension, renderer-state
+toggles, default-track integrity, background suspension, renderer-state
 restoration, stable settings, native controls and a complete logo turn within
 its existing viewport. Browser QA exercises the supplied recording and synthetic
 bass/treble tones. Software rendering is not a hardware GPU FPS benchmark.

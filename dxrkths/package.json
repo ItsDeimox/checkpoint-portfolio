@@ -11,7 +11,7 @@
     "test": "node --test tests/*.test.mjs",
     "build": "node tools/build.mjs",
     "bundle": "node tools/bundle.mjs",
-    "pretest": "node tools/prepare-brand.mjs"
+    "pretest": "node tools/prepare-brand.mjs && node tools/prepare-music.mjs"
   },
   "dependencies": {
     "three": "0.180.0"

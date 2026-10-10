@@ -1,4 +1,4 @@
-export const DEFAULT_TRACK = Object.freeze({url:'',title:'Choose a local track'});
+export const DEFAULT_TRACK = Object.freeze({url:'/assets/audio/lagoon.mp3',title:'DJ ROOTS - Lagoon'});
 export const DEFAULT_MUSIC_SETTINGS = Object.freeze({volume:.45,reactivity:.65});
 export function normalizeMusicSettings(input={}){
  const source=input && typeof input==='object'?input:{};

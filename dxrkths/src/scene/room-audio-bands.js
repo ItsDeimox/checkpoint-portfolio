@@ -4,7 +4,7 @@ export const ANALYSIS_INTERVAL=1/30;
 export class BandEnvelope {
  constructor(sampleRate=48000,fftSize=AUDIO_FFT_SIZE){
   const rate=Number.isFinite(sampleRate)&&sampleRate>0?sampleRate:48000;
-  this.bands=[[35,180,28,.035,.23],[2200,10000,70,.025,.16]].map(([lo,hi,gain,attack,release])=>({
+  this.bands=[[35,180,28,.025,.17],[2200,10000,70,.018,.115]].map(([lo,hi,gain,attack,release])=>({
    start:Math.max(1,Math.ceil(lo*fftSize/rate)),end:Math.min(fftSize/2-1,Math.floor(hi*fftSize/rate)),gain,attack,release,
   }));
   this.value={bass:0,treble:0};
