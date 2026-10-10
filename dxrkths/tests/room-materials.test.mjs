@@ -59,10 +59,10 @@ test('red paint retains its identity with a metallic base and a polished clearco
     assert.ok(material?.isMeshPhysicalMaterial, `expected existing physical paint ${name}`);
     assert.deepEqual(material.color.toArray(), original.color);
     assert.equal(material.color.getHexString(), 'c7081b');
-    assert.ok(material.metalness >= .70 && material.metalness <= .85, 'metallic paint must retain some colored diffuse response');
-    assert.ok(material.roughness >= .13 && material.roughness <= .18, 'polished reflections need a nonzero antialiasing floor');
+    assert.ok(material.metalness >= .84 && material.metalness <= .9, 'metallic paint must retain some colored diffuse response');
+    assert.ok(material.roughness >= .09 && material.roughness <= .125, 'polished reflections need a nonzero antialiasing floor');
     assert.equal(material.clearcoat, 1);
-    assert.ok(material.clearcoatRoughness >= .055 && material.clearcoatRoughness <= .08);
+    assert.ok(material.clearcoatRoughness >= .04 && material.clearcoatRoughness <= .065);
     assert.ok(material.envMapIntensity >= 1.7 && material.envMapIntensity <= 2.0);
   }
 });

@@ -5,19 +5,19 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as visual from '../src/scene/room-visual-settings.js';
 import { buildRoomLights, dressStudioEnvironment } from '../src/scene/room-lighting.js';
 
-const requested = Object.freeze({ exposure: 1.15, bloom: .65, depthOfField: 1.5, motionBlur: 1, lens: 1, contrast: 1.74, sharpness: .35 });
+const requested = Object.freeze({ exposure: 1.13, bloom: .65, depthOfField: 1.5, motionBlur: 1, lens: 1, contrast: 1.26, sharpness: .35 });
 const screenshot = { ...requested, contrast: 1.16 };
 
-test('dark-metal defaults match the supplied controls with contrast multiplied by 1.5', () => {
+test('approved reflective-showroom defaults match the supplied controls with the approved final contrast', () => {
   assert.deepEqual(visual.DEFAULT_VISUAL_SETTINGS, requested);
   assert.deepEqual(visual.normalizeVisualSettings(), requested);
-  assert.ok(Math.abs(requested.contrast - screenshot.contrast * 1.5) < 1e-12);
+  assert.equal(requested.contrast, 1.26);
 });
 
-test('contrast reaches 1.74 through both normalization and the slider without losing its bounds', () => {
+test('contrast reaches 1.26 through both normalization and the slider without losing its bounds', () => {
   const control = visual.VISUAL_CONTROLS.find(control => control.key === 'contrast');
-  assert.ok(control.max >= 1.74 && control.max <= 2);
-  assert.equal(visual.normalizeVisualSettings({ contrast: 1.74 }).contrast, 1.74);
+  assert.ok(control.max >= 1.26 && control.max <= 2);
+  assert.equal(visual.normalizeVisualSettings({ contrast: 1.26 }).contrast, 1.26);
   assert.equal(visual.normalizeVisualSettings({ contrast: 300 }).contrast, control.max);
   assert.equal(visual.normalizeVisualSettings({ contrast: -3 }).contrast, control.min);
   assert.equal(visual.normalizeVisualSettings({ contrast: NaN }).contrast, requested.contrast);

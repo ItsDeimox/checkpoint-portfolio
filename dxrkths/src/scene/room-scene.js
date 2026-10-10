@@ -4,6 +4,7 @@ import { loadShowroomCar } from './room-car.js';
 import { refineCarMaterials } from './room-materials.js';
 import { buildShowroom } from './room-environment.js';
 import { RoomOptics } from './room-optics.js';
+import { RoomTurntable, TURNTABLE_RADIUS, TURNTABLE_CENTER } from './room-turntable.js';
 import { RoomCamera } from './room-camera.js';
 import { prepareRoomRenderer, yieldToBrowser, waitForAsset } from './room-startup.js';
 import { renderBudget, panelIndex } from './room-core.js';
@@ -94,7 +95,14 @@ export class HeroScene {
     if (textureErrors.length) throw new Error(`Showroom artwork could not load: ${textureErrors.join(', ')}`);
     this.startup.assetsMs = Math.round(performance.now() - this.startedAt);
 
+    this.turntable = new RoomTurntable();
+    this.turntable.mount(this.scene,[this.carPivot,...this.turntableParts]);
+    this.syncCarPicking();
+    this.turntablePick = new T.Mesh(new T.CircleGeometry(TURNTABLE_RADIUS,96),new T.MeshBasicMaterial({side:T.DoubleSide}));
+    this.turntablePick.rotation.x=-Math.PI/2;this.turntablePick.position.set(0,.031,TURNTABLE_CENTER[2]);
+    this.turntablePick.userData.turntable=true;this.turntablePick.updateMatrixWorld(true);
     this.optics = new RoomOptics(this.renderer, this.scene, this.camera);
+    this.optics.attachTurntable(this.turntable.group);
     this.composer = this.optics.composer;
     this.optics.setQuality(this.settings.quality);
     this.optics.setVisualSettings(this.settings.visual);
@@ -102,7 +110,7 @@ export class HeroScene {
     this.resize();
     this.raycaster = new T.Raycaster();
     this.pickPosition = new T.Vector2();
-    this.pickTargets = [...this.panels.map(panel => panel.screen), this.pickOccluders].filter(Boolean);
+    this.pickTargets = [...this.panels.map(panel => panel.screen), this.pickOccluders, this.turntablePick].filter(Boolean);
     this.panelLinks = [...this.host.querySelectorAll('.room-panel-link')];
     this.bind();
     this.progress('Preparing light and reflections');
@@ -175,11 +183,26 @@ export class HeroScene {
     ]) {
       const mesh = new T.Mesh(new T.BoxGeometry(...size), material);
       mesh.position.set(...center);
-      this.pickOccluders.add(mesh);
+      mesh.userData.turntable = true;this.pickOccluders.add(mesh);
     }
     this.carPivot.updateWorldMatrix(true, true);
     this.pickOccluders.matrix.copy(this.carPivot.matrixWorld);
     this.pickOccluders.updateMatrixWorld(true);
+  }
+
+  syncCarPicking() {
+    if(!this.carPivot || !this.pickOccluders)return;
+    this.carPivot.updateWorldMatrix(true,true);
+    this.pickOccluders.matrix.copy(this.carPivot.matrixWorld);
+    this.pickOccluders.updateMatrixWorld(true);
+  }
+
+  beginTurntable(x,y) {
+    if(!this.turntable || this.cameraRig.mode!=='overview')return false;
+    if(!this.hitTest(x,y)?.object.userData.turntable)return false;
+    this.cameraRig.targetYaw=this.cameraRig.yaw;this.cameraRig.targetPitch=this.cameraRig.pitch;
+    this.turntable.begin();this.clearHover();this.pendingPick=this.lastPointer=null;
+    this.canvas.style.cursor='grabbing';return true;
   }
 
   buildLights() { buildRoomLights(this); }
@@ -264,13 +287,15 @@ export class HeroScene {
     this.canvas.style.cursor = 'default';
   }
 
-  hitAt(x, y) {
+  hitTest(x, y) {
     const rect = this.canvas.getBoundingClientRect();
     this.pickPosition.set((x - rect.left) / rect.width * 2 - 1, 1 - (y - rect.top) / rect.height * 2);
     this.raycaster.setFromCamera(this.pickPosition, this.camera);
     const hits = this.raycaster.intersectObjects(this.pickTargets, true);
-    return hits.length && Number.isInteger(hits[0].object.userData.panel) ? hits[0] : null;
+    return hits[0] ?? null;
   }
+
+  hitAt(x,y) {const hit=this.hitTest(x,y);return Number.isInteger(hit?.object.userData.panel)?hit:null;}
 
   pick(x, y) { return this.hitAt(x, y)?.object.userData.panel ?? -1; }
 
@@ -309,7 +334,7 @@ export class HeroScene {
 
   updateHover() {
     if (!this.pendingPick) return;
-    const hit = this.hitAt(...this.pendingPick);
+    const hit = this.hitTest(...this.pendingPick);
     this.pendingPick = null;
     const index = hit?.object.userData.panel ?? -1;
     let clickable = false;
@@ -322,7 +347,7 @@ export class HeroScene {
       clickable = Boolean(action);
     }
     if (this.hoverPanel >= 0) this.panels[this.hoverPanel].material.uniforms.hoverUv.value.copy(hit.uv);
-    this.canvas.style.cursor = this.drag?.type === 'touch' ? 'grabbing' : clickable ? 'pointer' : 'default';
+    this.canvas.style.cursor = this.drag?.mode === 'turntable' || this.drag?.type === 'touch' ? 'grabbing' : clickable ? 'pointer' : this.cameraRig.mode === 'overview' && hit?.object.userData.turntable ? 'grab' : 'default';
   }
 
   updatePanels(dt) {
@@ -330,6 +355,7 @@ export class HeroScene {
     let moving = false;
     for (const panel of this.panels) {
       const uniforms = panel.material.uniforms;
+      if(uniforms.hoverTime)uniforms.hoverTime.value=this.time;
       for (const [key, target] of [['hover', panel.index === this.hoverPanel ? 1 : 0], ['contentMix', panel.index === this.contentPanel ? 1 : 0]]) {
         const difference = target - uniforms[key].value;
         uniforms[key].value = Math.abs(difference) < .001 ? target : uniforms[key].value + difference * alpha;
@@ -375,7 +401,7 @@ export class HeroScene {
 
   approach(index, onComplete) {
     if (!this.ready) return false;
-    this.release(); this.hidePanelContent(); this.pendingPick = this.lastPointer = null; this.selectPanel(index);
+    this.turntable?.end(false);this.release(); this.hidePanelContent(); this.pendingPick = this.lastPointer = null; this.selectPanel(index);
     this.host.classList.add('camera-travelling');
     this.cameraRig.approach(this.panels[this.activePanel], {
       reduced: this.reduced.matches,
@@ -387,7 +413,7 @@ export class HeroScene {
   reset(onComplete) {
     if (!this.ready) { onComplete?.(); return; }
     this.host.classList.remove('camera-travelling');
-    this.hidePanelContent(); this.pendingPick = this.lastPointer = null; this.selectPanel(0);
+    this.turntable?.end(false);this.release();this.hidePanelContent(); this.pendingPick = this.lastPointer = null; this.selectPanel(0);
     this.cameraRig.reset({ reduced: this.reduced.matches, onComplete }); this.wake();
   }
 
@@ -400,6 +426,8 @@ export class HeroScene {
     if (!this.ready || !this.optics) return;
     this.optics.setQuality(this.settings.quality);
     this.optics.setVisualSettings(this.settings.visual);
+    for(const beam of this.beams ?? [])beam.material.uniforms.beamSamples.value=this.settings.quality==='high'?32:this.settings.quality==='low'?12:20;
+    if(this.settings.paused || this.reduced.matches)this.turntable?.end(false);
     if (this.reduced.matches) { this.cameraRig.neutralLook(); this.cameraRig.update(60); }
     const shadows = this.settings.quality !== 'low';
     if (this.renderer.shadowMap.enabled !== shadows) {
@@ -457,6 +485,7 @@ export class HeroScene {
     this.renderer.info.reset();
     this.optics.render(dt, {
       time: this.time, motion, focusDistance: this.cameraRig.focusDistance,
+      turntableDelta:this.turntable?.frameDelta ?? 0,
       paused: this.settings.paused || this.reduced.matches,
       projectionAnimated: this.cameraRig.mode === 'approaching' || this.cameraRig.mode === 'returning',
     });
@@ -480,13 +509,18 @@ export class HeroScene {
       const dt = elapsedFrameTime(now, this.last); this.last = now;
       const animated = !this.settings.paused && !this.reduced.matches;
       if (animated) this.time += Math.min(.05, dt);
+      const rotating=this.turntable?.update(dt) ?? false;
+      if(rotating){
+        this.syncCarPicking();this.renderer.shadowMap.needsUpdate=true;
+        this.ground.material.uniforms.turntableAngle.value=this.turntable.angle;
+      }
       const moving = this.cameraRig.update(dt);
       if (moving && this.lastPointer && this.cameraRig.mode === 'overview') this.pendingPick = this.lastPointer;
       this.updateHover();
       const surfacesMoving = this.updatePanels(dt);
-      this.updateAtmosphere(); this.render(dt, moving ? .5 : 0);
+      this.updateAtmosphere(); this.render(dt, moving || rotating ? .65 : 0);
       if (moving) this.updateLinkProjection();
-      continueFrames = animated || moving || surfacesMoving || Boolean(this.pendingPick);
+      continueFrames = animated || moving || rotating || this.turntable?.moving || surfacesMoving || Boolean(this.pendingPick);
     } finally { this.inFrame = false; }
     if (continueFrames && this.ready && !this.disposed && !this.lost && !document.hidden) {
       this.raf = requestAnimationFrame(time => this.frame(time));
@@ -503,6 +537,11 @@ export class HeroScene {
       drawCalls: this.renderer?.info.render.calls, triangles: this.renderer?.info.render.triangles,
       quality: this.settings.quality, fixedPanels: true, contentPanel: this.contentPanel,
       sceneSamples: this.optics?.sceneTarget.samples, visual: this.optics?.visualSettings,
+      turntableAngle:this.turntable?.angle,turntableVelocity:this.turntable?.velocity,
+      hoverPanel:this.hoverPanel,bloomLevels:this.optics?.bloomPass.levels.length,
+      beamSamples:this.beams?.[0]?.material.uniforms.beamSamples.value,
+      motionShutter:this.optics?.lensPass.uniforms.uShutter.value,
+      objectMotion:this.optics?.lensPass.uniforms.uObjectMotion.value,
     };
   }
 
@@ -514,7 +553,7 @@ export class HeroScene {
     await this.readyPromise.catch(() => {});
     await this.restoration?.catch(() => {});
     await this.preparation?.catch(() => {});
-    disposeObjects(this.scene); disposeObjects(this.pickOccluders);
+    disposeObjects(this.scene); disposeObjects(this.pickOccluders);disposeObjects(this.turntablePick);
     this.textures?.forEach(texture => texture.dispose());
     this.panelContent?.dispose();
     this.ground?.dispose(); this.environment?.dispose(); this.key?.shadow.dispose();

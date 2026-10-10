@@ -74,3 +74,24 @@ test('reduced motion keeps direct screen selection while disabling pointer paral
   assert.equal(f.calls.some(call => call[0] === 'point'), false);
   assert.ok(f.calls.some(call => call[0] === 'activate'));
 });
+
+test('a turntable drag owns the gesture without steering the camera or activating panels', () => {
+ const f=fixture();let pixels=0,starts=0,ends=[];
+ f.view.beginTurntable=()=>{starts++;return true;};
+ f.view.turntable={movePixels(delta){pixels+=delta;},end(inertia){ends.push(inertia);}};
+ f.view.settings={paused:false};
+ f.send('pointerdown',{clientX:500,clientY:350});
+ f.send('pointermove',{clientX:700,clientY:370});
+ f.send('pointerup',{clientX:700,clientY:370});
+ assert.equal(starts,1);assert.equal(pixels,200);
+ assert.equal(f.calls.some(c=>['point','look','activate'].includes(c[0])),false);
+ assert.ok(ends.includes(true));assert.equal(f.capture.size,0);
+});
+test('turntable cancellation kills inertia and does not let a second pointer interfere',()=>{
+ const f=fixture();let stops=0;
+ f.view.beginTurntable=()=>true;
+ f.view.turntable={movePixels(){},end(inertia){if(!inertia)stops++;}};
+ f.view.settings={paused:false};f.send('pointerdown');
+ f.send('pointercancel',{pointerId:2});assert.equal(stops,0);
+ f.send('pointercancel');assert.equal(stops,1);assert.equal(f.capture.size,0);
+});

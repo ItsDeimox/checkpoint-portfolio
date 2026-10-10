@@ -19,14 +19,15 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { FXAAPass } from 'three/addons/postprocessing/FXAAPass.js';
 import { Pass, FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
+import { TurntableMotionPass } from './room-turntable.js';
 import { renderBudget } from './room-core.js';
 import { normalizeVisualSettings } from './room-visual-settings.js';
 export { DEFAULT_VISUAL_SETTINGS, VISUAL_CONTROLS, normalizeVisualSettings } from './room-visual-settings.js';
 
 const PROFILES = {
-  low: { samples: 6, motionSamples: 3, maxBlur: 8, msaaSamples: 0, bloomEdge: 384, bloomScale: 0.25 },
-  auto: { samples: 8, motionSamples: 4, maxBlur: 11, msaaSamples: 2, bloomEdge: 512, bloomScale: 0.33 },
-  high: { samples: 12, motionSamples: 4, maxBlur: 13, msaaSamples: 4, bloomEdge: 768, bloomScale: 0.4 },
+  low: { samples: 8, motionSamples: 4, maxBlur: 8, msaaSamples: 0, bloomEdge: 384, bloomScale: 0.25 },
+  auto: { samples: 20, motionSamples: 6, maxBlur: 11, msaaSamples: 2, bloomEdge: 512, bloomScale: 0.33 },
+  high: { samples: 32, motionSamples: 8, maxBlur: 13, msaaSamples: 4, bloomEdge: 768, bloomScale: 0.4 },
 };
 
 function supportedSceneSamples(renderer, hdr) {
@@ -88,6 +89,9 @@ class SceneCapturePass extends RenderPass {
 const LENS_FRAGMENT = /* glsl */`
   uniform sampler2D tDiffuse;
   uniform sampler2D tSceneDepth;
+  uniform sampler2D tObjectMotion;
+  uniform float uObjectMotion;
+  uniform float uFarPlane;
   uniform vec2 uResolution;
   uniform vec2 uTexel;
   uniform mat4 uInverseProjection;
@@ -138,7 +142,10 @@ const LENS_FRAGMENT = /* glsl */`
       vec4 previousClip = uPreviousViewProjection * world;
       if (previousClip.w > 0.0) {
         vec2 previousUv = previousClip.xy / previousClip.w * 0.5 + 0.5;
-        vec2 pixelVelocity = (vUv - previousUv) * uResolution * uShutter;
+        vec2 uvVelocity = vUv - previousUv;
+        if(uObjectMotion>0.5){vec4 objectMotion=texture2D(tObjectMotion,vUv);
+          if(objectMotion.a>.5 && abs(objectMotion.b*uFarPlane-distanceToCamera)<max(.045,distanceToCamera*.008))uvVelocity=(objectMotion.rg-.5)*2.;}
+        vec2 pixelVelocity = uvVelocity * uResolution * uShutter;
         float speed = length(pixelVelocity);
         pixelVelocity *= min(1.0, uMotionLimit / max(speed, 0.0001));
         velocity = pixelVelocity * uTexel;
@@ -153,8 +160,8 @@ const LENS_FRAGMENT = /* glsl */`
     float count = coc >= 0.45 ? uSamples : uMotionSamples;
     vec3 sum = center.rgb;
     float weightSum = 1.0;
-    // Bounded, deterministic disk gather: six/eight/twelve taps; no temporal noise.
-    for (int i = 0; i < 12; i++) {
+    // Denser deterministic aperture gather reduces separated highlight dots.
+    for (int i = 0; i < 32; i++) {
       if (float(i) >= count) break;
       float t = (float(i) + 0.5) / count;
       float angle = float(i) * 2.39996323;
@@ -188,13 +195,14 @@ class DepthLensPass extends ShaderPass {
   constructor(sceneTarget) {
     super(screenMaterial('DXT.DepthLens', LENS_FRAGMENT, {
       tDiffuse: { value: null }, tSceneDepth: { value: null },
+      tObjectMotion: { value: null }, uObjectMotion: { value: 0 }, uFarPlane: { value: 100 },
       uResolution: { value: new Vector2(1, 1) }, uTexel: { value: new Vector2(1, 1) },
       uInverseProjection: { value: new Matrix4() },
       uInverseViewProjection: { value: new Matrix4() },
       uPreviousViewProjection: { value: new Matrix4() },
       uZeroToOneDepth: { value: 0 }, uFocusDistance: { value: 12 },
       uCocScale: { value: 1 }, uForegroundGain: { value: 4.5 }, uMaxBlur: { value: 11 },
-      uSamples: { value: 8 }, uMotionSamples: { value: 4 },
+      uSamples: { value: 20 }, uMotionSamples: { value: 6 },
       uShutter: { value: 0 }, uMotionLimit: { value: 8 },
     }));
     this.sceneTarget = sceneTarget;
@@ -270,96 +278,54 @@ const STREAK_FRAGMENT = /* glsl */`
   }
 `;
 
+const BLOOM_COMBINE_FRAGMENT = /* glsl */`
+ uniform sampler2D mip0;uniform sampler2D mip1;uniform sampler2D mip2;
+ uniform sampler2D mip3;uniform sampler2D mip4;uniform sampler2D mip5;varying vec2 vUv;
+ void main(){vec3 c=texture2D(mip0,vUv).rgb*.31+texture2D(mip1,vUv).rgb*.24
+ +texture2D(mip2,vUv).rgb*.18+texture2D(mip3,vUv).rgb*.13
+ +texture2D(mip4,vUv).rgb*.09+texture2D(mip5,vUv).rgb*.05;
+ gl_FragColor=vec4(c*1.15,1.);}
+`;
 class BoundedBloomPass extends Pass {
-  constructor(type) {
-    super();
-    this.needsSwap = false;
-    this.profile = PROFILES.auto;
-    this.lensEnabled = true;
-    this.width = 1;
-    this.height = 1;
-    this.bright = colorTarget('DXT.Bloom.Threshold', type);
-    this.temporary = colorTarget('DXT.Bloom.Temporary', type);
-    this.bloom = colorTarget('DXT.Bloom.Near', type);
-    this.wideTemporary = colorTarget('DXT.Bloom.WideTemporary', type);
-    this.wide = colorTarget('DXT.Bloom.Wide', type);
-    this.streak = colorTarget('DXT.Bloom.Streak', type);
-    this.targets = [this.bright, this.temporary, this.bloom, this.wideTemporary, this.wide, this.streak];
-    this.brightMaterial = screenMaterial('DXT.SoftThreshold', BRIGHT_FRAGMENT, {
-      tInput: { value: null }, uTexel: { value: new Vector2() },
-      uThreshold: { value: type === HalfFloatType ? 1.05 : .82 },
-      uKnee: { value: type === HalfFloatType ? .3 : .18 },
-    });
-    this.blurMaterial = screenMaterial('DXT.SmallGaussian', BLUR_FRAGMENT, {
-      tInput: { value: null }, uStep: { value: new Vector2() },
-    });
-    this.streakMaterial = screenMaterial('DXT.HorizontalStreak', STREAK_FRAGMENT, {
-      tInput: { value: null }, uStep: { value: new Vector2() },
-    });
-    this.quad = new FullScreenQuad(this.brightMaterial);
-  }
-
-  setProfile(profile) {
-    this.profile = profile;
-    this.setSize(this.width, this.height);
-  }
-
-  setSize(width, height) {
-    this.width = width;
-    this.height = height;
-    const scale = Math.min(this.profile.bloomScale, this.profile.bloomEdge / Math.max(width, height));
-    const w = Math.max(1, Math.round(width * scale));
-    const h = Math.max(1, Math.round(height * scale));
-    this.bright.setSize(w, h);
-    this.temporary.setSize(w, h);
-    this.bloom.setSize(w, h);
-    const wideWidth = Math.max(1, Math.round(w * 0.5));
-    const wideHeight = Math.max(1, Math.round(h * 0.5));
-    this.wideTemporary.setSize(wideWidth, wideHeight);
-    this.wide.setSize(wideWidth, wideHeight);
-    this.streak.setSize(wideWidth, wideHeight);
-  }
-
-  draw(renderer, material, target) {
-    this.quad.material = material;
-    renderer.setRenderTarget(target);
-    this.quad.render(renderer);
-  }
-
-  blur(renderer, texture, target, x, y) {
-    this.blurMaterial.uniforms.tInput.value = texture;
-    this.blurMaterial.uniforms.uStep.value.set(x, y);
-    this.draw(renderer, this.blurMaterial, target);
-  }
-
-  render(renderer, writeBuffer, readBuffer) {
-    const oldAutoClear = renderer.autoClear;
-    renderer.autoClear = false;
-    try {
-      this.brightMaterial.uniforms.tInput.value = readBuffer.texture;
-      this.brightMaterial.uniforms.uTexel.value.set(1 / readBuffer.width, 1 / readBuffer.height);
-      this.draw(renderer, this.brightMaterial, this.bright);
-      this.blur(renderer, this.bright.texture, this.temporary, 1 / this.bright.width, 0);
-      this.blur(renderer, this.temporary.texture, this.bloom, 0, 1 / this.temporary.height);
-      this.blur(renderer, this.bloom.texture, this.wideTemporary, 2.5 / this.bloom.width, 0);
-      this.blur(renderer, this.wideTemporary.texture, this.wide, 0, 1.25 / this.wideTemporary.height);
-      if (this.lensEnabled) {
-        this.streakMaterial.uniforms.tInput.value = this.bloom.texture;
-        this.streakMaterial.uniforms.uStep.value.set(9 / this.bloom.width, 0);
-        this.draw(renderer, this.streakMaterial, this.streak);
-      }
-    } finally {
-      renderer.autoClear = oldAutoClear;
-    }
-  }
-
-  dispose() {
-    this.targets.forEach(target => target.dispose());
-    this.brightMaterial.dispose();
-    this.blurMaterial.dispose();
-    this.streakMaterial.dispose();
-    this.quad.dispose();
-  }
+ constructor(type){
+  super();this.needsSwap=false;this.profile=PROFILES.auto;this.lensEnabled=true;this.width=this.height=1;
+  this.bright=colorTarget('DXT.Bloom.Threshold',type);
+  this.levels=Array.from({length:6},(_,i)=>({horizontal:colorTarget(`DXT.Bloom.Mip${i}.H`,type),vertical:colorTarget(`DXT.Bloom.Mip${i}.V`,type)}));
+  this.bloom=colorTarget('DXT.Bloom.Combined',type);this.wide=this.levels[3].vertical;
+  this.streak=colorTarget('DXT.Bloom.Streak',type);
+  this.targets=[this.bright,...this.levels.flatMap(l=>[l.horizontal,l.vertical]),this.bloom,this.streak];
+  this.brightMaterial=screenMaterial('DXT.SoftThreshold',BRIGHT_FRAGMENT,{tInput:{value:null},uTexel:{value:new Vector2()},uThreshold:{value:type===HalfFloatType?1.05:.82},uKnee:{value:type===HalfFloatType?.3:.18}});
+  this.blurMaterial=screenMaterial('DXT.SmallGaussian',BLUR_FRAGMENT,{tInput:{value:null},uStep:{value:new Vector2()}});
+  this.streakMaterial=screenMaterial('DXT.HorizontalStreak',STREAK_FRAGMENT,{tInput:{value:null},uStep:{value:new Vector2()}});
+  this.combineMaterial=screenMaterial('DXT.SixScaleBloom',BLOOM_COMBINE_FRAGMENT,Object.fromEntries(this.levels.map((l,i)=>['mip'+i,{value:l.vertical.texture}])));
+  this.quad=new FullScreenQuad(this.brightMaterial);
+ }
+ setProfile(profile){this.profile=profile;this.setSize(this.width,this.height);}
+ setSize(width,height){
+  this.width=width;this.height=height;
+  const scale=Math.min(this.profile.bloomScale,this.profile.bloomEdge/Math.max(width,height));
+  const w=Math.max(1,Math.round(width*scale)),h=Math.max(1,Math.round(height*scale));
+  this.bright.setSize(w,h);this.bloom.setSize(w,h);
+  this.levels.forEach((l,i)=>{const x=Math.max(1,Math.round(w/2**i)),y=Math.max(1,Math.round(h/2**i));l.horizontal.setSize(x,y);l.vertical.setSize(x,y);});
+  this.streak.setSize(Math.max(1,Math.round(w*.5)),Math.max(1,Math.round(h*.5)));
+ }
+ draw(renderer,material,target){this.quad.material=material;renderer.setRenderTarget(target);this.quad.render(renderer);}
+ blur(renderer,texture,target,x,y){this.blurMaterial.uniforms.tInput.value=texture;this.blurMaterial.uniforms.uStep.value.set(x,y);this.draw(renderer,this.blurMaterial,target);}
+ render(renderer,writeBuffer,readBuffer){
+  const oldAutoClear=renderer.autoClear;renderer.autoClear=false;
+  try{
+   this.brightMaterial.uniforms.tInput.value=readBuffer.texture;this.brightMaterial.uniforms.uTexel.value.set(1/readBuffer.width,1/readBuffer.height);
+   this.draw(renderer,this.brightMaterial,this.bright);
+   let source=this.bright;
+   for(const level of this.levels){
+    this.blur(renderer,source.texture,level.horizontal,1/level.horizontal.width,0);
+    this.blur(renderer,level.horizontal.texture,level.vertical,0,1/level.vertical.height);source=level.vertical;
+   }
+   this.draw(renderer,this.combineMaterial,this.bloom);
+   if(this.lensEnabled){this.streakMaterial.uniforms.tInput.value=this.levels[0].vertical.texture;this.streakMaterial.uniforms.uStep.value.set(9/this.bloom.width,0);this.draw(renderer,this.streakMaterial,this.streak);}
+  }finally{renderer.autoClear=oldAutoClear;}
+ }
+ dispose(){this.targets.forEach(t=>t.dispose());this.brightMaterial.dispose();this.blurMaterial.dispose();this.combineMaterial.dispose();this.streakMaterial.dispose();this.quad.dispose();}
 }
 
 const GRADE_FRAGMENT = /* glsl */`
@@ -419,8 +385,7 @@ const GRADE_FRAGMENT = /* glsl */`
         * uSharpness * (1.0 - smoothstep(0.2, 0.9, edge));
     }
     if (uBloomStrength > 0.0) {
-      color += texture2D(tBloom, vUv).rgb * uBloomStrength * 0.72;
-      color += texture2D(tWideBloom, vUv).rgb * uBloomStrength * 0.28;
+      color += texture2D(tBloom, vUv).rgb * uBloomStrength;
       if (uLensStrength > 0.0) {
         color += texture2D(tStreak, vUv).rgb * uBloomStrength * uLensStrength * 0.09;
         // A very faint reversed ghost is driven only by actual bright sources.
@@ -512,6 +477,14 @@ export class RoomOptics {
     this.resize(size.x, size.y, renderer.getPixelRatio());
   }
 
+  attachTurntable(root) {
+    if(this.turntableMotion)return this.turntableMotion;
+    this.turntableMotion=new TurntableMotionPass(root,this.camera,this.hdr);
+    this.composer.insertPass(this.turntableMotion,1);
+    this.lensPass.uniforms.tObjectMotion.value=this.turntableMotion.target.texture;
+    return this.turntableMotion;
+  }
+
   resize(width, height, pixelRatio = this.renderer.getPixelRatio()) {
     if (this.disposed) return;
     this.width = Math.max(2, Math.round(Number.isFinite(width) ? width : 2));
@@ -571,7 +544,7 @@ export class RoomOptics {
     this.lensPass.uniforms.uShutter.value = 0;
   }
 
-  render(deltaTime, { time, motion = 0, focusDistance = 12, paused = false, projectionAnimated = false } = {}) {
+  render(deltaTime, { time, motion = 0, focusDistance = 12, paused = false, projectionAnimated = false, turntableDelta = 0 } = {}) {
     if (this.disposed) return;
     const validDelta = Number.isFinite(deltaTime) && deltaTime > 0;
     const dt = validDelta ? deltaTime : 1 / 60;
@@ -617,20 +590,24 @@ export class RoomOptics {
     // World-space speed guards are independent of aspect and focal length.
     // They admit the actual panel paths (under 35 m/s and .84 rad/s), while
     // retaining absolute per-frame limits for camera cuts or a stalled frame.
-    const continuousMotion = this.previousValid && !paused && validDelta && dt < 0.15
+    const safeHistory = this.previousValid && !paused && validDelta && dt < 0.15
       && !(this.previousProjectionAnimated && !animatedProjection) && continuousProjection
-      && translation <= Math.min(3, 45 * dt) && rotation <= Math.min(0.25, 2.5 * dt)
+      && translation <= Math.min(3, 45 * dt) && rotation <= Math.min(0.25, 2.5 * dt);
+    const continuousMotion = safeHistory
       && (translation > 0.000001 || rotation > 0.000001 || lensChange > 0.0000001);
+    const objectMoving=Boolean(this.turntableMotion && this.hdr && safeHistory && Number.isFinite(turntableDelta) && Math.abs(turntableDelta)>1e-6 && Math.abs(turntableDelta)<.15);
+    if(this.turntableMotion){this.turntableMotion.enabled=objectMoving;if(objectMoving)this.turntableMotion.prepare(this.previousViewProjection,turntableDelta);}
     const uniforms = this.lensPass.uniforms;
+    uniforms.uObjectMotion.value=objectMoving?1:0;uniforms.uFarPlane.value=this.camera.far;
     uniforms.uInverseProjection.value.copy(this.camera.projectionMatrixInverse);
     uniforms.uInverseViewProjection.value.copy(this.currentViewProjection).invert();
     uniforms.uPreviousViewProjection.value.copy(
-      continuousMotion ? this.previousViewProjection : this.currentViewProjection,
+      continuousMotion || objectMoving ? this.previousViewProjection : this.currentViewProjection,
     );
     uniforms.uZeroToOneDepth.value = this.renderer.capabilities.reversedDepthBuffer ? 1 : 0;
     const motionAmount = Math.min(1, Math.max(0, Number.isFinite(motion) ? motion : 0));
-    uniforms.uShutter.value = continuousMotion
-      ? Math.min(0.65, (1 / 144) / dt) * (0.7 + motionAmount * 0.3) * this.visualSettings.motionBlur : 0;
+    uniforms.uShutter.value = continuousMotion || objectMoving
+      ? Math.min(0.65, (1 / 90) / dt) * (0.7 + motionAmount * 0.3) * this.visualSettings.motionBlur : 0;
 
     const focus = Math.max(this.camera.near * 1.01,
       Math.min(this.camera.far * 0.95, Number.isFinite(focusDistance) ? focusDistance : 12));

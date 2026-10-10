@@ -153,7 +153,7 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
   const bloom = optics.bloomPass;
   const opticalMaterials = [...new Set([
     optics.lensPass?.material, bloom?.brightMaterial, bloom?.blurMaterial,
-    bloom?.streakMaterial, optics.gradePass?.material,
+    bloom?.streakMaterial, bloom?.combineMaterial, optics.gradePass?.material,
   ].filter(Boolean))];
   opticalMaterials.forEach(material => materials.add(material));
   if (optics.outputPass?.material) materials.add(optics.outputPass.material);
@@ -163,7 +163,7 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
     sceneTarget,
     optics.composer.readBuffer, optics.composer.writeBuffer,
     optics.composer.renderTarget1, optics.composer.renderTarget2,
-    ...(bloom?.targets ?? []), view.ground?.getRenderTarget?.(),
+    ...(bloom?.targets ?? []), optics.turntableMotion?.target, view.ground?.getRenderTarget?.(),
   ].filter(Boolean))];
   let compiled = 0;
   try {
@@ -215,6 +215,12 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
       await renderer.compileAsync(group, screenCamera, screenScene);
       group.clear();
       report('optics', Math.min(i + 4, opticalMaterials.length), opticalMaterials.length);
+      await yieldToBrowser(signal);
+    }
+    if (optics.turntableMotion) {
+      checkAbort(signal); renderer.setRenderTarget(optics.turntableMotion.target);
+      optics.turntableMotion.prepare(camera.projectionMatrix,0);
+      await renderer.compileAsync(optics.turntableMotion.scene,camera,optics.turntableMotion.scene);
       await yieldToBrowser(signal);
     }
     if (optics.outputPass?.material) {

@@ -11,10 +11,10 @@ export function refineCarMaterials(car) {
         case 'Hood':
           // A metallic red base under polished varnish separates reflections.
           // Nonzero roughness keeps the smallest moving highlights stable.
-          material.metalness = .78;
-          material.roughness = .16;
-          material.envMapIntensity = 1.85;
-          if (material.isMeshPhysicalMaterial) material.clearcoatRoughness = .065;
+          material.metalness = .86;
+          material.roughness = .115;
+          material.envMapIntensity = 1.9;
+          if (material.isMeshPhysicalMaterial) material.clearcoatRoughness = .05;
           break;
         case 'XHROME__env_4_spec':
           material.roughness = Math.max(material.roughness, .09);

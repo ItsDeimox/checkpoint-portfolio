@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ACESFilmicToneMapping, HalfFloatType, PerspectiveCamera, Quaternion, Scene, SRGBColorSpace, UnsignedByteType, Vector3 } from 'three';
+import { ACESFilmicToneMapping, Color, HalfFloatType, PerspectiveCamera, Quaternion, Scene, SRGBColorSpace, UnsignedByteType, Vector3 } from 'three';
 import { RoomOptics } from '../src/scene/room-optics.js';
 import { renderBudget } from '../src/scene/room-core.js';
 import { RoomCamera } from '../src/scene/room-camera.js';
@@ -20,7 +20,8 @@ function fixture({ hdr = true, samples = [4, 2], depthSamples = samples, maxSamp
       return Int32Array.from(format === this.DEPTH_COMPONENT24 ? depthSamples : samples);
     },
   };
-  let target = null;
+  let target = null, clearAlpha = 1;
+  const clearColor = new Color(0);
   const renderer = {
     extensions: { has: name => name === 'EXT_color_buffer_float' && hdr },
     capabilities: { maxSamples, reversedDepthBuffer: false },
@@ -29,6 +30,9 @@ function fixture({ hdr = true, samples = [4, 2], depthSamples = samples, maxSamp
     getContext: () => gl, getPixelRatio: () => 1, getSize: value => value.set(1280, 720),
     getRenderTarget: () => target,
     setRenderTarget(value) { target = value; },
+    getClearColor(value) { return value.copy(clearColor); },
+    getClearAlpha() { return clearAlpha; },
+    setClearColor(value, alpha) { clearColor.set(value); if (alpha !== undefined) clearAlpha = alpha; },
     clear() {},
     render(object) {
       const material = object.material;
@@ -331,4 +335,38 @@ test('animated travel permission does not bypass pause, resize, quality, camera-
     move(); assert.equal(render(1 / 60, { projectionAnimated: false }), 0, 'Animation completion discards the last motion sample');
     assert.equal(render(), 0, 'Stationary authorized frames are still sharp');
   } finally { optics.dispose(); }
+});
+
+test('bloom contains six decreasing scales within the existing resolution budget', () => {
+ const {optics}=fixture();try{optics.setQuality('high');optics.resize(1920,1080,1);
+ assert.equal(optics.bloomPass.levels?.length,6);
+ for(let i=1;i<6;i++)assert.ok(optics.bloomPass.levels[i].vertical.width<optics.bloomPass.levels[i-1].vertical.width);
+ assert.ok(optics.bloomPass.levels.every(level=>level.vertical.width<=768));
+ assert.equal(optics.lensPass.uniforms.uSamples.value,32);
+ }finally{optics.dispose();}
+});
+
+test('turntable velocity uses object history without smearing the stationary room', () => {
+ const {optics}=fixture();
+ const pass=optics.attachTurntable(new Scene());
+ try{
+  optics.render(1/60,{turntableDelta:0});
+  optics.render(1/60,{turntableDelta:.02});
+  assert.equal(pass.enabled,true);
+  assert.equal(optics.lensPass.uniforms.uObjectMotion.value,1);
+  assert.ok(optics.lensPass.uniforms.uShutter.value>0);
+  const pivot=new Vector3(0,0,1.458534911).applyMatrix4(pass.previousTransform);
+  assert.ok(pivot.distanceTo(new Vector3(0,0,1.458534911))<1e-8);
+  optics.render(1/60,{turntableDelta:0});assert.equal(pass.enabled,false);
+  optics.render(1/60,{turntableDelta:.02,paused:true});
+  assert.equal(pass.enabled,false);assert.equal(optics.lensPass.uniforms.uShutter.value,0);
+ }finally{optics.dispose();}
+});
+test('gentle pointer-look rotation receives camera motion blur without a panel approach', () => {
+ const {optics,camera}=fixture();try{
+  optics.render(1/60,{motion:0});camera.rotation.y+=.004;
+  optics.render(1/60,{motion:.65,projectionAnimated:false});
+  assert.ok(optics.lensPass.uniforms.uShutter.value>0);
+  assert.equal(optics.lensPass.uniforms.uObjectMotion.value,0);
+ }finally{optics.dispose();}
 });

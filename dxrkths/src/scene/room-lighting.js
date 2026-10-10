@@ -14,7 +14,7 @@ export function buildRoomLights(view) {
   const sources = [
     [0xf8f6ff, 20, 7.2, .75, [-2, 6.1, -3.5], [0, .65, 0]],
     [0xfff2eb, 5, 4.5, .6, [4, 4.7, -2], [0, .8, 0]],
-    [0xff0923, 12, 7, .5, [0, 2.8, 4], [0, .65, 0]],
+    [0xff0923, 14, 7, .5, [0, 2.8, 4], [0, .65, 0]],
     [0xff1a25, 5.5, 5, .7, [-5, 2.8, -.5], [0, .7, 0]],
     [0xc1d8ff, 8, 1.2, 3.8, [6.5, 3.8, 0], [0, 1.1, 0]],
   ];
@@ -52,7 +52,7 @@ export function dressStudioEnvironment(room) {
   for (const [color, width, height, position, target] of [
     [[7.8, 7.7, 8], 7.2, .75, [-2, 6, -4], [0, 1, 0]],
     [[3.5, 4.8, 6.8], 1, 4.5, [7, 3, 0], [0, 1, 0]],
-    [[5.4, .018, .045], 7.5, .45, [0, 3, 6], [0, 1, 0]],
+    [[6.2, .018, .045], 7.5, .45, [0, 3, 6], [0, 1, 0]],
     [[2.1, .009, .02], 3, 1.1, [-7, 2, 0], [0, 1, 0]],
   ]) {
     const material = new T.MeshBasicMaterial({ color: new T.Color(...color), side: T.DoubleSide, toneMapped: false });
@@ -81,7 +81,7 @@ export function buildRoomAtmosphere(view) {
   const apex = new T.Vector3(0, 7.55, .1), floor = .12, radius = 2.18;
   const beam = new T.Mesh(new T.ConeGeometry(radius, apex.y - floor, 48, 1, false), new T.ShaderMaterial({
     vertexShader: roomVertex, fragmentShader: beamFragment,
-    uniforms: { time: { value: 0 }, apex: { value: apex }, bottom: { value: floor }, slope: { value: radius / (apex.y - floor) } },
+    uniforms: { time: { value: 0 }, apex: { value: apex }, bottom: { value: floor }, slope: { value: radius / (apex.y - floor) }, beamSamples: { value: view.settings?.quality === 'high' ? 32 : view.settings?.quality === 'low' ? 12 : 20 } },
     transparent: true, depthWrite: false, side: T.BackSide, blending: T.AdditiveBlending,
   }));
   beam.name = 'Overhead light volume'; beam.position.set(apex.x, (apex.y + floor) / 2, apex.z); beam.renderOrder = 4;

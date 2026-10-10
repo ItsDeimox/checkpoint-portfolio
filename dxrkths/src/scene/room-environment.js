@@ -62,7 +62,7 @@ function buildPanels(view){
   const bevelCorners=ring.inner.map(p=>p.clone().addScaledVector(normal,.005)),bevel=ringGeometry(bevelCorners,normal,.986,.045);frame.add(new T.Mesh(bevel.geometry,edge));
   // Map the inset printed artwork to a real planar screen. Each frame keeps its own depth.
   const screenCorners=bevel.inner.map(p=>p.clone().addScaledVector(normal,-.008));
-  const mapping=homography(data.art),mat=new T.ShaderMaterial({uniforms:{...T.UniformsUtils.clone(T.UniformsLib.fog),artwork:{value:texture},contentMap:{value:texture},contentMix:{value:0},projection:{value:new T.Matrix3().set(...mapping)},hover:{value:0},hoverUv:{value:new T.Vector2(.5,.5)},eraseForeground:{value:index===2||index===3?1:0}},vertexShader:roomVertex,fragmentShader:displayFragment,side:T.DoubleSide,fog:true});
+  const mapping=homography(data.art),mat=new T.ShaderMaterial({uniforms:{...T.UniformsUtils.clone(T.UniformsLib.fog),artwork:{value:texture},contentMap:{value:texture},contentMix:{value:0},projection:{value:new T.Matrix3().set(...mapping)},hover:{value:0},hoverTime:{value:0},hoverUv:{value:new T.Vector2(.5,.5)},eraseForeground:{value:index===2||index===3?1:0}},vertexShader:roomVertex,fragmentShader:displayFragment,side:T.DoubleSide,fog:true});
   const screen=new T.Mesh(planeGeometry(screenCorners),mat);screen.name=data.title;screen.userData.panel=index;frame.add(screen);
   const glass=new T.Mesh(planeGeometry(screenCorners.map(p=>p.clone().addScaledVector(normal,.004))),new T.MeshPhysicalMaterial({color:0xa8b5ce,metalness:.08,roughness:.21,clearcoat:1,clearcoatRoughness:.16,envMapIntensity:.85,transparent:true,opacity:.035,depthWrite:false,side:T.DoubleSide}));glass.name='Display cover glass';frame.add(glass);
   for(let k=0;k<4;k++){
@@ -78,17 +78,18 @@ function buildPanels(view){
  }
 }
 function buildFloor(view){
- view.ground=new Reflector(new T.PlaneGeometry(70,70),{clipBias:.001,textureWidth:768,textureHeight:768,color:0x111216,shader:{uniforms:{color:{value:new T.Color(0x111216)},tDiffuse:{value:null},textureMatrix:{value:new T.Matrix4()},time:{value:0},reflectionResolution:{value:new T.Vector2(768,768)}},vertexShader:floorVertex,fragmentShader:floorFragment}});
+ view.turntableParts=[];
+ view.ground=new Reflector(new T.PlaneGeometry(70,70),{clipBias:.001,textureWidth:768,textureHeight:768,color:0x111216,shader:{uniforms:{color:{value:new T.Color(0x111216)},tDiffuse:{value:null},textureMatrix:{value:new T.Matrix4()},time:{value:0},turntableAngle:{value:0},reflectionResolution:{value:new T.Vector2(768,768)}},vertexShader:floorVertex,fragmentShader:floorFragment}});
  Object.assign(view.ground.material.uniforms,T.UniformsUtils.clone(T.UniformsLib.fog));view.ground.material.fog=true;
  view.ground.rotation.x=-Math.PI/2;view.ground.position.y=.024;view.scene.add(view.ground);
  const shadow=new T.Mesh(new T.PlaneGeometry(20,20),new T.ShadowMaterial({opacity:.47}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.027;shadow.receiveShadow=true;view.scene.add(shadow);
- const contact=new T.Mesh(new T.PlaneGeometry(4.9,9.6),new T.ShaderMaterial({vertexShader:roomVertex,fragmentShader:contactFragment,transparent:true,depthWrite:false}));contact.rotation.x=-Math.PI/2;contact.rotation.z=-.460715;contact.position.set(-.67248,.030,1.28199);view.scene.add(contact);
+ const contact=new T.Mesh(new T.PlaneGeometry(4.9,9.6),new T.ShaderMaterial({vertexShader:roomVertex,fragmentShader:contactFragment,transparent:true,depthWrite:false}));contact.rotation.x=-Math.PI/2;contact.rotation.z=-.460715;contact.position.set(-.67248,.030,1.28199);view.scene.add(contact);view.turntableParts.push(contact);
  const metal=material({color:0x08090b,roughness:.30}),red=new T.MeshBasicMaterial({color:new T.Color(8,.01,.018)}),dim=new T.MeshBasicMaterial({color:new T.Color(1.6,.008,.012)});
  const radii=[5.38,5.47,5.72];
  for(const [i,r] of radii.entries()){
-  const rail=new T.Mesh(new T.TorusGeometry(r*.964340418,i===1?.018:.009,8,160),i===1?red:dim);rail.rotation.x=Math.PI/2;rail.position.set(0,.06,1.458534911);view.scene.add(rail);
+  const rail=new T.Mesh(new T.TorusGeometry(r*.964340418,i===1?.018:.009,8,160),i===1?red:dim);rail.rotation.x=Math.PI/2;rail.position.set(0,.06,1.458534911);view.scene.add(rail);view.turntableParts.push(rail);
  }
- for(const r of [5.26,5.59,5.83]){const ring=new T.Mesh(new T.TorusGeometry(r*.964340418,.047,8,160),metal);ring.rotation.x=Math.PI/2;ring.position.set(0,.037,1.458534911);view.scene.add(ring);}
+ for(const r of [5.26,5.59,5.83]){const ring=new T.Mesh(new T.TorusGeometry(r*.964340418,.047,8,160),metal);ring.rotation.x=Math.PI/2;ring.position.set(0,.037,1.458534911);view.scene.add(ring);view.turntableParts.push(ring);}
  // Distressed real ground decals, cut from existing transparent identity assets.
  for(const [x,z,rot,key] of [[-5.65,-5.2,.16,'dxt'],[5.65,-5.3,-.18,'berserk']]){
   new T.TextureLoader(view.loadingManager).load(`/assets/icons/${key}.webp`,tex=>{if(view.disposed){tex.dispose();return;}tex.colorSpace=T.SRGBColorSpace;view.textures.push(tex);const m=new T.MeshStandardMaterial({map:tex,transparent:true,opacity:.24,depthWrite:false,roughness:.72,metalness:.25,color:0x888888,polygonOffset:true,polygonOffsetFactor:-1});const o=new T.Mesh(new T.PlaneGeometry(3.0,2.35),m);o.rotation.set(-Math.PI/2,0,rot);o.position.set(x,.04,z);view.scene.add(o);view.wake();});

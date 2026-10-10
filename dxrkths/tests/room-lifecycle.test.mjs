@@ -11,6 +11,7 @@ import { RoomPanelContent } from '../src/scene/room-panel-content.js';
 import { bindRoomPointer } from '../src/scene/room-input.js';
 import { createFixedPanelLayout } from '../src/scene/room-environment.js';
 import { refineCarMaterials } from '../src/scene/room-materials.js';
+import * as turntable from '../src/scene/room-turntable.js';
 import * as lighting from '../src/scene/room-lighting.js';
 import { normalizeVisualSettings } from '../src/scene/room-visual-settings.js';
 import { elapsedFrameTime } from '../src/core.js';
@@ -85,6 +86,7 @@ function harness(config = {}) {
   }
   class Optics {
     constructor(renderer) { this.renderer = renderer; this.composer = {}; this.sceneTarget = new Three.WebGLRenderTarget(); }
+    attachTurntable(root) { this.turntableRoot = root; }
     setQuality() {}
     setVisualSettings(values) { this.visualSettings = normalizeVisualSettings(values, this.visualSettings); }
     resize() {}
@@ -107,10 +109,10 @@ function harness(config = {}) {
     dispose() { if (!this.disposed) events.push('content-disposed'); super.dispose(); }
   }
   function buildShowroom(view) {
-    view.textures = [];
+    view.textures = [];view.turntableParts=[];
     const target = new Three.WebGLRenderTarget();
     view.ground = new Three.Mesh(new Three.PlaneGeometry(), new Three.ShaderMaterial({
-      uniforms: { time: { value: 0 }, reflectionResolution: { value: new Three.Vector2() } },
+      uniforms: { time: { value: 0 }, turntableAngle: { value: 0 }, reflectionResolution: { value: new Three.Vector2() } },
     }));
     view.ground.getRenderTarget = () => target;
     view.ground.dispose = () => target.dispose();
@@ -142,6 +144,7 @@ function harness(config = {}) {
     './room-panel-content.js': { RoomPanelContent: Content },
     './room-input.js': { bindRoomPointer },
     './room-lighting.js': lighting,
+    './room-turntable.js': turntable,
     './room-startup.js': {
       waitForAsset,
       async yieldToBrowser(signal) { await Promise.resolve(); signal?.throwIfAborted(); },
