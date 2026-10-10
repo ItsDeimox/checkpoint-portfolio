@@ -9,15 +9,15 @@ export function refineCarMaterials(car) {
       switch (material.name) {
         case 'Body':
         case 'Hood':
-          // A colored base under the existing clearcoat keeps the red paint
-          // readable while softening the smallest moving light reflections.
-          material.metalness = .42;
-          material.roughness = .24;
-          material.envMapIntensity = 1.35;
-          if (material.isMeshPhysicalMaterial) material.clearcoatRoughness = .10;
+          // A metallic red base under polished varnish separates reflections.
+          // Nonzero roughness keeps the smallest moving highlights stable.
+          material.metalness = .78;
+          material.roughness = .16;
+          material.envMapIntensity = 1.85;
+          if (material.isMeshPhysicalMaterial) material.clearcoatRoughness = .065;
           break;
         case 'XHROME__env_4_spec':
-          material.roughness = Math.max(material.roughness, .12);
+          material.roughness = Math.max(material.roughness, .09);
           break;
         case 'mirrors':
           material.roughness = Math.max(material.roughness, .09);
@@ -31,10 +31,10 @@ export function refineCarMaterials(car) {
         case 'Ext_Glass':
           // Keep the existing alpha glass: no refraction target or transmission
           // pass. The separately named rear_glass is an authored tail lamp.
-          material.roughness = .075;
+          material.roughness = .06;
           material.envMapIntensity = 1.10;
           material.depthWrite = false;
-          if (material.isMeshPhysicalMaterial) material.clearcoatRoughness = .07;
+          if (material.isMeshPhysicalMaterial) material.clearcoatRoughness = .06;
           break;
       }
     }
