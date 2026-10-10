@@ -52,18 +52,18 @@ after(() => {
   materials?.forEach(material => material.dispose());
 });
 
-test('red paint retains its identity with a softer base reflection and a polished clearcoat', () => {
+test('red paint retains its identity with a metallic base and a polished clearcoat', () => {
   assert.equal(refineCarMaterials(car), car);
   for (const name of ['Body', 'Hood']) {
     const material = materials.get(name), original = originalMaterials.get(name);
     assert.ok(material?.isMeshPhysicalMaterial, `expected existing physical paint ${name}`);
     assert.deepEqual(material.color.toArray(), original.color);
     assert.equal(material.color.getHexString(), 'c7081b');
-    assert.ok(material.metalness >= .35 && material.metalness <= .48, 'paint should retain a colored diffuse layer');
-    assert.ok(material.roughness >= .22 && material.roughness <= .28, 'base reflections should describe the curved body');
+    assert.ok(material.metalness >= .70 && material.metalness <= .85, 'metallic paint must retain some colored diffuse response');
+    assert.ok(material.roughness >= .13 && material.roughness <= .18, 'polished reflections need a nonzero antialiasing floor');
     assert.equal(material.clearcoat, 1);
-    assert.ok(material.clearcoatRoughness >= .09 && material.clearcoatRoughness <= .13);
-    assert.ok(material.envMapIntensity > original.envMapIntensity && material.envMapIntensity <= 1.4);
+    assert.ok(material.clearcoatRoughness >= .055 && material.clearcoatRoughness <= .08);
+    assert.ok(material.envMapIntensity >= 1.7 && material.envMapIntensity <= 2.0);
   }
 });
 
@@ -137,7 +137,7 @@ test('shared paint is refined once and repeated calls never compound values or r
   try {
     refineCarMaterials(group);
     const first = materialState(paint);
-    assert.ok(paint.envMapIntensity > 1.25 && paint.envMapIntensity <= 1.4);
+    assert.ok(paint.envMapIntensity >= 1.7 && paint.envMapIntensity <= 2.0);
     refineCarMaterials(group); refineCarMaterials(group);
     assert.deepEqual(materialState(paint), first);
     assert.ok(group.children.every(mesh => mesh.material === paint && mesh.geometry === geometry));

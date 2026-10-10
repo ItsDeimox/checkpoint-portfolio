@@ -5,18 +5,18 @@ import { roomVertex, smokeFragment, beamFragment } from './room-shaders.js';
 /** Broad studio sources define the paint, roof line and glass as real surfaces. */
 export function buildRoomLights(view) {
   RectAreaLightUniformsLib.init();
-  view.scene.add(new T.HemisphereLight(0xcbd4e2, 0x160c0e, .23));
-  view.key = new T.DirectionalLight(0xfff1e8, 2.7);
+  view.scene.add(new T.HemisphereLight(0xcbd4e2, 0x160c0e, .105));
+  view.key = new T.DirectionalLight(0xfff1e8, 1.7);
   view.key.position.set(-3.5, 8, -4); view.key.castShadow = true;
   Object.assign(view.key.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8, near: .5, far: 26 });
   view.key.shadow.bias = -.00025; view.key.shadow.normalBias = .012;
   view.key.shadow.mapSize.set(1536, 1536); view.scene.add(view.key);
   const sources = [
-    [0xf8f6ff, 17, 8, 1.1, [-2, 6.1, -3.5], [0, .65, 0]],
-    [0xfff2eb, 10, 5, .85, [4, 4.7, -2], [0, .8, 0]],
-    [0xff0923, 10, 8, .7, [0, 2.8, 4], [0, .65, 0]],
-    [0xff1a25, 7.5, 5, 1.3, [-5, 2.8, -.5], [0, .7, 0]],
-    [0xc1d8ff, 6.5, 1.6, 4, [6.5, 3.8, 0], [0, 1.1, 0]],
+    [0xf8f6ff, 20, 7.2, .75, [-2, 6.1, -3.5], [0, .65, 0]],
+    [0xfff2eb, 5, 4.5, .6, [4, 4.7, -2], [0, .8, 0]],
+    [0xff0923, 12, 7, .5, [0, 2.8, 4], [0, .65, 0]],
+    [0xff1a25, 5.5, 5, .7, [-5, 2.8, -.5], [0, .7, 0]],
+    [0xc1d8ff, 8, 1.2, 3.8, [6.5, 3.8, 0], [0, 1.1, 0]],
   ];
   for (const [color, intensity, width, height, position, target] of sources) {
     const light = new T.RectAreaLight(color, intensity, width, height);
@@ -34,12 +34,26 @@ export function buildRoomLights(view) {
 
 /** Add softbox shapes to the bounded PMREM used by reflective materials. */
 export function dressStudioEnvironment(room) {
+  if (room.userData.dxtDarkStudio) return;
+  room.userData.dxtDarkStudio = true;
+  // Dim inherited white fill before adding the authored reflection strips.
+  // This uses the existing one-time PMREM capture, not another render pass.
+  const materials = new Set();
+  room.traverse(object => {
+    if (object.isLight) object.intensity *= .5;
+    for (const material of [object.material].flat()) {
+      if (!material || materials.has(material)) continue;
+      materials.add(material);
+      if (material.isMeshStandardMaterial) material.color.multiplyScalar(.5);
+      if (typeof material.emissiveIntensity === 'number') material.emissiveIntensity *= .45;
+    }
+  });
   const geometry = new T.PlaneGeometry(1, 1);
   for (const [color, width, height, position, target] of [
-    [[5.5, 5.8, 6.5], 9, 1.5, [-2, 6, -4], [0, 1, 0]],
-    [[2.8, 3.7, 5.2], 1.2, 5, [7, 3, 0], [0, 1, 0]],
-    [[3.8, .018, .045], 8, .6, [0, 3, 6], [0, 1, 0]],
-    [[1.7, .009, .02], 3, 2, [-7, 2, 0], [0, 1, 0]],
+    [[7.8, 7.7, 8], 7.2, .75, [-2, 6, -4], [0, 1, 0]],
+    [[3.5, 4.8, 6.8], 1, 4.5, [7, 3, 0], [0, 1, 0]],
+    [[5.4, .018, .045], 7.5, .45, [0, 3, 6], [0, 1, 0]],
+    [[2.1, .009, .02], 3, 1.1, [-7, 2, 0], [0, 1, 0]],
   ]) {
     const material = new T.MeshBasicMaterial({ color: new T.Color(...color), side: T.DoubleSide, toneMapped: false });
     const card = new T.Mesh(geometry, material);

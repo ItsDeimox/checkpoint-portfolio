@@ -1,12 +1,15 @@
 /** Values shared by the small visual controls and the GPU uniform boundary. */
+export const VISUAL_PRESET_VERSION = 'dark-metal-v1';
+
+// User-supplied preset: contrast is 1.16 * 1.5.
 export const DEFAULT_VISUAL_SETTINGS = Object.freeze({
-  exposure: 1.06,
-  bloom: .32,
-  depthOfField: 1,
-  motionBlur: .55,
-  lens: .45,
-  contrast: 1.04,
-  sharpness: .16,
+  exposure: 1.15,
+  bloom: .65,
+  depthOfField: 1.5,
+  motionBlur: 1,
+  lens: 1,
+  contrast: 1.74,
+  sharpness: .35,
 });
 
 export const VISUAL_CONTROLS = Object.freeze([
@@ -15,7 +18,7 @@ export const VISUAL_CONTROLS = Object.freeze([
   { key: 'depthOfField', label: 'Depth of field', min: 0, max: 1.5, step: .05 },
   { key: 'motionBlur', label: 'Motion blur', min: 0, max: 1, step: .05 },
   { key: 'lens', label: 'Lens response', min: 0, max: 1, step: .05 },
-  { key: 'contrast', label: 'Contrast', min: .9, max: 1.16, step: .01 },
+  { key: 'contrast', label: 'Contrast', min: .9, max: 2, step: .01 },
   { key: 'sharpness', label: 'Sharpness', min: 0, max: .35, step: .01 },
 ].map(Object.freeze));
 
@@ -31,4 +34,13 @@ export function normalizeVisualSettings(input = {}, fallback = DEFAULT_VISUAL_SE
     const value = Number.isFinite(source[key]) ? source[key] : inherited;
     return [key, Math.min(max, Math.max(min, value))];
   }));
+}
+
+/** Migrate the old contrast ceiling without erasing other saved choices. */
+export function restoreVisualSettings(stored) {
+  const restored = normalizeVisualSettings(stored?.visual);
+  if (stored?.visualPreset !== VISUAL_PRESET_VERSION && stored?.visual?.contrast === 1.16) {
+    restored.contrast = DEFAULT_VISUAL_SETTINGS.contrast;
+  }
+  return restored;
 }

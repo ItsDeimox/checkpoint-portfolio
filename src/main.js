@@ -1,7 +1,7 @@
 import { home, ROOM_PANELS, renderPanelOptions } from './pages/home-room.js';
 import { renderRoomHeader, renderRoomFooter } from './ui/room-shell.js';
 import { panelFromPath, pathForPanel } from './ui/room-navigation.js';
-import { normalizeVisualSettings, DEFAULT_VISUAL_SETTINGS } from './scene/room-visual-settings.js';
+import { normalizeVisualSettings, DEFAULT_VISUAL_SETTINGS, VISUAL_PRESET_VERSION, restoreVisualSettings } from './scene/room-visual-settings.js';
 
 const main = document.querySelector('#main');
 const header = document.querySelector('#header');
@@ -12,7 +12,8 @@ try { stored = JSON.parse(localStorage.getItem('dxt-settings') || '{}'); } catch
 const settings = {
   quality: ['auto', 'low', 'high'].includes(stored?.quality) ? stored.quality : 'auto',
   paused: Boolean(stored?.paused), sound: false,
-  visual: normalizeVisualSettings(stored?.visual),
+  visual: restoreVisualSettings(stored),
+  visualPreset: VISUAL_PRESET_VERSION,
 };
 const save = () => { try { localStorage.setItem('dxt-settings', JSON.stringify(settings)); } catch {} };
 let scene = null, phase = 'loading', selectedPanel = null, navigation = 0, restoreFocus = null;
