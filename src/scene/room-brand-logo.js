@@ -1,7 +1,9 @@
 import * as T from 'three';
+import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 export const BRAND_MODEL_URL = '/assets/models/DXTlogoPrinted.glb';
+const BRAND_REST_POSE = Object.freeze({pitch:-.12,yaw:Math.PI+.27});
 
 export function disposeBrandModel(root) {
   const geometries=new Set(), materials=new Set(), textures=new Set();
@@ -52,20 +54,23 @@ export function createBrandMount(model) {
   mount.scale.setScalar(1/size.y);
   // The printed/bevelled side faces -Z in mesh coordinates. Use a rotation,
   // not negative scaling, so D and T are neither mirrored nor inverted.
-  mount.rotation.set(-.06,Math.PI+.14,0);
+  mount.rotation.set(BRAND_REST_POSE.pitch,BRAND_REST_POSE.yaw,0);
   model.traverse(object=>{
     if(!object.isMesh)return;
     object.castShadow=false;object.receiveShadow=false;
     for(const material of [object.material].flat()){
       if(!material.isMeshStandardMaterial)continue;
       const face=material.name==='Material.002';
-      material.metalness=face?.58:.87;
-      material.roughness=face?.23:.18;
-      material.envMapIntensity=face?1.45:1.7;
-      if(face)material.normalScale?.setScalar(.22);
+      // Silver face and lighter gunmetal bevels reveal the authored thickness.
+      // Keep some micro-roughness so the small header does not shimmer.
+      material.color.setHex(face?0xdbe1e9:0x727e8c);
+      material.metalness=face?.94:.97;
+      material.roughness=face?.16:.19;
+      material.envMapIntensity=face?2.1:1.85;
+      if(face)material.normalScale?.setScalar(.28);
       if(material.isMeshPhysicalMaterial){
         material.ior=1.5;material.specularColor.setRGB(1,1,1);
-        material.clearcoat=.55;material.clearcoatRoughness=.12;
+        material.clearcoat=face?.45:.32;material.clearcoatRoughness=face?.085:.11;
       }
     }
   });
@@ -85,9 +90,14 @@ export class RoomBrandLogo {
     this.renderer=renderer;this.getAnchor=getAnchor;this.ready=false;this.disposed=false;
     this.scene=new T.Scene();this.mount=createBrandMount(model);this.scene.add(this.mount);
     this.camera=new T.OrthographicCamera(-1,1,.6,-.6,.01,20);this.camera.position.z=5;
-    const key=new T.DirectionalLight(0xf4f6ff,3.6);key.position.set(-2,4,5);
-    const rim=new T.DirectionalLight(0xff132c,2);rim.position.set(4,.5,-3);
-    this.scene.add(key,rim,new T.HemisphereLight(0xf8f9ff,0x221518,.7));
+    // These three sources affect only the brand, never the showroom lighting.
+    // Close rectangular softboxes reveal relief even on the flat printed face.
+    RectAreaLightUniformsLib.init();
+    const key=new T.RectAreaLight(0xf4f6ff,16,2.2,.32);key.position.set(.45,.3,1.2);key.lookAt(0,0,0);
+    const rim=new T.RectAreaLight(0xff243b,7,.25,1.6);rim.position.set(.9,-.35,.7);rim.lookAt(0,0,0);
+    this.scene.add(key,rim,new T.HemisphereLight(0xe8f0ff,0x161016,.28));
+    this.scene.environmentRotation.set(.08,.65,0);
+    this.scene.environmentIntensity=.38;
     this.target=new T.WebGLRenderTarget(2,2,{
       type:renderer.extensions.has('EXT_color_buffer_float')?T.HalfFloatType:T.UnsignedByteType,
       minFilter:T.LinearFilter,magFilter:T.LinearFilter,depthBuffer:true,stencilBuffer:false,
@@ -147,7 +157,7 @@ export class RoomBrandLogo {
       this.target.setSize(Math.max(2,Math.min(384,Math.ceil(rect.width*ratio*2))),Math.max(2,Math.min(256,Math.ceil(rect.height*ratio*2))));
     }
     const {x,y,w,h}=this.layout;
-    this.mount.rotation.set(-.06+Math.max(-.04,Math.min(.04,pitch)),Math.PI+.14+Math.max(-.10,Math.min(.10,yaw)),0);
+    this.mount.rotation.set(BRAND_REST_POSE.pitch+Math.max(-.04,Math.min(.04,pitch)),BRAND_REST_POSE.yaw+Math.max(-.10,Math.min(.10,yaw)),0);
     const target=renderer.getRenderTarget(),autoClear=renderer.autoClear,scissorTest=renderer.getScissorTest();
     renderer.getViewport(this.savedViewport);renderer.getScissor(this.savedScissor);
     renderer.getClearColor(this.savedColor);const alpha=renderer.getClearAlpha();
