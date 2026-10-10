@@ -1,3 +1,4 @@
+import { DEFAULT_TRACK, normalizeMusicSettings } from './scene/room-music-settings.js';
 import { home, ROOM_PANELS, renderPanelOptions } from './pages/home-room.js';
 import { renderRoomHeader, renderRoomFooter } from './ui/room-shell.js';
 import { panelFromPath, pathForPanel } from './ui/room-navigation.js';
@@ -12,10 +13,12 @@ try { stored = JSON.parse(localStorage.getItem('dxt-settings') || '{}'); } catch
 const settings = {
   quality: ['auto', 'low', 'high'].includes(stored?.quality) ? stored.quality : 'auto',
   paused: Boolean(stored?.paused), sound: false,
+  music: normalizeMusicSettings(stored?.music),
   visual: restoreVisualSettings(stored),
   visualPreset: VISUAL_PRESET_VERSION,
 };
 const save = () => { try { localStorage.setItem('dxt-settings', JSON.stringify(settings)); } catch {} };
+let musicState = {enabled:false,status:'idle',title:DEFAULT_TRACK.title,error:null,hasTrack:Boolean(DEFAULT_TRACK.url)};
 let scene = null, phase = 'loading', selectedPanel = null, navigation = 0, restoreFocus = null;
 
 document.body.dataset.page = 'home';
@@ -29,13 +32,34 @@ const mobileContext = main.querySelector('.room-mobile-context');
 
 function updateHeader() {
   const open = header.querySelector('.room-settings')?.open;
+  const musicOpen = header.querySelector('.room-music-controls')?.open;
   const focusedId = header.contains(document.activeElement) ? document.activeElement.id : null;
   header.innerHTML = renderRoomHeader(settings);
   header.querySelector('#quality').disabled = phase === 'loading';
   if (open) header.querySelector('.room-settings').open = true;
+  if (musicOpen) header.querySelector('.room-music-controls').open = true;
+  updateMusicUI();
   if (focusedId) header.querySelector(`#${focusedId}`)?.focus({ preventScroll: true });
 }
 updateHeader();
+
+function updateMusicUI() {
+  const sound=header.querySelector('#sound-toggle');
+  if(sound){
+    sound.disabled=phase!=='ready';sound.setAttribute('aria-pressed',String(musicState.enabled));
+    sound.setAttribute('aria-label',musicState.enabled?'Pause music':'Play music');
+    sound.title=musicState.error||musicState.title;
+    sound.dataset.musicState=musicState.status;
+  }
+  const spin=header.querySelector('#brand-spin');
+  if(spin)spin.disabled=phase!=='ready'||Boolean(scene&&!scene.brandLogo?.ready);
+  for(const button of header.querySelectorAll('[data-music-choose],[data-music-default]'))button.disabled=phase!=='ready';
+  const title=header.querySelector('[data-music-title]');
+  if(title&&title.textContent!==musicState.title)title.textContent=musicState.title;
+  const status=header.querySelector('[data-music-status]');
+  const message=musicState.error||(musicState.status==='playing'?'Playing':musicState.status==='loading'?'Loading track...':'Press Sound to play.');
+  if(status&&status.textContent!==message)status.textContent=message;
+}
 
 function setLocation(index, mode = 'push') {
   const path = index === null ? '/' : pathForPanel(index);
@@ -114,6 +138,7 @@ function unavailable(error) {
   host.classList.remove('scene-ready', 'camera-travelling');
   host.classList.add('scene-unavailable');
   host.dataset.sceneStatus = 'unavailable';
+  updateMusicUI();
   if (selectedPanel !== null) revealOptions(selectedPanel, navigation);
 }
 
@@ -134,6 +159,9 @@ function onReady() {
 document.addEventListener('click', async event => {
   const target = event.target instanceof Element ? event.target : null;
   if (!target || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  if (target.closest('[data-spin-logo]')) {event.preventDefault();scene?.spinLogo();return;}
+  if (target.closest('[data-music-choose]')) {header.querySelector('#music-file')?.click();return;}
+  if (target.closest('[data-music-default]')) {await scene?.useDefaultMusic();return;}
   const open = target.closest('[data-open-panel]');
   if (open) { event.preventDefault(); openPanel(open.dataset.openPanel, open); return; }
   const fallback = target.closest('[data-fallback-panel]');
@@ -159,13 +187,23 @@ document.addEventListener('click', async event => {
     settings.paused = !settings.paused;
     save(); scene?.setSettings(); updateHeader();
   } else if (target.closest('#sound-toggle')) {
-    try { settings.sound = await scene?.setSound(!settings.sound) || false; }
-    catch { settings.sound = false; }
-    updateHeader();
+    // Intent changes synchronously. Late play promises never overwrite a newer click.
+    if(!musicState.hasTrack){header.querySelector('#music-file')?.click();return;}
+    settings.sound = !settings.sound;
+    try {await scene?.setSound(settings.sound);}
+    catch {settings.sound=false;musicState={...musicState,enabled:false,status:'error',error:'Unable to play music. Try again.'};updateMusicUI();}
   }
 });
 
 header.addEventListener('input', event => {
+  const music = event.target.closest?.('[data-music-setting]');
+  if (music) {
+    const key=music.dataset.musicSetting;
+    settings.music=normalizeMusicSettings({...settings.music,[key]:Number(music.value)});
+    const output=header.querySelector(`[data-music-value="${key}"]`);
+    if(output)output.textContent=`${Math.round(settings.music[key]*100)}%`;
+    scene?.setMusicSettings(settings.music);return;
+  }
   const input = event.target.closest?.('[data-visual-setting]');
   if (!input) return;
   const key = input.dataset.visualSetting;
@@ -174,8 +212,13 @@ header.addEventListener('input', event => {
   if (output) output.textContent = settings.visual[key].toFixed(2);
   scene?.setVisualSettings(settings.visual);
 });
-header.addEventListener('change', event => {
-  if (event.target.matches?.('[data-visual-setting]')) save();
+header.addEventListener('change', async event => {
+  if (event.target.matches?.('[data-visual-setting],[data-music-setting]')) save();
+  if (event.target.id==='music-file') {
+    const file=event.target.files?.[0];event.target.value='';if(!file)return;
+    try {const enabled=settings.sound;const selected=scene?.useLocalMusic(file);if(!enabled)await scene?.setSound(true);else await selected;}
+    catch(error) {const status=header.querySelector('[data-music-status]');if(status)status.textContent=error.message;}
+  }
 });
 options.addEventListener('focusin', event => {
   if (!options.classList.contains('is-world-content')) return;
@@ -222,6 +265,7 @@ async function start() {
     const { HeroScene } = await import('./render/showroom.bundle.js');
     scene = new HeroScene(canvas, settings, {
       onPanelRequest: openPanel, onResetRequest: closePanel, onReady, onUnavailable: unavailable,
+      onMusicState(state) {musicState=state;settings.sound=state.enabled;updateMusicUI();},
       onPanelAction(action) {
         if (selectedPanel === null) return;
         if (action.kind === 'back') { closePanel(); return; }

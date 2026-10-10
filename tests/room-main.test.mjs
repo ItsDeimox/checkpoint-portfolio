@@ -6,6 +6,7 @@ import { transform } from 'esbuild';
 import * as homePage from '../src/pages/home-room.js';
 import * as roomShell from '../src/ui/room-shell.js';
 import * as navigation from '../src/ui/room-navigation.js';
+import * as musicSettings from '../src/scene/room-music-settings.js';
 import * as visualSettings from '../src/scene/room-visual-settings.js';
 
 // Run the real entrypoint and real HTML/data renderers. Only browser transport,
@@ -148,7 +149,7 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
     constructor(canvas, settings, callbacks) {
       scene = this;
       Object.assign(this, { canvas, settings, callbacks, ready: false, disposed: false, lost: false,
-        cameraRig: { mode: 'overview' }, approaches: [], resets: [], startup: deferred() });
+        brandLogo: {ready:true}, cameraRig: { mode: 'overview' }, approaches: [], resets: [], startup: deferred() });
       this.readyPromise = this.startup.promise;
     }
     approach(index, complete) { this.cameraRig.mode = 'approaching'; this.approaches.push({ index, complete }); return this.ready; }
@@ -158,7 +159,9 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
     focusPanel(index) { calls.push({ focusPanel: index }); }
     setVisualSettings(values) { calls.push({ visual: { ...values } }); }
     setSettings() { calls.push({ settings: true }); }
-    setSound(value) { return Promise.resolve(value); }
+    setSound(value) { this.callbacks.onMusicState({enabled:value,status:value?'playing':'paused',title:'Track',hasTrack:true,error:null});return Promise.resolve(value); }
+    spinLogo() {calls.push({spin:true});return true;}
+    setMusicSettings(values) {calls.push({music:{...values}});}
     sleep() { calls.push({ sleep: true }); }
     wake() { calls.push({ wake: true }); }
     inspect() { return { ready: this.ready }; }
@@ -166,7 +169,7 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
   }
   const dependencies = {
     './pages/home-room.js': homePage, './ui/room-shell.js': roomShell,
-    './ui/room-navigation.js': navigation, './scene/room-visual-settings.js': visualSettings,
+    './ui/room-navigation.js': navigation, './scene/room-visual-settings.js': visualSettings, './scene/room-music-settings.js': musicSettings,
   };
   runInNewContext(source.code, {
     document, window, location, history, localStorage,
@@ -334,4 +337,19 @@ test('page lifecycle sleeps a cached scene and disposes only a noncached exit', 
   assert.equal(f.scene.disposed, false);
   fire(f.window, 'pageshow'); assert.equal(f.calls.at(-1).wake, true);
   fire(f.window, 'pagehide', { persisted: false }); assert.equal(f.scene.disposed, true);
+});
+
+test('logo click is independent of Home and never resets an open panel',async()=>{
+ const f=harness();await f.ready();fire(f.get('[data-open-panel="3"]'),'click');f.arrive();
+ const path=f.location.pathname,resets=f.scene.resets.length;
+ fire(f.get('[data-spin-logo]'),'click');assert.equal(f.calls.at(-1).spin,true);assert.equal(f.location.pathname,path);assert.equal(f.scene.resets.length,resets);assert.equal(f.scene.contentPanel,3);
+});
+test('music controls keep the active slider, persist only controls and render file names as text',async()=>{
+ const f=harness();await f.ready();const slider=f.get('#music-volume');slider.focus();slider.value='.72';fire(slider,'input');
+ assert.equal(f.document.activeElement,slider);assert.equal(f.calls.at(-1).music.volume,.72);assert.equal(f.get('[data-music-value="volume"]').textContent,'72%');
+ fire(slider,'change');assert.equal(f.writes.at(-1).music.volume,.72);
+ f.scene.callbacks.onMusicState({enabled:true,status:'playing',title:'<img src=x onerror=alert(1)>',hasTrack:true,error:null});
+ assert.equal(f.get('[data-music-title]').textContent,'<img src=x onerror=alert(1)>');assert.equal(f.get('[data-music-title]').children.length,0);
+ assert.equal(f.get('#sound-toggle').getAttribute('aria-pressed'),'true');fire(f.get('#sound-toggle'),'click');await settle();assert.equal(f.get('#sound-toggle').getAttribute('aria-pressed'),'false');
+ assert.equal(f.writes.at(-1).music.title,undefined);
 });

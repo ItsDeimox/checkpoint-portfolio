@@ -631,3 +631,12 @@ body[data-page="home"]:has(.room-hero.panel-content-open) .room-bottom-center { 
 @media (max-height: 550px) {
   body[data-page="home"] .room-panel-options { max-height: calc(100svh - 80px); max-height: calc(100dvh - 80px); }
 }
+
+/* Intentional logo action and compact audio controls keep the existing header layout. */
+body[data-page="home"] button.room-brand { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+body[data-page="home"] button.room-brand:disabled { cursor: default; }
+body[data-page="home"] .room-music-controls { margin: 16px 0 4px; border-bottom: 1px solid #a08c8624; padding-bottom: 10px; }
+body[data-page="home"] .room-music-controls > summary { cursor: pointer; min-height: 30px; color: #b9aba6; font: 500 10px var(--heading); letter-spacing: 1.6px; text-transform: uppercase; }
+body[data-page="home"] .room-music-controls .room-track-title { color: #eee5e3; overflow-wrap: anywhere; margin: 5px 0 0; }
+body[data-page="home"] .room-music-controls [data-music-status] { min-height: 18px; margin: 4px 0 8px; }
+body[data-page="home"] .room-sound[data-music-state="loading"] .room-equalizer { opacity: .4; }
