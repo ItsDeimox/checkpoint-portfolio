@@ -5,7 +5,7 @@ body.section-active>#main{position:relative;height:auto;min-height:100svh;overfl
 body.section-active>#footer{display:none}
 body.section-active .room-header-bar{background:linear-gradient(#070709f5,#070709cc,transparent)}
 body.section-active .room-motto{display:none}
-body.section-active .room-brand-logo{opacity:1!important}
+
 body.portal-travelling .room-panel-targets,body.portal-travelling .room-mobile-context,body.portal-travelling>#footer{pointer-events:none;opacity:0}
 body.portal-travelling .room-header-nav .room-enter,body.portal-travelling .room-brand{pointer-events:none;opacity:.35}
 .section-page{min-height:100svh;background:radial-gradient(ellipse at 88% 17%,#53101833,transparent 49%),#070709;color:#eae5e4;padding:120px max(6vw,24px) 0}
@@ -59,3 +59,8 @@ body.section-returning .section-page{animation:section-depart .24s ease-out both
 body.section-return-pending .section-page::after{content:'Preparing return to showroom…';position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 18px;background:#070709ee;border:1px solid #70303e;color:#ddd0d4;font:500 12px var(--heading);letter-spacing:1px}
 @keyframes section-depart{from{opacity:1}to{opacity:0}}
 @media(prefers-reduced-motion:reduce){body.section-returning .section-page{animation:none;opacity:0}}
+
+/* One actual 3D wordmark persists over both the showroom and native pages. */
+.dxt-persistent-brand{position:fixed;z-index:60;pointer-events:none;display:block}
+.dxt-persistent-brand[hidden],body.intro-pending .dxt-persistent-brand{display:none!important}
+body.persistent-brand-ready .room-brand-logo{opacity:0!important}

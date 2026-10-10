@@ -11,7 +11,7 @@ export class HeroScene extends ShowroomScene {
   async initialize(){
     this.music=this.callbacks.music??null;
     this.logoSpin = new LogoSpin();
-    this.brandModelTask=loadBrandModel(this.workController.signal).then(model=>{
+    this.brandModelTask=this.callbacks.externalBrand?Promise.resolve(null):loadBrandModel(this.workController.signal).then(model=>{
       this.brandModel=model;return model;
     }).catch(error=>{this.brandError=error.message;return null;});
     return super.initialize();
@@ -34,7 +34,7 @@ export class HeroScene extends ShowroomScene {
   bind(){
     super.bind();
     const header=document.querySelector('#header');
-    if(header && typeof MutationObserver!=='undefined'){
+    if(!this.callbacks.externalBrand && header && typeof MutationObserver!=='undefined'){
       this.brandObserver=new MutationObserver(()=>{this.brandLogo?.invalidateLayout();this.wake();});
       this.brandObserver.observe(header,{childList:true});
     }

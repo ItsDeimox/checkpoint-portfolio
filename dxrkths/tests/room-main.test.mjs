@@ -245,9 +245,9 @@ test('section links and browser history resolve pages without an in-world modal'
  assert.equal(f.get('#section-title').textContent,'Future Projects');assert.equal(f.visits.length,visits);
  f.pop('/');assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();assert.equal(f.get('#room-section-page').hidden,true);assert.equal(f.get('.room-hero').hidden,false);
 });
-test('direct links deliver the authored page without downloading the GPU scene',async()=>{
+test('direct links may download shared logo code but never construct the GPU showroom',async()=>{
  const f=harness({path:'/contact'});await settle();assert.equal(f.get('#section-title').textContent,'Socials & Contact');
- assert.equal(f.calls.filter(c=>c.download).length,0);assert.equal(f.scene,undefined);
+ assert.equal(f.calls.filter(c=>c.download).length,1);assert.equal(f.scene,undefined);
  fire(f.get('[data-return-showroom]'),'click');await f.ready();assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();assert.equal(f.get('.room-hero').hidden,false);
  assert.equal(f.calls.filter(c=>c.download).length,1);
 });
