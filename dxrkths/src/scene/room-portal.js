@@ -2,6 +2,7 @@ import * as T from 'three';
 import {PORTAL_UNIFORMS,PORTAL_FUNCTIONS} from './room-portal-shader.js';
 import {PortalEffects} from './room-portal-effects.js';
 import {PortalShutterPass} from './room-portal-optics.js';
+import {RoomCamera} from './room-camera.js';
 export const PORTAL_APPROACH_SECONDS=1.2,PORTAL_FLIGHT_SECONDS=1.65;
 const smooth=x=>{x=T.MathUtils.clamp(x,0,1);return x*x*x*(x*(x*6-15)+10);};
 
@@ -46,7 +47,7 @@ export function configurePortal(panel){
 /** One journey owns only the camera while active. No second RAF or WebGL target. */
 export class BannerPortal {
  constructor(view){
-  this.view=view;this.active=false;this.interior=false;this.elapsed=0;this.stage='idle';
+  this.view=view;this.active=false;this.returning=false;this.interior=false;this.elapsed=0;this.stage='idle';
   view.panels.forEach(configurePortal);
   this.effects=new PortalEffects(view.scene);this.shutter=new PortalShutterPass();
   const first=view.panels[0];
@@ -59,7 +60,7 @@ export class BannerPortal {
   this.fullScene=new T.Scene();this.fullScene.background=new T.Color(0x050204);
   this.quad=new T.Mesh(new T.PlaneGeometry(2,2),this.fullMaterial);this.quad.frustumCulled=false;this.fullScene.add(this.quad);
   const resize=view.cameraRig.resize.bind(view.cameraRig);
-  view.cameraRig.resize=width=>{if(this.active){view.cameraRig.width=width;return;}resize(width);};
+  view.cameraRig.resize=width=>{if(this.active){view.cameraRig.width=width;if(this.returning)this.returnViewportDirty=true;return;}resize(width);};
   this.originalUpdate=view.cameraRig.update.bind(view.cameraRig);
   view.cameraRig.update=dt=>this.active?this.update(dt):this.originalUpdate(dt);
  }
@@ -84,8 +85,8 @@ export class BannerPortal {
  enter(index,onComplete){
   if(this.active||!this.view.ready)return false;
   const v=this.view,panel=v.panels[index];if(!panel)return false;
-  this.panel=panel;this.basis=portalBasis(panel);this.saved={position:v.camera.position.clone(),rotation:v.camera.quaternion.clone(),focus:v.cameraRig.focusTarget.clone(),fov:v.camera.fov};
-  this.active=true;this.interior=false;this.stage='approach';this.elapsed=0;this.age=0;this.onComplete=onComplete;
+  this.panel=panel;this.basis=portalBasis(panel);this.saved={position:v.camera.position.clone(),rotation:v.camera.quaternion.clone(),focus:v.cameraRig.focusTarget.clone(),fov:v.camera.fov,width:v.cameraRig.width,aspect:v.camera.aspect,yaw:v.cameraRig.yaw,pitch:v.cameraRig.pitch};
+  this.active=true;this.returning=false;this.interior=false;this.stage='approach';this.elapsed=0;this.age=0;this.onComplete=onComplete;
   this.effects.start(this.basis);this.shutter.reset();
   v.turntable?.end(false);v.release();v.clearHover();v.hidePanelContent();v.pendingPick=v.lastPointer=null;
   Object.assign(this.fullMaterial.uniforms,panel.portalUniforms,{artwork:panel.material.uniforms.artwork,projection:panel.material.uniforms.projection});
@@ -94,9 +95,84 @@ export class BannerPortal {
   v.cameraRig.moveTo({position:pose.position,target:this.basis.center,fov:pose.fov},'portal',PORTAL_APPROACH_SECONDS,()=>{this.stage='flight';this.elapsed=0;});
   v.optics.resetHistory();v.wake();return true;
  }
+ /** Start behind the doorway and rewind the same camera path and shader clock. */
+ returnToShowroom(index,onComplete){
+  const v=this.view,panel=v.panels[index];
+  if(this.active||this.disposed||!v.ready||v.lost||!panel)return false;
+  this.panel=panel;this.basis=portalBasis(panel);this.onComplete=onComplete;
+  this.active=true;this.returning=true;this.interior=true;this.stage='flight';
+  this.elapsed=0;this.age=PORTAL_APPROACH_SECONDS+PORTAL_FLIGHT_SECONDS;
+  this.returnViewportDirty=false;this.returnRebased=false;
+  this.prepareReturnCurve();this.saved=this.returnHome;
+  this.effects.start(this.basis);this.shutter.reset();
+  v.turntable?.end(false);v.release();v.clearHover();v.hidePanelContent();v.pendingPick=v.lastPointer=null;
+  v.cameraRig.transition=null;v.cameraRig.panel=null;v.cameraRig.mode='portal';
+  Object.assign(this.fullMaterial.uniforms,panel.portalUniforms,{artwork:panel.material.uniforms.artwork,projection:panel.material.uniforms.projection});
+  const pose=portalTravelPose(this.basis,1);
+  v.camera.position.copy(pose.position);v.camera.quaternion.copy(pose.rotation);v.cameraRig.setFov(pose.fov);
+  panel.portalUniforms.portalProgress.value=1;v.camera.updateMatrixWorld(true);
+  this.syncReturnEffects();v.optics.resetHistory();v.wake();return true;
+ }
+ prepareReturnCurve(){
+  const v=this.view,camera=v.camera.clone(),rig=new RoomCamera(camera,v.cameraRig.width),saved=this.saved;
+  // A changed viewport needs its own safe overview framing, not an old mobile lens.
+  if(saved&&saved.width===rig.width&&Math.abs(saved.aspect-camera.aspect)<1e-8){
+   camera.position.copy(saved.position);camera.quaternion.copy(saved.rotation);rig.setFov(saved.fov);
+   rig.yaw=saved.yaw??0;rig.pitch=saved.pitch??0;rig.focusTarget.copy(saved.focus);
+  }
+  this.returnHome={position:camera.position.clone(),rotation:camera.quaternion.clone(),fov:camera.fov,
+   focus:rig.focusTarget.clone(),width:rig.width,aspect:camera.aspect,yaw:rig.yaw,pitch:rig.pitch};
+  const dock=portalTravelPose(this.basis,0);
+  rig.moveTo({position:dock.position,target:this.basis.center,fov:dock.fov},'portal',PORTAL_APPROACH_SECONDS);
+  this.reverseRig=rig;this.reverseCurve=rig.transition;
+ }
+ updateReturn(dt){
+  const v=this.view,u=this.panel.portalUniforms;
+  if(v.reduced.matches){this.finishReturn();return false;}
+  if(this.returnViewportDirty){
+   this.returnViewportDirty=false;this.prepareReturnCurve();this.saved=this.returnHome;
+   if(this.stage==='approach'){
+    const rig=this.reverseRig,home=this.returnHome;rig.camera.position.copy(v.camera.position);
+    rig.camera.quaternion.copy(v.camera.quaternion);rig.setFov(v.camera.fov);rig.focusTarget.copy(v.cameraRig.focusTarget);
+    const target=home.position.clone().add(new T.Vector3(0,0,-1).applyQuaternion(home.rotation));
+    rig.moveTo({position:home.position,target,fov:home.fov},'portal',Math.max(.001,PORTAL_APPROACH_SECONDS-this.elapsed));
+    rig.transition.endRotation.copy(home.rotation);rig.transition.endFocus.copy(home.focus);this.returnRebased=true;
+   }
+  }
+  this.elapsed+=dt;
+  if(this.stage==='flight'){
+   const progress=Math.max(0,1-this.elapsed/PORTAL_FLIGHT_SECONDS),pose=portalTravelPose(this.basis,progress);
+   v.camera.position.copy(pose.position);v.camera.quaternion.copy(pose.rotation);v.cameraRig.setFov(pose.fov);
+   v.cameraRig.focusTarget.copy(pose.position).addScaledVector(this.basis.forward,8);
+   this.age=PORTAL_APPROACH_SECONDS+progress*PORTAL_FLIGHT_SECONDS;u.portalProgress.value=progress;
+   this.interior=this.basis.toLocal(v.camera.position).z>=-v.camera.near*1.5;
+   if(progress<=1e-9){this.stage='approach';this.elapsed=0;}
+  }else{
+   const progress=Math.min(1,this.elapsed/PORTAL_APPROACH_SECONDS);this.age=PORTAL_APPROACH_SECONDS*(1-progress);
+   if(this.returnRebased)this.reverseRig.update(dt);
+   else{this.reverseCurve.elapsed=this.age;this.reverseRig.transition=this.reverseCurve;this.reverseRig.update(0);}
+   v.camera.position.copy(this.reverseRig.camera.position);v.camera.quaternion.copy(this.reverseRig.camera.quaternion);
+   v.cameraRig.setFov(this.reverseRig.camera.fov);v.cameraRig.focusTarget.copy(this.reverseRig.focusTarget);
+   if(progress>=1-1e-9){this.finishReturn();return true;}
+  }
+  v.camera.updateMatrixWorld(true);this.syncReturnEffects();return true;
+ }
+ syncReturnEffects(){
+  const v=this.view,u=this.panel.portalUniforms;u.portalAge.value=this.age;u.portalMix.value=smooth(this.age/.75);
+  u.portalLayerCount.value=v.settings.quality==='low'?12:v.settings.quality==='high'?24:18;
+  const state=this.effects.update(this.age,u.portalProgress.value,v.settings.quality,this.active,this.interior,v.reduced.matches);
+  u.portalSpeed.value=state.speed;u.portalOpening.value=state.opening;
+  this.fullMaterial.uniforms.portalInverseProjection.value.copy(v.camera.projectionMatrixInverse);
+  this.fullMaterial.uniforms.portalCameraWorld.value.copy(v.camera.matrixWorld);
+ }
+ finishReturn(){
+  if(!this.active||!this.returning)return;
+  const done=this.onComplete;this.saved=this.returnHome;this.cancel();done?.();
+ }
  update(delta){
   if(!this.active)return false;
   const dt=Number.isFinite(delta)?Math.max(0,Math.min(delta,.1)):0;
+  if(this.returning)return this.updateReturn(dt);
   const v=this.view,u=this.panel.portalUniforms;
   this.age+=dt;u.portalAge.value=this.age;u.portalMix.value=smooth(this.age/.75);
   u.portalLayerCount.value=v.settings.quality==='low'?12:v.settings.quality==='high'?24:18;
@@ -122,13 +198,13 @@ export class BannerPortal {
   const callback=this.onComplete;this.onComplete=null;callback?.();
  }
  cancel(){
-  const v=this.view;this.active=false;this.interior=false;this.stage='idle';this.onComplete=null;
+  const v=this.view;this.active=false;this.returning=false;this.interior=false;this.stage='idle';this.onComplete=null;
   this.effects.reset();this.shutter.reset();
   v.panels.forEach(p=>{p.portalUniforms.portalMix.value=0;p.portalUniforms.portalProgress.value=0;p.portalUniforms.portalSpeed.value=0;p.portalUniforms.portalOpening.value=0;});
   v.cameraRig.transition=null;v.cameraRig.panel=null;v.cameraRig.mode='overview';
-  if(this.saved){v.cameraRig.focusTarget.copy(this.saved.focus);v.camera.position.copy(this.saved.position);v.camera.quaternion.copy(this.saved.rotation);v.cameraRig.setFov(this.saved.fov);v.camera.updateMatrixWorld(true);}
+  if(this.saved){v.cameraRig.yaw=v.cameraRig.targetYaw=this.saved.yaw??0;v.cameraRig.pitch=v.cameraRig.targetPitch=this.saved.pitch??0;v.cameraRig.focusTarget.copy(this.saved.focus);v.camera.position.copy(this.saved.position);v.camera.quaternion.copy(this.saved.rotation);v.cameraRig.setFov(this.saved.fov);v.camera.updateMatrixWorld(true);}
   v.optics?.resetHistory();v.reflectionBudget?.invalidate();
  }
- dispose(){if(this.disposed)return;this.disposed=true;this.active=false;this.onComplete=null;this.effects.dispose();if(!this.attached)this.shutter.dispose();this.quad.geometry.dispose();this.fullMaterial.dispose();}
- inspect(){return {active:this.active,stage:this.stage,interior:this.interior,panel:this.panel?.index,depth:this.basis?this.basis.toLocal(this.view.camera.position).z:null,age:this.age??0,burstVisible:this.effects.group.visible,shutter:this.shutter.uniforms.uShutter.value,chromaticPixels:this.shutter.uniforms.uChromaticPixels.value};}
+ dispose(){if(this.disposed)return;this.disposed=true;this.active=false;this.returning=false;this.view.cameraRig.transition=null;this.onComplete=null;this.effects.dispose();if(!this.attached)this.shutter.dispose();this.quad.geometry.dispose();this.fullMaterial.dispose();}
+ inspect(){return {active:this.active,returning:this.returning,stage:this.stage,interior:this.interior,panel:this.panel?.index,depth:this.basis?this.basis.toLocal(this.view.camera.position).z:null,age:this.age??0,burstVisible:this.effects.group.visible,shutter:this.shutter.uniforms.uShutter.value,chromaticPixels:this.shutter.uniforms.uChromaticPixels.value};}
 }

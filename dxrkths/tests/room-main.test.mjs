@@ -32,7 +32,7 @@ class ElementStub {
   constructor(tagName, document) {
     this.tagName = tagName.toLowerCase(); this.ownerDocument = document;
     this.children = []; this.parentElement = null; this.attributes = new Map();
-    this.dataset = {}; this.style = {}; this.listeners = new Map(); this.inert = false;
+    this.dataset = {}; this.style = {setProperty(name,value){this[name]=value;}}; this.listeners = new Map(); this.inert = false;
     this._text = ''; this._html = ''; this.value = ''; this.scrollTop = 0;
     const classes = new Set();
     this.classList = {
@@ -165,6 +165,7 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
         reduced:{matches:false},brandLogo: {ready:true}, cameraRig: { mode: 'overview' }, approaches: [], resets: [], startup: deferred() });
       this.readyPromise = this.startup.promise;
     }
+    returnPortal(index,complete){this.returnCallback=complete;this.returnIndex=index;this.pageActive=false;calls.push({reverse:index});return true;}
     enterPortal(index, complete) {this.cameraRig.mode='portal';this.approaches.push({index,complete});calls.push({portal:index});return true;}
     cancelPortal(){this.cameraRig.mode='overview';calls.push({cancel:true});}
     parkSection(){this.pageActive=true;calls.push({park:true});}
@@ -242,12 +243,12 @@ test('section links and browser history resolve pages without an in-world modal'
  fire(f.get('[data-section-route="1"]'),'click');assert.equal(f.get('#section-title').textContent,'Groups & Games');
  assert.equal(f.scene.approaches.length,1);const visits=f.visits.length;f.pop('/projects');
  assert.equal(f.get('#section-title').textContent,'Future Projects');assert.equal(f.visits.length,visits);
- f.pop('/');assert.equal(f.get('#room-section-page').hidden,true);assert.equal(f.get('.room-hero').hidden,false);
+ f.pop('/');assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();assert.equal(f.get('#room-section-page').hidden,true);assert.equal(f.get('.room-hero').hidden,false);
 });
 test('direct links deliver the authored page without downloading the GPU scene',async()=>{
  const f=harness({path:'/contact'});await settle();assert.equal(f.get('#section-title').textContent,'Socials & Contact');
  assert.equal(f.calls.filter(c=>c.download).length,0);assert.equal(f.scene,undefined);
- fire(f.get('[data-return-showroom]'),'click');await f.ready();assert.equal(f.get('.room-hero').hidden,false);
+ fire(f.get('[data-return-showroom]'),'click');await f.ready();assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();assert.equal(f.get('.room-hero').hidden,false);
  assert.equal(f.calls.filter(c=>c.download).length,1);
 });
 test('failed WebGL still exposes all destination pages and music controls',async()=>{
@@ -271,4 +272,17 @@ test('page lifecycle keeps the soundtrack and scene ownership independent',async
  assert.ok(f.calls.some(c=>c.sleep));assert.ok(f.calls.some(c=>c.audioSuspend));assert.equal(f.scene.disposed,false);
  fire(f.window,'pageshow');fire(f.window,'pagehide',{persisted:false});assert.equal(f.scene.disposed,true);
  assert.ok(f.calls.some(c=>c.audioClose));
+});
+
+
+test('entrypoint routes return links through the animation and a second Escape skips safely',async()=>{
+ const f=harness();await f.ready();fire(f.get('[data-open-panel="2"]'),'click');f.arrive();
+ fire(f.document,'keydown',{key:'Escape'});assert.equal(f.scene.returnIndex,2);assert.equal(f.inspect().section.returning,true);
+ const late=f.scene.returnCallback;fire(f.document,'keydown',{key:'Escape'});assert.equal(f.inspect().section.returning,false);
+ late();assert.equal(f.get('#room-section-page').hidden,true);assert.equal(f.location.pathname,'/');
+});
+test('direct route lazy initialization and Home both use the same reverse callback',async()=>{
+ const f=harness({path:'/berserk'});await settle();fire(f.get('[data-reset-room]'),'click');
+ assert.equal(f.inspect().section.waitingReturn,true);await f.ready();assert.equal(f.scene.returnIndex,0);
+ assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();assert.equal(f.inspect().section.travelling,false);
 });

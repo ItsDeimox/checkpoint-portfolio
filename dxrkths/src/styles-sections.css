@@ -53,3 +53,9 @@ body.section-active .room-home-link::after{display:none}
 /* Only the journey is cinematic; normal room and destination styling stay intact. */
 body.portal-travelling .room-motto{opacity:.14;transition:opacity .3s}
 body.portal-travelling .room-header-nav{opacity:.5;transition:opacity .3s}
+/* Keep the departing, possibly scrolled HTML page over the first dark return frame. */
+body.section-returning .section-page,body.section-return-pending .section-page{position:fixed;top:var(--return-top,0px);left:0;right:0;z-index:10;pointer-events:none}
+body.section-returning .section-page{animation:section-depart .24s ease-out both}
+body.section-return-pending .section-page::after{content:'Preparing return to showroom…';position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 18px;background:#070709ee;border:1px solid #70303e;color:#ddd0d4;font:500 12px var(--heading);letter-spacing:1px}
+@keyframes section-depart{from{opacity:1}to{opacity:0}}
+@media(prefers-reduced-motion:reduce){body.section-returning .section-page{animation:none;opacity:0}}

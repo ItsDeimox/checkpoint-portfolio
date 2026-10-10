@@ -5,6 +5,14 @@ export class HeroScene extends ShowroomScene {
  buildLights(){super.buildLights();this.bannerPortal=new BannerPortal(this);}
  async prepareEnvironment(signal){await super.prepareEnvironment(signal);signal.throwIfAborted();await this.bannerPortal.prepare();}
  enterPortal(index,onComplete){return this.bannerPortal.enter(index,onComplete);}
+ returnPortal(index,onComplete){
+  if(!this.ready||this.disposed||this.lost||this.reduced.matches)return false;
+  const parked=this.pageActive;this.sleep();this.pageActive=true;this.resize();
+  if(!this.bannerPortal.returnToShowroom(index,onComplete)){this.pageActive=parked;return false;}
+  this.pageActive=false;
+  // Paint the dark end of the corridor before the outgoing HTML page fades away.
+  this.render(1/60,0);this.wake();return true;
+ }
  parkSection(){this.pageActive=true;this.sleep();this.brandLogo?.restoreFallback();}
  resumeShowroom(){this.pageActive=false;this.bannerPortal?.cancel();this.cameraRig.applyOverview();this.wake();}
  cancelPortal(){this.bannerPortal?.cancel();}
