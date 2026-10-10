@@ -63,7 +63,7 @@ test('published tree contains the complete room, exact aliases and no archived r
     const info = await buildSite({output});
     const expected = [...RUNTIME_FILES, ...ROOM_ALIASES.map(route => `${route}/index.html`), '404.html', 'robots.txt', 'sitemap.xml'].sort();
     assert.deepEqual(Object.keys(info.files).sort(), expected);
-    assert.equal(info.version, 'dxt-showroom-r14');
+    assert.equal(info.version, 'dxt-showroom-r15');
     assert.equal(info.version, BUILD_VERSION);
     const entry = await fs.readFile(path.join(output, 'index.html'));
     for (const route of ROOM_ALIASES) {
