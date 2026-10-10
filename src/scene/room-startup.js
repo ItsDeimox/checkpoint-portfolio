@@ -152,7 +152,7 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
   const { representatives, materials } = sceneRepresentatives(scene);
   const bloom = optics.bloomPass;
   const opticalMaterials = [...new Set([
-    optics.lensPass?.material, bloom?.brightMaterial, bloom?.blurMaterial,
+    optics.lensPass?.material, optics.portalPass?.material, bloom?.brightMaterial, bloom?.blurMaterial,
     bloom?.streakMaterial, bloom?.combineMaterial, optics.gradePass?.material,
   ].filter(Boolean))];
   opticalMaterials.forEach(material => materials.add(material));
@@ -242,6 +242,7 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
       report('antialias', 1, 1);
       await yieldToBrowser(signal);
     }
+    if(view.bannerPortal){checkAbort(signal);await view.bannerPortal.prepare();await yieldToBrowser(signal);}
     report('ready', 1, 1);
     return {
       textures: textures.length, targets: targets.length, sceneVariants: compiled,

@@ -50,3 +50,6 @@ body.portal-travelling .room-header-nav .room-enter,body.portal-travelling .room
 
 body.section-active .room-home{display:none!important}
 body.section-active .room-home-link::after{display:none}
+/* Only the journey is cinematic; normal room and destination styling stay intact. */
+body.portal-travelling .room-motto{opacity:.14;transition:opacity .3s}
+body.portal-travelling .room-header-nav{opacity:.5;transition:opacity .3s}

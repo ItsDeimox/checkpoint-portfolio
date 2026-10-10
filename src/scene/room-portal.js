@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {PORTAL_UNIFORMS,PORTAL_FUNCTIONS} from './room-portal-shader.js';
-const UP=new T.Vector3(0,1,0);
+import {PortalEffects} from './room-portal-effects.js';
+import {PortalShutterPass} from './room-portal-optics.js';
 export const PORTAL_APPROACH_SECONDS=1.2,PORTAL_FLIGHT_SECONDS=1.65;
 const smooth=x=>{x=T.MathUtils.clamp(x,0,1);return x*x*x*(x*(x*6-15)+10);};
 
@@ -13,14 +14,15 @@ export function portalBasis(panel){
  return {center,right,up,normal,forward,half,toLocal(point){const v=point.clone().sub(center);return new T.Vector3(v.dot(right),v.dot(up),v.dot(forward));}};
 }
 export function portalTravelPose(basis,progress){
- const distance=T.MathUtils.lerp(-3.2,23,smooth(progress));
+ const t=T.MathUtils.clamp(Number.isFinite(progress)?progress:0,0,1);
+ const distance=T.MathUtils.lerp(-3.2,23,t*t);
  const position=basis.center.clone().addScaledVector(basis.forward,distance);
  const rotation=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().lookAt(position,position.clone().add(basis.forward),basis.up));
- return {position,rotation,fov:48};
+ return {position,rotation,fov:48+11*smooth(Math.min(1,t/.64))};
 }
 function portalUniforms(panel){
  const b=portalBasis(panel);
- return {portalMix:{value:0},portalAge:{value:0},portalProgress:{value:0},portalLayerCount:{value:18},
+ return {portalMix:{value:0},portalAge:{value:0},portalProgress:{value:0},portalSpeed:{value:0},portalOpening:{value:0},portalLayerCount:{value:18},
   portalOrigin:{value:b.center},portalRight:{value:b.right},portalUp:{value:b.up},portalForward:{value:b.forward},portalHalf:{value:b.half}};
 }
 export function configurePortal(panel){
@@ -32,6 +34,11 @@ export function configurePortal(panel){
  m.fragmentShader=m.fragmentShader.replace('gl_FragColor=vec4(c,1.);',`if(portalMix>0.){
   float radius=portalMix*1.22;float aperture=1.-smoothstep(radius-.09,radius,max(abs(p.x-.5),abs(p.y-.5))*2.);
   c=mix(c,portalRadiance(cameraPosition,normalize(vWorld-cameraPosition)),aperture);
+  float rim=abs(max(abs(p.x-.5),abs(p.y-.5))*2.-radius);
+  float filament=1.-smoothstep(.005,.022,rim);
+  float halo=exp(-rim*38.)*.32;
+  float energy=.7+.3*sin((p.x+p.y)*57.+portalAge*8.);
+  c+=vec3(4.8,.025,.055)*(filament+halo)*energy*portalOpening;
  }gl_FragColor=vec4(c,1.);`);
  m.needsUpdate=true;
 }
@@ -41,6 +48,7 @@ export class BannerPortal {
  constructor(view){
   this.view=view;this.active=false;this.interior=false;this.elapsed=0;this.stage='idle';
   view.panels.forEach(configurePortal);
+  this.effects=new PortalEffects(view.scene);this.shutter=new PortalShutterPass();
   const first=view.panels[0];
   this.fullMaterial=new T.ShaderMaterial({name:'DXT.PortalInterior',depthWrite:false,depthTest:false,
    uniforms:{...first.portalUniforms,artwork:first.material.uniforms.artwork,projection:first.material.uniforms.projection,
@@ -55,12 +63,30 @@ export class BannerPortal {
   this.originalUpdate=view.cameraRig.update.bind(view.cameraRig);
   view.cameraRig.update=dt=>this.active?this.update(dt):this.originalUpdate(dt);
  }
- async prepare(){await this.view.renderer.compileAsync(this.fullScene,this.view.camera);}
+ async prepare(){
+  const {renderer,camera,optics}=this.view;if(!optics?.sceneTarget)return;
+  const previous=renderer.getRenderTarget();
+  try{renderer.setRenderTarget(optics.sceneTarget);await renderer.compileAsync(this.fullScene,camera,this.fullScene);}
+  finally{renderer.setRenderTarget(previous);}
+ }
+ attachOptics(optics){
+  if(!optics||this.attached)return;
+  this.attached=true;optics.portalPass=this.shutter;
+  optics.composer.insertPass(this.shutter,optics.composer.passes.indexOf(optics.bloomPass));
+ }
+ prepareFrame(dt){
+  this.attachOptics(this.view.optics);
+  if(!this.active||!this.basis){this.shutter.reset();return;}
+  this.shutter.update(this.view.camera,this.basis,{age:this.age,progress:this.panel.portalUniforms.portalProgress.value,
+    active:true,interior:this.interior,quality:this.view.settings.quality,dt,reduced:this.view.reduced.matches});
+ }
+
  enter(index,onComplete){
   if(this.active||!this.view.ready)return false;
   const v=this.view,panel=v.panels[index];if(!panel)return false;
   this.panel=panel;this.basis=portalBasis(panel);this.saved={position:v.camera.position.clone(),rotation:v.camera.quaternion.clone(),focus:v.cameraRig.focusTarget.clone(),fov:v.camera.fov};
   this.active=true;this.interior=false;this.stage='approach';this.elapsed=0;this.age=0;this.onComplete=onComplete;
+  this.effects.start(this.basis);this.shutter.reset();
   v.turntable?.end(false);v.release();v.clearHover();v.hidePanelContent();v.pendingPick=v.lastPointer=null;
   Object.assign(this.fullMaterial.uniforms,panel.portalUniforms,{artwork:panel.material.uniforms.artwork,projection:panel.material.uniforms.projection});
   v.cameraRig.panel=null;
@@ -85,21 +111,24 @@ export class BannerPortal {
    this.interior=this.basis.toLocal(v.camera.position).z>=-v.camera.near*1.5;
    if(t===1)this.finish();
   }
+  const state=this.effects.update(this.age,u.portalProgress.value,v.settings.quality,this.active,this.interior,v.reduced.matches);
+  u.portalSpeed.value=state.speed;u.portalOpening.value=state.opening;
   this.fullMaterial.uniforms.portalInverseProjection.value.copy(v.camera.projectionMatrixInverse);
   this.fullMaterial.uniforms.portalCameraWorld.value.copy(v.camera.matrixWorld);
   return true;
  }
  finish(){
-  if(!this.active)return;this.active=false;this.stage='arrived';
+  if(!this.active)return;this.active=false;this.stage='arrived';this.effects.reset();this.shutter.reset();
   const callback=this.onComplete;this.onComplete=null;callback?.();
  }
  cancel(){
   const v=this.view;this.active=false;this.interior=false;this.stage='idle';this.onComplete=null;
-  v.panels.forEach(p=>{p.portalUniforms.portalMix.value=0;p.portalUniforms.portalProgress.value=0;});
+  this.effects.reset();this.shutter.reset();
+  v.panels.forEach(p=>{p.portalUniforms.portalMix.value=0;p.portalUniforms.portalProgress.value=0;p.portalUniforms.portalSpeed.value=0;p.portalUniforms.portalOpening.value=0;});
   v.cameraRig.transition=null;v.cameraRig.panel=null;v.cameraRig.mode='overview';
   if(this.saved){v.cameraRig.focusTarget.copy(this.saved.focus);v.camera.position.copy(this.saved.position);v.camera.quaternion.copy(this.saved.rotation);v.cameraRig.setFov(this.saved.fov);v.camera.updateMatrixWorld(true);}
   v.optics?.resetHistory();v.reflectionBudget?.invalidate();
  }
- dispose(){this.active=false;this.onComplete=null;this.quad.geometry.dispose();this.fullMaterial.dispose();}
- inspect(){return {active:this.active,stage:this.stage,interior:this.interior,panel:this.panel?.index,depth:this.basis?this.basis.toLocal(this.view.camera.position).z:null,age:this.age??0};}
+ dispose(){if(this.disposed)return;this.disposed=true;this.active=false;this.onComplete=null;this.effects.dispose();if(!this.attached)this.shutter.dispose();this.quad.geometry.dispose();this.fullMaterial.dispose();}
+ inspect(){return {active:this.active,stage:this.stage,interior:this.interior,panel:this.panel?.index,depth:this.basis?this.basis.toLocal(this.view.camera.position).z:null,age:this.age??0,burstVisible:this.effects.group.visible,shutter:this.shutter.uniforms.uShutter.value,chromaticPixels:this.shutter.uniforms.uChromaticPixels.value};}
 }
