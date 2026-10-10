@@ -13,7 +13,7 @@ const read = filename => fs.readFile(path.join(root, filename), 'utf8');
 test('HTML starts the persistent room with its showroom and intro stylesheets and local fonts', async () => {
   const html = await read('index.html');
   const sheets = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(sheets, ['/src/styles-base.css', '/src/styles-room.css', '/src/styles-experience.css']);
+  assert.deepEqual(sheets, ['/src/styles-base.css', '/src/styles-room.css', '/src/styles-experience.css', '/src/styles-sections.css']);
   assert.deepEqual([...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map(match => match[1]), ['/src/main.js']);
   assert.match(html, /<body data-page="home" class="intro-pending">/);
   assert.match(html, /class="skip-link" href="#main"/);
@@ -63,7 +63,7 @@ test('published tree contains the complete room, exact aliases and no archived r
     const info = await buildSite({output});
     const expected = [...RUNTIME_FILES, ...ROOM_ALIASES.map(route => `${route}/index.html`), '404.html', 'robots.txt', 'sitemap.xml'].sort();
     assert.deepEqual(Object.keys(info.files).sort(), expected);
-    assert.equal(info.version, 'dxt-showroom-r10');
+    assert.equal(info.version, 'dxt-showroom-r11');
     assert.equal(info.version, BUILD_VERSION);
     const entry = await fs.readFile(path.join(output, 'index.html'));
     for (const route of ROOM_ALIASES) {
