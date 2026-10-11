@@ -14,19 +14,19 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fetch verified Cortex Idle artifact
         env:
-          RELEASE_ARCHIVE_URL: 'https://sdmntprbrazilsouth.oaiusercontent.com/files/00000000-4a34-820e-9e9b-0ac533870310/raw?se=2026-10-10T21%3A51%3A39Z&sp=r&sv=2026-02-06&sr=b&scid=3f573c0c-901a-5411-bb8f-643e48feaca4&skoid=33096a49-a96b-4506-9fc4-04a7517f8175&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-10T00%3A27%3A00Z&ske=2026-10-11T00%3A27%3A00Z&sks=b&skv=2026-02-06&sig=TJWDanh4E4NUoCaBcH2EldvJlgIm8qJsYqWbKiGvoIE%3D'
+          RELEASE_ARCHIVE_URL: 'https://sdmntprbrazilsouth.oaiusercontent.com/files/00000000-51b4-820e-8041-61462ced58b1/raw?se=2026-10-11T00%3A43%3A25Z&sp=r&sv=2026-02-06&sr=b&scid=401555aa-9b39-5156-9794-0c5205dc805c&skoid=33096a49-a96b-4506-9fc4-04a7517f8175&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-10T13%3A06%3A14Z&ske=2026-10-11T13%3A06%3A14Z&sks=b&skv=2026-02-06&sig=776eQyZVCF2viiEsbXh6kwUOVs0ETpcPD4yoh5F64yo%3D'
         run: |
           curl --fail --location --show-error --retry 3 --retry-delay 2 "$RELEASE_ARCHIVE_URL" --output /tmp/cortex-idle-artifact.zip
           unzip -oq /tmp/cortex-idle-artifact.zip -d /tmp/cortex-idle-release
           test -f /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe
-          echo 'b3998a0763b4c68015d054daa66037a18a815c521b0431d1589baa96c10ff346  /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe' | sha256sum -c -
+          echo '3aed332cc87d2b26b8d8207f3f52d5d2d424c8bc5d114dd24a8190103624fb0c  /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe' | sha256sum -c -
       - name: Publish public download asset
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create cortex-idle-v0.1.0 /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe \
+          gh release create cortex-idle-v0.1.0-halloween /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "Cortex Idle 0.1.0 | Windows x64" \
-            --notes "Cortex Idle portable Windows x64 executable. Built from ItsDeimox/cortex-idle (private source). SHA256: b3998a0763b4c68015d054daa66037a18a815c521b0431d1589baa96c10ff346. Requires no installer." \
+            --title "Cortex Idle 0.1.0 | Halloween Edition | Windows x64" \
+            --notes "Cortex Idle Halloween Edition portable Windows x64 executable. Built from ItsDeimox/cortex-idle (private source). SHA256: 3aed332cc87d2b26b8d8207f3f52d5d2d424c8bc5d114dd24a8190103624fb0c. Requires no installer." \
             --latest=false
