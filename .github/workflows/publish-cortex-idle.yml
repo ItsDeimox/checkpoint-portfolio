@@ -14,13 +14,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fetch verified Cortex Idle artifact
         env:
-          RELEASE_ARCHIVE_URL: 'https://sdmntprbrazilsouth.oaiusercontent.com/files/00000000-8bb0-820e-965e-975fa8a61b22/raw?se=2026-10-11T06%3A08%3A36Z&sp=r&sv=2026-02-06&sr=b&scid=3cccf28b-04d7-5ac8-a5c2-4af89aa93a00&skoid=33096a49-a96b-4506-9fc4-04a7517f8175&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-10T23%3A29%3A10Z&ske=2026-10-11T23%3A29%3A10Z&sks=b&skv=2026-02-06&sig=cMn6XLHwZHs5r505TUeJaqpwyWBwtynoV1L5JQTPhWw%3D'
+          RELEASE_ARCHIVE_URL: 'https://sdmntprbrazilsouth.oaiusercontent.com/files/00000000-6d48-820e-a8ee-786c1fcd29a9/raw?se=2026-10-11T07%3A16%3A15Z&sp=r&sv=2026-02-06&sr=b&scid=f1795a53-b5dd-5139-be6a-dff5226a52c8&skoid=33096a49-a96b-4506-9fc4-04a7517f8175&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-10T23%3A26%3A36Z&ske=2026-10-11T23%3A26%3A36Z&sks=b&skv=2026-02-06&sig=iU330KvP3nnMrs/IgEYeiXTQ/1HnDhJRC6eI2s3Ke48%3D'
         run: |
           curl --fail --location --show-error --retry 3 --retry-delay 2 "$RELEASE_ARCHIVE_URL" --output /tmp/cortex-idle-artifact.zip
           unzip -oq /tmp/cortex-idle-artifact.zip -d /tmp/cortex-idle-release
           test -f /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe
-          echo 'e2afd8675b7a606ca5af12bf0b4764a7d6f79feb3671fd272adff9f1d6eb850f  /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe' | sha256sum -c -
-          test "$(stat -c%s /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe)" -eq 117759082
+          echo 'f2af4a0e7e0cc3e62a75ae081eea2e453f1398dcc025267b0c2f40c476cbaa65  /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe' | sha256sum -c -
+          test "$(stat -c%s /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe)" -eq 117758427
           file /tmp/cortex-idle-release/Cortex-Idle-0.1.0-Windows.exe | grep -q 'PE32'
       - name: Update existing public Windows download (no duplicate release)
         env:
@@ -30,5 +30,5 @@ jobs:
             --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit cortex-idle-v0.1.0-halloween \
             --repo "$GITHUB_REPOSITORY" \
-            --notes "Cortex Idle Halloween Edition, portable Windows x64, compiled from private ItsDeimox/cortex-idle commit 7c1af702e0493c443b475d2fd093a6fac1887952. SHA-256: e2afd8675b7a606ca5af12bf0b4764a7d6f79feb3671fd272adff9f1d6eb850f. Size: 117759082 bytes. No installer required."
+            --notes "Cortex Idle portable Windows x64 with per-world playtime tracking, including background sessions and legacy migration, compiled from private ItsDeimox/cortex-idle commit 471207af33222667b1ba7dd29708c29987e3a191. SHA-256: f2af4a0e7e0cc3e62a75ae081eea2e453f1398dcc025267b0c2f40c476cbaa65. Size: 117758427 bytes. No installer required."
           gh release view cortex-idle-v0.1.0-halloween --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[] | select(.name == "Cortex-Idle-0.1.0-Windows.exe") | .size'
