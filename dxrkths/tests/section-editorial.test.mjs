@@ -4,7 +4,7 @@ test('Berserk presents official imagery instead of a crop of the concept',()=>{c
 test('verified PC controls are available without invented game metrics',()=>{const h=renderSectionPage(0);assert.match(h,/<kbd>V<\/kbd>/);assert.match(h,/Cinematic camera/);assert.doesNotMatch(h,/15\.4K|87%|92%/);});
 test('About uses the supplied black DXT wall and not a concept crop',()=>{const h=renderSectionPage(3);assert.match(h,/pattern-dark.webp/);assert.doesNotMatch(h,/showroom-reference.png/);assert.match(h,/I’m DXT/);});
 test('each group button has its own supplied banner, without duplicate group links',()=>{const h=renderSectionPage(1);assert.match(h,/revline-pattern.webp/);assert.match(h,/frost-card.webp/);for(const key of ['revline','frost'])assert.equal(h.split(CONTENT.links[key]).length-1,1);});
-test('internal-page brand returns through native navigation with an arrow',()=>{const h=renderRoomHeader({}, {returnToShowroom:true});assert.match(h,/<a[^>]*id="brand-spin"[^>]*href="\/"[^>]*data-return-showroom/);assert.match(h,/room-brand-arrow/);assert.doesNotMatch(h,/data-spin-logo/);});
+test('internal page splits the return arrow from the 3D logo spin',()=>{const h=renderRoomHeader({}, {returnToShowroom:true});assert.match(h,/<a[^>]*href="\/"[^>]*data-return-showroom[^>]*class="room-brand-arrow"/);assert.match(h,/<button[^>]*id="brand-spin"[^>]*data-spin-logo/);assert.equal((h.match(/id="brand-spin"/g)||[]).length,1);assert.match(h,/Rotate DXT logo/);});
 test('showroom brand retains the approved click-spin behavior',()=>{const h=renderRoomHeader();assert.match(h,/data-spin-logo/);assert.match(h,/Rotate DXT logo/);});
 test('an unprovided intro video is not fabricated',()=>{const h=renderSectionPage(0);assert.doesNotMatch(h,/<iframe|<video/);});
 

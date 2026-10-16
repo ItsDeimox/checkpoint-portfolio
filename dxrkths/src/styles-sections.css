@@ -176,3 +176,96 @@ body:not(.section-active) .berserk-play-dock a{pointer-events:none}
  .section-group-tiles .section-group-logo{width:64px;height:64px}
 }
 @media(prefers-reduced-motion:reduce){.berserk-play-button,.section-group-tile,.section-group-banner,.gallery-controls button,.game-gallery-thumbs button,.room-brand-arrow{transition:none!important}.berserk-play-button:hover,.section-group-tile:hover .section-group-banner{transform:none}}
+
+/* In destinations, the fixed bar fills the viewport top instead of inheriting
+ * the floating showroom header's 3.25vh / 21px top offset. */
+body[data-page="home"].section-active #header {
+ top: 0;
+ left: 0;
+ right: 0;
+ width: 100%;
+ height: 76px;
+ padding: 0 clamp(15px,4.15vw,74px);
+ background: linear-gradient(180deg,rgba(6,6,8,.98),rgba(9,8,11,.95));
+ border-bottom: 1px solid rgba(124,48,66,.27);
+ box-shadow: 0 8px 30px rgba(0,0,0,.24);
+ backdrop-filter: blur(14px);
+}
+body.section-active .room-header-bar { background: none; }
+body.section-active .room-brand-controls {
+ display: inline-flex;
+ align-items: center;
+ gap: clamp(8px,1.25vw,19px);
+ flex-shrink: 0;
+ height: 100%;
+ pointer-events: auto;
+}
+body.section-active .room-brand-controls > .room-brand { display: inline-flex; flex-shrink: 0; }
+body.section-active .room-brand-arrow {
+ position: relative;
+ left: auto;
+ top: auto;
+ transform: none;
+ translate: none;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ width: 24px;
+ height: 40px;
+ flex-shrink: 0;
+ color: #aa9ba1;
+ border-radius: 4px;
+ transition: color .22s,background-color .22s,translate .22s;
+}
+body.section-active .room-brand-arrow .icon {
+ transform: rotate(180deg);
+ width: 17px;
+ height: 17px;
+}
+body.section-active .room-brand-arrow:hover {
+ color: #ff486b;
+ background: rgba(191,31,64,.08);
+ translate: -2px 0;
+}
+body.section-active .room-brand-arrow:focus-visible,
+body.section-active .room-brand-controls > .room-brand:focus-visible {
+ outline: 1px solid #f05a797d;
+ outline-offset: 3px;
+}
+@media(max-width:740px) {
+ body[data-page="home"].section-active #header {
+  height: 66px;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-inline: clamp(10px,3vw,20px);
+ }
+ body.section-active .room-brand-controls { gap: 7px; }
+ body.section-active .room-brand-arrow { width: 18px; height: 34px; }
+ body.section-active .room-brand-arrow .icon { width: 14px; height: 14px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ body.section-active .room-brand-arrow { transition: none; }
+}
+
+
+/* Keep the full-width bar in place during the reverse portal handoff,
+ * instead of jumping back to the floating showroom offset mid-animation. */
+body[data-page="home"].section-returning #header,
+body[data-page="home"].section-return-pending #header {
+ top: 0;
+ left: 0;
+ right: 0;
+ width: 100%;
+ height: 76px;
+ padding: 0 clamp(15px,4.15vw,74px);
+ background: linear-gradient(180deg,rgba(6,6,8,.98),rgba(9,8,11,.95));
+ border-bottom: 1px solid rgba(124,48,66,.27);
+}
+@media(max-width:740px) {
+ body[data-page="home"].section-returning #header,
+ body[data-page="home"].section-return-pending #header {
+  height: 66px;
+  padding-inline: clamp(10px,3vw,20px);
+ }
+}
