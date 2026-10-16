@@ -1,0 +1,14 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {renderSectionPage} from '../src/pages/section-pages.js';import {renderRoomHeader} from '../src/ui/room-visitor-shell.js';import {CONTENT} from '../src/content.js';
+test('Berserk has a single bottom Play destination and no redundant RevLine link',()=>{const html=renderSectionPage(0);assert.match(html,/class="berserk-play-dock"/);assert.equal(html.split(CONTENT.links.game).length-1,1);assert.ok(!html.includes(CONTENT.links.revline));});
+test('Berserk presents official imagery instead of a crop of the concept',()=>{const html=renderSectionPage(0);assert.match(html,/data-game-gallery/);assert.match(html,/berserk\/game-1.webp/);assert.doesNotMatch(html,/showroom-reference.png/);assert.match(html,/section-photo-backdrop/);});
+test('verified PC controls are available without invented game metrics',()=>{const h=renderSectionPage(0);assert.match(h,/<kbd>V<\/kbd>/);assert.match(h,/Cinematic camera/);assert.doesNotMatch(h,/15\.4K|87%|92%/);});
+test('About uses the supplied black DXT wall and not a concept crop',()=>{const h=renderSectionPage(3);assert.match(h,/pattern-dark.webp/);assert.doesNotMatch(h,/showroom-reference.png/);assert.match(h,/I’m DXT/);});
+test('each group button has its own supplied banner, without duplicate group links',()=>{const h=renderSectionPage(1);assert.match(h,/revline-pattern.webp/);assert.match(h,/frost-card.webp/);for(const key of ['revline','frost'])assert.equal(h.split(CONTENT.links[key]).length-1,1);});
+test('internal-page brand returns through native navigation with an arrow',()=>{const h=renderRoomHeader({}, {returnToShowroom:true});assert.match(h,/<a[^>]*id="brand-spin"[^>]*href="\/"[^>]*data-return-showroom/);assert.match(h,/room-brand-arrow/);assert.doesNotMatch(h,/data-spin-logo/);});
+test('showroom brand retains the approved click-spin behavior',()=>{const h=renderRoomHeader();assert.match(h,/data-spin-logo/);assert.match(h,/Rotate DXT logo/);});
+test('an unprovided intro video is not fabricated',()=>{const h=renderSectionPage(0);assert.doesNotMatch(h,/<iframe|<video/);});
+
+import {BERSERK_MEDIA,galleryIndex} from '../src/pages/berserk-media.js';
+import fs from 'node:fs';
+test('all five gallery entries reference real local files and preserve source aspect ratio',()=>{assert.equal(BERSERK_MEDIA.length,5);assert.equal(new Set(BERSERK_MEDIA.map(m=>m.asset)).size,5);for(const item of BERSERK_MEDIA){assert.ok(fs.existsSync(new URL('..'+item.src,import.meta.url)));assert.equal(item.width/item.height,16/9);}});
+test('gallery next, previous and end wrap predictably',()=>{assert.equal(galleryIndex(-1),4);assert.equal(galleryIndex(5),0);assert.equal(galleryIndex(2),2);assert.throws(()=>galleryIndex(NaN),RangeError);});

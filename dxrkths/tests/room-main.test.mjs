@@ -1,3 +1,4 @@
+import * as sectionMedia from '../src/ui/section-media.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -186,7 +187,7 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
     dispose() { this.disposed = true; this.ready = false; calls.push({ dispose: true }); return Promise.resolve(); }
   }
   const dependencies = {
-    './pages/section-pages.js':sectionPages,'./ui/room-section-routes.js':sectionRoutes,
+    './ui/section-media.js':sectionMedia,'./pages/section-pages.js':sectionPages,'./ui/room-section-routes.js':sectionRoutes,
     './pages/home-room.js': homePage, './ui/room-visitor-shell.js': roomShell, './ui/room-intro.js':introModule, './ui/room-visitor-settings.js':visitorSettings, './scene/room-music.js':{RoomMusic:PageMusic},
     './ui/room-navigation.js': navigation, './scene/room-visual-settings.js': visualSettings, './scene/room-music-settings.js': musicSettings,
   };
@@ -285,4 +286,16 @@ test('direct route lazy initialization and Home both use the same reverse callba
  const f=harness({path:'/berserk'});await settle();fire(f.get('[data-reset-room]'),'click');
  assert.equal(f.inspect().section.waitingReturn,true);await f.ready();assert.equal(f.scene.returnIndex,0);
  assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();assert.equal(f.inspect().section.travelling,false);
+});
+
+test('internal header brand returns through the existing portal and is available without the GPU logo',async()=>{
+ const f=harness({path:'/berserk'});await settle();const brand=f.get('#brand-spin');
+ assert.equal(brand.getAttribute('href'),'/');assert.equal(brand.getAttribute('aria-label'),'Back to showroom');assert.notEqual(brand.disabled,true);
+ fire(brand,'click');await f.ready();assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();
+ assert.equal(f.location.pathname,'/');assert.equal(f.get('#brand-spin').getAttribute('aria-label'),'Rotate DXT logo');
+});
+test('header return works when the 3D bundle is unavailable',async()=>{
+ const f=harness({bundleError:Error('offline')});await settle();fire(f.get('[data-fallback-panel="3"]'),'click');
+ const brand=f.get('#brand-spin');assert.equal(brand.getAttribute('aria-label'),'Back to showroom');assert.notEqual(brand.disabled,true);
+ fire(brand,'click');assert.equal(f.get('#room-section-page').hidden,true);assert.equal(f.location.pathname,'/');
 });

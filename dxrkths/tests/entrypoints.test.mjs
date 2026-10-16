@@ -63,7 +63,7 @@ test('published tree contains the complete room, exact aliases and no archived r
     const info = await buildSite({output});
     const expected = [...RUNTIME_FILES, ...ROOM_ALIASES.map(route => `${route}/index.html`), '404.html', 'robots.txt', 'sitemap.xml'].sort();
     assert.deepEqual(Object.keys(info.files).sort(), expected);
-    assert.equal(info.version, 'dxt-showroom-r15');
+    assert.equal(info.version, 'dxt-showroom-r16-editorial');
     assert.equal(info.version, BUILD_VERSION);
     const entry = await fs.readFile(path.join(output, 'index.html'));
     for (const route of ROOM_ALIASES) {
@@ -71,7 +71,7 @@ test('published tree contains the complete room, exact aliases and no archived r
     }
     assert.deepEqual(await validateRuntimeGraph(output), info.runtimeImports);
     assert.ok(info.runtimeImports.includes('src/render/showroom.bundle.js'));
-    for (const filename of ['src/pages/templates.js', 'src/pages/home-reference.js', 'src/scene/showroom.js', 'src/render/logo.js', 'src/ui/profile.js', 'src/styles.css', 'src/styles-reference.css', 'assets/models/nissan-s15-lbwk.glb', 'assets/environment/sunset-forest.hdr', 'assets/images/race.webp']) {
+    for (const filename of ['src/pages/templates.js', 'src/pages/home-reference.js', 'src/scene/showroom.js', 'src/render/logo.js', 'src/ui/profile.js', 'src/styles.css', 'src/styles-reference.css', 'assets/models/nissan-s15-lbwk.glb', 'assets/environment/sunset-forest.hdr']) {
       await assert.rejects(fs.access(path.join(output, filename)), {code: 'ENOENT'}, filename);
     }
     const model = 'assets/models/nissan-s15-showroom.glb';

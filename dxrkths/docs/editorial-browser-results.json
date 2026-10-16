@@ -1,0 +1,280 @@
+{
+  "browser": "156.0.8078.4",
+  "renderer": "ANGLE SwiftShader",
+  "checks": [
+    {
+      "name": "direct page preserves the persistent 3D header logo",
+      "pass": true
+    },
+    {
+      "name": "direct page does not boot the GPU showroom behind the content",
+      "pass": true
+    },
+    {
+      "name": "header logo exposes a native return link and left arrow",
+      "pass": true
+    },
+    {
+      "name": "Berserk removes the redundant RevLine destination",
+      "pass": true
+    },
+    {
+      "name": "Play opens only the supplied Roblox game",
+      "pass": true
+    },
+    {
+      "name": "desktop bottom-centered Play",
+      "pass": true,
+      "detail": {
+        "box": {
+          "x": 545,
+          "y": 875,
+          "width": 350,
+          "height": 63
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 960
+        }
+      }
+    },
+    {
+      "name": "desktop bottom-centered Play is not covered",
+      "pass": true
+    },
+    {
+      "name": "right photo is translucent and cannot intercept clicks",
+      "pass": true
+    },
+    {
+      "name": "no concept crop is presented as game media",
+      "pass": true
+    },
+    {
+      "name": "all five official game thumbnails load",
+      "pass": true
+    },
+    {
+      "name": "gallery image 1 swaps with one selected thumbnail",
+      "pass": true
+    },
+    {
+      "name": "gallery image 2 swaps with one selected thumbnail",
+      "pass": true
+    },
+    {
+      "name": "gallery image 3 swaps with one selected thumbnail",
+      "pass": true
+    },
+    {
+      "name": "gallery image 4 swaps with one selected thumbnail",
+      "pass": true
+    },
+    {
+      "name": "gallery image 5 swaps with one selected thumbnail",
+      "pass": true
+    },
+    {
+      "name": "Next wraps to the first image",
+      "pass": true
+    },
+    {
+      "name": "keyboard End selects and focuses the final image",
+      "pass": true
+    },
+    {
+      "name": "keyboard gallery navigation wraps and keeps focus",
+      "pass": true
+    },
+    {
+      "name": "rapid selection resolves to the last request",
+      "pass": true
+    },
+    {
+      "name": "no unprovided intro is embedded as a fake trailer",
+      "pass": true
+    },
+    {
+      "name": "verified V, F and Shift+B controls are readable",
+      "pass": true
+    },
+    {
+      "name": "Play remains centered after scrolling",
+      "pass": true,
+      "detail": {
+        "box": {
+          "x": 545,
+          "y": 875,
+          "width": 350,
+          "height": 63
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 960
+        }
+      }
+    },
+    {
+      "name": "Play remains centered after scrolling is not covered",
+      "pass": true
+    },
+    {
+      "name": "footer has enough space above the Play dock",
+      "pass": true
+    },
+    {
+      "name": "About uses the original black DXT wall",
+      "pass": true
+    },
+    {
+      "name": "About keeps its biography and supplied avatar",
+      "pass": true
+    },
+    {
+      "name": "Play is absent on non-game sections",
+      "pass": true
+    },
+    {
+      "name": "RevLine button uses the supplied repeating banner",
+      "pass": true
+    },
+    {
+      "name": "Frost button uses the supplied mammoth artwork",
+      "pass": true
+    },
+    {
+      "name": "group destination buttons are unique and native external links",
+      "pass": true
+    },
+    {
+      "name": "section 0 has no overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "mobile 390 return arrow stays inside the viewport",
+      "pass": true
+    },
+    {
+      "name": "mobile 390 Play",
+      "pass": true,
+      "detail": {
+        "box": {
+          "x": 30,
+          "y": 765,
+          "width": 330,
+          "height": 63
+        },
+        "viewport": {
+          "width": 390,
+          "height": 844
+        }
+      }
+    },
+    {
+      "name": "mobile 390 Play is not covered",
+      "pass": true
+    },
+    {
+      "name": "mobile 390 thumbnails retain touch targets",
+      "pass": true
+    },
+    {
+      "name": "section 3 has no overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "section 1 has no overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "section 2 has no overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "section 4 has no overflow at 390",
+      "pass": true
+    },
+    {
+      "name": "section 0 has no overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "mobile 320 return arrow stays inside the viewport",
+      "pass": true
+    },
+    {
+      "name": "mobile 320 Play",
+      "pass": true,
+      "detail": {
+        "box": {
+          "x": 16,
+          "y": 765,
+          "width": 288,
+          "height": 63
+        },
+        "viewport": {
+          "width": 320,
+          "height": 844
+        }
+      }
+    },
+    {
+      "name": "mobile 320 Play is not covered",
+      "pass": true
+    },
+    {
+      "name": "mobile 320 thumbnails retain touch targets",
+      "pass": true
+    },
+    {
+      "name": "section 3 has no overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "section 1 has no overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "section 2 has no overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "section 4 has no overflow at 320",
+      "pass": true
+    },
+    {
+      "name": "quality refresh does not replace the return action",
+      "pass": true
+    },
+    {
+      "name": "brand click completes the existing reverse journey to showroom",
+      "pass": true
+    },
+    {
+      "name": "home brand restores spin instead of another return",
+      "pass": true
+    },
+    {
+      "name": "persistent brand survives the return",
+      "pass": true
+    },
+    {
+      "name": "home logo spin request is still available",
+      "pass": true
+    },
+    {
+      "name": "no-WebGL still exposes the game content and return link",
+      "pass": true
+    },
+    {
+      "name": "no-WebGL header logo returns home",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript errors in the tested flows",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}
