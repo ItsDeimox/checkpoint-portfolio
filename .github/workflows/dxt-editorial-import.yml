@@ -1,0 +1,43 @@
+name: Stage tested DXT editorial pages
+on:
+  push:
+    branches: [build/dxt-editorial-r16-20261016]
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Import verified page-only patch
+        env:
+          SOURCE_URL: https://sb-3bgqoym6ualh.vercel.run/import-editorial.tar.gz
+          SOURCE_SHA256: f1542054822b72a8955a44cac6d083c8200b0abab49b56872734cc896ded6fda
+        run: |
+          set -euo pipefail
+          git init work
+          cd work
+          git remote add origin https://github.com/ItsDeimox/checkpoint-portfolio.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout -b build/dxt-editorial-r16-20261016 FETCH_HEAD
+          curl --fail --location --retry 2 "$SOURCE_URL" -o /tmp/dxt-editorial.tar.gz
+          echo "$SOURCE_SHA256  /tmp/dxt-editorial.tar.gz" | sha256sum -c -
+          tar -tzf /tmp/dxt-editorial.tar.gz > /tmp/editorial-paths.txt
+          if grep -v '^dxrkths/' /tmp/editorial-paths.txt; then exit 1; fi
+          tar -xzf /tmp/dxt-editorial.tar.gz
+          cd dxrkths
+          npm ci --no-audit --no-fund
+          npm test
+          npm run build
+      - name: Commit only the verified patch files on the integration branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd work
+          git config user.name 'Deimox'
+          git config user.email '123704758+ItsDeimox@users.noreply.github.com'
+          git add --pathspec-from-file=/tmp/editorial-paths.txt
+          git commit -m 'Stage DXT editorial pages and verified game images [skip ci]'
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/build/dxt-editorial-r16-20261016
