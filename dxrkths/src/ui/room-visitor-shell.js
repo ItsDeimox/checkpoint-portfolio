@@ -5,13 +5,12 @@ export {renderRoomFooter} from './room-shell.js';
 const volumeIcon='<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4zM17 8a6 6 0 0 1 0 8M20 5a10 10 0 0 1 0 14"/></svg>';
 export function renderRoomHeader(settings={},navigation={}){
  const music=normalizeMusicSettings(settings.music),sound=Boolean(settings.sound),label=qualityLabel(settings.quality);
- const returning=Boolean(navigation.returnToShowroom);
+ const returning=Boolean(navigation.returnToShowroom),brandTag=returning?'a':'button';
  return `<div class="room-header-bar room-visitor-bar">
-  ${returning?'<div class="room-brand-controls"><a href="/" data-return-showroom class="room-brand-arrow" aria-label="Back to showroom" title="Back to showroom">'+icon('arrow')+'</a>':''}
-  <button id="brand-spin" type="button" data-spin-logo class="room-brand" aria-label="Rotate DXT logo" title="Rotate DXT logo">
+  <${brandTag} id="brand-spin" ${returning?'href="/" data-return-showroom data-spin-logo':'type="button" data-spin-logo'} class="room-brand${returning?' room-brand-return':''}" aria-label="${returning?'Back to showroom':'Rotate DXT logo'}" title="${returning?'Back to showroom':'Rotate DXT logo'}">
+   ${returning?'<span class="room-brand-arrow" aria-hidden="true">'+icon('arrow')+'</span>':''}
    ${logo('dxt','room-brand-logo')}<span class="room-brand-roles" aria-hidden="true"><span>Creator</span><span>Drifter</span><span>Builder</span></span>
-  </button>
-  ${returning?'</div>':''}
+  </${brandTag}>
   <p class="room-motto">Same passion. Different roads</p>
   <nav class="room-header-nav" aria-label="Main navigation">
    <a href="/" data-reset-room class="room-home-link" aria-current="page">Home</a>
