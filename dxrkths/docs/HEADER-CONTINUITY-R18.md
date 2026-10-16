@@ -15,3 +15,5 @@ The new tests failed against R17 before implementation. Automated CPU tests exer
 Browser validation uses real Chromium WebGL2 with ANGLE SwiftShader. Actual portal journeys are tested at 600x480 / Low because this is software rendering; destination layout is checked at 1440x900, 1280x800, 390x844, 320x640 and 900x500. This is not a physical-GPU performance benchmark. The first 900x650 software run timed out while the existing portal animation was still progressing; the renderer was not changed to make the test pass.
 
 Run npm test and npm run build. With the local server running at port 3000 and Playwright installed, run NODE_PATH=<path-to-playwright>/node_modules node tests/header-continuity-browser.cjs.
+
+Final focused browser suite: 41 checks passed, with zero page errors. The full outgoing and incoming sequences retained control and persistent-logo bounds within the 0.1px assertion tolerance. CSS background fade is tested on actual animation frames; post-portal assertions wait for its rendered opacity rather than assuming software WebGL has settled after a fixed 600ms timeout.

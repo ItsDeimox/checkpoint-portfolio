@@ -1,0 +1,499 @@
+{
+  "browser": "156.0.8078.4",
+  "mode": "WebGL2 / ANGLE SwiftShader / classic 15px scrollbar",
+  "checks": [
+    {
+      "name": "internal logo is one real home link with its original arrow and spin",
+      "pass": true
+    },
+    {
+      "name": "direct section does not render a hidden showroom",
+      "pass": true
+    },
+    {
+      "name": "background traverses intermediate opacity without moving controls",
+      "pass": true,
+      "detail": [
+        0,
+        0.0239229,
+        0.0654036,
+        0.126535,
+        0.203694,
+        0.291291,
+        0.382372,
+        0.468261,
+        0.547028,
+        0.616611,
+        0.678009,
+        0.731475,
+        0.777593,
+        0.81774,
+        0.852357,
+        0.882086,
+        0.907337,
+        0.928764,
+        0.946859,
+        0.961744,
+        0.973957,
+        0.98346,
+        0.990669,
+        0.995714,
+        0.998763,
+        0.999966,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "shared layout 1440x900 has no coordinate or size jump",
+      "pass": true,
+      "detail": {
+        "#header": 0,
+        ".room-brand-logo": 0,
+        ".room-brand-roles": 0,
+        ".room-header-nav": 0,
+        "#quality": 0,
+        ".dxt-persistent-brand": 0
+      }
+    },
+    {
+      "name": "preserved floating control origin 1440",
+      "pass": true,
+      "detail": [
+        59.75,
+        29.25,
+        1344.953125,
+        54
+      ]
+    },
+    {
+      "name": "no new rectangle/border/blur 1440",
+      "pass": true
+    },
+    {
+      "name": "top protection extends to viewport without affecting hit targets 1440",
+      "pass": true
+    },
+    {
+      "name": "no horizontal overflow 1440",
+      "pass": true
+    },
+    {
+      "name": "shared layout 1280x800 has no coordinate or size jump",
+      "pass": true,
+      "detail": {
+        "#header": 0,
+        ".room-brand-logo": 0,
+        ".room-brand-roles": 0,
+        ".room-header-nav": 0,
+        "#quality": 0,
+        ".dxt-persistent-brand": 0
+      }
+    },
+    {
+      "name": "preserved floating control origin 1280",
+      "pass": true,
+      "detail": [
+        53.109375,
+        26,
+        1195.515625,
+        54
+      ]
+    },
+    {
+      "name": "no new rectangle/border/blur 1280",
+      "pass": true
+    },
+    {
+      "name": "top protection extends to viewport without affecting hit targets 1280",
+      "pass": true
+    },
+    {
+      "name": "no horizontal overflow 1280",
+      "pass": true
+    },
+    {
+      "name": "shared layout 390x844 has no coordinate or size jump",
+      "pass": true,
+      "detail": {
+        "#header": 0,
+        ".room-brand-logo": 0,
+        ".room-brand-roles": 0,
+        ".room-header-nav": 0,
+        "#quality": 0,
+        ".dxt-persistent-brand": 0
+      }
+    },
+    {
+      "name": "preserved floating control origin 390",
+      "pass": true,
+      "detail": [
+        23.390625,
+        21,
+        343.1875,
+        43
+      ]
+    },
+    {
+      "name": "no new rectangle/border/blur 390",
+      "pass": true
+    },
+    {
+      "name": "top protection extends to viewport without affecting hit targets 390",
+      "pass": true
+    },
+    {
+      "name": "no horizontal overflow 390",
+      "pass": true
+    },
+    {
+      "name": "shared layout 320x640 has no coordinate or size jump",
+      "pass": true,
+      "detail": {
+        "#header": 0,
+        ".room-brand-logo": 0,
+        ".room-brand-roles": 0,
+        ".room-header-nav": 0,
+        "#quality": 0,
+        ".dxt-persistent-brand": 0
+      }
+    },
+    {
+      "name": "preserved floating control origin 320",
+      "pass": true,
+      "detail": [
+        19.1875,
+        21,
+        281.59375,
+        43
+      ]
+    },
+    {
+      "name": "no new rectangle/border/blur 320",
+      "pass": true
+    },
+    {
+      "name": "top protection extends to viewport without affecting hit targets 320",
+      "pass": true
+    },
+    {
+      "name": "no horizontal overflow 320",
+      "pass": true
+    },
+    {
+      "name": "shared layout 900x500 has no coordinate or size jump",
+      "pass": true,
+      "detail": {
+        "#header": 0,
+        ".room-brand-logo": 0,
+        ".room-brand-roles": 0,
+        ".room-header-nav": 0,
+        "#quality": 0,
+        ".dxt-persistent-brand": 0
+      }
+    },
+    {
+      "name": "preserved floating control origin 900",
+      "pass": true,
+      "detail": [
+        37.34375,
+        18,
+        840.59375,
+        42
+      ]
+    },
+    {
+      "name": "no new rectangle/border/blur 900",
+      "pass": true
+    },
+    {
+      "name": "top protection extends to viewport without affecting hit targets 900",
+      "pass": true
+    },
+    {
+      "name": "no horizontal overflow 900",
+      "pass": true
+    },
+    {
+      "name": "scroll does not move fixed controls",
+      "pass": true
+    },
+    {
+      "name": "one click starts spin and return together",
+      "pass": true
+    },
+    {
+      "name": "full reverse journey has no coordinate or size jump",
+      "pass": true,
+      "detail": {
+        "#header": 0,
+        ".room-brand-logo": 0,
+        ".room-brand-roles": 0,
+        ".room-header-nav": 0,
+        "#quality": 0,
+        ".dxt-persistent-brand": 0
+      }
+    },
+    {
+      "name": "the same 3D logo canvas survives navigation",
+      "pass": true
+    },
+    {
+      "name": "spin completes at the original orientation",
+      "pass": true
+    },
+    {
+      "name": "full incoming portal journey has no coordinate or size jump",
+      "pass": true,
+      "detail": {
+        "#header": 0,
+        ".room-brand-logo": 0,
+        ".room-brand-roles": 0,
+        ".room-header-nav": 0,
+        "#quality": 0,
+        ".dxt-persistent-brand": 0
+      }
+    },
+    {
+      "name": "incoming page settles with its soft top protection enabled",
+      "pass": true,
+      "detail": {
+        "t": 121482.5,
+        "classes": "persistent-brand-ready section-active",
+        "path": "/about",
+        "boxes": {
+          "#header": [
+            36,
+            21,
+            528,
+            43
+          ],
+          ".room-brand-logo": [
+            36,
+            21.5,
+            63,
+            42
+          ],
+          ".room-brand-roles": [
+            0,
+            0,
+            0,
+            0
+          ],
+          ".room-header-nav": [
+            364,
+            21,
+            200,
+            43
+          ],
+          "#quality": [
+            458,
+            21,
+            58,
+            43
+          ],
+          ".dxt-persistent-brand": [
+            36,
+            21.5,
+            63,
+            42
+          ]
+        },
+        "opacity": "1"
+      }
+    },
+    {
+      "name": "About content was not redesigned",
+      "pass": true
+    },
+    {
+      "name": "Berserk gallery still works",
+      "pass": true
+    },
+    {
+      "name": "Play retains its exact destination",
+      "pass": true
+    },
+    {
+      "name": "keyboard Enter also spins and returns",
+      "pass": true
+    },
+    {
+      "name": "native home navigation does not depend on WebGL",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "journey": {
+    "returnDirect": {
+      "samples": 83,
+      "first": {
+        "#header": [
+          36,
+          21,
+          528,
+          43
+        ],
+        ".room-brand-logo": [
+          36,
+          21.5,
+          63,
+          42
+        ],
+        ".room-brand-roles": [
+          0,
+          0,
+          0,
+          0
+        ],
+        ".room-header-nav": [
+          364,
+          21,
+          200,
+          43
+        ],
+        "#quality": [
+          458,
+          21,
+          58,
+          43
+        ],
+        ".dxt-persistent-brand": [
+          36,
+          21.5,
+          63,
+          42
+        ]
+      },
+      "last": {
+        "#header": [
+          36,
+          21,
+          528,
+          43
+        ],
+        ".room-brand-logo": [
+          36,
+          21.5,
+          63,
+          42
+        ],
+        ".room-brand-roles": [
+          0,
+          0,
+          0,
+          0
+        ],
+        ".room-header-nav": [
+          364,
+          21,
+          200,
+          43
+        ],
+        "#quality": [
+          458,
+          21,
+          58,
+          43
+        ],
+        ".dxt-persistent-brand": [
+          36,
+          21.5,
+          63,
+          42
+        ]
+      }
+    },
+    "enter": {
+      "samples": 58,
+      "first": {
+        "#header": [
+          36,
+          21,
+          528,
+          43
+        ],
+        ".room-brand-logo": [
+          36,
+          21.5,
+          63,
+          42
+        ],
+        ".room-brand-roles": [
+          0,
+          0,
+          0,
+          0
+        ],
+        ".room-header-nav": [
+          364,
+          21,
+          200,
+          43
+        ],
+        "#quality": [
+          458,
+          21,
+          58,
+          43
+        ],
+        ".dxt-persistent-brand": [
+          36,
+          21.5,
+          63,
+          42
+        ]
+      },
+      "last": {
+        "#header": [
+          36,
+          21,
+          528,
+          43
+        ],
+        ".room-brand-logo": [
+          36,
+          21.5,
+          63,
+          42
+        ],
+        ".room-brand-roles": [
+          0,
+          0,
+          0,
+          0
+        ],
+        ".room-header-nav": [
+          364,
+          21,
+          200,
+          43
+        ],
+        "#quality": [
+          458,
+          21,
+          58,
+          43
+        ],
+        ".dxt-persistent-brand": [
+          36,
+          21.5,
+          63,
+          42
+        ]
+      }
+    }
+  }
+}

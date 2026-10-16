@@ -46,8 +46,11 @@ const args=['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-
  await page.evaluate(()=>startHeaderTrace());await page.locator('header [data-open-panel="3"]').click();
  const monitor=setInterval(async()=>{try{const d=await page.evaluate(()=>__DXT__.inspect());console.log('ENTER STATE',JSON.stringify({phase:d.phase,index:d.selectedPanel,section:d.section,portal:d.scene?.portal,frames:d.scene?.frames}));}catch{}},10000);
  try{await page.waitForFunction(()=>document.body.classList.contains('section-active')&&location.pathname==='/about',null,{polling:150,timeout:120000});}finally{clearInterval(monitor);}await page.waitForTimeout(600);
- records.enter=await page.evaluate(()=>stopHeaderTrace());stable(records.enter,'full incoming portal journey');
- check('incoming page settles with its soft top protection enabled',+records.enter.at(-1).opacity===1);
+ console.log('ARRIVAL DIAGNOSTIC',await page.evaluate(()=>({current:headerSample(),last:window.trace?.at(-1),count:window.trace?.length,section:__DXT__.inspect().section})));
+ await page.waitForFunction(()=>+getComputedStyle(document.querySelector('#header'),'::before').opacity>=.999,null,{polling:100,timeout:15000});
+ records.enter=await page.evaluate(()=>{window.trace.push(headerSample());return stopHeaderTrace();});stable(records.enter,'full incoming portal journey');
+ fs.writeFileSync(path.join(out,'journey-traces.json'),JSON.stringify(records,null,2));
+ check('incoming page settles with its soft top protection enabled',+records.enter.at(-1).opacity>=.999,records.enter.at(-1));
  check('About content was not redesigned',await page.locator('.section-dxt-wall img').getAttribute('src')==='/assets/images/pattern-dark.webp');
  await page.locator('a[data-section-route="0"]').click();await page.waitForTimeout(500);const y=await page.evaluate(()=>scrollY);
  await page.locator('[data-gallery-select="2"]').click();await page.waitForFunction(()=>document.querySelector('[data-gallery-main]').src.endsWith('/game-3.webp'),null,{polling:100});check('Berserk gallery still works',true);
