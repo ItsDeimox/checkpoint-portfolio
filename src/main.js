@@ -27,7 +27,7 @@ function updateMusicUI(){
  if(sound){sound.disabled=false;sound.setAttribute('aria-pressed',String(musicState.enabled));sound.setAttribute('aria-label',musicState.enabled?'Pause music':'Play music');sound.title=musicState.error||musicState.title;sound.dataset.musicState=musicState.status;}
  const introSound=document.querySelector('#intro-sound-toggle');
  if(introSound){introSound.hidden=!intro?.activated;introSound.textContent=musicState.enabled?'Pause music':'Resume music';introSound.setAttribute('aria-pressed',String(musicState.enabled));}
- const spin=header.querySelector('#brand-spin');if(spin?.matches('[data-spin-logo]'))spin.disabled=persistentBrand?!persistentBrand.ready:(phase!=='ready'||Boolean(scene&&!scene.brandLogo?.ready));
+ const spin=header.querySelector('#brand-spin');if(spin?.matches('button[data-spin-logo]'))spin.disabled=persistentBrand?!persistentBrand.ready:(phase!=='ready'||Boolean(scene&&!scene.brandLogo?.ready));
  const title=header.querySelector('[data-music-title]');if(title&&title.textContent!==musicState.title)title.textContent=musicState.title;
  const status=header.querySelector('[data-music-status]');const message=musicState.error||(musicState.status==='playing'?'Playing':musicState.status==='loading'?'Loading track...':'Press Sound to play.');if(status&&status.textContent!==message)status.textContent=message;
 }
@@ -66,8 +66,16 @@ document.addEventListener('click',async event=>{
  if(!target||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
  const destination=target.closest('[data-section-route], [data-open-panel], [data-fallback-panel]');
  if(destination){event.preventDefault();sections.open(destination.dataset.sectionRoute??destination.dataset.openPanel??destination.dataset.fallbackPanel,destination);return;}
+ const brand=target.closest('[data-spin-logo]');
+ if(brand){
+  event.preventDefault();
+  if(sections.returning)return;
+  try{if(persistentBrand)persistentBrand.spin();else scene?.spinLogo();}
+  catch(error){console.warn('[DXT] Logo animation unavailable:',error);}
+  if(brand.matches('[data-return-showroom]'))sections.close();
+  return;
+ }
  if(target.closest('[data-return-showroom], [data-reset-room], [data-close-panel]')){event.preventDefault();sections.close();return;}
- if(target.closest('[data-spin-logo]')){event.preventDefault();if(persistentBrand)persistentBrand.spin();else scene?.spinLogo();return;}
  const focus=target.closest('[data-focus-panel]');if(focus){scene?.focusPanel(Number(focus.dataset.focusPanel));return;}
  if(target.closest('#quality')){settings.qualityPreference='manual';settings.quality=QUALITY_VALUES[(QUALITY_VALUES.indexOf(settings.quality)+1)%QUALITY_VALUES.length];save();scene?.setSettings();updateHeader();}
  else if(target.closest('#sound-toggle, #intro-sound-toggle')){
