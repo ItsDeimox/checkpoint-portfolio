@@ -1,3 +1,4 @@
+import {SectionMedia} from './ui/section-media.js';
 import {DEFAULT_TRACK,normalizeMusicSettings} from './scene/room-music-settings.js';
 import {home,ROOM_PANELS} from './pages/home-room.js';
 import {sectionHost} from './pages/section-pages.js';
@@ -19,19 +20,20 @@ let scene=null,phase='loading',selectedPanel=null,intro=null,sections=null,start
 let musicState={enabled:false,status:'idle',title:DEFAULT_TRACK.title,error:null,hasTrack:Boolean(DEFAULT_TRACK.url)};
 document.body.dataset.page='home';main.innerHTML=home()+sectionHost();footer.innerHTML=renderRoomFooter();
 const host=main.querySelector('.room-hero'),canvas=main.querySelector('#hero-canvas'),sectionRoot=main.querySelector('#room-section-page');
+const sectionMedia=new SectionMedia(sectionRoot);
 
 function updateMusicUI(){
  const sound=header.querySelector('#sound-toggle');
  if(sound){sound.disabled=false;sound.setAttribute('aria-pressed',String(musicState.enabled));sound.setAttribute('aria-label',musicState.enabled?'Pause music':'Play music');sound.title=musicState.error||musicState.title;sound.dataset.musicState=musicState.status;}
  const introSound=document.querySelector('#intro-sound-toggle');
  if(introSound){introSound.hidden=!intro?.activated;introSound.textContent=musicState.enabled?'Pause music':'Resume music';introSound.setAttribute('aria-pressed',String(musicState.enabled));}
- const spin=header.querySelector('#brand-spin');if(spin)spin.disabled=persistentBrand?!persistentBrand.ready:(phase!=='ready'||Boolean(scene&&!scene.brandLogo?.ready));
+ const spin=header.querySelector('#brand-spin');if(spin?.matches('[data-spin-logo]'))spin.disabled=persistentBrand?!persistentBrand.ready:(phase!=='ready'||Boolean(scene&&!scene.brandLogo?.ready));
  const title=header.querySelector('[data-music-title]');if(title&&title.textContent!==musicState.title)title.textContent=musicState.title;
  const status=header.querySelector('[data-music-status]');const message=musicState.error||(musicState.status==='playing'?'Playing':musicState.status==='loading'?'Loading track...':'Press Sound to play.');if(status&&status.textContent!==message)status.textContent=message;
 }
 function updateHeader(){
  const open=header.querySelector('.room-audio-menu')?.open,focus=header.contains(document.activeElement)?document.activeElement.id:null;
- header.innerHTML=renderRoomHeader(settings);header.querySelector('#quality').disabled=phase==='loading'&&!sections?.page;
+ header.innerHTML=renderRoomHeader(settings,{returnToShowroom:selectedPanel!==null||Boolean(sections?.returning)});header.querySelector('#quality').disabled=phase==='loading'&&!sections?.page;
  if(open)header.querySelector('.room-audio-menu').open=true;
  const homeLink=header.querySelector('.room-home-link');if(selectedPanel!==null)homeLink?.removeAttribute('aria-current');
  header.querySelector('[data-open-panel]')?.setAttribute('aria-controls','room-section-page');
@@ -87,7 +89,7 @@ document.addEventListener('keydown',event=>{
  else{const menu=header.querySelector('.room-audio-menu');if(menu?.open){menu.removeAttribute('open');header.querySelector('#music-settings-toggle')?.focus();}}
 });
 window.addEventListener('popstate',()=>{const index=panelFromPath(location.pathname);if(index===null)sections.close('none');else sections.open(index,null,'none',true);});
-window.addEventListener('pagehide',event=>{if(event.persisted){persistentBrand?.suspend();scene?.sleep();soundtrack.suspend();}else{pageDisposed=true;persistentBrand?.dispose();clearTimeout(startupTimeout);sections.dispose();intro?.dispose();scene?.dispose();soundtrack.close();}});
+window.addEventListener('pagehide',event=>{if(event.persisted){persistentBrand?.suspend();scene?.sleep();soundtrack.suspend();}else{pageDisposed=true;sectionMedia.dispose();persistentBrand?.dispose();clearTimeout(startupTimeout);sections.dispose();intro?.dispose();scene?.dispose();soundtrack.close();}});
 window.addEventListener('pageshow',()=>{persistentBrand?.wake();scene?.wake();if(!document.hidden)soundtrack.resume();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)soundtrack.suspend();else soundtrack.resume();});
 

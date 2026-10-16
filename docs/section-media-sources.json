@@ -1,0 +1,55 @@
+{
+  "checkedAt": "2026-10-16",
+  "universeId": 8620926433,
+  "placeId": 136449173422746,
+  "mediaEndpoint": "https://games.roblox.com/v2/games/8620926433/media",
+  "thumbnailsEndpoint": "https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=8620926433&countPerUniverse=10&defaults=false&size=768x432&format=Png&isCircular=false",
+  "infoEndpoint": "https://games.roblox.com/v1/games?universeIds=8620926433",
+  "images": [
+    {
+      "file": "assets/images/berserk/game-1.webp",
+      "assetId": 120558937499804,
+      "source": "https://tr.rbxcdn.com/180DAY-b6056aae2e919a05f184fd8cb08974b3/768/432/Image/Png/noFilter",
+      "sha256": "b2936bc6ab29ce6527aac514bb9f65fff0878aad8cbfbfbc8fece30cbf4761fd",
+      "processing": "WebP quality 90, unchanged 768x432 dimensions; no generative alterations"
+    },
+    {
+      "file": "assets/images/berserk/game-2.webp",
+      "assetId": 77601213613523,
+      "source": "https://tr.rbxcdn.com/180DAY-f625cb8a59745f579a4b820dbf8b247a/768/432/Image/Png/noFilter",
+      "sha256": "c619ddf32aaa9407afe0b3b83b58cfb038714b21c10be5781c47489b3041a88e",
+      "processing": "WebP quality 90, unchanged 768x432 dimensions; no generative alterations"
+    },
+    {
+      "file": "assets/images/berserk/game-3.webp",
+      "assetId": 100155597934050,
+      "source": "https://tr.rbxcdn.com/180DAY-7a49c35bdf27fee1d05e7042d7d77446/768/432/Image/Png/noFilter",
+      "sha256": "2bc45f9e1b4d437cc1250d3665665a0075a872802a672bbd94c4dbf6e0c1d23d",
+      "processing": "WebP quality 90, unchanged 768x432 dimensions; no generative alterations"
+    },
+    {
+      "file": "assets/images/berserk/game-4.webp",
+      "assetId": 95744883265536,
+      "source": "https://tr.rbxcdn.com/180DAY-caaa887125ce2e73201bf7dd09aadec4/768/432/Image/Png/noFilter",
+      "sha256": "c6d5fad38df80e546e1dbd561f857cce9aaa027eef4ffc32b009f1c75b02ea2c",
+      "processing": "WebP quality 90, unchanged 768x432 dimensions; no generative alterations"
+    },
+    {
+      "file": "assets/images/berserk/game-5.webp",
+      "assetId": 90776538793181,
+      "source": "https://tr.rbxcdn.com/180DAY-922649ac7f92214faa1f0d2f62ee0988/768/432/Image/Png/noFilter",
+      "sha256": "52257fd29ec010ccc376f8eb02ab7b3bcdcafd643c7b136cf6598e3eeff8b53f",
+      "processing": "WebP quality 90, unchanged 768x432 dimensions; no generative alterations"
+    }
+  ],
+  "providedBannerAssets": {
+    "about": "assets/images/pattern-dark.webp",
+    "revline": "assets/images/revline-pattern.webp",
+    "frost": "assets/images/frost-card.webp",
+    "rightBackdrop": "assets/images/race.webp"
+  },
+  "gameIntro": {
+    "status": "not supplied",
+    "note": "The official Roblox media list returned five images and no video. No previous website recording is used as game footage."
+  }
+}
