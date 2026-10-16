@@ -1,0 +1,39 @@
+name: Stage DXT header continuity patch
+on:
+  push:
+    branches: [build/dxt-header-continuity-r18]
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Fetch exact patch and validate
+        run: |
+          set -euo pipefail
+          git init work
+          cd work
+          git remote add origin https://github.com/ItsDeimox/checkpoint-portfolio.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout -b build/dxt-header-continuity-r18 FETCH_HEAD
+          curl --fail --location --retry 2 https://sb-657q36q20qgc.vercel.run/r18-patch.tar.gz -o /tmp/patch.tar.gz
+          echo '0d383d399fdb7af0e676fde30c171729543c09f9c19e1545d13e54a11e1fba0d  /tmp/patch.tar.gz' | sha256sum -c -
+          tar -tzf /tmp/patch.tar.gz > /tmp/paths.txt
+          if grep -v '^dxrkths/' /tmp/paths.txt; then exit 1; fi
+          tar -xzf /tmp/patch.tar.gz
+          cd dxrkths
+          npm ci --no-audit --no-fund
+          npm run build
+      - name: Store tested source on temporary integration branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd work
+          git config user.name 'Deimox'
+          git config user.email '123704758+ItsDeimox@users.noreply.github.com'
+          git add --pathspec-from-file=/tmp/paths.txt
+          git commit -m 'Stage restored navbar layout and combined logo navigation [skip ci]'
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/build/dxt-header-continuity-r18
