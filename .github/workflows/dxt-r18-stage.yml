@@ -17,8 +17,8 @@ jobs:
           git remote add origin https://github.com/ItsDeimox/checkpoint-portfolio.git
           git fetch --depth=1 origin "$GITHUB_SHA"
           git checkout -b build/dxt-header-continuity-r18 FETCH_HEAD
-          curl --fail --location --retry 2 https://sb-657q36q20qgc.vercel.run/r18-patch.tar.gz -o /tmp/patch.tar.gz
-          echo '0d383d399fdb7af0e676fde30c171729543c09f9c19e1545d13e54a11e1fba0d  /tmp/patch.tar.gz' | sha256sum -c -
+          curl --fail --location --retry 2 https://sb-657q36q20qgc.vercel.run/r18-patch-final.tar.gz -o /tmp/patch.tar.gz
+          echo 'c3a001d697ceb630b15cf758ab849eff2ed780ae8ff86abea56b163854f7f831  /tmp/patch.tar.gz' | sha256sum -c -
           tar -tzf /tmp/patch.tar.gz > /tmp/paths.txt
           if grep -v '^dxrkths/' /tmp/paths.txt; then exit 1; fi
           tar -xzf /tmp/patch.tar.gz
