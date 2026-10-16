@@ -288,14 +288,15 @@ test('direct route lazy initialization and Home both use the same reverse callba
  assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();assert.equal(f.inspect().section.travelling,false);
 });
 
-test('internal header brand returns through the existing portal and is available without the GPU logo',async()=>{
- const f=harness({path:'/berserk'});await settle();const brand=f.get('#brand-spin');
- assert.equal(brand.getAttribute('href'),'/');assert.equal(brand.getAttribute('aria-label'),'Back to showroom');assert.notEqual(brand.disabled,true);
- fire(brand,'click');await f.ready();assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();
+test('internal arrow returns while logo continues to spin',async()=>{
+ const f=harness({path:'/berserk'});await settle();const brand=f.get('#brand-spin'),arrow=f.get('.room-brand-arrow');
+ assert.equal(brand.getAttribute('aria-label'),'Rotate DXT logo');assert.notEqual(brand.getAttribute('data-spin-logo'),null);assert.equal(arrow.getAttribute('href'),'/');
+ fire(brand,'click');assert.equal(f.location.pathname,'/berserk');assert.equal(f.inspect().section.returning,false);
+ fire(arrow,'click');await f.ready();assert.equal(f.inspect().section.returning,true);f.scene.returnCallback();
  assert.equal(f.location.pathname,'/');assert.equal(f.get('#brand-spin').getAttribute('aria-label'),'Rotate DXT logo');
 });
 test('header return works when the 3D bundle is unavailable',async()=>{
  const f=harness({bundleError:Error('offline')});await settle();fire(f.get('[data-fallback-panel="3"]'),'click');
- const brand=f.get('#brand-spin');assert.equal(brand.getAttribute('aria-label'),'Back to showroom');assert.notEqual(brand.disabled,true);
- fire(brand,'click');assert.equal(f.get('#room-section-page').hidden,true);assert.equal(f.location.pathname,'/');
+ const brand=f.get('#brand-spin'),arrow=f.get('.room-brand-arrow');assert.equal(brand.getAttribute('aria-label'),'Rotate DXT logo');assert.equal(arrow.getAttribute('aria-label'),'Back to showroom');
+ fire(arrow,'click');assert.equal(f.get('#room-section-page').hidden,true);assert.equal(f.location.pathname,'/');
 });
