@@ -1,0 +1,39 @@
+name: Stage verified DXT portal arrival
+on:
+  push:
+    branches: [build/dxt-portal-arrival-r19]
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Import exact tested patch
+        run: |
+          set -euo pipefail
+          git init work
+          cd work
+          git remote add origin https://github.com/ItsDeimox/checkpoint-portfolio.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout -b build/dxt-portal-arrival-r19 FETCH_HEAD
+          curl --fail --location --retry 2 https://sb-zftorgu1ucfs.vercel.run/r19-patch.tar.gz -o /tmp/r19.tar.gz
+          echo 'd732ed0014290d7e7dbd4f66ea7b6a74411d7923fbdfdad040fb04eecd63e30e  /tmp/r19.tar.gz' | sha256sum -c -
+          tar -tzf /tmp/r19.tar.gz > /tmp/paths.txt
+          if grep -v '^dxrkths/' /tmp/paths.txt; then exit 1; fi
+          tar -xzf /tmp/r19.tar.gz
+          cd dxrkths
+          npm ci --no-audit --no-fund
+          npm run build
+      - name: Store tested files on temporary branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd work
+          git config user.name 'Deimox'
+          git config user.email '123704758+ItsDeimox@users.noreply.github.com'
+          git add --pathspec-from-file=/tmp/paths.txt
+          git commit -m 'Stage seamless portal arrival and regression checks [skip ci]'
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/build/dxt-portal-arrival-r19
