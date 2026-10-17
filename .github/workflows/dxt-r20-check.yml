@@ -1,0 +1,30 @@
+name: Verify DXT physical portal exit
+on:
+  push:
+    branches: [build/dxt-portal-end-r20]
+permissions:
+  contents: write
+concurrency:
+  group: dxt-r20-check
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing project dependencies
+        working-directory: dxrkths
+        run: npm ci --no-audit --no-fund
+      - name: Regression probes before implementation
+        working-directory: dxrkths
+        run: node --test tests/portal-end-plane.test.mjs
+      - name: Apply staged integration patch when present
+        run: |
+          if test -f .github/r20-apply.mjs; then node .github/r20-apply.mjs; fi
+      - name: Full build and CPU regression suite
+        working-directory: dxrkths
+        run: npm run build
