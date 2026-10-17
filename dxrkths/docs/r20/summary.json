@@ -1,0 +1,9 @@
+{
+  "browser": "141.0.7390.37",
+  "renderer": "ANGLE SwiftShader",
+  "checks": 45,
+  "failures": 0,
+  "nativeFrames": 28,
+  "errors": [],
+  "buildFiles": 60
+}
