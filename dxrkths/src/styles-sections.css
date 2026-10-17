@@ -237,10 +237,10 @@ body.section-arriving .section-page {
  overflow: hidden;
  contain: paint;
  opacity: var(--arrival-opacity,0);
- transform: scale(var(--arrival-scale,.72));
- transform-origin: 50% 50%;
+ transform: var(--arrival-transform,scale(.001));
+ transform-origin: 0 0;
  pointer-events: none;
- will-change: opacity,transform;
+ will-change: transform;
 }
 .section-page[data-portal-arrival] .section-layout { animation: none; }
 body.section-arriving .berserk-play-dock { opacity: 1; pointer-events: none; }
