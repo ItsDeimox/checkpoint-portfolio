@@ -1,3 +1,4 @@
+import {projectPortalExit} from './room-portal-exit.js';
 import * as T from 'three';
 import {PORTAL_UNIFORMS,PORTAL_FUNCTIONS} from './room-portal-shader.js';
 import {PortalEffects} from './room-portal-effects.js';
@@ -31,7 +32,7 @@ function configureApproach(rig,basis,onComplete){
 }
 function portalUniforms(panel){
  const b=portalBasis(panel);
- return {portalMix:{value:0},portalReturn:{value:0},portalAge:{value:0},portalProgress:{value:0},portalSpeed:{value:0},portalOpening:{value:0},portalLayerCount:{value:18},
+ return {portalMix:{value:0},portalExitDepth:{value:28},portalExitHalf:{value:new T.Vector2(1,1)},portalExitOffset:{value:0},portalReturn:{value:0},portalAge:{value:0},portalProgress:{value:0},portalSpeed:{value:0},portalOpening:{value:0},portalLayerCount:{value:18},
   portalOrigin:{value:b.center},portalRight:{value:b.right},portalUp:{value:b.up},portalForward:{value:b.forward},portalHalf:{value:b.half}};
 }
 export function configurePortal(panel){
@@ -90,17 +91,24 @@ export class BannerPortal {
     active:true,interior:this.interior,quality:this.view.settings.quality,dt,reduced:this.view.reduced.matches});
  }
 
- enter(index,onComplete,onProgress=null){
+ enter(index,onComplete,onProgress=null,getArrivalViewport=null){
   if(this.active||!this.view.ready)return false;
   const v=this.view,panel=v.panels[index];if(!panel)return false;
   this.panel=panel;this.basis=portalBasis(panel);this.saved={position:v.camera.position.clone(),rotation:v.camera.quaternion.clone(),focus:v.cameraRig.focusTarget.clone(),fov:v.camera.fov,width:v.cameraRig.width,aspect:v.camera.aspect,yaw:v.cameraRig.yaw,pitch:v.cameraRig.pitch};
-  this.active=true;this.returning=false;this.interior=false;this.stage='approach';this.elapsed=0;this.age=0;this.onComplete=onComplete;this.onProgress=onProgress;panel.portalUniforms.portalReturn.value=0;
+  this.active=true;this.returning=false;this.interior=false;this.stage='approach';this.elapsed=0;this.age=0;this.onComplete=onComplete;this.onProgress=onProgress;this.getArrivalViewport=getArrivalViewport;panel.portalUniforms.portalReturn.value=0;this.sampleExit();
   this.effects.start(this.basis);this.shutter.reset();
   v.turntable?.end(false);v.release();v.clearHover();v.hidePanelContent();v.pendingPick=v.lastPointer=null;
   Object.assign(this.fullMaterial.uniforms,panel.portalUniforms,{artwork:panel.material.uniforms.artwork,projection:panel.material.uniforms.projection});
   v.cameraRig.panel=null;
   configureApproach(v.cameraRig,this.basis,()=>{this.stage='flight';this.elapsed=0;});
   v.optics.resetHistory();v.wake();return true;
+ }
+ sampleExit(){
+  if(!this.basis||!this.panel)return null;
+  const view=this.view,width=view.width??view.cameraRig.width??900,height=view.height??width/view.camera.aspect;
+  const frame=projectPortalExit(view.camera,this.basis,portalTravelPose(this.basis,1),this.getArrivalViewport?.()??{width,height,contentWidth:width});
+  if(frame.visible){const u=this.panel.portalUniforms;u.portalExitDepth.value=frame.exitDepth;u.portalExitHalf.value.fromArray(frame.exitHalf);u.portalExitOffset.value=frame.exitOffset;}
+  this.exitFrame=frame;return frame;
  }
  /** Start behind the doorway and rewind the same camera path and shader clock. */
  returnToShowroom(index,onComplete){
@@ -201,7 +209,7 @@ export class BannerPortal {
    u.portalProgress.value=t;
    // Identical world-ray shading takes over only as the doorway reaches near clipping.
    this.interior=this.basis.toLocal(v.camera.position).z>=-v.camera.near*1.5;
-   this.onProgress?.(t);
+   this.onProgress?.(t,this.sampleExit());
    if(t===1)this.finish();
   }
   const state=this.effects.update(this.age,u.portalProgress.value,v.settings.quality,this.active,this.interior,v.reduced.matches);
@@ -212,11 +220,11 @@ export class BannerPortal {
  }
  finish(){
   if(!this.active)return;this.active=false;this.stage='arrived';this.effects.reset();this.shutter.reset();
-  this.onProgress?.(1);this.onProgress=null;
+  this.onProgress?.(1,this.sampleExit());this.onProgress=null;
   const callback=this.onComplete;this.onComplete=null;callback?.();
  }
  cancel(){
-  const v=this.view;this.active=false;this.returning=false;this.interior=false;this.stage='idle';this.onComplete=null;this.onProgress=null;
+  const v=this.view;this.active=false;this.returning=false;this.interior=false;this.stage='idle';this.onComplete=null;this.onProgress=null;this.getArrivalViewport=null;this.exitFrame=null;
   this.effects.reset();this.shutter.reset();
   v.panels.forEach(p=>{p.portalUniforms.portalMix.value=0;p.portalUniforms.portalReturn.value=0;p.portalUniforms.portalProgress.value=0;p.portalUniforms.portalSpeed.value=0;p.portalUniforms.portalOpening.value=0;});
   v.cameraRig.transition=null;v.cameraRig.panel=null;v.cameraRig.mode='overview';
