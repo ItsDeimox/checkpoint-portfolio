@@ -221,3 +221,29 @@ body[data-page="home"] .room-brand { transition: opacity .3s ease; }
  body[data-page="home"] .room-header-nav,
  body[data-page="home"] .room-brand { transition: none; }
 }
+
+
+/* The destination is present inside the last part of the corridor, not revealed
+ * after a black frame. Only the existing camera clock drives these properties. */
+body.section-arriving .section-page {
+ position: fixed;
+ top: 0;
+ bottom: 0;
+ left: 0;
+ right: var(--arrival-gutter,0px);
+ height: 100dvh;
+ min-height: 0;
+ z-index: 12;
+ overflow: hidden;
+ contain: paint;
+ opacity: var(--arrival-opacity,0);
+ transform: scale(var(--arrival-scale,.72));
+ transform-origin: 50% 50%;
+ pointer-events: none;
+ will-change: opacity,transform;
+}
+.section-page[data-portal-arrival] .section-layout { animation: none; }
+body.section-arriving .berserk-play-dock { opacity: 1; pointer-events: none; }
+@media(prefers-reduced-motion:reduce) {
+ body.section-arriving .section-page { transform: none; }
+}

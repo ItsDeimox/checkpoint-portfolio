@@ -1,0 +1,2062 @@
+{
+  "browser": "156.0.8078.4",
+  "checks": [
+    {
+      "name": "page 0 is prepared but invisible before the far corridor",
+      "pass": true,
+      "detail": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Berserk Drift X",
+        "box": [
+          119.75373840332031,
+          214.0800018310547,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 74.12760416666667,
+          "lit": 0.7578125
+        }
+      }
+    },
+    {
+      "name": "page 0 already appears while the corridor is still rendered",
+      "pass": true,
+      "detail": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Berserk Drift X",
+        "box": [
+          71.13613891601562,
+          207.5420379638672,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 83.7421875,
+          "lit": 0.8323567708333334
+        }
+      }
+    },
+    {
+      "name": "page 0 fully covers the corridor before the handoff",
+      "pass": true,
+      "detail": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Berserk Drift X",
+        "box": [
+          44.796875,
+          204,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 75.3486328125,
+          "lit": 0.7819010416666666
+        }
+      }
+    },
+    {
+      "name": "incoming shader 0 retains illuminated pixels at 98%, not a black frame",
+      "pass": true,
+      "detail": {
+        "mean": 75.3486328125,
+        "lit": 0.7819010416666666
+      }
+    },
+    {
+      "name": "page 0 reuses the same DOM and becomes interactive without re-entry animation",
+      "pass": true,
+      "detail": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "Berserk Drift X",
+        "box": [
+          44.796875,
+          204,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    },
+    {
+      "name": "page 0 has no end-of-flight layout jump despite classic scrollbar",
+      "pass": true,
+      "detail": {
+        "late": [
+          44.796875,
+          204,
+          535.40625,
+          60.796875
+        ],
+        "done": [
+          44.796875,
+          204,
+          535.40625,
+          60.796875
+        ],
+        "delta": 0
+      }
+    },
+    {
+      "name": "navbar 0 stays fixed during preview and handoff",
+      "pass": true
+    },
+    {
+      "name": "page 1 is prepared but invisible before the far corridor",
+      "pass": true,
+      "detail": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Groups & Games",
+        "box": [
+          119.75373840332031,
+          210.47999572753906,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 68.86393229166667,
+          "lit": 0.6539713541666666
+        }
+      }
+    },
+    {
+      "name": "page 1 already appears while the corridor is still rendered",
+      "pass": true,
+      "detail": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Groups & Games",
+        "box": [
+          71.13613891601562,
+          203.0339813232422,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 82.05240885416667,
+          "lit": 0.7643229166666666
+        }
+      }
+    },
+    {
+      "name": "page 1 fully covers the corridor before the handoff",
+      "pass": true,
+      "detail": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Groups & Games",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 65.41666666666667,
+          "lit": 0.7877604166666666
+        }
+      }
+    },
+    {
+      "name": "incoming shader 1 retains illuminated pixels at 98%, not a black frame",
+      "pass": true,
+      "detail": {
+        "mean": 65.41666666666667,
+        "lit": 0.7877604166666666
+      }
+    },
+    {
+      "name": "page 1 reuses the same DOM and becomes interactive without re-entry animation",
+      "pass": true,
+      "detail": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "Groups & Games",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    },
+    {
+      "name": "page 1 has no end-of-flight layout jump despite classic scrollbar",
+      "pass": true,
+      "detail": {
+        "late": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "done": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "delta": 0
+      }
+    },
+    {
+      "name": "navbar 1 stays fixed during preview and handoff",
+      "pass": true
+    },
+    {
+      "name": "page 2 is prepared but invisible before the far corridor",
+      "pass": true,
+      "detail": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Future Projects",
+        "box": [
+          119.75373840332031,
+          210.47999572753906,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 79.85807291666667,
+          "lit": 0.7659505208333334
+        }
+      }
+    },
+    {
+      "name": "page 2 already appears while the corridor is still rendered",
+      "pass": true,
+      "detail": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Future Projects",
+        "box": [
+          71.13613891601562,
+          203.0339813232422,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 82.69889322916667,
+          "lit": 0.7877604166666666
+        }
+      }
+    },
+    {
+      "name": "page 2 fully covers the corridor before the handoff",
+      "pass": true,
+      "detail": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Future Projects",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 65.390625,
+          "lit": 0.681640625
+        }
+      }
+    },
+    {
+      "name": "incoming shader 2 retains illuminated pixels at 98%, not a black frame",
+      "pass": true,
+      "detail": {
+        "mean": 65.390625,
+        "lit": 0.681640625
+      }
+    },
+    {
+      "name": "page 2 reuses the same DOM and becomes interactive without re-entry animation",
+      "pass": true,
+      "detail": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "Future Projects",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    },
+    {
+      "name": "page 2 has no end-of-flight layout jump despite classic scrollbar",
+      "pass": true,
+      "detail": {
+        "late": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "done": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "delta": 0
+      }
+    },
+    {
+      "name": "navbar 2 stays fixed during preview and handoff",
+      "pass": true
+    },
+    {
+      "name": "page 3 is prepared but invisible before the far corridor",
+      "pass": true,
+      "detail": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "About DXT",
+        "box": [
+          119.75373840332031,
+          210.47999572753906,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 67.279296875,
+          "lit": 0.6513671875
+        }
+      }
+    },
+    {
+      "name": "page 3 already appears while the corridor is still rendered",
+      "pass": true,
+      "detail": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "About DXT",
+        "box": [
+          71.13613891601562,
+          203.0339813232422,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 81.9306640625,
+          "lit": 0.7464192708333334
+        }
+      }
+    },
+    {
+      "name": "page 3 fully covers the corridor before the handoff",
+      "pass": true,
+      "detail": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "About DXT",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 66.42220052083333,
+          "lit": 0.7571614583333334
+        }
+      }
+    },
+    {
+      "name": "incoming shader 3 retains illuminated pixels at 98%, not a black frame",
+      "pass": true,
+      "detail": {
+        "mean": 66.42220052083333,
+        "lit": 0.7571614583333334
+      }
+    },
+    {
+      "name": "page 3 reuses the same DOM and becomes interactive without re-entry animation",
+      "pass": true,
+      "detail": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "About DXT",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    },
+    {
+      "name": "page 3 has no end-of-flight layout jump despite classic scrollbar",
+      "pass": true,
+      "detail": {
+        "late": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "done": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "delta": 0
+      }
+    },
+    {
+      "name": "navbar 3 stays fixed during preview and handoff",
+      "pass": true
+    },
+    {
+      "name": "page 4 is prepared but invisible before the far corridor",
+      "pass": true,
+      "detail": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Socials & Contact",
+        "box": [
+          119.75373840332031,
+          210.47999572753906,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 75.76725260416667,
+          "lit": 0.7613932291666666
+        }
+      }
+    },
+    {
+      "name": "page 4 already appears while the corridor is still rendered",
+      "pass": true,
+      "detail": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Socials & Contact",
+        "box": [
+          71.13613891601562,
+          203.0339813232422,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 80.56119791666667,
+          "lit": 0.7861328125
+        }
+      }
+    },
+    {
+      "name": "page 4 fully covers the corridor before the handoff",
+      "pass": true,
+      "detail": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Socials & Contact",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 72.896484375,
+          "lit": 0.7867838541666666
+        }
+      }
+    },
+    {
+      "name": "incoming shader 4 retains illuminated pixels at 98%, not a black frame",
+      "pass": true,
+      "detail": {
+        "mean": 72.896484375,
+        "lit": 0.7867838541666666
+      }
+    },
+    {
+      "name": "page 4 reuses the same DOM and becomes interactive without re-entry animation",
+      "pass": true,
+      "detail": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "Socials & Contact",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    },
+    {
+      "name": "page 4 has no end-of-flight layout jump despite classic scrollbar",
+      "pass": true,
+      "detail": {
+        "late": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "done": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "delta": 0
+      }
+    },
+    {
+      "name": "navbar 4 stays fixed during preview and handoff",
+      "pass": true
+    },
+    {
+      "name": "no extra canvas was created for destination compositing",
+      "pass": true
+    },
+    {
+      "name": "mobile preview stays inside the viewport and is not scrollable early",
+      "pass": true
+    },
+    {
+      "name": "mobile handoff preserves actual text dimensions",
+      "pass": true,
+      "detail": {
+        "before": [
+          27.296875,
+          204,
+          320.40625,
+          45.59375
+        ],
+        "after": [
+          27.296875,
+          204,
+          320.40625,
+          45.59375
+        ]
+      }
+    },
+    {
+      "name": "gallery still works on the committed destination",
+      "pass": true
+    },
+    {
+      "name": "Play retains its destination",
+      "pass": true
+    },
+    {
+      "name": "Escape removes a partial page and restores the showroom",
+      "pass": true
+    },
+    {
+      "name": "native frames show actual content before the camera arrives",
+      "pass": true
+    },
+    {
+      "name": "there is never a frame with both the corridor and destination hidden",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "native navbar and logo bounds never teleport",
+      "pass": true
+    },
+    {
+      "name": "native committed content has no duplicate section entrance animation",
+      "pass": true
+    },
+    {
+      "name": "same logo still spins and navigates home",
+      "pass": true
+    },
+    {
+      "name": "the established reverse journey still completes",
+      "pass": true
+    },
+    {
+      "name": "direct reduced-motion/no-WebGL visit bypasses preview and stays readable",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript errors in tested flows",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "records": [
+    {
+      "index": 0,
+      "early": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Berserk Drift X",
+        "box": [
+          119.75373840332031,
+          214.0800018310547,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 74.12760416666667,
+          "lit": 0.7578125
+        }
+      },
+      "middle": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Berserk Drift X",
+        "box": [
+          71.13613891601562,
+          207.5420379638672,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 83.7421875,
+          "lit": 0.8323567708333334
+        }
+      },
+      "late": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Berserk Drift X",
+        "box": [
+          44.796875,
+          204,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 75.3486328125,
+          "lit": 0.7819010416666666
+        }
+      },
+      "done": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "Berserk Drift X",
+        "box": [
+          44.796875,
+          204,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    },
+    {
+      "index": 1,
+      "early": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Groups & Games",
+        "box": [
+          119.75373840332031,
+          210.47999572753906,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 68.86393229166667,
+          "lit": 0.6539713541666666
+        }
+      },
+      "middle": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Groups & Games",
+        "box": [
+          71.13613891601562,
+          203.0339813232422,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 82.05240885416667,
+          "lit": 0.7643229166666666
+        }
+      },
+      "late": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Groups & Games",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 65.41666666666667,
+          "lit": 0.7877604166666666
+        }
+      },
+      "done": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "Groups & Games",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    },
+    {
+      "index": 2,
+      "early": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Future Projects",
+        "box": [
+          119.75373840332031,
+          210.47999572753906,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 79.85807291666667,
+          "lit": 0.7659505208333334
+        }
+      },
+      "middle": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Future Projects",
+        "box": [
+          71.13613891601562,
+          203.0339813232422,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 82.69889322916667,
+          "lit": 0.7877604166666666
+        }
+      },
+      "late": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Future Projects",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 65.390625,
+          "lit": 0.681640625
+        }
+      },
+      "done": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "Future Projects",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    },
+    {
+      "index": 3,
+      "early": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "About DXT",
+        "box": [
+          119.75373840332031,
+          210.47999572753906,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 67.279296875,
+          "lit": 0.6513671875
+        }
+      },
+      "middle": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "About DXT",
+        "box": [
+          71.13613891601562,
+          203.0339813232422,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 81.9306640625,
+          "lit": 0.7464192708333334
+        }
+      },
+      "late": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "About DXT",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 66.42220052083333,
+          "lit": 0.7571614583333334
+        }
+      },
+      "done": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "About DXT",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    },
+    {
+      "index": 4,
+      "early": {
+        "progress": 0.2,
+        "opacity": 0,
+        "scale": "matrix(0.72, 0, 0, 0.72, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Socials & Contact",
+        "box": [
+          119.75373840332031,
+          210.47999572753906,
+          385.4925537109375,
+          43.77375793457031
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 75.76725260416667,
+          "lit": 0.7613932291666666
+        }
+      },
+      "middle": {
+        "progress": 0.7,
+        "opacity": 0.648608,
+        "scale": "matrix(0.90161, 0, 0, 0.90161, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Socials & Contact",
+        "box": [
+          71.13613891601562,
+          203.0339813232422,
+          482.7276916503906,
+          54.81507873535156
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 80.56119791666667,
+          "lit": 0.7861328125
+        }
+      },
+      "late": {
+        "progress": 0.98,
+        "opacity": 1,
+        "scale": "matrix(1, 0, 0, 1, 0, 0)",
+        "preview": "preview",
+        "inert": true,
+        "aria": "true",
+        "title": "Socials & Contact",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": false,
+        "sleeping": false,
+        "identity": true,
+        "radiance": {
+          "mean": 72.896484375,
+          "lit": 0.7867838541666666
+        }
+      },
+      "done": {
+        "progress": 1,
+        "opacity": 1,
+        "scale": "none",
+        "preview": "arrived",
+        "inert": false,
+        "aria": null,
+        "title": "Socials & Contact",
+        "box": [
+          44.796875,
+          199,
+          535.40625,
+          60.796875
+        ],
+        "header": [
+          38.390625,
+          21,
+          563.1875,
+          43
+        ],
+        "hiddenHost": true,
+        "sleeping": true,
+        "identity": true,
+        "radiance": null
+      }
+    }
+  ],
+  "native": [
+    {
+      "t": 27064.5,
+      "stage": "idle",
+      "active": false,
+      "opacity": 1,
+      "hidden": true,
+      "inert": false,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27082.800000000047,
+      "stage": "idle",
+      "active": false,
+      "opacity": 1,
+      "hidden": true,
+      "inert": false,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27094.199999999953,
+      "stage": "idle",
+      "active": false,
+      "opacity": 1,
+      "hidden": true,
+      "inert": false,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27122.399999999907,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27138.199999999953,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27156.100000000093,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27174.399999999907,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27187.199999999953,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27199.399999999907,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27214,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27243,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27267.199999999953,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27291.100000000093,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27304.199999999953,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27319.300000000047,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27330.5,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27356.5,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27377.800000000047,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27398.399999999907,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 27410.199999999953,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 28778.899999999907,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 29296.100000000093,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 30676.600000000093,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 30783,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 33843.39999999991,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 35244.30000000005,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 35360.60000000009,
+      "stage": "approach",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 36742,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 38129.5,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 41049.10000000009,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 42491.89999999991,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 42612.10000000009,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0.00498612,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 44145.39999999991,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0.0771112,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 45775.60000000009,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0.2561,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 47410.80000000005,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0.506574,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 47537.10000000009,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0.755061,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 49220.39999999991,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0.929063,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 50822.5,
+      "stage": "flight",
+      "active": true,
+      "opacity": 0.996134,
+      "hidden": false,
+      "inert": true,
+      "page": false,
+      "host": false,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 52563.39999999991,
+      "stage": "arrived",
+      "active": false,
+      "opacity": 1,
+      "hidden": false,
+      "inert": false,
+      "page": true,
+      "host": true,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    },
+    {
+      "t": 52630.69999999995,
+      "stage": "arrived",
+      "active": false,
+      "opacity": 1,
+      "hidden": false,
+      "inert": false,
+      "page": true,
+      "host": true,
+      "brand": [
+        36,
+        21.5,
+        63,
+        42
+      ]
+    }
+  ]
+}

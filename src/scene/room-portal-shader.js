@@ -1,6 +1,6 @@
 /** Shared world-ray corridor: the banner and the interior see the same space. */
 export const PORTAL_UNIFORMS=/*glsl*/`
- uniform float portalMix;uniform float portalAge;uniform float portalProgress;
+ uniform float portalMix;uniform float portalReturn;uniform float portalAge;uniform float portalProgress;
  uniform float portalSpeed;uniform float portalOpening;uniform float portalLayerCount;uniform vec3 portalOrigin;uniform vec3 portalRight;
  uniform vec3 portalUp;uniform vec3 portalForward;uniform vec2 portalHalf;
 `;
@@ -70,6 +70,8 @@ export const PORTAL_FUNCTIONS=/*glsl*/`
   vec2 vanishing=rd.xy/max(rd.z,.02);
   float endGlow=exp(-dot(vanishing,vanishing)*110.);
   color+=vec3(.15,.002,.012)*endGlow;
-  return color*(1.-smoothstep(.84,1.,portalProgress));
+  // Incoming light stays intact while the real page takes over.
+  // The established reverse journey retains its original tail.
+  return color*(1.-portalReturn*smoothstep(.84,1.,portalProgress));
  }
 `;

@@ -1,10 +1,40 @@
+import {arrivalVisual,destinationGutter} from './portal-arrival.js';
 import {renderSectionPage} from '../pages/section-pages.js';
 
 /** History and cancellation are page concerns; the renderer owns both journeys. */
 export class SectionRoutes {
  constructor({document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh}){
   Object.assign(this,{document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh});
+  this.onArrivalResize=()=>this.fitArrivalViewport();
+  document.defaultView?.addEventListener?.('resize',this.onArrivalResize,{passive:true});
   this.index=null;this.token=0;this.page=false;this.travelling=false;this.pending=false;this.returning=false;this.waitingReturn=false;
+ }
+ clearArrival(retain=false){
+  this.arrival=null;
+  this.document.body.classList.remove('section-arriving');
+  this.root.inert=false;this.root.removeAttribute('aria-hidden');
+  if(retain)this.root.setAttribute('data-portal-arrival','arrived');
+  else this.root.removeAttribute('data-portal-arrival');
+  for(const name of ['--arrival-opacity','--arrival-scale','--arrival-gutter'])this.root.style.removeProperty?.(name);
+ }
+ prepareArrival(index,token){
+  this.arrival={index,token};
+  this.root.innerHTML=renderSectionPage(index);
+  this.root.setAttribute('data-portal-arrival','preview');this.root.setAttribute('aria-hidden','true');
+  this.root.style.setProperty('--arrival-gutter','0px');
+  this.root.inert=true;this.root.hidden=false;
+  this.document.body.classList.add('section-arriving');this.revealArrival(index,token,0);this.fitArrivalViewport();
+ }
+ fitArrivalViewport(){
+  if(!this.arrival)return;
+  this.root.style.setProperty('--arrival-gutter','0px');
+  if(this.root.scrollHeight>this.root.clientHeight+1)this.root.style.setProperty('--arrival-gutter',`${destinationGutter(this.document)}px`);
+ }
+ revealArrival(index,token,progress){
+  if(token!==this.token||this.index!==index||!this.arrival||this.returning)return;
+  const visual=arrivalVisual(progress);
+  this.root.style.setProperty('--arrival-opacity',String(visual.opacity));
+  this.root.style.setProperty('--arrival-scale',String(visual.scale));
  }
  clearReturn(){
   this.returning=this.waitingReturn=false;this.root.inert=false;this.root.removeAttribute('aria-busy');
@@ -13,14 +43,15 @@ export class SectionRoutes {
  open(index,trigger,historyMode='push',direct=false){
   index=Number(index);if(!Number.isInteger(index)||index<0||index>=5)return;
   if(this.travelling&&this.index===index)return;
-  const fromPage=this.page,token=++this.token;this.clearReturn();this.index=index;this.onSelect(index);this.setLocation(index,historyMode);
+  const fromPage=this.page,token=++this.token;this.clearArrival();this.clearReturn();this.index=index;this.onSelect(index);this.setLocation(index,historyMode);
   const scene=this.getScene();scene?.cancelPortal?.();
   if(direct||fromPage||this.getPhase()==='unavailable'||scene?.reduced?.matches){this.show(index,token);return;}
   if(!scene?.ready||!this.entered()){this.pending=true;return;}
   this.pending=false;this.page=false;this.travelling=true;this.root.hidden=true;this.host.hidden=false;
   this.document.body.classList.add('portal-travelling');this.document.body.classList.remove('section-active');
   this.canvas.inert=true;this.footer.inert=true;
-  const started=scene.enterPortal(index,()=>this.show(index,token));
+  this.prepareArrival(index,token);
+  const started=scene.enterPortal(index,()=>this.show(index,token),p=>this.revealArrival(index,token,p));
   if(!started)this.show(index,token);
  }
  ready(){
@@ -30,8 +61,9 @@ export class SectionRoutes {
  }
  show(index,token){
   if(token!==this.token||this.index!==index)return;
-  this.clearReturn();this.page=true;this.pending=false;this.travelling=false;
-  this.getScene()?.parkSection();this.root.innerHTML=renderSectionPage(index);this.root.hidden=false;
+  const prepared=this.arrival?.index===index&&this.arrival?.token===token;
+  this.clearArrival(prepared);this.clearReturn();this.page=true;this.pending=false;this.travelling=false;
+  this.getScene()?.parkSection();if(!prepared)this.root.innerHTML=renderSectionPage(index);this.root.hidden=false;
   this.host.hidden=true;this.footer.hidden=true;this.canvas.inert=true;
   this.document.body.classList.remove('portal-travelling');this.document.body.classList.add('section-active');
   this.root.scrollTop=0;this.document.defaultView?.scrollTo?.(0,0);
@@ -39,6 +71,7 @@ export class SectionRoutes {
  }
  close(historyMode='push',immediate=false){
   if(this.returning&&!immediate)return;
+  this.clearArrival(this.page);
   const fromPage=this.page,index=this.index,token=++this.token,scene=this.getScene();
   this.index=null;this.onSelect(null);this.setLocation(null,historyMode);this.pending=false;
   if(!immediate&&fromPage&&this.entered()&&!scene?.reduced?.matches&&this.getPhase()!=='unavailable'){
@@ -72,5 +105,5 @@ export class SectionRoutes {
   this.onRefresh?.();this.canvas.focus({preventScroll:true});
  }
  unavailable(){if(this.returning)this.finishReturn(this.token);else if(this.index!==null)this.show(this.index,this.token);}
- dispose(){++this.token;this.clearReturn();this.getScene()?.cancelPortal?.();}
+ dispose(){this.document.defaultView?.removeEventListener?.('resize',this.onArrivalResize);++this.token;this.clearArrival();this.clearReturn();this.getScene()?.cancelPortal?.();}
 }

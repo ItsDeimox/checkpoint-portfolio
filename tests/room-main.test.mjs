@@ -221,9 +221,9 @@ function harness({ path = '/', stored = {}, bundleError = null } = {}) {
 }
 
 
-test('click starts a banner journey and reveals a separate page only on arrival',async()=>{
+test('click prepares an inert page while the camera travels and enables it on arrival',async()=>{
  const f=harness();await f.ready();fire(f.get('[data-open-panel="0"]'),'click');
- assert.equal(f.scene.approaches.length,1);assert.equal(f.get('#room-section-page').hidden,true);
+ assert.equal(f.scene.approaches.length,1);assert.equal(f.get('#room-section-page').hidden,false);assert.equal(f.get('#room-section-page').inert,true);assert.equal(f.get('#room-section-page').getAttribute('aria-hidden'),'true');
  assert.equal(f.get('#room-panel-options').hidden,true);assert.equal(f.location.pathname,'/berserk');
  f.arrive();assert.equal(f.get('#room-section-page').hidden,false);assert.equal(f.get('.room-hero').hidden,true);
  assert.equal(f.get('#section-title').textContent,'Berserk Drift X');assert.ok(f.calls.some(c=>c.park));

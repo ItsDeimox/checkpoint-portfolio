@@ -31,7 +31,7 @@ function configureApproach(rig,basis,onComplete){
 }
 function portalUniforms(panel){
  const b=portalBasis(panel);
- return {portalMix:{value:0},portalAge:{value:0},portalProgress:{value:0},portalSpeed:{value:0},portalOpening:{value:0},portalLayerCount:{value:18},
+ return {portalMix:{value:0},portalReturn:{value:0},portalAge:{value:0},portalProgress:{value:0},portalSpeed:{value:0},portalOpening:{value:0},portalLayerCount:{value:18},
   portalOrigin:{value:b.center},portalRight:{value:b.right},portalUp:{value:b.up},portalForward:{value:b.forward},portalHalf:{value:b.half}};
 }
 export function configurePortal(panel){
@@ -90,11 +90,11 @@ export class BannerPortal {
     active:true,interior:this.interior,quality:this.view.settings.quality,dt,reduced:this.view.reduced.matches});
  }
 
- enter(index,onComplete){
+ enter(index,onComplete,onProgress=null){
   if(this.active||!this.view.ready)return false;
   const v=this.view,panel=v.panels[index];if(!panel)return false;
   this.panel=panel;this.basis=portalBasis(panel);this.saved={position:v.camera.position.clone(),rotation:v.camera.quaternion.clone(),focus:v.cameraRig.focusTarget.clone(),fov:v.camera.fov,width:v.cameraRig.width,aspect:v.camera.aspect,yaw:v.cameraRig.yaw,pitch:v.cameraRig.pitch};
-  this.active=true;this.returning=false;this.interior=false;this.stage='approach';this.elapsed=0;this.age=0;this.onComplete=onComplete;
+  this.active=true;this.returning=false;this.interior=false;this.stage='approach';this.elapsed=0;this.age=0;this.onComplete=onComplete;this.onProgress=onProgress;panel.portalUniforms.portalReturn.value=0;
   this.effects.start(this.basis);this.shutter.reset();
   v.turntable?.end(false);v.release();v.clearHover();v.hidePanelContent();v.pendingPick=v.lastPointer=null;
   Object.assign(this.fullMaterial.uniforms,panel.portalUniforms,{artwork:panel.material.uniforms.artwork,projection:panel.material.uniforms.projection});
@@ -106,7 +106,7 @@ export class BannerPortal {
  returnToShowroom(index,onComplete){
   const v=this.view,panel=v.panels[index];
   if(this.active||this.disposed||!v.ready||v.lost||!panel)return false;
-  this.panel=panel;this.basis=portalBasis(panel);this.onComplete=onComplete;
+  this.panel=panel;this.basis=portalBasis(panel);this.onComplete=onComplete;this.onProgress=null;panel.portalUniforms.portalReturn.value=1;
   this.active=true;this.returning=true;this.interior=true;this.stage='flight';
   this.elapsed=0;this.age=PORTAL_APPROACH_SECONDS+PORTAL_FLIGHT_SECONDS;
   this.returnViewportDirty=false;this.returnRebased=false;
@@ -201,6 +201,7 @@ export class BannerPortal {
    u.portalProgress.value=t;
    // Identical world-ray shading takes over only as the doorway reaches near clipping.
    this.interior=this.basis.toLocal(v.camera.position).z>=-v.camera.near*1.5;
+   this.onProgress?.(t);
    if(t===1)this.finish();
   }
   const state=this.effects.update(this.age,u.portalProgress.value,v.settings.quality,this.active,this.interior,v.reduced.matches);
@@ -211,12 +212,13 @@ export class BannerPortal {
  }
  finish(){
   if(!this.active)return;this.active=false;this.stage='arrived';this.effects.reset();this.shutter.reset();
+  this.onProgress?.(1);this.onProgress=null;
   const callback=this.onComplete;this.onComplete=null;callback?.();
  }
  cancel(){
-  const v=this.view;this.active=false;this.returning=false;this.interior=false;this.stage='idle';this.onComplete=null;
+  const v=this.view;this.active=false;this.returning=false;this.interior=false;this.stage='idle';this.onComplete=null;this.onProgress=null;
   this.effects.reset();this.shutter.reset();
-  v.panels.forEach(p=>{p.portalUniforms.portalMix.value=0;p.portalUniforms.portalProgress.value=0;p.portalUniforms.portalSpeed.value=0;p.portalUniforms.portalOpening.value=0;});
+  v.panels.forEach(p=>{p.portalUniforms.portalMix.value=0;p.portalUniforms.portalReturn.value=0;p.portalUniforms.portalProgress.value=0;p.portalUniforms.portalSpeed.value=0;p.portalUniforms.portalOpening.value=0;});
   v.cameraRig.transition=null;v.cameraRig.panel=null;v.cameraRig.mode='overview';
   if(this.saved){v.cameraRig.yaw=v.cameraRig.targetYaw=this.saved.yaw??0;v.cameraRig.pitch=v.cameraRig.targetPitch=this.saved.pitch??0;v.cameraRig.focusTarget.copy(this.saved.focus);v.camera.position.copy(this.saved.position);v.camera.quaternion.copy(this.saved.rotation);v.cameraRig.setFov(this.saved.fov);v.camera.updateMatrixWorld(true);}
   v.optics?.resetHistory();v.reflectionBudget?.invalidate();
