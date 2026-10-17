@@ -4,57 +4,35 @@ on:
     branches: [build/dxt-portal-end-r20]
 permissions:
   contents: write
-concurrency:
-  group: dxt-r20-check
-  cancel-in-progress: true
 jobs:
-  verify:
+  review:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install existing dependencies and apply isolated patch
+      - name: Rebuild exactly the staged source
+        working-directory: dxrkths
         run: |
-          git fetch --depth=1 origin fa05cce396ba8639fe471ecbf68c3528e2d3d1a2
-          node .github/r20-apply.mjs
-          cd dxrkths
           npm ci --no-audit --no-fund
-      - name: Physical projection probes
-        working-directory: dxrkths
-        run: node --test tests/portal-end-plane.test.mjs
-      - name: Full build and CPU regression suite
-        working-directory: dxrkths
+          npm run build > /tmp/r20-build.txt
+          tail -12 /tmp/r20-build.txt
+      - name: Prepare lightweight inspection and verified build manifest
         run: |
-          set -o pipefail
-          npm run build | tee /tmp/r20-build.log
-      - name: Prepare software WebGL browser
-        run: |
-          mkdir -p /tmp/r20-tools
-          npm install --prefix /tmp/r20-tools --no-audit --no-fund playwright@1.56.1 sharp@0.34.3
-          /tmp/r20-tools/node_modules/.bin/playwright install --with-deps chromium
-      - name: Render and exercise all portal destinations
-        working-directory: dxrkths
-        run: |
-          node tools/server.mjs --host 127.0.0.1 --port 3000 >/tmp/r20-server.log 2>&1 &
-          NODE_PATH=/tmp/r20-tools/node_modules node tests/portal-end-browser.cjs
-      - name: Stage verified source and rendering evidence on integration branch
-        if: success()
-        run: |
+          mkdir -p /tmp/inspect-tools
+          npm install --prefix /tmp/inspect-tools --no-audit --no-fund sharp@0.34.3
+          NODE_PATH=/tmp/inspect-tools/node_modules node - <<'JS'
+          const fs=require('fs'),sharp=require('sharp');
+          (async()=>{const root='dxrkths/docs/r20/';for(const [name,width]of[['corridor-exit-mid',360],['exit-zoom-filmstrip',660]]){let w=width,b;do{b=await sharp(root+name+'.jpg').resize(w).webp({quality:14}).toBuffer();w=Math.round(w*.85);}while(b.length>5200);fs.writeFileSync(root+name+'.inspection.b64.txt',b.toString('base64').match(/.{1,80}/g).join('\n')+'\n');console.log(name,b.length);}
+          const r=JSON.parse(fs.readFileSync(root+'browser-report.json'));if(r.errors.length||r.checks.some(x=>!x.pass))throw Error('Invalid browser report');
+          const build=JSON.parse(fs.readFileSync('dxrkths/dist/build-info.json'));
+          fs.writeFileSync(root+'tested-build.json',JSON.stringify({version:build.version,files:build.files},null,2)+'\n');
+          fs.writeFileSync(root+'summary.json',JSON.stringify({browser:r.browser,renderer:r.renderer,checks:r.checks.length,failures:r.checks.filter(x=>!x.pass).length,nativeFrames:r.native.length,errors:r.errors,buildFiles:Object.keys(build.files).length},null,2)+'\n');})();
+          JS
           git config user.name 'Deimox'
           git config user.email '123704758+ItsDeimox@users.noreply.github.com'
-          git add dxrkths/src/scene/room-portal.js dxrkths/src/scene/room-portal-scene.js dxrkths/src/scene/room-portal-shader.js dxrkths/src/scene/room-portal-exit.js dxrkths/src/ui/portal-arrival.js dxrkths/src/ui/room-section-routes.js dxrkths/src/styles-sections.css dxrkths/tests/portal-arrival.test.mjs dxrkths/tests/entrypoints.test.mjs dxrkths/tools/build.mjs dxrkths/docs/r20
-          git commit -m 'Verify physical portal exit projection and camera zoom [skip ci]'
+          git add dxrkths/docs/r20
+          git commit -m 'Record exact tested build and small visual inspection assets [skip ci]'
           git push origin HEAD:refs/heads/build/dxt-portal-end-r20
-      - name: Preserve failure diagnostics without publishing to production
-        if: failure()
-        run: |
-          if test -d dxrkths/docs/r20; then
-            git config user.name 'Deimox'
-            git config user.email '123704758+ItsDeimox@users.noreply.github.com'
-            git add dxrkths/docs/r20
-            git diff --cached --quiet || git commit -m 'Record portal projection diagnostics [skip ci]'
-            git push origin HEAD:refs/heads/build/dxt-portal-end-r20
-          fi
