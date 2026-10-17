@@ -1,0 +1,2418 @@
+{
+  "browser": "141.0.7390.37",
+  "renderer": "ANGLE SwiftShader",
+  "checks": [
+    {
+      "name": "page 0 begins as a small opaque destination at the far end",
+      "pass": true,
+      "detail": {
+        "progress": 0.1,
+        "rect": [
+          402.1932067871094,
+          268.1288146972656,
+          94.02001953125,
+          63.74237060546875
+        ],
+        "title": [
+          407.9300231933594,
+          297.9267272949219,
+          46.74609375,
+          5.99407958984375
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.44688134072306734,
+              0.4468813407230677
+            ],
+            [
+              0.5513480373010342,
+              0.4468813407230677
+            ],
+            [
+              0.5513480373010342,
+              0.5531186592769323
+            ],
+            [
+              0.44688134072306734,
+              0.5531186592769323
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.24307516448282,
+          "exitHalf": [
+            1.8718795295527928,
+            1.2690708674934188
+          ],
+          "exitOffset": -0.03172677168733557,
+          "distance": 26.787120064482814
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      }
+    },
+    {
+      "name": "page 0 grows by camera perspective, not a fullscreen fade",
+      "pass": true,
+      "detail": {
+        "widths": [
+          94.02001953125,
+          166.81466674804688,
+          800.5684814453125
+        ]
+      }
+    },
+    {
+      "name": "page 0 is geometrically registered to the world-space exit aperture",
+      "pass": true,
+      "detail": {
+        "actual": [
+          365.1789855957031,
+          243.45265197753906,
+          166.81466674804688,
+          113.09468078613281
+        ],
+        "expected": [
+          365.17898764616774,
+          243.4526584307784,
+          166.81465762920365,
+          113.09468313844317
+        ]
+      }
+    },
+    {
+      "name": "page 0 finishes without a second zoom, DOM replacement or layout jump",
+      "pass": true,
+      "detail": {
+        "before": [
+          54,
+          280.484375,
+          440.015625,
+          56.421875
+        ],
+        "after": [
+          54,
+          280.484375,
+          440.015625,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "page 0 leaves the persistent navbar in exactly the same place",
+      "pass": true
+    },
+    {
+      "name": "page 0 has no WebGL error",
+      "pass": true
+    },
+    {
+      "name": "page 1 begins as a small opaque destination at the far end",
+      "pass": true,
+      "detail": {
+        "progress": 0.1,
+        "rect": [
+          404.955322265625,
+          269.97021484375,
+          88.58786010742188,
+          60.0595703125
+        ],
+        "title": [
+          410.3606872558594,
+          306.0450439453125,
+          42.712677001953125,
+          5.647796630859375
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.4499503620211873,
+              0.4499503620211874
+            ],
+            [
+              0.5483813167128522,
+              0.4499503620211874
+            ],
+            [
+              0.5483813167128522,
+              0.5500496379788127
+            ],
+            [
+              0.4499503620211873,
+              0.5500496379788127
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.10237669199914,
+          "exitHalf": [
+            1.754464565198594,
+            1.1894675018295553
+          ],
+          "exitOffset": -0.029736687545738976,
+          "distance": 26.646421591999133
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      }
+    },
+    {
+      "name": "page 1 grows by camera perspective, not a fullscreen fade",
+      "pass": true,
+      "detail": {
+        "widths": [
+          88.58786010742188,
+          158.12014770507812,
+          795.489501953125
+        ]
+      }
+    },
+    {
+      "name": "page 1 is geometrically registered to the world-space exit aperture",
+      "pass": true,
+      "detail": {
+        "actual": [
+          369.5999450683594,
+          246.3999481201172,
+          158.12014770507812,
+          107.20008850097656
+        ],
+        "expected": [
+          369.5999331223957,
+          246.39995541493073,
+          158.12013152595404,
+          107.20008917013845
+        ]
+      }
+    },
+    {
+      "name": "page 1 finishes without a second zoom, DOM replacement or layout jump",
+      "pass": true,
+      "detail": {
+        "before": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "after": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "page 1 leaves the persistent navbar in exactly the same place",
+      "pass": true
+    },
+    {
+      "name": "page 1 has no WebGL error",
+      "pass": true
+    },
+    {
+      "name": "page 2 begins as a small opaque destination at the far end",
+      "pass": true,
+      "detail": {
+        "progress": 0.1,
+        "rect": [
+          400.01605224609375,
+          266.6773681640625,
+          98.3017578125,
+          66.645263671875
+        ],
+        "title": [
+          406.0141296386719,
+          305.10772705078125,
+          47.396240234375,
+          6.26708984375
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.44446227164930624,
+              0.4444622716493063
+            ],
+            [
+              0.553686470739004,
+              0.4444622716493063
+            ],
+            [
+              0.553686470739004,
+              0.5555377283506938
+            ],
+            [
+              0.44446227164930624,
+              0.5555377283506938
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.35502827665014,
+          "exitHalf": [
+            1.9653060639168505,
+            1.332410890791085
+          ],
+          "exitOffset": -0.03331027226977723,
+          "distance": 26.89907317665014
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      }
+    },
+    {
+      "name": "page 2 grows by camera perspective, not a fullscreen fade",
+      "pass": true,
+      "detail": {
+        "widths": [
+          98.3017578125,
+          173.5950927734375,
+          804.2157592773438
+        ]
+      }
+    },
+    {
+      "name": "page 2 is geometrically registered to the world-space exit aperture",
+      "pass": true,
+      "detail": {
+        "actual": [
+          361.7313232421875,
+          241.15420532226562,
+          173.5950927734375,
+          117.69158935546875
+        ],
+        "expected": [
+          361.7313102267986,
+          241.15420681786583,
+          173.59508988729607,
+          117.69158636426845
+        ]
+      }
+    },
+    {
+      "name": "page 2 finishes without a second zoom, DOM replacement or layout jump",
+      "pass": true,
+      "detail": {
+        "before": [
+          54,
+          345.984375,
+          426.703125,
+          56.421875
+        ],
+        "after": [
+          54,
+          345.984375,
+          426.703125,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "page 2 leaves the persistent navbar in exactly the same place",
+      "pass": true
+    },
+    {
+      "name": "page 2 has no WebGL error",
+      "pass": true
+    },
+    {
+      "name": "page 3 begins as a small opaque destination at the far end",
+      "pass": true,
+      "detail": {
+        "progress": 0.1,
+        "rect": [
+          405.9545593261719,
+          270.6363830566406,
+          86.6226806640625,
+          58.72723388671875
+        ],
+        "title": [
+          411.2400207519531,
+          299.4417724609375,
+          41.765167236328125,
+          5.52252197265625
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.4510606320111967,
+              0.45106063201119695
+            ],
+            [
+              0.5473080557225095,
+              0.45106063201119695
+            ],
+            [
+              0.5473080557225095,
+              0.5489393679888032
+            ],
+            [
+              0.4510606320111967,
+              0.5489393679888032
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.0518400358703,
+          "exitHalf": [
+            1.7122909752995454,
+            1.1608752374912172
+          ],
+          "exitOffset": -0.02902188093728052,
+          "distance": 26.595884935870295
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      }
+    },
+    {
+      "name": "page 3 grows by camera perspective, not a fullscreen fade",
+      "pass": true,
+      "detail": {
+        "widths": [
+          86.6226806640625,
+          154.94900512695312,
+          793.5127563476562
+        ]
+      }
+    },
+    {
+      "name": "page 3 is geometrically registered to the world-space exit aperture",
+      "pass": true,
+      "detail": {
+        "actual": [
+          371.2123718261719,
+          247.4749298095703,
+          154.94900512695312,
+          105.05015563964844
+        ],
+        "expected": [
+          371.21238625959563,
+          247.47492417306376,
+          154.94897368946218,
+          105.05015165387255
+        ]
+      }
+    },
+    {
+      "name": "page 3 finishes without a second zoom, DOM replacement or layout jump",
+      "pass": true,
+      "detail": {
+        "before": [
+          54,
+          294.296875,
+          426.703125,
+          56.421875
+        ],
+        "after": [
+          54,
+          294.296875,
+          426.703125,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "page 3 leaves the persistent navbar in exactly the same place",
+      "pass": true
+    },
+    {
+      "name": "page 3 has no WebGL error",
+      "pass": true
+    },
+    {
+      "name": "page 4 begins as a small opaque destination at the far end",
+      "pass": true,
+      "detail": {
+        "progress": 0.1,
+        "rect": [
+          400.59417724609375,
+          267.0627746582031,
+          97.164794921875,
+          65.87445068359375
+        ],
+        "title": [
+          406.52288818359375,
+          306.6303405761719,
+          46.8480224609375,
+          6.194580078125
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.4451046432313136,
+              0.4451046432313134
+            ],
+            [
+              0.5530655115430639,
+              0.4451046432313134
+            ],
+            [
+              0.5530655115430639,
+              0.5548953567686866
+            ],
+            [
+              0.4451046432313136,
+              0.5548953567686866
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.325208540459965,
+          "exitHalf": [
+            1.9404210513078766,
+            1.3155396958019503
+          ],
+          "exitOffset": -0.03288849239504886,
+          "distance": 26.869253440459964
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      }
+    },
+    {
+      "name": "page 4 grows by camera perspective, not a fullscreen fade",
+      "pass": true,
+      "detail": {
+        "widths": [
+          97.164794921875,
+          171.80078125,
+          803.2754516601562
+        ]
+      }
+    },
+    {
+      "name": "page 4 is geometrically registered to the world-space exit aperture",
+      "pass": true,
+      "detail": {
+        "actual": [
+          362.6436767578125,
+          241.762451171875,
+          171.80078125,
+          116.47509765625
+        ],
+        "expected": [
+          362.6436720125879,
+          241.76244800839154,
+          171.80077837524476,
+          116.4751039832169
+        ]
+      }
+    },
+    {
+      "name": "page 4 finishes without a second zoom, DOM replacement or layout jump",
+      "pass": true,
+      "detail": {
+        "before": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "after": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "page 4 leaves the persistent navbar in exactly the same place",
+      "pass": true
+    },
+    {
+      "name": "page 4 has no WebGL error",
+      "pass": true
+    },
+    {
+      "name": "responsive 390x844 keeps its exact page layout after crossing the exit",
+      "pass": true,
+      "detail": {
+        "before": [
+          27.296875,
+          204,
+          320.40625,
+          45.59375
+        ],
+        "after": [
+          27.296875,
+          204,
+          320.40625,
+          45.59375
+        ]
+      }
+    },
+    {
+      "name": "responsive 390 has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "responsive 320x640 keeps its exact page layout after crossing the exit",
+      "pass": true,
+      "detail": {
+        "before": [
+          22.390625,
+          204,
+          260.21875,
+          45.59375
+        ],
+        "after": [
+          22.390625,
+          204,
+          260.21875,
+          45.59375
+        ]
+      }
+    },
+    {
+      "name": "responsive 320 has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "responsive 1440x1800 keeps its exact page layout after crossing the exit",
+      "pass": true,
+      "detail": {
+        "before": [
+          86.390625,
+          329.0625,
+          650,
+          90.28125
+        ],
+        "after": [
+          86.390625,
+          329.0625,
+          650,
+          90.28125
+        ]
+      }
+    },
+    {
+      "name": "responsive 1440 has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "committed gallery remains interactive",
+      "pass": true
+    },
+    {
+      "name": "Play retains the supplied Roblox destination",
+      "pass": true
+    },
+    {
+      "name": "Escape removes the physical preview without a late flash",
+      "pass": true
+    },
+    {
+      "name": "native animation shows a small fully visible page before reaching it",
+      "pass": true
+    },
+    {
+      "name": "native animation never hides both the world and the page",
+      "pass": true
+    },
+    {
+      "name": "logo still spins and returns home",
+      "pass": true
+    },
+    {
+      "name": "original reverse journey still completes",
+      "pass": true
+    },
+    {
+      "name": "direct reduced-motion/no-WebGL route remains usable",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript errors in tested flows",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "records": [
+    {
+      "index": 0,
+      "a": {
+        "progress": 0.1,
+        "rect": [
+          402.1932067871094,
+          268.1288146972656,
+          94.02001953125,
+          63.74237060546875
+        ],
+        "title": [
+          407.9300231933594,
+          297.9267272949219,
+          46.74609375,
+          5.99407958984375
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.44688134072306734,
+              0.4468813407230677
+            ],
+            [
+              0.5513480373010342,
+              0.4468813407230677
+            ],
+            [
+              0.5513480373010342,
+              0.5531186592769323
+            ],
+            [
+              0.44688134072306734,
+              0.5531186592769323
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.24307516448282,
+          "exitHalf": [
+            1.8718795295527928,
+            1.2690708674934188
+          ],
+          "exitOffset": -0.03172677168733557,
+          "distance": 26.787120064482814
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "b": {
+        "progress": 0.5,
+        "rect": [
+          365.1789855957031,
+          243.45265197753906,
+          166.81466674804688,
+          113.09468078613281
+        ],
+        "title": [
+          375.3575134277344,
+          296.32147216796875,
+          82.93905639648438,
+          10.635040283203125
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.4057544307179642,
+              0.405754430717964
+            ],
+            [
+              0.5911040503059682,
+              0.405754430717964
+            ],
+            [
+              0.5911040503059682,
+              0.594245569282036
+            ],
+            [
+              0.4057544307179642,
+              0.594245569282036
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.24307516448282,
+          "exitHalf": [
+            1.8718795295527928,
+            1.2690708674934188
+          ],
+          "exitOffset": -0.03172677168733557,
+          "distance": 12.57588766448273
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "c": {
+        "progress": 0.85,
+        "rect": [
+          42.9312858581543,
+          28.62085723876953,
+          800.5684814453125,
+          542.75830078125
+        ],
+        "title": [
+          91.77953338623047,
+          282.3462219238281,
+          398.036865234375,
+          51.0390625
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.047701430242136356,
+              0.047701430242135634
+            ],
+            [
+              0.9372219507659361,
+              0.047701430242135634
+            ],
+            [
+              0.9372219507659361,
+              0.9522985697578643
+            ],
+            [
+              0.047701430242136356,
+              0.9522985697578643
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.24307516448282,
+          "exitHalf": [
+            1.8718795295527928,
+            1.2690708674934188
+          ],
+          "exitOffset": -0.03172677168733557,
+          "distance": 2.4796399043264876
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "d": {
+        "progress": 0.999,
+        "rect": [
+          1.3518281605229276e-7,
+          9.012141077846536e-8,
+          885,
+          600
+        ],
+        "title": [
+          54,
+          280.484375,
+          440.015625,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              1.5020312771341082e-10,
+              1.5020235055729358e-10
+            ],
+            [
+              0.9833333331881383,
+              1.5020235055729358e-10
+            ],
+            [
+              0.9833333331881383,
+              0.9999999998497977
+            ],
+            [
+              1.5020312771341082e-10,
+              0.9999999998497977
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.24307516448282,
+          "exitHalf": [
+            1.8718795295527928,
+            1.2690708674934188
+          ],
+          "exitOffset": -0.03172677168733557,
+          "distance": 2.2430751651566236
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "e": {
+        "progress": 1,
+        "rect": [
+          0,
+          0,
+          885,
+          2252.203125
+        ],
+        "title": [
+          54,
+          280.484375,
+          440.015625,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": false,
+        "hidden": false,
+        "host": true,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              -1.1102230246251565e-16,
+              -5.551115123125783e-16
+            ],
+            [
+              0.9833333333333338,
+              -5.551115123125783e-16
+            ],
+            [
+              0.9833333333333338,
+              1.0000000000000004
+            ],
+            [
+              -1.1102230246251565e-16,
+              1.0000000000000004
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.24307516448282,
+          "exitHalf": [
+            1.8718795295527928,
+            1.2690708674934188
+          ],
+          "exitOffset": -0.03172677168733557,
+          "distance": 2.2430751644827933
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "arrived"
+      }
+    },
+    {
+      "index": 1,
+      "a": {
+        "progress": 0.1,
+        "rect": [
+          404.955322265625,
+          269.97021484375,
+          88.58786010742188,
+          60.0595703125
+        ],
+        "title": [
+          410.3606872558594,
+          306.0450439453125,
+          42.712677001953125,
+          5.647796630859375
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.4499503620211873,
+              0.4499503620211874
+            ],
+            [
+              0.5483813167128522,
+              0.4499503620211874
+            ],
+            [
+              0.5483813167128522,
+              0.5500496379788127
+            ],
+            [
+              0.4499503620211873,
+              0.5500496379788127
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.10237669199914,
+          "exitHalf": [
+            1.754464565198594,
+            1.1894675018295553
+          ],
+          "exitOffset": -0.029736687545738976,
+          "distance": 26.646421591999133
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "b": {
+        "progress": 0.5,
+        "rect": [
+          369.5999450683594,
+          246.3999481201172,
+          158.12014770507812,
+          107.20008850097656
+        ],
+        "title": [
+          379.2479553222656,
+          310.789794921875,
+          76.2376708984375,
+          10.080718994140625
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.41066659235821745,
+              0.4106665923582179
+            ],
+            [
+              0.5863556273870553,
+              0.41066659235821795
+            ],
+            [
+              0.5863556273870553,
+              0.5893334076417819
+            ],
+            [
+              0.41066659235821745,
+              0.589333407641782
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.10237669199914,
+          "exitHalf": [
+            1.754464565198594,
+            1.1894675018295553
+          ],
+          "exitOffset": -0.029736687545738976,
+          "distance": 12.435189191999049
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "c": {
+        "progress": 0.85,
+        "rect": [
+          45.51380920410156,
+          30.342538833618164,
+          795.489501953125,
+          539.31494140625
+        ],
+        "title": [
+          94.05215454101562,
+          354.2826232910156,
+          383.54559326171875,
+          50.715240478515625
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.05057089857468139,
+              0.05057089857468089
+            ],
+            [
+              0.9344481313778076,
+              0.050570898574681555
+            ],
+            [
+              0.9344481313778076,
+              0.9494291014253181
+            ],
+            [
+              0.05057089857468139,
+              0.9494291014253187
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.10237669199914,
+          "exitHalf": [
+            1.754464565198594,
+            1.1894675018295553
+          ],
+          "exitOffset": -0.029736687545738976,
+          "distance": 2.3389414318428106
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "d": {
+        "progress": 0.999,
+        "rect": [
+          1.4422633398680773e-7,
+          9.615088458758692e-8,
+          885,
+          600
+        ],
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              1.6025147875353696e-10,
+              1.6025147875353696e-10
+            ],
+            [
+              0.983333333178422,
+              1.6025231142080543e-10
+            ],
+            [
+              0.983333333178422,
+              0.9999999998397473
+            ],
+            [
+              1.6025147875353696e-10,
+              0.9999999998397481
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.10237669199914,
+          "exitHalf": [
+            1.754464565198594,
+            1.1894675018295553
+          ],
+          "exitOffset": -0.029736687545738976,
+          "distance": 2.1023766926729435
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "e": {
+        "progress": 1,
+        "rect": [
+          0,
+          0,
+          885,
+          1158
+        ],
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": false,
+        "hidden": false,
+        "host": true,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              -2.1094237467877974e-15,
+              -2.6645352591003757e-15
+            ],
+            [
+              0.9833333333333347,
+              -1.7763568394002505e-15
+            ],
+            [
+              0.9833333333333347,
+              1.0000000000000013
+            ],
+            [
+              -2.1094237467877974e-15,
+              1.0000000000000022
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.10237669199914,
+          "exitHalf": [
+            1.754464565198594,
+            1.1894675018295553
+          ],
+          "exitOffset": -0.029736687545738976,
+          "distance": 2.1023766919991163
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "arrived"
+      }
+    },
+    {
+      "index": 2,
+      "a": {
+        "progress": 0.1,
+        "rect": [
+          400.01605224609375,
+          266.6773681640625,
+          98.3017578125,
+          66.645263671875
+        ],
+        "title": [
+          406.0141296386719,
+          305.10772705078125,
+          47.396240234375,
+          6.26708984375
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.44446227164930624,
+              0.4444622716493063
+            ],
+            [
+              0.553686470739004,
+              0.4444622716493063
+            ],
+            [
+              0.553686470739004,
+              0.5555377283506938
+            ],
+            [
+              0.44446227164930624,
+              0.5555377283506938
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.35502827665014,
+          "exitHalf": [
+            1.9653060639168505,
+            1.332410890791085
+          ],
+          "exitOffset": -0.03331027226977723,
+          "distance": 26.89907317665014
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "b": {
+        "progress": 0.5,
+        "rect": [
+          361.7313232421875,
+          241.15420532226562,
+          173.5950927734375,
+          117.69158935546875
+        ],
+        "title": [
+          372.32354736328125,
+          309.01995849609375,
+          83.69894409179688,
+          11.067291259765625
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.40192367802977624,
+              0.40192367802977635
+            ],
+            [
+              0.594807111237883,
+              0.4019236780297763
+            ],
+            [
+              0.594807111237883,
+              0.5980763219702239
+            ],
+            [
+              0.40192367802977624,
+              0.5980763219702238
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.35502827665014,
+          "exitHalf": [
+            1.9653060639168505,
+            1.332410890791085
+          ],
+          "exitOffset": -0.03331027226977723,
+          "distance": 12.687840776650054
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "c": {
+        "progress": 0.85,
+        "rect": [
+          41.076717376708984,
+          27.384477615356445,
+          804.2157592773438,
+          545.2310791015625
+        ],
+        "title": [
+          90.14751434326172,
+          341.7868347167969,
+          387.7529602050781,
+          51.2716064453125
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.0456407966718011,
+              0.04564079667180171
+            ],
+            [
+              0.9392138965505928,
+              0.04564079667180104
+            ],
+            [
+              0.9392138965505928,
+              0.9543592033281996
+            ],
+            [
+              0.0456407966718011,
+              0.9543592033281989
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.35502827665014,
+          "exitHalf": [
+            1.9653060639168505,
+            1.332410890791085
+          ],
+          "exitOffset": -0.03331027226977723,
+          "distance": 2.591593016493808
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "d": {
+        "progress": 0.999,
+        "rect": [
+          1.2875754862307076e-7,
+          8.583877075807322e-8,
+          885,
+          600
+        ],
+        "title": [
+          54,
+          345.984375,
+          426.703125,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              1.4306394957586122e-10,
+              1.43064615709676e-10
+            ],
+            [
+              0.9833333331950389,
+              1.4306383855355875e-10
+            ],
+            [
+              0.9833333331950389,
+              0.9999999998569369
+            ],
+            [
+              1.4306394957586122e-10,
+              0.999999999856936
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.35502827665014,
+          "exitHalf": [
+            1.9653060639168505,
+            1.332410890791085
+          ],
+          "exitOffset": -0.03331027226977723,
+          "distance": 2.3550282773239437
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "e": {
+        "progress": 1,
+        "rect": [
+          0,
+          0,
+          885,
+          1288.796875
+        ],
+        "title": [
+          54,
+          345.984375,
+          426.703125,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": false,
+        "hidden": false,
+        "host": true,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              2.942091015256665e-15,
+              3.608224830031759e-15
+            ],
+            [
+              0.9833333333333312,
+              2.831068712794149e-15
+            ],
+            [
+              0.9833333333333312,
+              0.9999999999999978
+            ],
+            [
+              2.942091015256665e-15,
+              0.9999999999999971
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.35502827665014,
+          "exitHalf": [
+            1.9653060639168505,
+            1.332410890791085
+          ],
+          "exitOffset": -0.03331027226977723,
+          "distance": 2.3550282766501147
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "arrived"
+      }
+    },
+    {
+      "index": 3,
+      "a": {
+        "progress": 0.1,
+        "rect": [
+          405.9545593261719,
+          270.6363830566406,
+          86.6226806640625,
+          58.72723388671875
+        ],
+        "title": [
+          411.2400207519531,
+          299.4417724609375,
+          41.765167236328125,
+          5.52252197265625
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.4510606320111967,
+              0.45106063201119695
+            ],
+            [
+              0.5473080557225095,
+              0.45106063201119695
+            ],
+            [
+              0.5473080557225095,
+              0.5489393679888032
+            ],
+            [
+              0.4510606320111967,
+              0.5489393679888032
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.0518400358703,
+          "exitHalf": [
+            1.7122909752995454,
+            1.1608752374912172
+          ],
+          "exitOffset": -0.02902188093728052,
+          "distance": 26.595884935870295
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "b": {
+        "progress": 0.5,
+        "rect": [
+          371.2123718261719,
+          247.4749298095703,
+          154.94900512695312,
+          105.05015563964844
+        ],
+        "title": [
+          380.6669006347656,
+          299.00146484375,
+          74.70870971679688,
+          9.878570556640625
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.41245820695510627,
+              0.41245820695510627
+            ],
+            [
+              0.5846237332767309,
+              0.41245820695510627
+            ],
+            [
+              0.5846237332767309,
+              0.5875417930448938
+            ],
+            [
+              0.41245820695510627,
+              0.5875417930448938
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.0518400358703,
+          "exitHalf": [
+            1.7122909752995454,
+            1.1608752374912172
+          ],
+          "exitOffset": -0.02902188093728052,
+          "distance": 12.384652535870211
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "c": {
+        "progress": 0.85,
+        "rect": [
+          46.518924713134766,
+          31.012617111206055,
+          793.5127563476562,
+          537.9747314453125
+        ],
+        "title": [
+          94.93665313720703,
+          294.8864440917969,
+          382.592529296875,
+          50.5892333984375
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.05168769580326804,
+              0.0516876958032676
+            ],
+            [
+              0.9333685607235083,
+              0.05168769580326826
+            ],
+            [
+              0.9333685607235083,
+              0.9483123041967316
+            ],
+            [
+              0.05168769580326804,
+              0.9483123041967323
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.0518400358703,
+          "exitHalf": [
+            1.7122909752995454,
+            1.1608752374912172
+          ],
+          "exitOffset": -0.02902188093728052,
+          "distance": 2.288404775713969
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "d": {
+        "progress": 0.999,
+        "rect": [
+          1.477817335171494e-7,
+          9.85211556780996e-8,
+          885,
+          600
+        ],
+        "title": [
+          54,
+          294.296875,
+          426.703125,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              1.6420192983090942e-10,
+              1.6420192983090942e-10
+            ],
+            [
+              0.9833333331746046,
+              1.642027624981779e-10
+            ],
+            [
+              0.9833333331746046,
+              0.999999999835797
+            ],
+            [
+              1.6420192983090942e-10,
+              0.9999999998357978
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.0518400358703,
+          "exitHalf": [
+            1.7122909752995454,
+            1.1608752374912172
+          ],
+          "exitOffset": -0.02902188093728052,
+          "distance": 2.051840036544104
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "e": {
+        "progress": 1,
+        "rect": [
+          0,
+          0,
+          885,
+          1081
+        ],
+        "title": [
+          54,
+          294.296875,
+          426.703125,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": false,
+        "hidden": false,
+        "host": true,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              1.609823385706477e-15,
+              1.609823385706477e-15
+            ],
+            [
+              0.9833333333333316,
+              2.4980018054066022e-15
+            ],
+            [
+              0.9833333333333316,
+              0.9999999999999973
+            ],
+            [
+              1.609823385706477e-15,
+              0.9999999999999982
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.0518400358703,
+          "exitHalf": [
+            1.7122909752995454,
+            1.1608752374912172
+          ],
+          "exitOffset": -0.02902188093728052,
+          "distance": 2.0518400358702737
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "arrived"
+      }
+    },
+    {
+      "index": 4,
+      "a": {
+        "progress": 0.1,
+        "rect": [
+          400.59417724609375,
+          267.0627746582031,
+          97.164794921875,
+          65.87445068359375
+        ],
+        "title": [
+          406.52288818359375,
+          306.6303405761719,
+          46.8480224609375,
+          6.194580078125
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.4451046432313136,
+              0.4451046432313134
+            ],
+            [
+              0.5530655115430639,
+              0.4451046432313134
+            ],
+            [
+              0.5530655115430639,
+              0.5548953567686866
+            ],
+            [
+              0.4451046432313136,
+              0.5548953567686866
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.325208540459965,
+          "exitHalf": [
+            1.9404210513078766,
+            1.3155396958019503
+          ],
+          "exitOffset": -0.03288849239504886,
+          "distance": 26.869253440459964
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "b": {
+        "progress": 0.5,
+        "rect": [
+          362.6436767578125,
+          241.762451171875,
+          171.80078125,
+          116.47509765625
+        ],
+        "title": [
+          373.1264343261719,
+          311.72332763671875,
+          82.83380126953125,
+          10.952911376953125
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.4029374133473199,
+              0.40293741334731925
+            ],
+            [
+              0.5938271670975919,
+              0.40293741334731925
+            ],
+            [
+              0.5938271670975919,
+              0.5970625866526807
+            ],
+            [
+              0.4029374133473199,
+              0.5970625866526807
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.325208540459965,
+          "exitHalf": [
+            1.9404210513078766,
+            1.3155396958019503
+          ],
+          "exitOffset": -0.03288849239504886,
+          "distance": 12.658021040459879
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "c": {
+        "progress": 0.85,
+        "rect": [
+          41.55486297607422,
+          27.7032413482666,
+          803.2754516601562,
+          544.593505859375
+        ],
+        "title": [
+          90.56827545166016,
+          354.81390380859375,
+          387.2995910644531,
+          51.211639404296875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              0.04617206793094136,
+              0.046172067930940586
+            ],
+            [
+              0.9387003343334241,
+              0.046172067930940586
+            ],
+            [
+              0.9387003343334241,
+              0.953827932069059
+            ],
+            [
+              0.04617206793094136,
+              0.953827932069059
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.325208540459965,
+          "exitHalf": [
+            1.9404210513078766,
+            1.3155396958019503
+          ],
+          "exitOffset": -0.03288849239504886,
+          "distance": 2.5617732803036337
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "d": {
+        "progress": 0.999,
+        "rect": [
+          1.3040903468208853e-7,
+          8.693865538589307e-8,
+          885,
+          600
+        ],
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": true,
+        "hidden": false,
+        "host": false,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              1.4489892619096167e-10,
+              1.4489776045678582e-10
+            ],
+            [
+              0.9833333331932659,
+              1.4489776045678582e-10
+            ],
+            [
+              0.9833333331932659,
+              0.9999999998551019
+            ],
+            [
+              1.4489892619096167e-10,
+              0.9999999998551019
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.325208540459965,
+          "exitHalf": [
+            1.9404210513078766,
+            1.3155396958019503
+          ],
+          "exitOffset": -0.03288849239504886,
+          "distance": 2.3252085411337715
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "preview"
+      },
+      "e": {
+        "progress": 1,
+        "rect": [
+          0,
+          0,
+          885,
+          1180
+        ],
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "sameTitle": true,
+        "opacity": 1,
+        "inert": false,
+        "hidden": false,
+        "host": true,
+        "projection": {
+          "visible": true,
+          "quad": [
+            [
+              1.4432899320127035e-15,
+              5.551115123125783e-16
+            ],
+            [
+              0.9833333333333328,
+              5.551115123125783e-16
+            ],
+            [
+              0.9833333333333328,
+              0.9999999999999991
+            ],
+            [
+              1.4432899320127035e-15,
+              0.9999999999999991
+            ]
+          ],
+          "width": 900,
+          "height": 600,
+          "contentWidth": 885,
+          "exitDepth": 25.325208540459965,
+          "exitHalf": [
+            1.9404210513078766,
+            1.3155396958019503
+          ],
+          "exitOffset": -0.03288849239504886,
+          "distance": 2.3252085404599425
+        },
+        "brand": [
+          37.34375,
+          24.5,
+          74,
+          44
+        ],
+        "glError": 0,
+        "arrival": "arrived"
+      }
+    }
+  ],
+  "native": [
+    {
+      "active": false,
+      "page": false,
+      "hidden": true,
+      "host": false,
+      "width": 0,
+      "opacity": 1
+    },
+    {
+      "active": false,
+      "page": false,
+      "hidden": true,
+      "host": false,
+      "width": 0,
+      "opacity": 1
+    },
+    {
+      "active": false,
+      "page": false,
+      "hidden": true,
+      "host": false,
+      "width": 0,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 0.5850000381469727,
+      "opacity": 0
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 66.01077270507812,
+      "opacity": 0.868382
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 69.57183837890625,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 74.03811645507812,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 80.89132690429688,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 93.1314697265625,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 116.28181457519531,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 160.66714477539062,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 243.98927307128906,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 380.0250244140625,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 522.5366821289062,
+      "opacity": 1
+    },
+    {
+      "active": true,
+      "page": false,
+      "hidden": false,
+      "host": false,
+      "width": 581.3071899414062,
+      "opacity": 1
+    },
+    {
+      "active": false,
+      "page": true,
+      "hidden": false,
+      "host": true,
+      "width": 585,
+      "opacity": 1
+    }
+  ]
+}

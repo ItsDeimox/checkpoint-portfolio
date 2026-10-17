@@ -2,7 +2,7 @@
 export const PORTAL_UNIFORMS=/*glsl*/`
  uniform float portalMix;uniform float portalReturn;uniform float portalAge;uniform float portalProgress;
  uniform float portalSpeed;uniform float portalOpening;uniform float portalLayerCount;uniform vec3 portalOrigin;uniform vec3 portalRight;
- uniform vec3 portalUp;uniform vec3 portalForward;uniform vec2 portalHalf;
+ uniform vec3 portalUp;uniform vec3 portalForward;uniform vec2 portalHalf;uniform float portalExitDepth;uniform vec2 portalExitHalf;uniform float portalExitOffset;
 `;
 export const PORTAL_FUNCTIONS=/*glsl*/`
  float portalHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
@@ -22,7 +22,11 @@ export const PORTAL_FUNCTIONS=/*glsl*/`
   float tx=(sign(rd.x)*portalHalf.x-door.x)/(abs(rd.x)<.00001?.00001:rd.x);
   float ty=(sign(rd.y)*portalHalf.y-door.y)/(abs(rd.y)<.00001?.00001:rd.y);
   tx=tx>.001?tx:1000.;ty=ty>.001?ty:1000.;
-  float wall=min(min(tx,ty),110.);vec3 hit=door+rd*wall;
+  float wall=min(min(tx,ty),110.);
+  float endT=(portalExitDepth-door.z)/rd.z;
+  bool endWall=portalReturn<.5&&endT>0.&&endT<wall;
+  if(endWall)wall=endT;
+  vec3 hit=door+rd*wall;
   float horizontal=step(ty,tx);float across=mix(hit.y/portalHalf.y,hit.x/portalHalf.x,horizontal);
   float depth=hit.z,maxDepth=max(0.,depth-max(ro.z,0.));
   vec2 tiles=vec2(depth*.26,across*3.);
@@ -52,10 +56,20 @@ export const PORTAL_FUNCTIONS=/*glsl*/`
   vapor*=portalNoise(vec2(across*9.+7.,depth*.55+portalAge*.12));
   color+=vec3(.05,.006,.014)*vapor*(1.-distanceFade)*(.5+portalSpeed);
   // Repeated physical frames recede into the vanishing point, not flat UV zooms.
+  if(endWall){
+   // The actual HTML is projected onto this aperture, not blended over the walls.
+   vec2 q=abs(hit.xy-vec2(portalExitOffset,0.))-portalExitHalf;
+   float edge=max(q.x,q.y);
+   float aa=max(fwidth(edge),.004);
+   float core=exp(-pow((edge-.018)/max(.008,aa),2.));
+   float halo=exp(-abs(edge-.018)*24.);
+   color=vec3(.012,.003,.007)+vec3(3.4,.018,.055)*(core*.65+halo*.15);
+  }
   float first=floor(max(ro.z,0.)/2.35);
   for(int i=0;i<24;i++){
    if(float(i)>=portalLayerCount)break;
    float z=(first+float(i)+1.)*2.35;
+   if(portalReturn<.5&&z>=portalExitDepth)break;
    float t=(z-ro.z)/rd.z;if(t<=0.)continue;
    vec2 q=(ro+rd*t).xy/portalHalf;
    float edge=abs(max(abs(q.x),abs(q.y))-1.);

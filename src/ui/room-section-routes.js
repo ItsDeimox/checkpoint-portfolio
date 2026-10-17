@@ -1,4 +1,4 @@
-import {arrivalVisual,destinationGutter} from './portal-arrival.js';
+import {arrivalVisual,arrivalTransform,destinationGutter} from './portal-arrival.js';
 import {renderSectionPage} from '../pages/section-pages.js';
 
 /** History and cancellation are page concerns; the renderer owns both journeys. */
@@ -15,7 +15,7 @@ export class SectionRoutes {
   this.root.inert=false;this.root.removeAttribute('aria-hidden');
   if(retain)this.root.setAttribute('data-portal-arrival','arrived');
   else this.root.removeAttribute('data-portal-arrival');
-  for(const name of ['--arrival-opacity','--arrival-scale','--arrival-gutter'])this.root.style.removeProperty?.(name);
+  for(const name of ['--arrival-opacity','--arrival-transform','--arrival-gutter'])this.root.style.removeProperty?.(name);
  }
  prepareArrival(index,token){
   this.arrival={index,token};
@@ -30,11 +30,16 @@ export class SectionRoutes {
   this.root.style.setProperty('--arrival-gutter','0px');
   if(this.root.scrollHeight>this.root.clientHeight+1)this.root.style.setProperty('--arrival-gutter',`${destinationGutter(this.document)}px`);
  }
- revealArrival(index,token,progress){
+ arrivalViewport(){
+  const win=this.document.defaultView,width=win?.innerWidth??this.canvas.clientWidth??1,height=win?.innerHeight??this.canvas.clientHeight??1;
+  return {width,height,contentWidth:this.root.clientWidth||width};
+ }
+ revealArrival(index,token,progress,frame){
   if(token!==this.token||this.index!==index||!this.arrival||this.returning)return;
-  const visual=arrivalVisual(progress);
-  this.root.style.setProperty('--arrival-opacity',String(visual.opacity));
-  this.root.style.setProperty('--arrival-scale',String(visual.scale));
+  const transform=arrivalTransform(frame,this.root.clientWidth||frame?.contentWidth,this.root.clientHeight||frame?.height);
+  if(!transform){this.root.style.setProperty('--arrival-opacity','0');return;}
+  this.root.style.setProperty('--arrival-transform',transform);
+  this.root.style.setProperty('--arrival-opacity',String(arrivalVisual(progress).opacity));
  }
  clearReturn(){
   this.returning=this.waitingReturn=false;this.root.inert=false;this.root.removeAttribute('aria-busy');
@@ -51,7 +56,7 @@ export class SectionRoutes {
   this.document.body.classList.add('portal-travelling');this.document.body.classList.remove('section-active');
   this.canvas.inert=true;this.footer.inert=true;
   this.prepareArrival(index,token);
-  const started=scene.enterPortal(index,()=>this.show(index,token),p=>this.revealArrival(index,token,p));
+  const started=scene.enterPortal(index,()=>this.show(index,token),(p,frame)=>this.revealArrival(index,token,p,frame),()=>this.arrivalViewport());
   if(!started)this.show(index,token);
  }
  ready(){
