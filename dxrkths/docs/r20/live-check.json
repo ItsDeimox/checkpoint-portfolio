@@ -1,0 +1,23 @@
+{
+  "commit": "7ee85756dbf07a98cfe3213775c66d83503376f6",
+  "version": "dxt-showroom-r20-exit-plane",
+  "verifiedFiles": 60,
+  "mismatches": [],
+  "browser": "141.0.7390.37",
+  "smallDestination": {
+    "width": 69.45263671875,
+    "opacity": 1,
+    "hidden": false,
+    "host": false,
+    "preview": "preview"
+  },
+  "nearDestination": {
+    "width": 515.6112060546875,
+    "opacity": 1,
+    "hidden": false,
+    "host": false,
+    "preview": "preview"
+  },
+  "samples": 29,
+  "errors": []
+}
