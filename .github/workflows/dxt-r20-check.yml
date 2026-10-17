@@ -5,7 +5,7 @@ on:
 permissions:
   contents: write
 jobs:
-  review:
+  production:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
@@ -13,26 +13,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Rebuild exactly the staged source
-        working-directory: dxrkths
+      - name: Install isolated browser tooling
         run: |
-          npm ci --no-audit --no-fund
-          npm run build > /tmp/r20-build.txt
-          tail -12 /tmp/r20-build.txt
-      - name: Prepare lightweight inspection and verified build manifest
+          npm install --prefix /tmp/r20-live-tools --no-audit --no-fund playwright@1.56.1
+          /tmp/r20-live-tools/node_modules/.bin/playwright install --with-deps chromium >/tmp/browser-install.txt
+      - name: Verify published files and the live camera-driven transition
+        run: NODE_PATH=/tmp/r20-live-tools/node_modules node .github/r20-live.cjs
+      - name: Record production check without modifying production source
         run: |
-          mkdir -p /tmp/inspect-tools
-          npm install --prefix /tmp/inspect-tools --no-audit --no-fund sharp@0.34.3
-          NODE_PATH=/tmp/inspect-tools/node_modules node - <<'JS'
-          const fs=require('fs'),sharp=require('sharp');
-          (async()=>{const root='dxrkths/docs/r20/';for(const [name,width]of[['corridor-exit-mid',360],['exit-zoom-filmstrip',660]]){let w=width,b;do{b=await sharp(root+name+'.jpg').resize(w).webp({quality:14}).toBuffer();w=Math.round(w*.85);}while(b.length>5200);fs.writeFileSync(root+name+'.inspection.b64.txt',b.toString('base64').match(/.{1,80}/g).join('\n')+'\n');console.log(name,b.length);}
-          const r=JSON.parse(fs.readFileSync(root+'browser-report.json'));if(r.errors.length||r.checks.some(x=>!x.pass))throw Error('Invalid browser report');
-          const build=JSON.parse(fs.readFileSync('dxrkths/dist/build-info.json'));
-          fs.writeFileSync(root+'tested-build.json',JSON.stringify({version:build.version,files:build.files},null,2)+'\n');
-          fs.writeFileSync(root+'summary.json',JSON.stringify({browser:r.browser,renderer:r.renderer,checks:r.checks.length,failures:r.checks.filter(x=>!x.pass).length,nativeFrames:r.native.length,errors:r.errors,buildFiles:Object.keys(build.files).length},null,2)+'\n');})();
-          JS
           git config user.name 'Deimox'
           git config user.email '123704758+ItsDeimox@users.noreply.github.com'
-          git add dxrkths/docs/r20
-          git commit -m 'Record exact tested build and small visual inspection assets [skip ci]'
+          git add dxrkths/docs/r20/live-check.json
+          git commit -m 'Confirm live DXT exit zoom and published build integrity [skip ci]'
           git push origin HEAD:refs/heads/build/dxt-portal-end-r20
