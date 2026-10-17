@@ -16,15 +16,45 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install existing project dependencies
-        working-directory: dxrkths
-        run: npm ci --no-audit --no-fund
-      - name: Regression probes before implementation
+      - name: Install existing dependencies and apply isolated patch
+        run: |
+          git fetch --depth=1 origin fa05cce396ba8639fe471ecbf68c3528e2d3d1a2
+          node .github/r20-apply.mjs
+          cd dxrkths
+          npm ci --no-audit --no-fund
+      - name: Physical projection probes
         working-directory: dxrkths
         run: node --test tests/portal-end-plane.test.mjs
-      - name: Apply staged integration patch when present
-        run: |
-          if test -f .github/r20-apply.mjs; then node .github/r20-apply.mjs; fi
       - name: Full build and CPU regression suite
         working-directory: dxrkths
-        run: npm run build
+        run: |
+          set -o pipefail
+          npm run build | tee /tmp/r20-build.log
+      - name: Prepare software WebGL browser
+        run: |
+          mkdir -p /tmp/r20-tools
+          npm install --prefix /tmp/r20-tools --no-audit --no-fund playwright@1.56.1 sharp@0.34.3
+          /tmp/r20-tools/node_modules/.bin/playwright install --with-deps chromium
+      - name: Render and exercise all portal destinations
+        working-directory: dxrkths
+        run: |
+          node tools/server.mjs --host 127.0.0.1 --port 3000 >/tmp/r20-server.log 2>&1 &
+          NODE_PATH=/tmp/r20-tools/node_modules node tests/portal-end-browser.cjs
+      - name: Stage verified source and rendering evidence on integration branch
+        if: success()
+        run: |
+          git config user.name 'Deimox'
+          git config user.email '123704758+ItsDeimox@users.noreply.github.com'
+          git add dxrkths/src/scene/room-portal.js dxrkths/src/scene/room-portal-scene.js dxrkths/src/scene/room-portal-shader.js dxrkths/src/scene/room-portal-exit.js dxrkths/src/ui/portal-arrival.js dxrkths/src/ui/room-section-routes.js dxrkths/src/styles-sections.css dxrkths/tests/portal-arrival.test.mjs dxrkths/tests/entrypoints.test.mjs dxrkths/tools/build.mjs dxrkths/docs/r20
+          git commit -m 'Verify physical portal exit projection and camera zoom [skip ci]'
+          git push origin HEAD:refs/heads/build/dxt-portal-end-r20
+      - name: Preserve failure diagnostics without publishing to production
+        if: failure()
+        run: |
+          if test -d dxrkths/docs/r20; then
+            git config user.name 'Deimox'
+            git config user.email '123704758+ItsDeimox@users.noreply.github.com'
+            git add dxrkths/docs/r20
+            git diff --cached --quiet || git commit -m 'Record portal projection diagnostics [skip ci]'
+            git push origin HEAD:refs/heads/build/dxt-portal-end-r20
+          fi
