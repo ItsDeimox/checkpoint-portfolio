@@ -5,7 +5,7 @@ import {portalImpactEnvelope} from './room-portal-effects.js';
 export class HeroScene extends ShowroomScene {
  buildLights(){super.buildLights();this.bannerPortal=new BannerPortal(this);}
  async prepareEnvironment(signal){await super.prepareEnvironment(signal);signal.throwIfAborted();await this.bannerPortal.prepare();}
- enterPortal(index,onComplete){return this.bannerPortal.enter(index,onComplete);}
+ enterPortal(index,onComplete,onProgress){return this.bannerPortal.enter(index,onComplete,onProgress);}
  returnPortal(index,onComplete){
   if(!this.ready||this.disposed||this.lost||this.reduced.matches)return false;
   const parked=this.pageActive;this.sleep();this.pageActive=true;this.resize();
