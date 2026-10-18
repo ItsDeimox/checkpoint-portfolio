@@ -247,3 +247,18 @@ body.section-arriving .berserk-play-dock { opacity: 1; pointer-events: none; }
 @media(prefers-reduced-motion:reduce) {
  body.section-arriving .section-page { transform: none; }
 }
+
+
+/* A single page surface recedes onto the far wall on return. No independent
+ * depart fade/scale and no opacity animation covering the illuminated corridor. */
+body.section-arriving .section-page,
+body.section-returning.section-arriving .section-page,
+body.section-return-pending.section-arriving .section-page {
+ animation: none;
+ top: 0;
+ transform-origin: 0 0;
+ will-change: transform,clip-path;
+}
+body.section-arriving .section-page { opacity: 0; }
+body.section-retreating .section-page { opacity: 1; }
+body.section-arriving .section-layout { animation: none; }

@@ -131,7 +131,7 @@ function prepareOutputDefines(pass, renderer) {
 /**
  * Call after final startup lighting, PMREM, geometry and viewport setup, before
  * starting the interactive loop. Serialize renderer use until this resolves.
- * onProgress receives {stage, completed, total}; no frames are rendered here.
+ * onProgress receives {stage, completed, total}; portal warm-up draws stay here.
  * compileAsync itself cannot be cancelled: abort stops the next batch after
  * the in-flight driver compilation settles. Await this before renderer disposal.
  */
@@ -242,7 +242,11 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
       report('antialias', 1, 1);
       await yieldToBrowser(signal);
     }
-    if(view.bannerPortal){checkAbort(signal);await view.bannerPortal.prepare();await yieldToBrowser(signal);}
+    if (view.bannerPortal) {
+      checkAbort(signal);
+      await view.bannerPortal.prepare(signal);
+      await yieldToBrowser(signal);
+    }
     report('ready', 1, 1);
     return {
       textures: textures.length, targets: targets.length, sceneVariants: compiled,
