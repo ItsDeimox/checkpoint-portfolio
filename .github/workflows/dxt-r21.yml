@@ -1,0 +1,42 @@
+name: DXT portal perspective and performance checks
+on:
+  push:
+    branches: [build/dxt-portal-wall-r21]
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Prepare exact project and browser
+        run: |
+          cd dxrkths
+          npm ci --no-audit --no-fund
+          npm run bundle
+          npm install --prefix /tmp/dxt-browser --no-audit --no-fund playwright sharp
+          /tmp/dxt-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Profile before/after in the same browser environment
+        run: |
+          cd dxrkths
+          node tools/server.mjs --host 0.0.0.0 --port 3000 >/tmp/site.log 2>&1 &
+          NODE_PATH=/tmp/dxt-browser/node_modules node tests/r21-probe.cjs
+      - name: Retain exact diagnostics on the working branch
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name 'Deimox'
+          git config user.email '123704758+ItsDeimox@users.noreply.github.com'
+          git add dxrkths/docs/r21-diagnostics || true
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Record measured portal diagnostics [skip ci]'
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/build/dxt-portal-wall-r21
