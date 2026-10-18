@@ -23,7 +23,7 @@ jobs:
           /tmp/dxt-browser/node_modules/.bin/playwright install --with-deps chromium
       - name: Validate current source
         run: |
-          python3 .r21/warm.py
+          python3 .r21/finalize.py
           cd dxrkths
           set +e
           npm run build >docs/r21-diagnostics/build.txt 2>&1
@@ -32,18 +32,19 @@ jobs:
           tail -15 docs/r21-diagnostics/build.txt
           cat docs/r21-diagnostics/failures.txt
           exit "$code"
-      - name: Profile and inspect both directions
+      - name: Check physical wall in both directions
         run: |
           cd dxrkths
           node tools/server.mjs --host 0.0.0.0 --port 3000 >/tmp/site.log 2>&1 &
-          sed -e 's/baseline-/after-/g' -e 's/baseline.json/after.json/g' -e 's/1.05+t\*1.15/1.05+t*2.05/g' tests/r21-probe.cjs >tests/r21-probe-after.cjs
-          NODE_PATH=/tmp/dxt-browser/node_modules node tests/r21-probe-after.cjs >docs/r21-diagnostics/after-browser.txt 2>&1
-          rm tests/r21-probe-after.cjs
-          NODE_PATH=/tmp/dxt-browser/node_modules node - <<'JS'
-          const fs=require('fs'),sharp=require('sharp');(async()=>{for(const t of[5,45,72,93,99,100]){const b=await sharp('docs/r21-diagnostics/after-'+t+'.png').resize(300).webp({quality:20}).toBuffer();fs.writeFileSync('docs/r21-diagnostics/preview-small-'+t+'.b64',b.toString('base64'));}const before=JSON.parse(fs.readFileSync('docs/r21-diagnostics/baseline.json')),after=JSON.parse(fs.readFileSync('docs/r21-diagnostics/after.json'));fs.writeFileSync('docs/r21-diagnostics/comparison.json',JSON.stringify({before:before.samples.map(s=>({t:s.t,draw:s.draw,cpu:s.cpu,work:s.work})),after:after.samples.map(s=>({t:s.t,draw:s.draw,cpu:s.cpu,work:s.work})),errors:after.errors},null,2));})();
+          NODE_PATH=/tmp/dxt-browser/node_modules node tests/portal-wall-browser.cjs >docs/r21-diagnostics/wall-browser-output.txt 2>&1
+      - name: Compact result summary
+        if: always()
+        run: |
+          cd dxrkths
+          node - <<'JS'
+          const fs=require('fs');if(fs.existsSync('docs/r21-diagnostics/wall-browser.json')){const r=JSON.parse(fs.readFileSync('docs/r21-diagnostics/wall-browser.json'));const s={checks:r.checks.length,failed:r.checks.filter(x=>!x.pass),error:r.error,errors:r.errors,native:r.native?{frames:r.native.frames.length,tasks:r.native.tasks}:null};fs.writeFileSync('docs/r21-diagnostics/summary.json',JSON.stringify(s,null,2));console.log(JSON.stringify(s));}
           JS
-          NODE_PATH=/tmp/dxt-browser/node_modules node tests/portal-wall-browser.cjs >docs/r21-diagnostics/wall-browser.log 2>&1
-      - name: Retain source and results only on working branch
+      - name: Retain exact source and diagnostics only on working branch
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -53,6 +54,6 @@ jobs:
           git config user.email '123704758+ItsDeimox@users.noreply.github.com'
           git add dxrkths/src/scene/room-portal-exit.js dxrkths/src/scene/room-portal-shader.js dxrkths/src/scene/room-portal.js dxrkths/src/scene/room-portal-scene.js dxrkths/src/scene/room-scene.js dxrkths/src/ui/portal-arrival.js dxrkths/src/ui/room-section-routes.js dxrkths/src/styles-sections.css dxrkths/tools/build.mjs dxrkths/tests dxrkths/docs/r21-diagnostics
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Record warmed corridor and bidirectional visual tests [skip ci]'
+          git commit -m 'Record symmetric wall return and visual validation [skip ci]'
           auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/build/dxt-portal-wall-r21
