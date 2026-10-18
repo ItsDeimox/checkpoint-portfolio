@@ -1,6 +1,17 @@
 import {arrivalVisual,arrivalTransform,arrivalClip,destinationGutter} from './portal-arrival.js';
 import {renderSectionPage} from '../pages/section-pages.js';
 
+/** Yield past a paint opportunity while the loading cover is still visible. */
+function preloadPaint(view){
+ return new Promise(resolve=>{
+  let completed=false;
+  const finish=()=>{if(completed)return;completed=true;clearTimeout(timeout);resolve();};
+  const timeout=setTimeout(finish,100);
+  if(typeof view?.requestAnimationFrame==='function')view.requestAnimationFrame(()=>setTimeout(finish,0));
+  else setTimeout(finish,0);
+ });
+}
+
 /** One physical page surface for both directions; history owns cancellation. */
 export class SectionRoutes {
  constructor({document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh}){
@@ -8,6 +19,81 @@ export class SectionRoutes {
   this.onArrivalResize=()=>this.fitArrivalViewport();
   document.defaultView?.addEventListener?.('resize',this.onArrivalResize,{passive:true});
   this.index=null;this.token=0;this.page=false;this.travelling=false;this.pending=false;this.returning=false;this.waitingReturn=false;
+  this.pageCache=new Map();this.mountedIndex=null;this.preloadTask=null;this.preloadedImages=[];
+ }
+ /** Parse, decode and lay out every destination under the intro cover.
+  * Only moving already-created nodes and compositor transforms remains on click. */
+ preload(signal){
+  if(this.preloadTask)return this.preloadTask;
+  this.preloadController=new AbortController();
+  if(signal){
+   if(signal.aborted)this.preloadController.abort(signal.reason);
+   else signal.addEventListener('abort',()=>this.preloadController.abort(signal.reason),{once:true});
+  }
+  this.preloadTask=this.preparePages(this.preloadController.signal);
+  return this.preloadTask;
+ }
+ async preparePages(signal){
+  const doc=this.document,view=doc.defaultView;
+  if(typeof doc.createElement!=='function'||typeof doc.body?.appendChild!=='function')return false;
+  const stage=doc.createElement('section');
+  stage.className='section-page';stage.inert=true;stage.setAttribute('aria-hidden','true');
+  Object.assign(stage.style,{position:'fixed',inset:'0',height:'100dvh',minHeight:'0',zIndex:'9',overflow:'hidden',pointerEvents:'none',contain:'layout style paint'});
+  doc.body.appendChild(stage);
+  const urls=new Set();let mounted=null;
+  try{
+   for(let i=0;i<5;i++){
+    signal?.throwIfAborted();
+    const holder=doc.createElement('div');holder.innerHTML=renderSectionPage(i);
+    for(const image of holder.querySelectorAll('img[src],image[href]')){
+     const src=image.getAttribute('src')||image.getAttribute('href');
+     if(src?.startsWith('/assets/'))urls.add(src);
+    }
+    this.pageCache.set(i,{holder,viewport:null});
+   }
+   const fonts=doc.fonts;
+   const fontTasks=typeof fonts?.load==='function'
+    ? ['400 16px "Barlow"','500 16px "Barlow"','400 16px "Barlow Condensed"','500 64px "Barlow Condensed"','600 64px "Barlow Condensed"'].map(name=>fonts.load(name))
+    : [];
+   const ImageCtor=view?.Image??globalThis.Image;
+   if(typeof ImageCtor==='function'){
+    this.preloadedImages=[...urls].map(src=>{const image=new ImageCtor();image.decoding='async';image.src=src;return image;});
+   }
+   const imageTasks=this.preloadedImages.map(image=>typeof image.decode==='function'?image.decode():new Promise(resolve=>{
+    if(image.complete){resolve();return;}
+    image.onload=resolve;image.onerror=resolve;
+   }));
+   await Promise.allSettled([...fontTasks,...imageTasks,...(fonts?.ready?[fonts.ready]:[])]);
+   const width=view?.innerWidth||this.canvas.clientWidth||900,height=view?.innerHeight||this.canvas.clientHeight||600;
+   const scrollbar=destinationGutter(doc);
+   for(const entry of this.pageCache.values()){
+    signal?.throwIfAborted();
+    mounted=entry;stage.replaceChildren(...Array.from(entry.holder.childNodes));
+    await preloadPaint(view);signal?.throwIfAborted();
+    entry.viewport={width,height,gutter:stage.scrollHeight>stage.clientHeight+1?scrollbar:0};
+    stage.getBoundingClientRect?.();
+    await preloadPaint(view);
+    entry.holder.append(...Array.from(stage.childNodes));mounted=null;
+   }
+   return true;
+  }finally{
+   if(mounted&&stage.childNodes.length)mounted.holder.append(...Array.from(stage.childNodes));
+   stage.remove();
+  }
+ }
+ stashMounted(){
+  if(this.mountedIndex===null)return;
+  const entry=this.pageCache.get(this.mountedIndex);
+  if(entry?.holder&&this.root.firstChild)entry.holder.append(...Array.from(this.root.childNodes));
+  this.mountedIndex=null;
+ }
+ mountPage(index){
+  if(this.mountedIndex===index&&this.root.firstChild)return;
+  this.stashMounted();
+  const entry=this.pageCache.get(index);
+  if(entry?.holder?.firstChild)this.root.replaceChildren(...Array.from(entry.holder.childNodes));
+  else this.root.innerHTML=renderSectionPage(index);
+  this.mountedIndex=index;
  }
  clearArrival(retain=false){
   this.arrival=null;
@@ -18,7 +104,7 @@ export class SectionRoutes {
  }
  prepareArrival(index,token,reuse=false,scroll=0){
   this.arrival={index,token,reverse:reuse,opacity:reuse?1:0};
-  if(!reuse)this.root.innerHTML=renderSectionPage(index);
+  if(!reuse)this.mountPage(index);
   this.root.setAttribute('data-portal-arrival',reuse?'retreat':'preview');this.root.setAttribute('aria-hidden','true');
   this.root.style.setProperty('--arrival-gutter','0px');this.root.style.opacity=reuse?'1':'0';
   this.root.style.transform='none';this.root.style.clipPath='none';this.root.inert=true;this.root.hidden=false;
@@ -30,7 +116,8 @@ export class SectionRoutes {
   if(!this.arrival)return;
   const win=this.document.defaultView,width=win?.innerWidth||this.canvas.clientWidth||this.root.clientWidth||900,height=win?.innerHeight||this.canvas.clientHeight||this.root.clientHeight||600;
   this.root.style.setProperty('--arrival-gutter','0px');
-  const gutter=this.root.scrollHeight>this.root.clientHeight+1?destinationGutter(this.document):0;
+  const cached=this.pageCache.get(this.arrival.index)?.viewport;
+  const gutter=cached?.width===width&&cached.height===height?cached.gutter:this.root.scrollHeight>this.root.clientHeight+1?destinationGutter(this.document):0;
   this.root.style.setProperty('--arrival-gutter',`${gutter}px`);
   // Measured once, not after each transform write. No forced style/layout reads
   // in the camera callback; the compositor owns motion after this point.
@@ -77,7 +164,7 @@ export class SectionRoutes {
   if(token!==this.token||this.index!==index)return;
   const prepared=this.arrival?.index===index&&this.arrival?.token===token;
   this.clearArrival(prepared);this.clearReturn();this.page=true;this.pending=false;this.travelling=false;
-  this.getScene()?.parkSection();if(!prepared)this.root.innerHTML=renderSectionPage(index);this.root.hidden=false;
+  this.getScene()?.parkSection();if(!prepared)this.mountPage(index);this.root.hidden=false;
   this.host.hidden=true;this.footer.hidden=true;this.canvas.inert=true;
   this.document.body.classList.remove('portal-travelling');this.document.body.classList.add('section-active');
   this.root.scrollTop=0;this.document.defaultView?.scrollTo?.(0,0);
@@ -120,12 +207,12 @@ export class SectionRoutes {
  finishReturn(token){
   if(token!==this.token)return;
   this.clearArrival(this.root.getAttribute('data-portal-arrival')==='arrived');this.clearReturn();this.page=this.pending=this.travelling=false;
-  this.root.hidden=true;this.root.innerHTML='';this.host.hidden=false;this.footer.hidden=false;
+  this.stashMounted();this.root.hidden=true;this.root.innerHTML='';this.host.hidden=false;this.footer.hidden=false;
   this.canvas.inert=false;this.footer.inert=false;
   this.document.body.classList.remove('portal-travelling','section-active');
   const scene=this.getScene();if(scene?.ready&&!scene.lost)scene.resumeShowroom();else this.onNeedScene?.();
   this.onRefresh?.();this.canvas.focus({preventScroll:true});
  }
  unavailable(){if(this.returning)this.finishReturn(this.token);else if(this.index!==null)this.show(this.index,this.token);}
- dispose(){this.document.defaultView?.removeEventListener?.('resize',this.onArrivalResize);++this.token;this.clearArrival();this.clearReturn();this.getScene()?.cancelPortal?.();}
+ dispose(){this.preloadController?.abort();this.document.defaultView?.removeEventListener?.('resize',this.onArrivalResize);++this.token;this.clearArrival();this.clearReturn();this.stashMounted();this.pageCache.clear();this.preloadedImages.length=0;this.getScene()?.cancelPortal?.();}
 }

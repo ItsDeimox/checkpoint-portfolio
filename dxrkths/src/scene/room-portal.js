@@ -102,29 +102,54 @@ export class BannerPortal {
  }
  async prepareScene(signal){
   if(this.scenePrepared)return;
-  const v=this.view,c=v.camera,panel=v.panels[0];
+  const v=this.view,c=v.camera;
   const saved={position:c.position.clone(),rotation:c.quaternion.clone(),fov:c.fov,focus:v.cameraRig.focusTarget.clone(),pageActive:v.pageActive};
-  this.panel=panel;this.basis=portalBasis(panel);this.effects.start(this.basis);
+  const samples=[
+   {progress:0,age:.45,stage:'approach'},
+   {progress:.38,age:PORTAL_APPROACH_SECONDS+.38*PORTAL_FLIGHT_SECONDS,stage:'flight'},
+   {progress:1,age:PORTAL_APPROACH_SECONDS+PORTAL_FLIGHT_SECONDS,stage:'flight'},
+  ];
   try{
-   signal?.throwIfAborted();
-   v.pageActive=false;
-   this.active=true;this.returning=false;this.interior=false;this.stage='flight';this.age=PORTAL_APPROACH_SECONDS;
-   const pose=portalTravelPose(this.basis,0);c.position.copy(pose.position);c.quaternion.copy(pose.rotation);v.cameraRig.setFov(pose.fov);c.updateMatrixWorld(true);
-   this.sampleExit();this.syncReturnEffects();
-   // Exercise the portal-enabled banner in the REAL scene pipeline while the
-   // entry gate is still closed. Driver work for this path must not hit click.
-   v.render(1/60,0);
+   signal?.throwIfAborted();v.pageActive=false;
+   this.active=true;this.returning=false;
+   // Every screen is actually drawn in both the room and corridor renderer
+   // while the loading cover is up. A compile-only warm-up misses driver work.
+   for(const panel of v.panels){
+    signal?.throwIfAborted();
+    this.panel=panel;this.basis=portalBasis(panel);this.effects.start(this.basis);
+    Object.assign(this.fullMaterial.uniforms,panel.portalUniforms,{
+     artwork:panel.material.uniforms.artwork,projection:panel.material.uniforms.projection});
+    for(const sample of samples){
+     signal?.throwIfAborted();
+     const pose=portalTravelPose(this.basis,sample.progress);
+     c.position.copy(pose.position);c.quaternion.copy(pose.rotation);v.cameraRig.setFov(pose.fov);c.updateMatrixWorld(true);
+     this.stage=sample.stage;this.age=sample.age;this.interior=sample.progress===1;
+     panel.portalUniforms.portalProgress.value=sample.progress;
+     panel.portalUniforms.portalMix.value=smooth(sample.age/.75);
+     this.sampleExit();this.syncReturnEffects();
+     v.render(1/60,0);
+     await yieldToBrowser(signal);
+    }
+    this.effects.reset();
+    panel.portalUniforms.portalMix.value=0;panel.portalUniforms.portalProgress.value=0;
+    panel.portalUniforms.portalSpeed.value=0;panel.portalUniforms.portalOpening.value=0;
+    v.optics.resetHistory();
+   }
   }finally{
    this.active=false;this.returning=false;this.interior=false;this.stage='idle';this.effects.reset();this.shutter.reset();
-   panel.portalUniforms.portalMix.value=0;panel.portalUniforms.portalProgress.value=0;panel.portalUniforms.portalSpeed.value=0;panel.portalUniforms.portalOpening.value=0;
+   for(const panel of v.panels){
+    const u=panel.portalUniforms;
+    u.portalMix.value=0;u.portalReturn.value=0;u.portalProgress.value=0;u.portalSpeed.value=0;u.portalOpening.value=0;u.portalAge.value=0;
+   }
    c.position.copy(saved.position);c.quaternion.copy(saved.rotation);v.cameraRig.setFov(saved.fov);v.cameraRig.focusTarget.copy(saved.focus);c.updateMatrixWorld(true);
    v.optics.resetHistory();v.renderer.shadowMap.needsUpdate=true;
    v.pageActive=saved.pageActive;
+   this.panel=null;this.basis=null;this.exitFrame=null;
    if(!signal?.aborted&&!v.pageActive)v.render(1/60,0);
   }
   const gl=v.renderer.getContext(),fence=gl.fenceSync?.(gl.SYNC_GPU_COMMANDS_COMPLETE,0);
   if(fence){gl.flush();try{for(let i=0;i<180;i++){signal?.throwIfAborted();if(gl.clientWaitSync(fence,0,0)!==gl.TIMEOUT_EXPIRED)break;await yieldToBrowser(signal);}}finally{gl.deleteSync(fence);}}
-  this.panel=null;this.basis=null;this.exitFrame=null;this.scenePrepared=true;await yieldToBrowser(signal);
+  signal?.throwIfAborted();this.scenePrepared=true;await yieldToBrowser(signal);
  }
  attachOptics(optics){
   if(!optics||this.attached)return;
