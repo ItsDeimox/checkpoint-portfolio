@@ -1,3 +1,4 @@
+import {yieldToBrowser} from './room-startup.js';
 import {projectPortalExit} from './room-portal-exit.js';
 import * as T from 'three';
 import {PORTAL_UNIFORMS,PORTAL_FUNCTIONS} from './room-portal-shader.js';
@@ -5,7 +6,7 @@ import {PortalEffects} from './room-portal-effects.js';
 import {PortalShutterPass} from './room-portal-optics.js';
 import {RoomCamera} from './room-camera.js';
 import {smoothPortalTime,portalApproachSampler,portalFlightDistance} from './room-portal-path.js';
-export const PORTAL_APPROACH_SECONDS=1.05,PORTAL_FLIGHT_SECONDS=1.15;
+export const PORTAL_APPROACH_SECONDS=1.05,PORTAL_FLIGHT_SECONDS=2.05;
 const smooth=x=>{x=T.MathUtils.clamp(x,0,1);return x*x*x*(x*(x*6-15)+10);};
 
 export function portalBasis(panel){
@@ -32,7 +33,7 @@ function configureApproach(rig,basis,onComplete){
 }
 function portalUniforms(panel){
  const b=portalBasis(panel);
- return {portalMix:{value:0},portalExitDepth:{value:28},portalExitHalf:{value:new T.Vector2(1,1)},portalExitOffset:{value:0},portalReturn:{value:0},portalAge:{value:0},portalProgress:{value:0},portalSpeed:{value:0},portalOpening:{value:0},portalLayerCount:{value:18},
+ return {portalMix:{value:0},portalTunnelEnd:{value:18},portalExitDepth:{value:28},portalExitHalf:{value:new T.Vector2(1,1)},portalExitOffset:{value:0},portalReturn:{value:0},portalAge:{value:0},portalProgress:{value:0},portalSpeed:{value:0},portalOpening:{value:0},portalLayerCount:{value:18},
   portalOrigin:{value:b.center},portalRight:{value:b.right},portalUp:{value:b.up},portalForward:{value:b.forward},portalHalf:{value:b.half}};
 }
 export function configurePortal(panel){
@@ -73,11 +74,31 @@ export class BannerPortal {
   this.originalUpdate=view.cameraRig.update.bind(view.cameraRig);
   view.cameraRig.update=dt=>this.active?this.update(dt):this.originalUpdate(dt);
  }
- async prepare(){
-  const {renderer,camera,optics}=this.view;if(!optics?.sceneTarget)return;
-  const previous=renderer.getRenderTarget();
-  try{renderer.setRenderTarget(optics.sceneTarget);await renderer.compileAsync(this.fullScene,camera,this.fullScene);}
-  finally{renderer.setRenderTarget(previous);}
+ async prepare(signal){
+  const {renderer,camera,optics}=this.view;
+  if(!optics?.sceneTarget)return;
+  signal?.throwIfAborted();this.attachOptics(optics);
+  const warm=camera.clone(),basis=portalBasis(this.view.panels[0]),pose=portalTravelPose(basis,.5);
+  warm.position.copy(pose.position);warm.quaternion.copy(pose.rotation);warm.fov=pose.fov;
+  warm.updateProjectionMatrix();warm.updateMatrixWorld(true);
+  const f=projectPortalExit(warm,basis,portalTravelPose(basis,1),{width:900,height:600,contentWidth:900});
+  const u=this.fullMaterial.uniforms;u.portalTunnelEnd.value=f.tunnelEndDepth;u.portalExitDepth.value=f.exitDepth;
+  u.portalExitHalf.value.fromArray(f.exitHalf);u.portalInverseProjection.value.copy(warm.projectionMatrixInverse);u.portalCameraWorld.value.copy(warm.matrixWorld);
+  const old=renderer.getRenderTarget(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),test=renderer.getScissorTest();
+  try{
+   renderer.setRenderTarget(optics.sceneTarget);
+   await renderer.compileAsync(this.fullScene,warm,this.fullScene);signal?.throwIfAborted();
+   // Upload the actual fullscreen geometry and exercise the HDR program before
+   // the site unlocks interaction, not on the first click in the tunnel.
+   renderer.setViewport(0,0,4,4);renderer.setScissor(0,0,4,4);renderer.setScissorTest(true);
+   renderer.render(this.fullScene,warm);
+  }finally{renderer.setRenderTarget(old);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(test);}
+  const gl=renderer.getContext(),fence=gl.fenceSync?.(gl.SYNC_GPU_COMMANDS_COMPLETE,0);
+  if(fence){
+   gl.flush();try{for(let i=0;i<180;i++){signal?.throwIfAborted();const status=gl.clientWaitSync(fence,0,0);if(status!==gl.TIMEOUT_EXPIRED)break;await yieldToBrowser(signal);}}
+   finally{gl.deleteSync(fence);}
+  }
+  this.prepared=true;await yieldToBrowser(signal);
  }
  attachOptics(optics){
   if(!optics||this.attached)return;
@@ -107,14 +128,14 @@ export class BannerPortal {
   if(!this.basis||!this.panel)return null;
   const view=this.view,width=view.width??view.cameraRig.width??900,height=view.height??width/view.camera.aspect;
   const frame=projectPortalExit(view.camera,this.basis,portalTravelPose(this.basis,1),this.getArrivalViewport?.()??{width,height,contentWidth:width});
-  if(frame.visible){const u=this.panel.portalUniforms;u.portalExitDepth.value=frame.exitDepth;u.portalExitHalf.value.fromArray(frame.exitHalf);u.portalExitOffset.value=frame.exitOffset;}
+  if(frame.visible){const u=this.panel.portalUniforms;u.portalExitDepth.value=frame.exitDepth;u.portalExitHalf.value.fromArray(frame.exitHalf);u.portalExitOffset.value=frame.exitOffset;u.portalTunnelEnd.value=frame.tunnelEndDepth;}
   this.exitFrame=frame;return frame;
  }
  /** Start behind the doorway and rewind the same camera path and shader clock. */
- returnToShowroom(index,onComplete){
+ returnToShowroom(index,onComplete,onProgress=null,getArrivalViewport=null){
   const v=this.view,panel=v.panels[index];
   if(this.active||this.disposed||!v.ready||v.lost||!panel)return false;
-  this.panel=panel;this.basis=portalBasis(panel);this.onComplete=onComplete;this.onProgress=null;panel.portalUniforms.portalReturn.value=1;
+  this.panel=panel;this.basis=portalBasis(panel);this.onComplete=onComplete;this.onProgress=onProgress;this.getArrivalViewport=getArrivalViewport;panel.portalUniforms.portalReturn.value=1;
   this.active=true;this.returning=true;this.interior=true;this.stage='flight';
   this.elapsed=0;this.age=PORTAL_APPROACH_SECONDS+PORTAL_FLIGHT_SECONDS;
   this.returnViewportDirty=false;this.returnRebased=false;
@@ -126,7 +147,7 @@ export class BannerPortal {
   const pose=portalTravelPose(this.basis,1);
   v.camera.position.copy(pose.position);v.camera.quaternion.copy(pose.rotation);v.cameraRig.setFov(pose.fov);
   panel.portalUniforms.portalProgress.value=1;v.camera.updateMatrixWorld(true);
-  this.syncReturnEffects();v.optics.resetHistory();v.wake();return true;
+  this.syncReturnEffects();this.onProgress?.(1,this.sampleExit());v.optics.resetHistory();v.wake();return true;
  }
  prepareReturnCurve(){
   const v=this.view,camera=v.camera.clone(),rig=new RoomCamera(camera,v.cameraRig.width),saved=this.saved;
@@ -173,7 +194,7 @@ export class BannerPortal {
    v.cameraRig.setFov(this.reverseRig.camera.fov);v.cameraRig.focusTarget.copy(this.reverseRig.focusTarget);
    if(progress>=1-1e-9){this.finishReturn();return true;}
   }
-  v.camera.updateMatrixWorld(true);this.syncReturnEffects();return true;
+  v.camera.updateMatrixWorld(true);this.syncReturnEffects();this.onProgress?.(u.portalProgress.value,this.sampleExit());return true;
  }
  syncReturnEffects(){
   const v=this.view,u=this.panel.portalUniforms;u.portalAge.value=this.age;u.portalMix.value=smooth(this.age/.75);
@@ -231,6 +252,6 @@ export class BannerPortal {
   if(this.saved){v.cameraRig.yaw=v.cameraRig.targetYaw=this.saved.yaw??0;v.cameraRig.pitch=v.cameraRig.targetPitch=this.saved.pitch??0;v.cameraRig.focusTarget.copy(this.saved.focus);v.camera.position.copy(this.saved.position);v.camera.quaternion.copy(this.saved.rotation);v.cameraRig.setFov(this.saved.fov);v.camera.updateMatrixWorld(true);}
   v.optics?.resetHistory();v.reflectionBudget?.invalidate();
  }
- dispose(){if(this.disposed)return;this.disposed=true;this.active=false;this.returning=false;this.view.cameraRig.transition=null;this.onComplete=null;this.effects.dispose();if(!this.attached)this.shutter.dispose();this.quad.geometry.dispose();this.fullMaterial.dispose();}
+ dispose(){if(this.disposed)return;this.disposed=true;this.active=false;this.returning=false;this.view.cameraRig.transition=null;this.onComplete=null;this.onProgress=null;this.getArrivalViewport=null;this.effects.dispose();if(!this.attached)this.shutter.dispose();this.quad.geometry.dispose();this.fullMaterial.dispose();}
  inspect(){return {active:this.active,returning:this.returning,stage:this.stage,interior:this.interior,panel:this.panel?.index,depth:this.basis?this.basis.toLocal(this.view.camera.position).z:null,age:this.age??0,burstVisible:this.effects.group.visible,shutter:this.shutter.uniforms.uShutter.value,chromaticPixels:this.shutter.uniforms.uChromaticPixels.value};}
 }

@@ -1,0 +1,372 @@
+TAP version 13
+# Subtest: page wall is physically wider than the tunnel; the corridor ends before the wall
+not ok 1 - page wall is physically wider than the tunnel; the corridor ends before the wall
+  ---
+  duration_ms: 5.442723
+  type: 'test'
+  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(f.exitHalf[0]>basis.half.x*2)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:7:118)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: early view is truly occluded by the tunnel and later reveals the whole wall
+not ok 2 - early view is truly occluded by the tunnel and later reveals the whole wall
+  ---
+  duration_ms: 0.747148
+  type: 'test'
+  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(first.clip&&first.clip[0]>.05&&first.clip[1]>.05)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:8:129)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: revealed area opens continuously and never contracts on approach
+not ok 3 - revealed area opens continuously and never contracts on approach
+  ---
+  duration_ms: 0.347355
+  type: 'test'
+  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(f.clip)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:9:140)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: apparent zoom per 60Hz frame is gentle, not concentrated in a final surge
+not ok 4 - apparent zoom per 60Hz frame is gentle, not concentrated in a final surge
+  ---
+  duration_ms: 3.192964
+  type: 'test'
+  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:10:1'
+  failureType: 'testCodeFailure'
+  error: 'relative jump 0.07620898058888954'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:10:326)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: every aspect arrives at the exact native viewport without distortion
+ok 5 - every aspect arrives at the exact native viewport without distortion
+  ---
+  duration_ms: 0.791896
+  type: 'test'
+  ...
+# Subtest: corridor shader does not black out on reverse or sum hidden frame layers
+not ok 6 - corridor shader does not black out on reverse or sum hidden frame layers
+  ---
+  duration_ms: 0.605335
+  type: 'test'
+  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /return color\*\(1\.-portalReturn/. Input:
+    
+    '/** Shared world-ray corridor: the banner and the interior see the same space. */\n' +
+      'export const PORTAL_UNIFORMS=/*glsl*/`\n' +
+      ' uniform float portalMix;uniform float portalReturn;uniform float portalAge;uniform float portalProgress;\n' +
+      ' uniform float portalSpeed;uniform float portalOpening;uniform float portalLayerCount;uniform vec3 portalOrigin;uniform vec3 portalRight;\n' +
+      ' uniform vec3 portalUp;uniform vec3 portalForward;uniform vec2 portalHalf;uniform float portalExitDepth;uniform vec2 portalExitHalf;uniform float portalExitOffset;\n' +
+      '`;\n' +
+      'export const PORTAL_FUNCTIONS=/*glsl*/`\n' +
+      ' float portalHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\n' +
+      ' float portalNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);\n' +
+      ' return mix(mix(portalHash(i),portalHash(i+vec2(1.,0.)),f.x),mix(portalHash(i+vec2(0.,1.)),portalHash(i+1.),f.x),f.y);}\n' +
+      '\n' +
+      ' vec3 portalLocal(vec3 v){return vec3(dot(v,portalRight),dot(v,portalUp),dot(v,portalForward));}\n' +
+      ' vec3 portalPicture(vec2 uv){\n' +
+      '  vec3 h=projection*vec3(clamp(uv,vec2(.005),vec2(.995)),1.);\n' +
+      '  return texture2D(artwork,vec2(h.x/h.z,1.-h.y/h.z)).rgb;\n' +
+      ' }\n' +
+      ' vec3 portalRadiance(vec3 eye,vec3 direction){\n' +
+      '  vec3 ro=portalLocal(eye-portalOrigin),rd=portalLocal(direction);\n' +
+      '  if(rd.z<=.00001)return vec3(.003,.001,.002);\n' +
+      '  // Start the wall test at the doorway when looking from the showroom.\n' +
+      '  float entry=max(0.,-ro.z/rd.z);vec3 door=ro+rd*entry;\n' +
+      '  float tx=(sign(rd.x)*portalHalf.x-door.x)/(abs(rd.x)<.00001?.00001:rd.x);\n' +
+      '  float ty=(sign(rd.y)*portalHalf.y-door.y)/(abs(rd.y)<.00001?.00001:rd.y);\n' +
+      '  tx=tx>.001?tx:1000.;ty=ty>.001?ty:1000.;\n' +
+      '  float wall=min(min(tx,ty),110.);\n' +
+      '  float endT=(portalExitDepth-door.z)/rd.z;\n' +
+      '  bool endWall=portalReturn<.5&&endT>0.&&endT<wall;\n' +
+      '  if(endWall)wall=endT;\n' +
+      '  vec3 hit=door+rd*wall;\n' +
+      '  float horizontal=step(ty,tx);float across=mix(hit.y/portalHalf.y,hit.x/portalHalf.x,horizontal);\n' +
+      '  float depth=hit.z,maxDepth=max(0.,depth-max(ro.z,0.));\n' +
+      '  vec2 tiles=vec2(depth*.26,across*3.);\n' +
+      '  vec2 grid=abs(fract(tiles)-.5);\n' +
+      '  float seam=1.-smoothstep(.46,.498,max(grid.x,grid.y));\n' +
+      '  float distanceFade=exp(-maxDepth*.055);\n' +
+      '  vec3 art=portalPicture(vec2(fract(depth*.06+across*.025),across*.5+.5));\n' +
+      '  vec3 color=(vec3(.011,.004,.008)+art*vec3(.09,.018,.026)*seam)*distanceFade;\n' +
+      '  float rail=exp(-pow((abs(across)-.86)*55.,2.));\n' +
+      '  color+=vec3(2.6,.008,.038)*rail*distanceFade*(1.+portalOpening*.4);\n' +
+      '  // Paired racing lanes and broken center markers share physical wall depth.\n' +
+      '  float floorSide=horizontal*(1.-step(0.,hit.y));\n' +
+      '  float lanes=exp(-pow((abs(across)-.34)*125.,2.));\n' +
+      '  float dashed=exp(-pow(across*150.,2.))*smoothstep(.3,.36,fract(depth*.27));\n' +
+      '  color+=vec3(2.1,.22,.19)*(lanes*.65+dashed*.4)*distanceFade*floorSide;\n' +
+      '  float streak=pow(max(0.,sin(depth*.85+across*7.-portalAge*(1.1+portalProgress*5.))),24.);\n' +
+      '  color+=vec3(.70,.006,.025)*streak*distanceFade*(.35+portalSpeed);\n' +
+      '  // Sparse comets slide at three depths/velocities, retaining the center focus.\n' +
+      '  float lane=floor((across+1.)*14.);\n' +
+      '  float lanePos=abs(fract((across+1.)*14.)-.5);\n' +
+      '  float seed=portalHash(vec2(lane,horizontal));\n' +
+      '  float beam=exp(-lanePos*70.)*step(.35,seed);\n' +
+      '  float flow=fract(depth*(.06+seed*.035)-portalAge*(.25+seed*.5));\n' +
+      '  float trail=pow(1.-flow,9.);\n' +
+      '  color+=vec3(3.5,.035,.06)*beam*trail*distanceFade*(.4+portalSpeed);\n' +
+      '  float vapor=portalNoise(vec2(across*4.,depth*.31-portalAge*.22));\n' +
+      '  vapor*=portalNoise(vec2(across*9.+7.,depth*.55+portalAge*.12));\n' +
+      '  color+=vec3(.05,.006,.014)*vapor*(1.-distanceFade)*(.5+portalSpeed);\n' +
+      '  // Repeated physical frames recede into the vanishing point, not flat UV zooms.\n' +
+      '  if(endWall){\n' +
+      '   // The actual HTML is projected onto this aperture, not blended over the walls.\n' +
+      '   vec2 q=abs(hit.xy-vec2(portalExitOffset,0.))-portalExitHalf;\n' +
+      '   float edge=max(q.x,q.y);\n' +
+      '   float aa=max(fwidth(edge),.004);\n' +
+      '   float core=exp(-pow((edge-.018)/max(.008,aa),2.));\n' +
+      '   float halo=exp(-abs(edge-.018)*24.);\n' +
+      '   color=vec3(.012,.003,.007)+vec3(3.4,.018,.055)*(core*.65+halo*.15);\n' +
+      '  }\n' +
+      '  float first=floor(max(ro.z,0.)/2.35);\n' +
+      '  for(int i=0;i<24;i++){\n' +
+      '   if(float(i)>=portalLayerCount)break;\n' +
+      '   float z=(first+float(i)+1.)*2.35;\n' +
+      '   if(portalReturn<.5&&z>=portalExitDepth)break;\n' +
+      '   float t=(z-ro.z)/rd.z;if(t<=0.)continue;\n' +
+      '   vec2 q=(ro+rd*t).xy/portalHalf;\n' +
+      '   float edge=abs(max(abs(q.x),abs(q.y))-1.);\n' +
+      '   float pixel=.003+min(t*.00065,.016);\n' +
+      '   float core=1.-smoothstep(pixel,pixel*2.7,edge);\n' +
+      '   float glow=exp(-edge*45.)*.2;\n' +
+      '   float inner=exp(-abs(max(abs(q.x),abs(q.y))-.955)*190.)*.12;\n' +
+      '   float fade=exp(-(z-max(ro.z,0.))*.072);\n' +
+      '   color+=vec3(2.5,.012,.058)*(core*.75+glow)*fade;\n' +
+      '   color+=vec3(2.7,.32,.30)*inner*fade*(.4+portalSpeed*.5);\n' +
+      '  }\n' +
+      '  vec2 vanishing=rd.xy/max(rd.z,.02);\n' +
+      '  float endGlow=exp(-dot(vanishing,vanishing)*110.);\n' +
+      '  color+=vec3(.15,.002,.012)*endGlow;\n' +
+      '  // Incoming light stays intact while the real page takes over.\n' +
+      '  // The established reverse journey retains its original tail.\n' +
+      '  return color*(1.-portalReturn*smoothstep(.84,1.,portalProgress));\n' +
+      ' }\n' +
+      '`;\n'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    /** Shared world-ray corridor: the banner and the interior see the same space. */
+    export const PORTAL_UNIFORMS=/*glsl*/`
+     uniform float portalMix;uniform float portalReturn;uniform float portalAge;uniform float portalProgress;
+     uniform float portalSpeed;uniform float portalOpening;uniform float portalLayerCount;uniform vec3 portalOrigin;uniform vec3 portalRight;
+     uniform vec3 portalUp;uniform vec3 portalForward;uniform vec2 portalHalf;uniform float portalExitDepth;uniform vec2 portalExitHalf;uniform float portalExitOffset;
+    `;
+    export const PORTAL_FUNCTIONS=/*glsl*/`
+     float portalHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+     float portalNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+     return mix(mix(portalHash(i),portalHash(i+vec2(1.,0.)),f.x),mix(portalHash(i+vec2(0.,1.)),portalHash(i+1.),f.x),f.y);}
+    
+     vec3 portalLocal(vec3 v){return vec3(dot(v,portalRight),dot(v,portalUp),dot(v,portalForward));}
+     vec3 portalPicture(vec2 uv){
+      vec3 h=projection*vec3(clamp(uv,vec2(.005),vec2(.995)),1.);
+      return texture2D(artwork,vec2(h.x/h.z,1.-h.y/h.z)).rgb;
+     }
+     vec3 portalRadiance(vec3 eye,vec3 direction){
+      vec3 ro=portalLocal(eye-portalOrigin),rd=portalLocal(direction);
+      if(rd.z<=.00001)return vec3(.003,.001,.002);
+      // Start the wall test at the doorway when looking from the showroom.
+      float entry=max(0.,-ro.z/rd.z);vec3 door=ro+rd*entry;
+      float tx=(sign(rd.x)*portalHalf.x-door.x)/(abs(rd.x)<.00001?.00001:rd.x);
+      float ty=(sign(rd.y)*portalHalf.y-door.y)/(abs(rd.y)<.00001?.00001:rd.y);
+      tx=tx>.001?tx:1000.;ty=ty>.001?ty:1000.;
+      float wall=min(min(tx,ty),110.);
+      float endT=(portalExitDepth-door.z)/rd.z;
+      bool endWall=portalReturn<.5&&endT>0.&&endT<wall;
+      if(endWall)wall=endT;
+      vec3 hit=door+rd*wall;
+      float horizontal=step(ty,tx);float across=mix(hit.y/portalHalf.y,hit.x/portalHalf.x,horizontal);
+      float depth=hit.z,maxDepth=max(0.,depth-max(ro.z,0.));
+      vec2 tiles=vec2(depth*.26,across*3.);
+      vec2 grid=abs(fract(tiles)-.5);
+      float seam=1.-smoothstep(.46,.498,max(grid.x,grid.y));
+      float distanceFade=exp(-maxDepth*.055);
+      vec3 art=portalPicture(vec2(fract(depth*.06+across*.025),across*.5+.5));
+      vec3 color=(vec3(.011,.004,.008)+art*vec3(.09,.018,.026)*seam)*distanceFade;
+      float rail=exp(-pow((abs(across)-.86)*55.,2.));
+      color+=vec3(2.6,.008,.038)*rail*distanceFade*(1.+portalOpening*.4);
+      // Paired racing lanes and broken center markers share physical wall depth.
+      float floorSide=horizontal*(1.-step(0.,hit.y));
+      float lanes=exp(-pow((abs(across)-.34)*125.,2.));
+      float dashed=exp(-pow(across*150.,2.))*smoothstep(.3,.36,fract(depth*.27));
+      color+=vec3(2.1,.22,.19)*(lanes*.65+dashed*.4)*distanceFade*floorSide;
+      float streak=pow(max(0.,sin(depth*.85+across*7.-portalAge*(1.1+portalProgress*5.))),24.);
+      color+=vec3(.70,.006,.025)*streak*distanceFade*(.35+portalSpeed);
+      // Sparse comets slide at three depths/velocities, retaining the center focus.
+      float lane=floor((across+1.)*14.);
+      float lanePos=abs(fract((across+1.)*14.)-.5);
+      float seed=portalHash(vec2(lane,horizontal));
+      float beam=exp(-lanePos*70.)*step(.35,seed);
+      float flow=fract(depth*(.06+seed*.035)-portalAge*(.25+seed*.5));
+      float trail=pow(1.-flow,9.);
+      color+=vec3(3.5,.035,.06)*beam*trail*distanceFade*(.4+portalSpeed);
+      float vapor=portalNoise(vec2(across*4.,depth*.31-portalAge*.22));
+      vapor*=portalNoise(vec2(across*9.+7.,depth*.55+portalAge*.12));
+      color+=vec3(.05,.006,.014)*vapor*(1.-distanceFade)*(.5+portalSpeed);
+      // Repeated physical frames recede into the vanishing point, not flat UV zooms.
+      if(endWall){
+       // The actual HTML is projected onto this aperture, not blended over the walls.
+       vec2 q=abs(hit.xy-vec2(portalExitOffset,0.))-portalExitHalf;
+       float edge=max(q.x,q.y);
+       float aa=max(fwidth(edge),.004);
+       float core=exp(-pow((edge-.018)/max(.008,aa),2.));
+       float halo=exp(-abs(edge-.018)*24.);
+       color=vec3(.012,.003,.007)+vec3(3.4,.018,.055)*(core*.65+halo*.15);
+      }
+      float first=floor(max(ro.z,0.)/2.35);
+      for(int i=0;i<24;i++){
+       if(float(i)>=portalLayerCount)break;
+       float z=(first+float(i)+1.)*2.35;
+       if(portalReturn<.5&&z>=portalExitDepth)break;
+       float t=(z-ro.z)/rd.z;if(t<=0.)continue;
+       vec2 q=(ro+rd*t).xy/portalHalf;
+       float edge=abs(max(abs(q.x),abs(q.y))-1.);
+       float pixel=.003+min(t*.00065,.016);
+       float core=1.-smoothstep(pixel,pixel*2.7,edge);
+       float glow=exp(-edge*45.)*.2;
+       float inner=exp(-abs(max(abs(q.x),abs(q.y))-.955)*190.)*.12;
+       float fade=exp(-(z-max(ro.z,0.))*.072);
+       color+=vec3(2.5,.012,.058)*(core*.75+glow)*fade;
+       color+=vec3(2.7,.32,.30)*inner*fade*(.4+portalSpeed*.5);
+      }
+      vec2 vanishing=rd.xy/max(rd.z,.02);
+      float endGlow=exp(-dot(vanishing,vanishing)*110.);
+      color+=vec3(.15,.002,.012)*endGlow;
+      // Incoming light stays intact while the real page takes over.
+      // The established reverse journey retains its original tail.
+      return color*(1.-portalReturn*smoothstep(.84,1.,portalProgress));
+     }
+    `;
+    
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:12:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: portal preparation runs after optics exist and before interaction unlocks
+not ok 7 - portal preparation runs after optics exist and before interaction unlocks
+  ---
+  duration_ms: 0.267193
+  type: 'test'
+  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:13:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(call>s.indexOf('this.optics = new RoomOptics'))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:13:245)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: return emits the same projected wall and clipping callbacks in reverse
+not ok 8 - return emits the same projected wall and clipping callbacks in reverse
+  ---
+  duration_ms: 8.111555
+  type: 'test'
+  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(back.length>40)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:14:889)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 1
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 88.201159

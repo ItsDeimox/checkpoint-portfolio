@@ -125,6 +125,7 @@ export class HeroScene {
     this.progress('Preparing light and reflections');
     this.preparation = prepareRoomRenderer(this, { signal });
     this.startup.preparation = await this.preparation;
+    await this.bannerPortal?.prepare(signal);
     await yieldToBrowser(signal);
     this.scene.updateMatrixWorld(true);
     this.updateAtmosphere();

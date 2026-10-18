@@ -30,3 +30,11 @@ export function destinationGutter(document){
  document.body.append(probe);
  const width=Math.max(0,(probe.offsetWidth||0)-(probe.clientWidth||0));probe.remove();return width;
 }
+
+/** Tunnel occlusion in the same source coordinate system as arrivalTransform. */
+export function arrivalClip(frame){
+ if(!frame?.clip)return 'none';
+ const [left,top,right,bottom]=frame.clip;
+ if(left===0&&top===0&&right===1&&bottom===1)return 'none';
+ return `inset(${top*100}% ${(1-right)*100}% ${(1-bottom)*100}% ${left*100}%)`;
+}

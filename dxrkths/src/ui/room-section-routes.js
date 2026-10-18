@@ -1,7 +1,7 @@
-import {arrivalVisual,arrivalTransform,destinationGutter} from './portal-arrival.js';
+import {arrivalVisual,arrivalTransform,arrivalClip,destinationGutter} from './portal-arrival.js';
 import {renderSectionPage} from '../pages/section-pages.js';
 
-/** History and cancellation are page concerns; the renderer owns both journeys. */
+/** One physical page surface for both directions; history owns cancellation. */
 export class SectionRoutes {
  constructor({document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh}){
   Object.assign(this,{document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh});
@@ -11,35 +11,44 @@ export class SectionRoutes {
  }
  clearArrival(retain=false){
   this.arrival=null;
-  this.document.body.classList.remove('section-arriving');
+  this.document.body.classList.remove('section-arriving','section-retreating');
   this.root.inert=false;this.root.removeAttribute('aria-hidden');
-  if(retain)this.root.setAttribute('data-portal-arrival','arrived');
-  else this.root.removeAttribute('data-portal-arrival');
-  for(const name of ['--arrival-opacity','--arrival-transform','--arrival-gutter'])this.root.style.removeProperty?.(name);
+  if(retain)this.root.setAttribute('data-portal-arrival','arrived');else this.root.removeAttribute('data-portal-arrival');
+  for(const name of ['--arrival-opacity','--arrival-transform','--arrival-gutter','transform','opacity','clip-path'])this.root.style.removeProperty?.(name);
  }
- prepareArrival(index,token){
-  this.arrival={index,token};
-  this.root.innerHTML=renderSectionPage(index);
-  this.root.setAttribute('data-portal-arrival','preview');this.root.setAttribute('aria-hidden','true');
-  this.root.style.setProperty('--arrival-gutter','0px');
-  this.root.inert=true;this.root.hidden=false;
-  this.document.body.classList.add('section-arriving');this.revealArrival(index,token,0);this.fitArrivalViewport();
+ prepareArrival(index,token,reuse=false,scroll=0){
+  this.arrival={index,token,reverse:reuse,opacity:reuse?1:0};
+  if(!reuse)this.root.innerHTML=renderSectionPage(index);
+  this.root.setAttribute('data-portal-arrival',reuse?'retreat':'preview');this.root.setAttribute('aria-hidden','true');
+  this.root.style.setProperty('--arrival-gutter','0px');this.root.style.opacity=reuse?'1':'0';
+  this.root.style.transform='none';this.root.style.clipPath='none';this.root.inert=true;this.root.hidden=false;
+  this.document.body.classList.add('section-arriving');
+  if(reuse)this.document.body.classList.add('section-retreating');
+  this.fitArrivalViewport();this.root.scrollTop=scroll;
  }
  fitArrivalViewport(){
   if(!this.arrival)return;
+  const win=this.document.defaultView,width=win?.innerWidth||this.canvas.clientWidth||this.root.clientWidth||900,height=win?.innerHeight||this.canvas.clientHeight||this.root.clientHeight||600;
   this.root.style.setProperty('--arrival-gutter','0px');
-  if(this.root.scrollHeight>this.root.clientHeight+1)this.root.style.setProperty('--arrival-gutter',`${destinationGutter(this.document)}px`);
+  const gutter=this.root.scrollHeight>this.root.clientHeight+1?destinationGutter(this.document):0;
+  this.root.style.setProperty('--arrival-gutter',`${gutter}px`);
+  // Measured once, not after each transform write. No forced style/layout reads
+  // in the camera callback; the compositor owns motion after this point.
+  this.arrival.viewport={width,height,contentWidth:width-gutter};
  }
- arrivalViewport(){
-  const win=this.document.defaultView,width=win?.innerWidth??this.canvas.clientWidth??1,height=win?.innerHeight??this.canvas.clientHeight??1;
-  return {width,height,contentWidth:this.root.clientWidth||width};
- }
+ arrivalViewport(){return this.arrival?.viewport;}
  revealArrival(index,token,progress,frame){
-  if(token!==this.token||this.index!==index||!this.arrival||this.returning)return;
-  const transform=arrivalTransform(frame,this.root.clientWidth||frame?.contentWidth,this.root.clientHeight||frame?.height);
-  if(!transform){this.root.style.setProperty('--arrival-opacity','0');return;}
-  this.root.style.setProperty('--arrival-transform',transform);
-  this.root.style.setProperty('--arrival-opacity',String(arrivalVisual(progress).opacity));
+  if(token!==this.token||!this.arrival||this.arrival.index!==index)return;
+  const v=this.arrival.viewport;
+  const transform=arrivalTransform(frame,v?.contentWidth,v?.height);
+  if(!transform){this.root.style.opacity='0';return;}
+  this.root.style.transform=transform;
+  this.root.style.clipPath=arrivalClip(frame);
+  const opacity=arrivalVisual(progress).opacity;
+  if(opacity!==this.arrival.opacity||this.root.style.opacity==='0'){
+   this.arrival.opacity=opacity;this.root.style.opacity=String(opacity);
+   this.root.style.setProperty('--arrival-opacity',String(opacity));
+  }
  }
  clearReturn(){
   this.returning=this.waitingReturn=false;this.root.inert=false;this.root.removeAttribute('aria-busy');
@@ -76,17 +85,19 @@ export class SectionRoutes {
  }
  close(historyMode='push',immediate=false){
   if(this.returning&&!immediate)return;
+  const fromPage=this.page,index=this.index,scroll=this.document.defaultView?.scrollY??Math.max(0,-(this.root.getBoundingClientRect?.().top??0));
   this.clearArrival(this.page);
-  const fromPage=this.page,index=this.index,token=++this.token,scene=this.getScene();
+  const token=++this.token,scene=this.getScene();
   this.index=null;this.onSelect(null);this.setLocation(null,historyMode);this.pending=false;
   if(!immediate&&fromPage&&this.entered()&&!scene?.reduced?.matches&&this.getPhase()!=='unavailable'){
    this.returnIndex=index;this.returning=true;this.page=false;this.travelling=true;this.canvas.inert=true;this.footer.inert=true;
-   this.root.style.setProperty('--return-top',`${this.root.getBoundingClientRect?.().top??0}px`);
    this.root.inert=true;this.host.hidden=false;this.footer.hidden=true;
+   // Reuse the current viewport, including its scroll position. It starts full
+   // size, then retreats behind the same physical tunnel mouth as entry.
+   this.prepareArrival(index,token,true,scroll);
    this.document.body.classList.remove('section-active');this.document.body.classList.add('portal-travelling','section-return-pending');
    this.document.defaultView?.scrollTo?.(0,0);
-   if(scene?.ready)this.startReturn(token);
-   else{this.waitingReturn=true;this.root.setAttribute('aria-busy','true');this.onNeedScene?.();}
+   if(scene?.ready)this.startReturn(token);else{this.waitingReturn=true;this.root.setAttribute('aria-busy','true');this.onNeedScene?.();}
    return;
   }
   this.finishReturn(token);
@@ -96,13 +107,13 @@ export class SectionRoutes {
   this.waitingReturn=false;this.root.removeAttribute('aria-busy');
   this.document.body.classList.remove('section-return-pending');this.document.body.classList.add('section-returning');
   try{
-   if(this.getScene()?.returnPortal?.(this.returnIndex,()=>this.finishReturn(token)))return;
+   if(this.getScene()?.returnPortal?.(this.returnIndex,()=>this.finishReturn(token),(p,frame)=>this.revealArrival(this.returnIndex,token,p,frame),()=>this.arrivalViewport()))return;
   }catch(error){console.warn('[DXT] Return journey unavailable:',error);}
   this.finishReturn(token);
  }
  finishReturn(token){
   if(token!==this.token)return;
-  this.clearReturn();this.page=this.pending=this.travelling=false;
+  this.clearArrival(this.root.getAttribute('data-portal-arrival')==='arrived');this.clearReturn();this.page=this.pending=this.travelling=false;
   this.root.hidden=true;this.root.innerHTML='';this.host.hidden=false;this.footer.hidden=false;
   this.canvas.inert=false;this.footer.inert=false;
   this.document.body.classList.remove('portal-travelling','section-active');
