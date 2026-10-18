@@ -86,7 +86,13 @@ export class SectionRoutes {
  close(historyMode='push',immediate=false){
   if(this.returning&&!immediate)return;
   const fromPage=this.page,index=this.index,scroll=this.document.defaultView?.scrollY??Math.max(0,-(this.root.getBoundingClientRect?.().top??0));
+  // Preserve the exact visible pose if a direct-page entrance is still
+  // settling when Back is pressed. Do not snap that content to its final pose.
+  const layout=fromPage&&!immediate?this.root.querySelector('.section-layout'):null;
+  const pose=layout?this.document.defaultView?.getComputedStyle?.(layout):null;
+  const freeze=pose?{transform:pose.transform,opacity:pose.opacity}:null;
   this.clearArrival(this.page);
+  if(layout&&freeze){layout.style.transform=freeze.transform;layout.style.opacity=freeze.opacity;}
   const token=++this.token,scene=this.getScene();
   this.index=null;this.onSelect(null);this.setLocation(null,historyMode);this.pending=false;
   if(!immediate&&fromPage&&this.entered()&&!scene?.reduced?.matches&&this.getPhase()!=='unavailable'){

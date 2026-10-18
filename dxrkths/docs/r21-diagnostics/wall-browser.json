@@ -1,4 +1,5 @@
 {
+  "browser": "156.0.8078.4",
   "checks": [
     {
       "name": "both interior and real banner pipeline are warmed before interaction",
@@ -396,17 +397,100 @@
     },
     {
       "name": "return preserves the currently scrolled viewport",
-      "pass": false,
+      "pass": true,
       "detail": {
         "scroll": {
           "y": 550,
-          "top": 89.0372314453125
+          "top": 91.97216796875
         },
         "restored": {
           "y": 550,
-          "top": 83.99999237060547
+          "top": 91.97216796875
         }
       }
+    },
+    {
+      "name": "viewport 390x844 handoff preserves page layout",
+      "pass": true,
+      "detail": {
+        "a": [
+          27.296875,
+          199,
+          320.40625,
+          60.796875
+        ],
+        "b": [
+          27.296875,
+          199,
+          320.40625,
+          60.796875
+        ]
+      }
+    },
+    {
+      "name": "viewport 390 does not overflow horizontally",
+      "pass": true
+    },
+    {
+      "name": "viewport 320x640 handoff preserves page layout",
+      "pass": true,
+      "detail": {
+        "a": [
+          22.390625,
+          199,
+          260.21875,
+          121.59375
+        ],
+        "b": [
+          22.390625,
+          199,
+          260.21875,
+          121.59375
+        ]
+      }
+    },
+    {
+      "name": "viewport 320 does not overflow horizontally",
+      "pass": true
+    },
+    {
+      "name": "viewport 1440x1800 handoff preserves page layout",
+      "pass": true,
+      "detail": {
+        "a": [
+          86.390625,
+          329.0625,
+          650,
+          90.28125
+        ],
+        "b": [
+          86.390625,
+          329.0625,
+          650,
+          90.28125
+        ]
+      }
+    },
+    {
+      "name": "viewport 1440 does not overflow horizontally",
+      "pass": true
+    },
+    {
+      "name": "logo keeps spin and home navigation together",
+      "pass": true
+    },
+    {
+      "name": "native entry and return keep either the room or the page visible",
+      "pass": true
+    },
+    {
+      "name": "native return shows a clipped world page rather than CSS departure fade",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript errors in tested flows",
+      "pass": true,
+      "detail": []
     }
   ],
   "records": [
@@ -2506,6 +2590,849 @@
       }
     }
   ],
-  "errors": [],
-  "error": "Error: return preserves the currently scrolled viewport {\"scroll\":{\"y\":550,\"top\":89.0372314453125},\"restored\":{\"y\":550,\"top\":83.99999237060547}}\n    at check (/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall-browser.cjs:3:158)\n    at /home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall-browser.cjs:26:470"
+  "native": {
+    "frames": [
+      {
+        "t": 58253.8,
+        "page": false,
+        "returning": false,
+        "travelling": false,
+        "hidden": true,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 58264.7,
+        "page": false,
+        "returning": false,
+        "travelling": false,
+        "hidden": true,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 58690.59999999999,
+        "page": false,
+        "returning": false,
+        "travelling": false,
+        "hidden": true,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 58712.000000000015,
+        "page": false,
+        "returning": false,
+        "travelling": false,
+        "hidden": true,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 58965.59999999999,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 58980.40000000001,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 59068.500000000015,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 59086.500000000015,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 59258.09999999999,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 59308.000000000015,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 59327.8,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 59335.59999999999,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 59340.8,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 60867.2,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 60965.500000000015,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 60973.2,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 60992.59999999999,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 61244.2,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 63836.8,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 63841.09999999999,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 66667.3,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "none"
+      },
+      {
+        "t": 72079.09999999999,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0.00870898,
+        "clip": "inset(8.24839% 24.8849% 8.24839% 26.7958%)"
+      },
+      {
+        "t": 72504.3,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0.85036,
+        "clip": "inset(7.47968% 24.4401% 7.47968% 26.351%)"
+      },
+      {
+        "t": 75403.40000000001,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(6.58708% 23.9236% 6.58708% 25.8345%)"
+      },
+      {
+        "t": 78214.3,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(5.50799% 23.2992% 5.50799% 25.21%)"
+      },
+      {
+        "t": 78369.2,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(4.14551% 22.5108% 4.14551% 24.4216%)"
+      },
+      {
+        "t": 81286.00000000001,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(2.3547% 21.4746% 2.3547% 23.3854%)"
+      },
+      {
+        "t": 81333.09999999999,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(1.62799% 21.054% 1.62799% 22.9649%)"
+      },
+      {
+        "t": 84004.8,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0% 19.4742% 0% 21.3851%)"
+      },
+      {
+        "t": 86560.50000000001,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0% 17.2063% 0% 19.1171%)"
+      },
+      {
+        "t": 89047.3,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0% 13.7882% 0% 15.699%)"
+      },
+      {
+        "t": 91401.40000000001,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0% 8.27497% 0% 10.1858%)"
+      },
+      {
+        "t": 91600.2,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0% 0% 0% 0.307096%)"
+      },
+      {
+        "t": 93945.59999999999,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 95631.40000000001,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 95634.40000000001,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 96994.3,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 98325.3,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 99621.7,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 100889.50000000001,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 103552.8,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 103659.7,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 104922.90000000001,
+        "page": false,
+        "returning": false,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 107297.2,
+        "page": true,
+        "returning": false,
+        "travelling": false,
+        "hidden": false,
+        "host": true,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 108792.3,
+        "page": true,
+        "returning": false,
+        "travelling": false,
+        "hidden": false,
+        "host": true,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 108928.7,
+        "page": true,
+        "returning": false,
+        "travelling": false,
+        "hidden": false,
+        "host": true,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 108934.09999999999,
+        "page": true,
+        "returning": false,
+        "travelling": false,
+        "hidden": false,
+        "host": true,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 109189.8,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 109200.7,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 109501.3,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 109542.50000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 110250.40000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 110929.00000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 111729.7,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 112094.90000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 112382.40000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 113001.09999999999,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 113288.00000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 113877.40000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 114167.50000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "none"
+      },
+      {
+        "t": 114488.50000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0% 7.01059% 0% 8.92142%)"
+      },
+      {
+        "t": 114913.7,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0% 13.0414% 0% 14.9523%)"
+      },
+      {
+        "t": 114976.00000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0% 16.7269% 0% 18.6377%)"
+      },
+      {
+        "t": 115551.50000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0% 18.4438% 0% 20.3546%)"
+      },
+      {
+        "t": 115850.50000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(0.373281% 20.328% 0.373281% 22.2388%)"
+      },
+      {
+        "t": 116136.90000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(2.68781% 21.6673% 2.68781% 23.5781%)"
+      },
+      {
+        "t": 116155.00000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(4.39521% 22.6553% 4.39521% 24.5661%)"
+      },
+      {
+        "t": 116469.09999999999,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(4.637% 22.7952% 4.637% 24.706%)"
+      },
+      {
+        "t": 116770.00000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(5.8921% 23.5215% 5.8921% 25.4323%)"
+      },
+      {
+        "t": 117069.50000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 1,
+        "clip": "inset(6.90039% 24.1049% 6.90039% 26.0158%)"
+      },
+      {
+        "t": 117368.2,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0.51486,
+        "clip": "inset(7.7464% 24.5945% 7.7464% 26.5053%)"
+      },
+      {
+        "t": 117386.40000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(8.48286% 25.0206% 8.48269% 26.9313%)"
+      },
+      {
+        "t": 117962.09999999999,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(8.59837% 25.0876% 8.59579% 26.9966%)"
+      },
+      {
+        "t": 117984.7,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(9.42321% 25.6119% 9.01836% 27.1942%)"
+      },
+      {
+        "t": 118280.2,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(9.81858% 25.9103% 8.9878% 27.1069%)"
+      },
+      {
+        "t": 118583.90000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(11.413% 27.4757% 8.36538% 26.1039%)"
+      },
+      {
+        "t": 118959.50000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(13.0372% 30.1686% 7.6631% 23.9445%)"
+      },
+      {
+        "t": 119332.90000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(13.565% 33.6346% 8.13604% 21.0576%)"
+      },
+      {
+        "t": 119659.50000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(12.3343% 37.132% 10.4235% 18.1717%)"
+      },
+      {
+        "t": 120027.7,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(9.73707% 39.976% 13.981% 15.8833%)"
+      },
+      {
+        "t": 120503.40000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(6.90883% 41.8378% 17.5128% 14.4287%)"
+      },
+      {
+        "t": 120859.90000000001,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(4.95528% 42.7528% 19.8445% 13.7324%)"
+      },
+      {
+        "t": 121190.7,
+        "page": false,
+        "returning": true,
+        "travelling": true,
+        "hidden": false,
+        "host": false,
+        "opacity": 0,
+        "clip": "inset(4.25349% 43.0124% 20.6599% 13.5387%)"
+      }
+    ],
+    "tasks": [
+      {
+        "t": 55306.90000000001,
+        "ms": 2943
+      },
+      {
+        "t": 108936.90000000001,
+        "ms": 252
+      }
+    ]
+  },
+  "errors": []
 }
