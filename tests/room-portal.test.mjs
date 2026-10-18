@@ -53,7 +53,8 @@ test('each destination is a full accessible page with authored links, not an in-
   assert.match(html,/data-return-showroom/);assert.doesNotMatch(html,/data-room-panel-action|aria-modal|<canvas/);
   assert.match(html,/rel="noopener noreferrer"/);
  }
- assert.match(sections.renderSectionPage(2),/No new projects have been announced/);
+ assert.match(sections.renderSectionPage(2),/BERSERK DRIFT: RALLY/);
+ assert.doesNotMatch(sections.renderSectionPage(2),/No new projects have been announced/);
 });
 
 test('resizing an active portal never redirects the camera to the showroom overview',async()=>{

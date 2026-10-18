@@ -1,3 +1,4 @@
+import {DESTINATION_THEMES} from '../pages/destination-data.js';
 import {yieldToBrowser} from './room-startup.js';
 import {projectPortalExit} from './room-portal-exit.js';
 import * as T from 'three';
@@ -33,7 +34,7 @@ function configureApproach(rig,basis,onComplete){
 }
 function portalUniforms(panel){
  const b=portalBasis(panel);
- return {portalMix:{value:0},portalTunnelEnd:{value:18},portalExitDepth:{value:28},portalExitHalf:{value:new T.Vector2(1,1)},portalExitOffset:{value:0},portalReturn:{value:0},portalAge:{value:0},portalProgress:{value:0},portalSpeed:{value:0},portalOpening:{value:0},portalLayerCount:{value:18},
+ return {portalAccent:{value:new T.Color(DESTINATION_THEMES[panel.index??0].color)},portalMix:{value:0},portalTunnelEnd:{value:18},portalExitDepth:{value:28},portalExitHalf:{value:new T.Vector2(1,1)},portalExitOffset:{value:0},portalReturn:{value:0},portalAge:{value:0},portalProgress:{value:0},portalSpeed:{value:0},portalOpening:{value:0},portalLayerCount:{value:18},
   portalOrigin:{value:b.center},portalRight:{value:b.right},portalUp:{value:b.up},portalForward:{value:b.forward},portalHalf:{value:b.half}};
 }
 export function configurePortal(panel){
@@ -49,7 +50,7 @@ export function configurePortal(panel){
   float filament=1.-smoothstep(.005,.022,rim);
   float halo=exp(-rim*38.)*.32;
   float energy=.7+.3*sin((p.x+p.y)*57.+portalAge*8.);
-  c+=vec3(4.8,.025,.055)*(filament+halo)*energy*portalOpening;
+  c+=portalAccent*4.8*(filament+halo)*energy*portalOpening;
  }gl_FragColor=vec4(c,1.);`);
  m.needsUpdate=true;
 }

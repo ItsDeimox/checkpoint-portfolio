@@ -7,7 +7,7 @@ uniform sampler2D tDiffuse;
 uniform vec2 uResolution,uCenter,uScope,uHalf;
 uniform mat4 uInverseProjection,uCameraWorld,uPreviousVP;
 uniform vec3 uOrigin,uRight,uUp,uForward;
-uniform float uShutter,uMaxBlur,uSamples,uChromaticPixels,uShock,uAge,uSpeed,uInterior,uExit;
+uniform vec3 uAccent;uniform float uShutter,uMaxBlur,uSamples,uChromaticPixels,uShock,uAge,uSpeed,uInterior,uExit;
 varying vec2 vUv;
 vec2 bounded(vec2 p){return clamp(p,.5/uResolution,1.-.5/uResolution);}
 vec3 local(vec3 p){return vec3(dot(p,uRight),dot(p,uUp),dot(p,uForward));}
@@ -58,7 +58,7 @@ void main(){
    float line=1.-smoothstep(.018,.08,abs(fract(angle*88.)-.5));
    float train=fract(length(d)*1.8-uAge*(.6+uSpeed*.6)+seed);
    float streak=pow(max(0.,1.-train),5.)*line*step(.68,seed)*edges;
-   color+=vec3(1.1,.006,.025)*streak*uSpeed*uExit;
+   color+=uAccent*1.1*streak*uSpeed*uExit;
    color*=1.-edges*.14*uSpeed;
  }
  gl_FragColor=vec4(max(color,vec3(0.)),1.);
@@ -70,7 +70,7 @@ export class PortalShutterPass extends ShaderPass {
   constructor(){
     super(new T.ShaderMaterial({name:'DXT.PortalShutter',depthWrite:false,depthTest:false,toneMapped:false,blending:T.NoBlending,
       vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:FRAGMENT,
-      uniforms:{tDiffuse:{value:null},uResolution:{value:new T.Vector2(1,1)},uCenter:{value:new T.Vector2(.5,.5)},uScope:{value:new T.Vector2(.5,.5)},uHalf:{value:new T.Vector2()},
+      uniforms:{uAccent:{value:new T.Color('#ff2348')},tDiffuse:{value:null},uResolution:{value:new T.Vector2(1,1)},uCenter:{value:new T.Vector2(.5,.5)},uScope:{value:new T.Vector2(.5,.5)},uHalf:{value:new T.Vector2()},
         uInverseProjection:{value:new T.Matrix4()},uCameraWorld:{value:new T.Matrix4()},uPreviousVP:{value:new T.Matrix4()},
         uOrigin:{value:new T.Vector3()},uRight:{value:new T.Vector3()},uUp:{value:new T.Vector3()},uForward:{value:new T.Vector3()},
         uShutter:{value:0},uMaxBlur:{value:32},uSamples:{value:6},uChromaticPixels:{value:0},uShock:{value:0},uAge:{value:0},uSpeed:{value:0},uInterior:{value:0},uExit:{value:0}}}));
