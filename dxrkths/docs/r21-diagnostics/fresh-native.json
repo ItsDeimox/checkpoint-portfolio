@@ -1,0 +1,1 @@
+{"error":"locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('header [data-open-panel=\"0\"]')\n\n    at /home/runner/work/checkpoint-portfolio/checkpoint-portfolio/.r21/fresh-native.cjs:9:73"}
