@@ -7,1973 +7,1829 @@ TAP version 13
 # Subtest: brand preparation verifies the original attachment and then builds from its local cache
 ok 1 - brand preparation verifies the original attachment and then builds from its local cache
   ---
-  duration_ms: 27.21197
+  duration_ms: 51.791044
   type: 'test'
   ...
 # Subtest: invalid remote logo bytes cannot overwrite a local asset
 ok 2 - invalid remote logo bytes cannot overwrite a local asset
   ---
-  duration_ms: 2.413958
+  duration_ms: 4.942228
   type: 'test'
   ...
 # Subtest: coupe has closed-volume scale and noncoplanar surfaces
 ok 3 - coupe has closed-volume scale and noncoplanar surfaces
   ---
-  duration_ms: 245.120815
+  duration_ms: 379.978409
   type: 'test'
   ...
 # Subtest: track has closed-volume scale and noncoplanar surfaces
 ok 4 - track has closed-volume scale and noncoplanar surfaces
   ---
-  duration_ms: 83.02725
+  duration_ms: 150.565614
   type: 'test'
   ...
 # Subtest: clipped card portion cannot activate a hidden hover
 ok 5 - clipped card portion cannot activate a hidden hover
   ---
-  duration_ms: 0.776854
+  duration_ms: 1.475477
   type: 'test'
   ...
 # Subtest: visible portion retains local cursor coordinates
 ok 6 - visible portion retains local cursor coordinates
   ---
-  duration_ms: 0.688019
+  duration_ms: 1.120374
   type: 'test'
   ...
 # Subtest: navigation, pointer and quality core exists
 ok 7 - navigation, pointer and quality core exists
   ---
-  duration_ms: 0.689371
+  duration_ms: 1.149378
   type: 'test'
   ...
 # Subtest: route home is reachable
 ok 8 - route home is reachable
   ---
-  duration_ms: 2.420007
+  duration_ms: 3.238843
   type: 'test'
   ...
 # Subtest: route groups is reachable
 ok 9 - route groups is reachable
   ---
-  duration_ms: 0.13908
+  duration_ms: 0.176509
   type: 'test'
   ...
 # Subtest: route projects is reachable
 ok 10 - route projects is reachable
   ---
-  duration_ms: 0.121253
+  duration_ms: 0.189214
   type: 'test'
   ...
 # Subtest: route about is reachable
 ok 11 - route about is reachable
   ---
-  duration_ms: 0.141844
+  duration_ms: 0.134351
   type: 'test'
   ...
 # Subtest: route contact is reachable
 ok 12 - route contact is reachable
   ---
-  duration_ms: 0.09241
+  duration_ms: 0.140933
   type: 'test'
   ...
 # Subtest: unknown paths are not silently treated as a valid content page
 ok 13 - unknown paths are not silently treated as a valid content page
   ---
-  duration_ms: 0.09239
+  duration_ms: 0.135082
   type: 'test'
   ...
 # Subtest: covered UVs keep source aspect
 ok 14 - covered UVs keep source aspect
   ---
-  duration_ms: 0.790445
+  duration_ms: 0.917716
   type: 'test'
   ...
 # Subtest: quality caps raster pixel cost on high-DPR displays
 ok 15 - quality caps raster pixel cost on high-DPR displays
   ---
-  duration_ms: 0.35036
+  duration_ms: 0.49736
   type: 'test'
   ...
 # Subtest: damping is framerate independent
 ok 16 - damping is framerate independent
   ---
-  duration_ms: 0.28456
+  duration_ms: 0.395058
   type: 'test'
   ...
 # Subtest: a drag cannot become a click
 ok 17 - a drag cannot become a click
   ---
-  duration_ms: 0.150277
+  duration_ms: 0.244627
   type: 'test'
   ...
 # Subtest: pointer cancellation clears the drag
 ok 18 - pointer cancellation clears the drag
   ---
-  duration_ms: 0.063205
+  duration_ms: 0.108563
   type: 'test'
   ...
 # Subtest: camera transitions consume elapsed time even during a slow GPU frame
 ok 19 - camera transitions consume elapsed time even during a slow GPU frame
   ---
-  duration_ms: 0.771245
+  duration_ms: 1.407
   type: 'test'
   ...
 # Subtest: elapsed time is finite and never negative
 ok 20 - elapsed time is finite and never negative
   ---
-  duration_ms: 0.131869
+  duration_ms: 0.207357
   type: 'test'
   ...
 # Subtest: elapsed interpolation agrees across split and long frames
 ok 21 - elapsed interpolation agrees across split and long frames
   ---
-  duration_ms: 0.157298
+  duration_ms: 0.297185
   type: 'test'
   ...
 # Subtest: HTML starts the persistent room with its showroom and intro stylesheets and local fonts
 ok 22 - HTML starts the persistent room with its showroom and intro stylesheets and local fonts
   ---
-  duration_ms: 5.352047
+  duration_ms: 8.061221
   type: 'test'
   ...
 # Subtest: base CSS retains resets, focus and exactly the licensed font weights in use
 ok 23 - base CSS retains resets, focus and exactly the licensed font weights in use
   ---
-  duration_ms: 4.752491
+  duration_ms: 4.985959
   type: 'test'
   ...
 # Subtest: build rejects a reachable legacy module outside its publication manifest
 ok 24 - build rejects a reachable legacy module outside its publication manifest
   ---
-  duration_ms: 19.025424
+  duration_ms: 27.674725
   type: 'test'
   ...
 # Subtest: published tree contains the complete room, exact aliases and no archived runtime
 ok 25 - published tree contains the complete room, exact aliases and no archived runtime
   ---
-  duration_ms: 407.442144
+  duration_ms: 512.999983
   type: 'test'
   ...
 # Subtest: one internal brand link both requests spin and returns to the showroom
 ok 26 - one internal brand link both requests spin and returns to the showroom
   ---
-  duration_ms: 1.062145
+  duration_ms: 1.864936
   type: 'test'
   ...
 # Subtest: route state never changes header geometry or adds a boxed material
 ok 27 - route state never changes header geometry or adds a boxed material
   ---
-  duration_ms: 0.391772
+  duration_ms: 0.671275
   type: 'test'
   ...
 # Subtest: only a softly fading background extends to the viewport top
 ok 28 - only a softly fading background extends to the viewport top
   ---
-  duration_ms: 0.183958
+  duration_ms: 0.335146
   type: 'test'
   ...
 # Subtest: room brand has an explicit compact size instead of its source-image width
 ok 29 - room brand has an explicit compact size instead of its source-image width
   ---
-  duration_ms: 1.219553
+  duration_ms: 1.800575
   type: 'test'
   ...
 # Subtest: quality and pause live in the same accessible room settings panel
 ok 30 - quality and pause live in the same accessible room settings panel
   ---
-  duration_ms: 0.334726
+  duration_ms: 0.506046
   type: 'test'
   ...
 # Subtest: room navigation and five panel controls keep native keyboard targets
 ok 31 - room navigation and five panel controls keep native keyboard targets
   ---
-  duration_ms: 0.366444
+  duration_ms: 0.650215
   type: 'test'
   ...
 # Subtest: published Lagoon is the transcoded user-supplied recording with pinned integrity
 ok 32 - published Lagoon is the transcoded user-supplied recording with pinned integrity
   ---
-  duration_ms: 10.372599
+  duration_ms: 13.492456
   type: 'test'
   ...
 # Subtest: a corrupt remote recording fails closed without publishing an invalid MP3
 ok 33 - a corrupt remote recording fails closed without publishing an invalid MP3
   ---
-  duration_ms: 7.224887
+  duration_ms: 5.584929
   type: 'test'
   ...
 # Subtest: approved floating header geometry is not overridden for destination pages
 ok 34 - approved floating header geometry is not overridden for destination pages
   ---
-  duration_ms: 0.603001
+  duration_ms: 1.405697
   type: 'test'
   ...
 # Subtest: no added navbar border, shadow or material blur replaces the prior gradient
 ok 35 - no added navbar border, shadow or material blur replaces the prior gradient
   ---
-  duration_ms: 1.047463
+  duration_ms: 2.428408
   type: 'test'
   ...
 # Subtest: reduced motion bypasses the opacity-only header fade
 ok 36 - reduced motion bypasses the opacity-only header fade
   ---
-  duration_ms: 0.162706
+  duration_ms: 0.366295
   type: 'test'
   ...
 # Subtest: inactive card starts undimmed and sharp
 ok 37 - inactive card starts undimmed and sharp
   ---
-  duration_ms: 1.207364
+  duration_ms: 2.271676
   type: 'test'
   ...
 # Subtest: background defocus has no threshold pop while hover enters
 ok 38 - background defocus has no threshold pop while hover enters
   ---
-  duration_ms: 0.181324
+  duration_ms: 0.276116
   type: 'test'
   ...
 # Subtest: focused card remains sharp and full intensity
 ok 39 - focused card remains sharp and full intensity
   ---
-  duration_ms: 0.079099
+  duration_ms: 0.181108
   type: 'test'
   ...
 # Subtest: the card material has a shared projective transform
 ok 40 - the card material has a shared projective transform
   ---
-  duration_ms: 0.576171
+  duration_ms: 1.241411
   type: 'test'
   ...
 # Subtest: rest transforms have real depth, not only a 2D affine skew
 ok 41 - rest transforms have real depth, not only a 2D affine skew
   ---
-  duration_ms: 0.217639
+  duration_ms: 0.399086
   type: 'test'
   ...
 # Subtest: the face recedes in depth and its four corners have different w
 ok 42 - the face recedes in depth and its four corners have different w
   ---
-  duration_ms: 0.126381
+  duration_ms: 0.327272
   type: 'test'
   ...
 # Subtest: GPU and native link projection roundtrip across the whole card
 ok 43 - GPU and native link projection roundtrip across the whole card
   ---
-  duration_ms: 2.205613
+  duration_ms: 8.590818
   type: 'test'
   ...
 # Subtest: hover approaches camera smoothly rather than scaling the image
 ok 44 - hover approaches camera smoothly rather than scaling the image
   ---
-  duration_ms: 0.105439
+  duration_ms: 0.265336
   type: 'test'
   ...
 # Subtest: a stationary cursor never generates perpetual ripple impulses
 ok 45 - a stationary cursor never generates perpetual ripple impulses
   ---
-  duration_ms: 0.095425
+  duration_ms: 0.336338
   type: 'test'
   ...
 # Subtest: projection remains finite on a narrow phone
 ok 46 - projection remains finite on a narrow phone
   ---
-  duration_ms: 0.120633
+  duration_ms: 0.304599
   type: 'test'
   ...
 # Subtest: page opacity is driven by the actual camera progress before completion
 ok 47 - page opacity is driven by the actual camera progress before completion
   ---
-  duration_ms: 19.955675
+  duration_ms: 31.652722
   type: 'test'
   ...
 # Subtest: outbound corridor retains radiance instead of closing to black
 ok 48 - outbound corridor retains radiance instead of closing to black
   ---
-  duration_ms: 0.505123
+  duration_ms: 0.807559
   type: 'test'
   ...
 # Subtest: destination markup is prepared once and becomes visible before arriving
 ok 49 - destination markup is prepared once and becomes visible before arriving
   ---
-  duration_ms: 1.448549
+  duration_ms: 2.677855
   type: 'test'
   ...
 # Subtest: Escape cancels the prepared destination and all late reveal callbacks
 ok 50 - Escape cancels the prepared destination and all late reveal callbacks
   ---
-  duration_ms: 0.545845
+  duration_ms: 2.816234
   type: 'test'
   ...
 # Subtest: history supersession cannot reveal the wrong preloaded destination
 ok 51 - history supersession cannot reveal the wrong preloaded destination
   ---
-  duration_ms: 0.25849
+  duration_ms: 0.552262
   type: 'test'
   ...
 # Subtest: direct entry does not flash a corridor preview or delay interactivity
 ok 52 - direct entry does not flash a corridor preview or delay interactivity
   ---
-  duration_ms: 0.327916
+  duration_ms: 0.573873
   type: 'test'
   ...
 # Subtest: cancelled 3D journey cannot keep updating an old preview
 ok 53 - cancelled 3D journey cannot keep updating an old preview
   ---
-  duration_ms: 5.520542
+  duration_ms: 6.128904
   type: 'test'
   ...
 # Subtest: camera blend is bounded, monotonic and at full opacity before the handoff
 ok 54 - camera blend is bounded, monotonic and at full opacity before the handoff
   ---
-  duration_ms: 1.009526
+  duration_ms: 0.488754
   type: 'test'
   ...
 # Subtest: portal direction state resets when returning and starting another journey
 ok 55 - portal direction state resets when returning and starting another journey
   ---
-  duration_ms: 7.541406
+  duration_ms: 8.189269
   type: 'test'
   ...
 # Subtest: arriving does not schedule a second CSS entrance animation on return
 ok 56 - arriving does not schedule a second CSS entrance animation on return
   ---
-  duration_ms: 0.686287
+  duration_ms: 1.25717
   type: 'test'
   ...
 # Subtest: a destination preview cannot be interacted with even when almost opaque
 ok 57 - a destination preview cannot be interacted with even when almost opaque
   ---
-  duration_ms: 0.318902
+  duration_ms: 0.464668
   type: 'test'
   ...
 # Subtest: a short page on a tall viewport does not reserve a nonexistent scrollbar
 ok 58 - a short page on a tall viewport does not reserve a nonexistent scrollbar
   ---
-  duration_ms: 0.293854
+  duration_ms: 0.452336
   type: 'test'
   ...
 # Subtest: destination has a world-space exit-plane projection, not a fullscreen fade
 ok 59 - destination has a world-space exit-plane projection, not a fullscreen fade
   ---
-  duration_ms: 0.969274
+  duration_ms: 1.477181
   type: 'test'
   ...
 # Subtest: corridor and larger page wall expose separate physical depth planes
 ok 60 - corridor and larger page wall expose separate physical depth planes
   ---
-  duration_ms: 0.340074
+  duration_ms: 0.50294
   type: 'test'
   ...
 # Subtest: each page starts small at the vanishing point and grows as camera distance closes
 ok 61 - each page starts small at the vanishing point and grows as camera distance closes
   ---
-  duration_ms: 31.633631
+  duration_ms: 66.558195
   type: 'test'
   ...
 # Subtest: projection is caused by camera position, not just animation progress
 ok 62 - projection is caused by camera position, not just animation progress
   ---
-  duration_ms: 0.300885
+  duration_ms: 0.431426
   type: 'test'
   ...
 # Subtest: all five destinations finish exactly aligned with the native page, including scrollbars
 ok 63 - all five destinations finish exactly aligned with the native page, including scrollbars
   ---
-  duration_ms: 1.603283
+  duration_ms: 3.298235
   type: 'test'
   ...
 # Subtest: wall is behind the finite tunnel, not fitted inside its aperture
 ok 64 - wall is behind the finite tunnel, not fitted inside its aperture
   ---
-  duration_ms: 0.607789
+  duration_ms: 1.322833
   type: 'test'
   ...
 # Subtest: invalid viewport input has a safe finite projection
 ok 65 - invalid viewport input has a safe finite projection
   ---
-  duration_ms: 0.230668
+  duration_ms: 0.380281
   type: 'test'
   ...
 # Subtest: page wall is physically wider than the tunnel; the corridor ends before the wall
-not ok 66 - page wall is physically wider than the tunnel; the corridor ends before the wall
+ok 66 - page wall is physically wider than the tunnel; the corridor ends before the wall
   ---
-  duration_ms: 5.071904
+  duration_ms: 3.257939
   type: 'test'
-  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:7:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The expression evaluated to a falsy value:
-    
-      assert.ok(f.exitHalf[1]>basis.half.y*2)
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: true
-  actual: false
-  operator: '=='
-  stack: |-
-    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall.test.mjs:7:158)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.start (node:internal/test_runner/test:944:17)
-    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
   ...
 # Subtest: early view is truly occluded by the tunnel and later reveals the whole wall
 ok 67 - early view is truly occluded by the tunnel and later reveals the whole wall
   ---
-  duration_ms: 0.925509
+  duration_ms: 1.828999
   type: 'test'
   ...
 # Subtest: revealed area opens continuously and never contracts on approach
 ok 68 - revealed area opens continuously and never contracts on approach
   ---
-  duration_ms: 9.538533
+  duration_ms: 24.298747
   type: 'test'
   ...
 # Subtest: apparent zoom per 60Hz frame is gentle, not concentrated in a final surge
 ok 69 - apparent zoom per 60Hz frame is gentle, not concentrated in a final surge
   ---
-  duration_ms: 5.367801
+  duration_ms: 8.749834
   type: 'test'
   ...
 # Subtest: every aspect arrives at the exact native viewport without distortion
 ok 70 - every aspect arrives at the exact native viewport without distortion
   ---
-  duration_ms: 0.409398
+  duration_ms: 0.633625
   type: 'test'
   ...
 # Subtest: corridor shader does not black out on reverse or sum hidden frame layers
 ok 71 - corridor shader does not black out on reverse or sum hidden frame layers
   ---
-  duration_ms: 0.499095
+  duration_ms: 0.77624
   type: 'test'
   ...
 # Subtest: portal preparation runs after optics exist and before interaction unlocks
 ok 72 - portal preparation runs after optics exist and before interaction unlocks
   ---
-  duration_ms: 0.176807
+  duration_ms: 0.306102
   type: 'test'
   ...
 # Subtest: return emits the same projected wall and clipping callbacks in reverse
 ok 73 - return emits the same projected wall and clipping callbacks in reverse
   ---
-  duration_ms: 18.570382
+  duration_ms: 28.377068
   type: 'test'
   ...
 # Subtest: avatar proxy fails safely without credentials or invented identities
 ok 74 - avatar proxy fails safely without credentials or invented identities
   ---
-  duration_ms: 2.972462
+  duration_ms: 3.169424
   type: 'test'
   ...
 # Subtest: proxy only requests the allowed profile and group resources
 ok 75 - proxy only requests the allowed profile and group resources
   ---
-  duration_ms: 0.559275
+  duration_ms: 0.702012
   type: 'test'
   ...
 # Subtest: avatar URLs reject javascript, plain HTTP and untrusted hosts
 ok 76 - avatar URLs reject javascript, plain HTTP and untrusted hosts
   ---
-  duration_ms: 0.178129
+  duration_ms: 0.210924
   type: 'test'
   ...
 # Subtest: GLB reader decodes actual supplied geometry, not a flat logo plane
 ok 77 - GLB reader decodes actual supplied geometry, not a flat logo plane
   ---
-  duration_ms: 8.456368
+  duration_ms: 10.04204
   type: 'test'
   ...
 # Subtest: every original required social URL is retained in source
 ok 78 - every original required social URL is retained in source
   ---
-  duration_ms: 0.270829
+  duration_ms: 0.296343
   type: 'test'
   ...
 # Subtest: templates omit fabricated metrics, email and trailer claims
 ok 79 - templates omit fabricated metrics, email and trailer claims
   ---
-  duration_ms: 0.33802
+  duration_ms: 0.390279
   type: 'test'
   ...
 # Subtest: circular showroom exposes five destinations in one fullscreen scene
 ok 80 - circular showroom exposes five destinations in one fullscreen scene
   ---
-  duration_ms: 0.902974
+  duration_ms: 2.143466
   type: 'test'
   ...
 # Subtest: the room loads the prepared detailed car asset
 ok 81 - the room loads the prepared detailed car asset
   ---
-  duration_ms: 0.284891
+  duration_ms: 0.5941
   type: 'test'
   ...
 # Subtest: hero has accessible drag controls and a reset action
 ok 82 - hero has accessible drag controls and a reset action
   ---
-  duration_ms: 0.406634
+  duration_ms: 0.917785
   type: 'test'
   ...
 # Subtest: concept statistics are never fabricated
 ok 83 - concept statistics are never fabricated
   ---
-  duration_ms: 0.132821
+  duration_ms: 0.357288
   type: 'test'
   ...
 # Subtest: original social destinations remain available in the room contact panel
 ok 84 - original social destinations remain available in the room contact panel
   ---
-  duration_ms: 0.235847
+  duration_ms: 0.570657
   type: 'test'
   ...
 # Subtest: the supplied logo binary is preserved exactly
 ok 85 - the supplied logo binary is preserved exactly
   ---
-  duration_ms: 3.850739
+  duration_ms: 7.271231
   type: 'test'
   ...
 # Subtest: logo orientation and framing use wrapper transforms without editing source vertex buffers
 ok 86 - logo orientation and framing use wrapper transforms without editing source vertex buffers
   ---
-  duration_ms: 20.436837
+  duration_ms: 21.113734
   type: 'test'
   ...
 # Subtest: header logo projection contains the whole model on narrow and wide viewports
 ok 87 - header logo projection contains the whole model on narrow and wide viewports
   ---
-  duration_ms: 0.298461
+  duration_ms: 0.322162
   type: 'test'
   ...
 # Subtest: brand compositing restores renderer state and remounts without creating a second renderer
 ok 88 - brand compositing restores renderer state and remounts without creating a second renderer
   ---
-  duration_ms: 10.873871
+  duration_ms: 13.815773
   type: 'test'
   ...
 # Subtest: logo download failure and already aborted requests cannot leave loaded resources
 ok 89 - logo download failure and already aborted requests cannot leave loaded resources
   ---
-  duration_ms: 14.762918
+  duration_ms: 21.472765
   type: 'test'
   ...
 # Subtest: supplied face and bevel use reflective silver metal instead of a diffuse white face
 ok 90 - supplied face and bevel use reflective silver metal instead of a diffuse white face
   ---
-  duration_ms: 21.264912
+  duration_ms: 36.967927
   type: 'test'
   ...
 # Subtest: head-on logo remains within the original header viewport during a complete rotation
 ok 91 - head-on logo remains within the original header viewport during a complete rotation
   ---
-  duration_ms: 32.836429
+  duration_ms: 49.041213
   type: 'test'
   ...
 # Subtest: accent lighting is confined to the existing small logo scene and retains its render budget
 ok 92 - accent lighting is confined to the existing small logo scene and retains its render budget
   ---
-  duration_ms: 15.950222
+  duration_ms: 21.509787
   type: 'test'
   ...
 # Subtest: free look changes orientation without moving the eye or any screen corner
 ok 93 - free look changes orientation without moving the eye or any screen corner
   ---
-  duration_ms: 6.356976
+  duration_ms: 9.436067
   type: 'test'
   ...
 # Subtest: approach arrives exactly once, then returns to the same overview
 ok 94 - approach arrives exactly once, then returns to the same overview
   ---
-  duration_ms: 1.028795
+  duration_ms: 1.65836
   type: 'test'
   ...
 # Subtest: interrupted approaches cannot reveal an obsolete panel
 ok 95 - interrupted approaches cannot reveal an obsolete panel
   ---
-  duration_ms: 0.583973
+  duration_ms: 0.900994
   type: 'test'
   ...
 # Subtest: reduced motion arrives immediately and resize keeps focused content in view
 ok 96 - reduced motion arrives immediately and resize keeps focused content in view
   ---
-  duration_ms: 0.544593
+  duration_ms: 0.787532
   type: 'test'
   ...
 # Subtest: camera transitions consume wall time consistently at 24 and 144 Hz
 ok 97 - camera transitions consume wall time consistently at 24 and 144 Hz
   ---
-  duration_ms: 2.580079
+  duration_ms: 4.139437
   type: 'test'
   ...
 # Subtest: all existing deep links map into the same room
 ok 98 - all existing deep links map into the same room
   ---
-  duration_ms: 0.260824
+  duration_ms: 1.509711
   type: 'test'
   ...
 # Subtest: all doors carry nonzero matching velocity into the corridor without a stop or restart
 ok 99 - all doors carry nonzero matching velocity into the corridor without a stop or restart
   ---
-  duration_ms: 36.097847
+  duration_ms: 50.325952
   type: 'test'
   ...
 # Subtest: a frame crossing the join consumes its leftover time instead of dropping it
 ok 100 - a frame crossing the join consumes its leftover time instead of dropping it
   ---
-  duration_ms: 3.139794
+  duration_ms: 5.198146
   type: 'test'
   ...
 # Subtest: reverse still retraces the continuous path and keeps nonzero velocity across the doorway join
 ok 101 - reverse still retraces the continuous path and keeps nonzero velocity across the doorway join
   ---
-  duration_ms: 20.883811
+  duration_ms: 30.713446
   type: 'test'
   ...
 # Subtest: persistent brand is an on-demand 3D presenter with the existing spin, not a static replacement
 ok 102 - persistent brand is an on-demand 3D presenter with the existing spin, not a static replacement
   ---
-  duration_ms: 0.241995
+  duration_ms: 0.401951
   type: 'test'
   ...
 # Subtest: external header ownership prevents the showroom from loading a duplicate logo
 ok 103 - external header ownership prevents the showroom from loading a duplicate logo
   ---
-  duration_ms: 19.078449
+  duration_ms: 30.160894
   type: 'test'
   ...
 # Subtest: screen artwork maps all four corners without affine perspective drift
 ok 104 - screen artwork maps all four corners without affine perspective drift
   ---
-  duration_ms: 0.917056
+  duration_ms: 1.483423
   type: 'test'
   ...
 # Subtest: panel selection wraps for repeated keyboard and swipe navigation
 ok 105 - panel selection wraps for repeated keyboard and swipe navigation
   ---
-  duration_ms: 0.219792
+  duration_ms: 0.271206
   type: 'test'
   ...
 # Subtest: ultrawide and high-DPR views keep GPU targets within the declared budget
 ok 106 - ultrawide and high-DPR views keep GPU targets within the declared budget
   ---
-  duration_ms: 0.366204
+  duration_ms: 0.58814
   type: 'test'
   ...
 # Subtest: approved reflective-showroom defaults match the supplied controls with the approved final contrast
 ok 107 - approved reflective-showroom defaults match the supplied controls with the approved final contrast
   ---
-  duration_ms: 1.180003
+  duration_ms: 2.493591
   type: 'test'
   ...
 # Subtest: contrast reaches 1.26 through both normalization and the slider without losing its bounds
 ok 108 - contrast reaches 1.26 through both normalization and the slider without losing its bounds
   ---
-  duration_ms: 0.327585
+  duration_ms: 0.486048
   type: 'test'
   ...
 # Subtest: old persisted screenshot settings receive the new preset without mutating quality or motion
 ok 109 - old persisted screenshot settings receive the new preset without mutating quality or motion
   ---
-  duration_ms: 0.27744
+  duration_ms: 0.456424
   type: 'test'
   ...
 # Subtest: saving and reloading the current preset keeps later edits instead of multiplying again
 ok 110 - saving and reloading the current preset keeps later edits instead of multiplying again
   ---
-  duration_ms: 0.219051
+  duration_ms: 0.415988
   type: 'test'
   ...
 # Subtest: missing or corrupt persisted settings recover to finite values from the new preset
 ok 111 - missing or corrupt persisted settings recover to finite values from the new preset
   ---
-  duration_ms: 0.272532
+  duration_ms: 0.52978
   type: 'test'
   ...
 # Subtest: dark lighting reduces global fill and keeps the same five reflection sources and shadow budget
 ok 112 - dark lighting reduces global fill and keeps the same five reflection sources and shadow budget
   ---
-  duration_ms: 11.433386
+  duration_ms: 18.31362
   type: 'test'
   ...
 # Subtest: the reflection studio reduces broad inherited fill while keeping four bright reflection strips
 ok 113 - the reflection studio reduces broad inherited fill while keeping four bright reflection strips
   ---
-  duration_ms: 3.176129
+  duration_ms: 3.916511
   type: 'test'
   ...
 # Subtest: legacy custom controls and a newly saved 1.16 contrast remain intentional choices
 ok 114 - legacy custom controls and a newly saved 1.16 contrast remain intentional choices
   ---
-  duration_ms: 0.169636
+  duration_ms: 0.215573
   type: 'test'
   ...
 # Subtest: car sightline regression detects the old front post and clears the open architecture
 ok 115 - car sightline regression detects the old front post and clears the open architecture
   ---
-  duration_ms: 159.139902
+  duration_ms: 240.866059
   type: 'test'
   ...
 # Subtest: fixed-eye drag views leave every visible car sightline clear across the allowed look range
 ok 116 - fixed-eye drag views leave every visible car sightline clear across the allowed look range
   ---
-  duration_ms: 1277.531057
+  duration_ms: 2492.470696
   type: 'test'
   ...
 # Subtest: the physical ceiling closes the upper overview frustum at every aspect and look limit
 ok 117 - the physical ceiling closes the upper overview frustum at every aspect and look limit
   ---
-  duration_ms: 99.281522
+  duration_ms: 165.74671
   type: 'test'
   ...
 # Subtest: rays toward the car remain clear along approach paths to all five fixed panels
 ok 118 - rays toward the car remain clear along approach paths to all five fixed panels
   ---
-  duration_ms: 1628.615034
+  duration_ms: 2722.766466
   type: 'test'
   ...
 # Subtest: physical display rectangles retain the reference composition and face into the room
 ok 119 - physical display rectangles retain the reference composition and face into the room
   ---
-  duration_ms: 0.676412
+  duration_ms: 0.742518
   type: 'test'
   ...
 # Subtest: foreground tire stacks retain natural edge crops at the forward camera position
 ok 120 - foreground tire stacks retain natural edge crops at the forward camera position
   ---
-  duration_ms: 2.260776
+  duration_ms: 3.939344
   type: 'test'
   ...
 # Subtest: focused display corners fit the actual camera on desktop and portrait screens
 ok 121 - focused display corners fit the actual camera on desktop and portrait screens
   ---
-  duration_ms: 0.589881
+  duration_ms: 0.884673
   type: 'test'
   ...
 # Subtest: focused screens and the real camera approach paths clear the baked car geometry
 ok 122 - focused screens and the real camera approach paths clear the baked car geometry
   ---
-  duration_ms: 73.852266
+  duration_ms: 125.487705
   type: 'test'
   ...
 # Subtest: a failed optional logo preparation keeps the established showroom available
 ok 123 - a failed optional logo preparation keeps the established showroom available
   ---
-  duration_ms: 1.263169
+  duration_ms: 1.976694
   type: 'test'
   ...
 # Subtest: a failed logo composite restores its fallback without interrupting the main frame
 ok 124 - a failed logo composite restores its fallback without interrupting the main frame
   ---
-  duration_ms: 0.315117
+  duration_ms: 0.456453
   type: 'test'
   ...
 # Subtest: three hologram layers have opposed travel, distinct speed and distinct parallax depth
 ok 125 - three hologram layers have opposed travel, distinct speed and distinct parallax depth
   ---
-  duration_ms: 0.657133
+  duration_ms: 1.006321
   type: 'test'
   ...
 # Subtest: surface upgrade preserves mesh, artwork, fog, content UV and is idempotent
 ok 126 - surface upgrade preserves mesh, artwork, fog, content UV and is idempotent
   ---
-  duration_ms: 0.566996
+  duration_ms: 0.874735
   type: 'test'
   ...
 # Subtest: parallax responds to camera motion while all panel transforms remain untouched
 ok 127 - parallax responds to camera motion while all panel transforms remain untouched
   ---
-  duration_ms: 0.689652
+  duration_ms: 1.067175
   type: 'test'
   ...
 # Subtest: mouse movement controls the camera without a pressed button, using viewport coordinates
 ok 128 - mouse movement controls the camera without a pressed button, using viewport coordinates
   ---
-  duration_ms: 1.268577
+  duration_ms: 2.075128
   type: 'test'
   ...
 # Subtest: focused screens receive clicks but never move with the pointer
 ok 129 - focused screens receive clicks but never move with the pointer
   ---
-  duration_ms: 0.433415
+  duration_ms: 0.700329
   type: 'test'
   ...
 # Subtest: touch retains a gentle drag with inverted vertical deltas and suppresses drag-clicks
 ok 130 - touch retains a gentle drag with inverted vertical deltas and suppresses drag-clicks
   ---
-  duration_ms: 1.027843
+  duration_ms: 1.327501
   type: 'test'
   ...
 # Subtest: travelling, cancelled gestures and secondary pointers cannot activate a screen
 ok 131 - travelling, cancelled gestures and secondary pointers cannot activate a screen
   ---
-  duration_ms: 0.1657
+  duration_ms: 0.493493
   type: 'test'
   ...
 # Subtest: reduced motion keeps direct screen selection while disabling pointer parallax
 ok 132 - reduced motion keeps direct screen selection while disabling pointer parallax
   ---
-  duration_ms: 0.093331
+  duration_ms: 0.314047
   type: 'test'
   ...
 # Subtest: a turntable drag owns the gesture without steering the camera or activating panels
 ok 133 - a turntable drag owns the gesture without steering the camera or activating panels
   ---
-  duration_ms: 0.153231
+  duration_ms: 0.404336
   type: 'test'
   ...
 # Subtest: turntable cancellation kills inertia and does not let a second pointer interfere
 ok 134 - turntable cancellation kills inertia and does not let a second pointer interfere
   ---
-  duration_ms: 0.096145
+  duration_ms: 0.33144
   type: 'test'
   ...
 # Subtest: first entry starts audio synchronously, only once, and waits for prepared geometry
 ok 135 - first entry starts audio synchronously, only once, and waits for prepared geometry
   ---
-  duration_ms: 0.812858
+  duration_ms: 1.565646
   type: 'test'
   ...
 # Subtest: a ready scene stays covered until entry; a failed scene still offers usable fallback
 ok 136 - a ready scene stays covered until entry; a failed scene still offers usable fallback
   ---
-  duration_ms: 0.238321
+  duration_ms: 0.464268
   type: 'test'
   ...
 # Subtest: visitor defaults migrate once to medium, 20 percent music, and 85 percent light response
 ok 137 - visitor defaults migrate once to medium, 20 percent music, and 85 percent light response
   ---
-  duration_ms: 0.913711
+  duration_ms: 1.537854
   type: 'test'
   ...
 # Subtest: public header contains only music and three quality choices, not the developer controls
 ok 138 - public header contains only music and three quality choices, not the developer controls
   ---
-  duration_ms: 0.429489
+  duration_ms: 0.739371
   type: 'test'
   ...
 # Subtest: intro is in the initial HTML, before the main application can flash native fallback links
 ok 139 - intro is in the initial HTML, before the main application can flash native fallback links
   ---
-  duration_ms: 5.490105
+  duration_ms: 13.025967
   type: 'test'
   ...
 # Subtest: audio refusal never blocks entry or causes a repeated auto-start
 ok 140 - audio refusal never blocks entry or causes a repeated auto-start
   ---
-  duration_ms: 0.272622
+  duration_ms: 0.49228
   type: 'test'
   ...
 # Subtest: null and malformed visitor settings cannot produce extra quality modes
 ok 141 - null and malformed visitor settings cannot produce extra quality modes
   ---
-  duration_ms: 0.281225
+  duration_ms: 0.479997
   type: 'test'
   ...
 # Subtest: initialization primes the real pipeline before marking the persistent scene ready
 ok 142 - initialization primes the real pipeline before marking the persistent scene ready
   ---
-  duration_ms: 30.612263
+  duration_ms: 53.434986
   type: 'test'
   ...
 # Subtest: navigation requests during the initial paint cannot access an unbuilt scene
 ok 143 - navigation requests during the initial paint cannot access an unbuilt scene
   ---
-  duration_ms: 13.184253
+  duration_ms: 12.13394
   type: 'test'
   ...
 # Subtest: dispose waits for an in-flight environment compilation during context restoration
 ok 144 - dispose waits for an in-flight environment compilation during context restoration
   ---
-  duration_ms: 7.170866
+  duration_ms: 9.937173
   type: 'test'
   ...
 # Subtest: a context loss while assets are pending is reported and cannot publish ready
 ok 145 - a context loss while assets are pending is reported and cannot publish ready
   ---
-  duration_ms: 4.633561
+  duration_ms: 9.557965
   type: 'test'
   ...
 # Subtest: disposal does not wait for a stalled asset download
 ok 146 - disposal does not wait for a stalled asset download
   ---
-  duration_ms: 3.999403
+  duration_ms: 8.809706
   type: 'test'
   ...
 # Subtest: content arrival, pointer hover and action focus retain one animation frame chain
 ok 147 - content arrival, pointer hover and action focus retain one animation frame chain
   ---
-  duration_ms: 50.045883
+  duration_ms: 75.103978
   type: 'test'
   ...
 # Subtest: sleep and disposal cancel the entire chain after a content hover redraw
 ok 148 - sleep and disposal cancel the entire chain after a content hover redraw
   ---
-  duration_ms: 4.769738
+  duration_ms: 8.957562
   type: 'test'
   ...
 # Subtest: initialization binds the stable content texture of each panel before renderer preparation
 ok 149 - initialization binds the stable content texture of each panel before renderer preparation
   ---
-  duration_ms: 8.512984
+  duration_ms: 12.897467
   type: 'test'
   ...
 # Subtest: real screen raycasts route every focused action and Back by UV to exactly one callback
 ok 150 - real screen raycasts route every focused action and Back by UV to exactly one callback
   ---
-  duration_ms: 59.797418
+  duration_ms: 63.13725
   type: 'test'
   ...
 # Subtest: overview selection preserves native triggers and focused content cannot activate a different panel
 ok 151 - overview selection preserves native triggers and focused content cannot activate a different panel
   ---
-  duration_ms: 14.668705
+  duration_ms: 18.154513
   type: 'test'
   ...
 # Subtest: approach, content hover and return only change uniforms and leave screen geometry and transforms fixed
 ok 152 - approach, content hover and return only change uniforms and leave screen geometry and transforms fixed
   ---
-  duration_ms: 18.538028
+  duration_ms: 31.097299
   type: 'test'
   ...
 # Subtest: screen light fades toward hover and content intensities without creating lights or moving a screen
 ok 153 - screen light fades toward hover and content intensities without creating lights or moving a screen
   ---
-  duration_ms: 8.163025
+  duration_ms: 11.731607
   type: 'test'
   ...
 # Subtest: enabling reduced motion during approach settles once and keeps selected content and screens stable
 ok 154 - enabling reduced motion during approach settles once and keeps selected content and screens stable
   ---
-  duration_ms: 10.45606
+  duration_ms: 20.965943
   type: 'test'
   ...
 # Subtest: disposing aborts a pending font wait and cannot publish the initial frame afterward
 ok 155 - disposing aborts a pending font wait and cannot publish the initial frame afterward
   ---
-  duration_ms: 9.698545
+  duration_ms: 9.238954
   type: 'test'
   ...
 # Subtest: disposing waits for in-flight preparation and never destroys a renderer still compiling
 ok 156 - disposing waits for in-flight preparation and never destroys a renderer still compiling
   ---
-  duration_ms: 36.004921
+  duration_ms: 38.185929
   type: 'test'
   ...
 # Subtest: disposal cancels scheduled rendering, clears captured gestures and blocks late events
 ok 157 - disposal cancels scheduled rendering, clears captured gestures and blocks late events
   ---
-  duration_ms: 6.448915
+  duration_ms: 14.244124
   type: 'test'
   ...
 # Subtest: real frame loop renders sixty updates at 180 Hz without duplicate callbacks or lost elapsed time
 ok 158 - real frame loop renders sixty updates at 180 Hz without duplicate callbacks or lost elapsed time
   ---
-  duration_ms: 9.611944
+  duration_ms: 12.205413
   type: 'test'
   ...
 # Subtest: click prepares an inert page while the camera travels and enables it on arrival
 ok 159 - click prepares an inert page while the camera travels and enables it on arrival
   ---
-  duration_ms: 20.255968
+  duration_ms: 39.932261
   type: 'test'
   ...
 # Subtest: escape during flight cancels late page arrival and returns to the same showroom
 ok 160 - escape during flight cancels late page arrival and returns to the same showroom
   ---
-  duration_ms: 6.026647
+  duration_ms: 8.648255
   type: 'test'
   ...
 # Subtest: rapid repeated clicks do not queue or restart the same journey
 ok 161 - rapid repeated clicks do not queue or restart the same journey
   ---
-  duration_ms: 6.3465
+  duration_ms: 10.073278
   type: 'test'
   ...
 # Subtest: section links and browser history resolve pages without an in-world modal
 ok 162 - section links and browser history resolve pages without an in-world modal
   ---
-  duration_ms: 9.235125
+  duration_ms: 16.178219
   type: 'test'
   ...
 # Subtest: direct links may download shared logo code but never construct the GPU showroom
 ok 163 - direct links may download shared logo code but never construct the GPU showroom
   ---
-  duration_ms: 6.33992
+  duration_ms: 9.234019
   type: 'test'
   ...
 # Subtest: failed WebGL still exposes all destination pages and music controls
 ok 164 - failed WebGL still exposes all destination pages and music controls
   ---
-  duration_ms: 4.953465
+  duration_ms: 8.651541
   type: 'test'
   ...
 # Subtest: quality and music controls preserve focus, values and the approved visuals
 ok 165 - quality and music controls preserve focus, values and the approved visuals
   ---
-  duration_ms: 5.280199
+  duration_ms: 9.19705
   type: 'test'
   ...
 # Subtest: native authored external links are not opened twice by section navigation
 ok 166 - native authored external links are not opened twice by section navigation
   ---
-  duration_ms: 9.842232
+  duration_ms: 10.217268
   type: 'test'
   ...
 # Subtest: page lifecycle keeps the soundtrack and scene ownership independent
 ok 167 - page lifecycle keeps the soundtrack and scene ownership independent
   ---
-  duration_ms: 8.870734
+  duration_ms: 20.788196
   type: 'test'
   ...
 # Subtest: entrypoint routes return links through the animation and a second Escape skips safely
 ok 168 - entrypoint routes return links through the animation and a second Escape skips safely
   ---
-  duration_ms: 5.887196
+  duration_ms: 10.926202
   type: 'test'
   ...
 # Subtest: direct route lazy initialization and Home both use the same reverse callback
 ok 169 - direct route lazy initialization and Home both use the same reverse callback
   ---
-  duration_ms: 10.212422
+  duration_ms: 11.772965
   type: 'test'
   ...
 # Subtest: internal brand keeps its native home destination even before the renderer is ready
 ok 170 - internal brand keeps its native home destination even before the renderer is ready
   ---
-  duration_ms: 9.304309
+  duration_ms: 14.644031
   type: 'test'
   ...
 # Subtest: combined logo navigation works without the WebGL bundle
 ok 171 - combined logo navigation works without the WebGL bundle
   ---
-  duration_ms: 7.713816
+  duration_ms: 14.945665
   type: 'test'
   ...
 # Subtest: one logo activation spins before starting the reverse journey
 ok 172 - one logo activation spins before starting the reverse journey
   ---
-  duration_ms: 5.237765
+  duration_ms: 9.796691
   type: 'test'
   ...
 # Subtest: repeated brand clicks during return do not queue spins or restart the portal
 ok 173 - repeated brand clicks during return do not queue spins or restart the portal
   ---
-  duration_ms: 6.078375
+  duration_ms: 6.678402
   type: 'test'
   ...
 # Subtest: modified brand activation preserves native new-tab navigation
 ok 174 - modified brand activation preserves native new-tab navigation
   ---
-  duration_ms: 4.235269
+  duration_ms: 8.17474
   type: 'test'
   ...
 # Subtest: red paint retains its identity with a metallic base and a polished clearcoat
 ok 175 - red paint retains its identity with a metallic base and a polished clearcoat
   ---
-  duration_ms: 44.693165
+  duration_ms: 80.166801
   type: 'test'
   ...
 # Subtest: polished metals and rim clearcoats have bounded nonzero highlight roughness
 ok 176 - polished metals and rim clearcoats have bounded nonzero highlight roughness
   ---
-  duration_ms: 0.340484
+  duration_ms: 0.479477
   type: 'test'
   ...
 # Subtest: window reflections improve without changing alpha or enabling a transmission pass
 ok 177 - window reflections improve without changing alpha or enabling a transmission pass
   ---
-  duration_ms: 0.273714
+  duration_ms: 0.394096
   type: 'test'
   ...
 # Subtest: the material pass preserves every mesh, vertex buffer, transform, texture and unrelated surface
 ok 178 - the material pass preserves every mesh, vertex buffer, transform, texture and unrelated surface
   ---
-  duration_ms: 6.284627
+  duration_ms: 8.245302
   type: 'test'
   ...
 # Subtest: shared paint is refined once and repeated calls never compound values or recompile
 ok 179 - shared paint is refined once and repeated calls never compound values or recompile
   ---
-  duration_ms: 0.774871
+  duration_ms: 0.968831
   type: 'test'
   ...
 # Subtest: bass and treble are separated in hertz at both common sample rates
 ok 180 - bass and treble are separated in hertz at both common sample rates
   ---
-  duration_ms: 5.666833
+  duration_ms: 10.44902
   type: 'test'
   ...
 # Subtest: logo spins exactly once then returns head-on, ignoring click spam and invalid delta
 ok 181 - logo spins exactly once then returns head-on, ignoring click spam and invalid delta
   ---
-  duration_ms: 0.514347
+  duration_ms: 0.868393
   type: 'test'
   ...
 # Subtest: reactivity modulates only existing red sources and restores exact baselines without drift
 ok 182 - reactivity modulates only existing red sources and restores exact baselines without drift
   ---
-  duration_ms: 2.392826
+  duration_ms: 3.907514
   type: 'test'
   ...
 # Subtest: bass and treble respond faster with a stronger, capped bloom and neon pulse
 ok 183 - bass and treble respond faster with a stronger, capped bloom and neon pulse
   ---
-  duration_ms: 0.367275
+  duration_ms: 0.577539
   type: 'test'
   ...
 # Subtest: Lagoon is the bundled default track, loaded only on an explicit playback request
 ok 184 - Lagoon is the bundled default track, loaded only on an explicit playback request
   ---
-  duration_ms: 0.658265
+  duration_ms: 0.892569
   type: 'test'
   ...
 # Subtest: persisted music controls clamp invalid or missing values
 ok 185 - persisted music controls clamp invalid or missing values
   ---
-  duration_ms: 0.642761
+  duration_ms: 0.810165
   type: 'test'
   ...
 # Subtest: the brand is a native spin button, Home retains camera reset, and audio controls are labeled
 ok 186 - the brand is a native spin button, Home retains camera reset, and audio controls are labeled
   ---
-  duration_ms: 1.162807
+  duration_ms: 2.046615
   type: 'test'
   ...
 # Subtest: spin completion can keep the same frame chain active even when ambience is paused
 ok 187 - spin completion can keep the same frame chain active even when ambience is paused
   ---
-  duration_ms: 0.466515
+  duration_ms: 0.794104
   type: 'test'
   ...
 # Subtest: paused music notifications cannot wake a sleeping scene
 ok 188 - paused music notifications cannot wake a sleeping scene
   ---
-  duration_ms: 0.318592
+  duration_ms: 0.493772
   type: 'test'
   ...
 # Subtest: music is lazy and one source/context are reused across repeated toggles
 ok 189 - music is lazy and one source/context are reused across repeated toggles
   ---
-  duration_ms: 2.23004
+  duration_ms: 4.735141
   type: 'test'
   ...
 # Subtest: spectrum sampling is capped at 30 Hz, reuses its output and stops on pause
 ok 190 - spectrum sampling is capped at 30 Hz, reuses its output and stops on pause
   ---
-  duration_ms: 0.808031
+  duration_ms: 1.91029
   type: 'test'
   ...
 # Subtest: late play completion cannot revive audio after a rapid stop
 ok 191 - late play completion cannot revive audio after a rapid stop
   ---
-  duration_ms: 0.372112
+  duration_ms: 0.811627
   type: 'test'
   ...
 # Subtest: blocked or failed playback reports failure without unhandled rejection
 ok 192 - blocked or failed playback reports failure without unhandled rejection
   ---
-  duration_ms: 0.207684
+  duration_ms: 0.486079
   type: 'test'
   ...
 # Subtest: background suspension preserves intent/time and explicit mute wins over resume
 ok 193 - background suspension preserves intent/time and explicit mute wins over resume
   ---
-  duration_ms: 0.303629
+  duration_ms: 0.792651
   type: 'test'
   ...
 # Subtest: local tracks never upload and object URLs are revoked on replacement and disposal
 ok 194 - local tracks never upload and object URLs are revoked on replacement and disposal
   ---
-  duration_ms: 1.656463
+  duration_ms: 1.726837
   type: 'test'
   ...
 # Subtest: empty music configuration is silent and does not allocate a context
 ok 195 - empty music configuration is silent and does not allocate a context
   ---
-  duration_ms: 0.195686
+  duration_ms: 0.391662
   type: 'test'
   ...
 # Subtest: volume zero and effect strength zero suspend spectrum reads without changing playback intent
 ok 196 - volume zero and effect strength zero suspend spectrum reads without changing playback intent
   ---
-  duration_ms: 0.249827
+  duration_ms: 0.596545
   type: 'test'
   ...
 # Subtest: repeated disposal waits for the same in-flight AudioContext close
 ok 197 - repeated disposal waits for the same in-flight AudioContext close
   ---
-  duration_ms: 0.459425
+  duration_ms: 0.93623
   type: 'test'
   ...
 # Subtest: scene geometry uses the multisample depth target and the lens consumes its resolved color directly
 ok 198 - scene geometry uses the multisample depth target and the lens consumes its resolved color directly
   ---
-  duration_ms: 6.123263
+  duration_ms: 7.433614
   type: 'test'
   ...
 # Subtest: quality caps actual format-compatible MSAA samples and keeps postprocess targets single-sampled
 ok 199 - quality caps actual format-compatible MSAA samples and keeps postprocess targets single-sampled
   ---
-  duration_ms: 3.483805
+  duration_ms: 3.01768
   type: 'test'
   ...
 # Subtest: unsupported HDR sample counts retain HDR with FXAA, and the byte fallback queries RGBA8
 ok 200 - unsupported HDR sample counts retain HDR with FXAA, and the byte fallback queries RGBA8
   ---
-  duration_ms: 1.66799
+  duration_ms: 1.895964
   type: 'test'
   ...
 # Subtest: all viewport profiles keep scene, AA and bloom inside the existing pixel budgets
 ok 201 - all viewport profiles keep scene, AA and bloom inside the existing pixel budgets
   ---
-  duration_ms: 1.330361
+  duration_ms: 1.764478
   type: 'test'
   ...
 # Subtest: camera motion is bounded and disappears immediately for stationary, paused and discontinuous frames
 ok 202 - camera motion is bounded and disappears immediately for stationary, paused and discontinuous frames
   ---
-  duration_ms: 2.281588
+  duration_ms: 2.481939
   type: 'test'
   ...
 # Subtest: projection, resize and quality changes reset motion reprojection history
 ok 203 - projection, resize and quality changes reset motion reprojection history
   ---
-  duration_ms: 1.375548
+  duration_ms: 1.50903
   type: 'test'
   ...
 # Subtest: focus stays on the supplied panel plane and invalid inputs never put NaN into optical uniforms
 ok 204 - focus stays on the supplied panel plane and invalid inputs never put NaN into optical uniforms
   ---
-  duration_ms: 1.354477
+  duration_ms: 1.441004
   type: 'test'
   ...
 # Subtest: tuning uses bounded uniforms, exact effect-off values and never reallocates targets
 ok 205 - tuning uses bounded uniforms, exact effect-off values and never reallocates targets
   ---
-  duration_ms: 1.309579
+  duration_ms: 1.508399
   type: 'test'
   ...
 # Subtest: dispose releases the independent scene target once as well as every composer pass
 ok 206 - dispose releases the independent scene target once as well as every composer pass
   ---
-  duration_ms: 1.070077
+  duration_ms: 1.192138
   type: 'test'
   ...
 # Subtest: authorized camera approaches and returns retain bounded motion blur across all panels, viewports and frame rates
 ok 207 - authorized camera approaches and returns retain bounded motion blur across all panels, viewports and frame rates
   ---
-  duration_ms: 149.680903
+  duration_ms: 242.99251
   type: 'test'
   ...
 # Subtest: animated projection permission accepts smooth isotropic FOV only and rejects aspect, clip, offset and lens jumps
 ok 208 - animated projection permission accepts smooth isotropic FOV only and rejects aspect, clip, offset and lens jumps
   ---
-  duration_ms: 1.23095
+  duration_ms: 2.20971
   type: 'test'
   ...
 # Subtest: animated travel permission does not bypass pause, resize, quality, camera-cut or invalid-delta resets
 ok 209 - animated travel permission does not bypass pause, resize, quality, camera-cut or invalid-delta resets
   ---
-  duration_ms: 0.89959
+  duration_ms: 1.613536
   type: 'test'
   ...
 # Subtest: bloom contains six decreasing scales within the existing resolution budget
 ok 210 - bloom contains six decreasing scales within the existing resolution budget
   ---
-  duration_ms: 0.495028
+  duration_ms: 0.912366
   type: 'test'
   ...
 # Subtest: turntable velocity uses object history without smearing the stationary room
 ok 211 - turntable velocity uses object history without smearing the stationary room
   ---
-  duration_ms: 1.526947
+  duration_ms: 2.740061
   type: 'test'
   ...
 # Subtest: gentle pointer-look rotation receives camera motion blur without a panel approach
 ok 212 - gentle pointer-look rotation receives camera motion blur without a panel approach
   ---
-  duration_ms: 0.500687
+  duration_ms: 1.358649
   type: 'test'
   ...
 # Subtest: low uses three bloom scales and no cinematic DOF, streak or moving-object capture
 ok 213 - low uses three bloom scales and no cinematic DOF, streak or moving-object capture
   ---
-  duration_ms: 0.461888
+  duration_ms: 0.948112
   type: 'test'
   ...
 # Subtest: panel content precreates stable sRGB canvas textures with visible action labels
 ok 214 - panel content precreates stable sRGB canvas textures with visible action labels
   ---
-  duration_ms: 2.862896
+  duration_ms: 4.458583
   type: 'test'
   ...
 # Subtest: physical UV hit regions match painted option rows and the on-screen Back control
 ok 215 - physical UV hit regions match painted option rows and the on-screen Back control
   ---
-  duration_ms: 1.152301
+  duration_ms: 1.803511
   type: 'test'
   ...
 # Subtest: hover only redraws its changed panel state and never replaces its texture
 ok 216 - hover only redraws its changed panel state and never replaces its texture
   ---
-  duration_ms: 1.186573
+  duration_ms: 1.885264
   type: 'test'
   ...
 # Subtest: font readiness refreshes the stable textures once, then disposal cancels further work
 ok 217 - font readiness refreshes the stable textures once, then disposal cancels further work
   ---
-  duration_ms: 1.155616
+  duration_ms: 3.240807
   type: 'test'
   ...
 # Subtest: physical panel actions preserve every existing destination without invented links
 ok 218 - physical panel actions preserve every existing destination without invented links
   ---
-  duration_ms: 1.547398
+  duration_ms: 2.299948
   type: 'test'
   ...
 # Subtest: future and about panels retain their truthful informational content
 ok 219 - future and about panels retain their truthful informational content
   ---
-  duration_ms: 0.418802
+  duration_ms: 0.541933
   type: 'test'
   ...
 # Subtest: native fallback uses the same action ids, labels and destinations as the physical panel
 ok 220 - native fallback uses the same action ids, labels and destinations as the physical panel
   ---
-  duration_ms: 0.666377
+  duration_ms: 0.929136
   type: 'test'
   ...
 # Subtest: Berserk Drift X is a rectangular physical screen
 ok 221 - Berserk Drift X is a rectangular physical screen
   ---
-  duration_ms: 0.971468
+  duration_ms: 1.563853
   type: 'test'
   ...
 # Subtest: Groups & Games is a rectangular physical screen
 ok 222 - Groups & Games is a rectangular physical screen
   ---
-  duration_ms: 0.219041
+  duration_ms: 1.095218
   type: 'test'
   ...
 # Subtest: Future Projects is a rectangular physical screen
 ok 223 - Future Projects is a rectangular physical screen
   ---
-  duration_ms: 0.169356
+  duration_ms: 0.343372
   type: 'test'
   ...
 # Subtest: About DXT is a rectangular physical screen
 ok 224 - About DXT is a rectangular physical screen
   ---
-  duration_ms: 0.105529
+  duration_ms: 0.182531
   type: 'test'
   ...
 # Subtest: Socials & Contact is a rectangular physical screen
 ok 225 - Socials & Contact is a rectangular physical screen
   ---
-  duration_ms: 0.08587
+  duration_ms: 0.16619
   type: 'test'
   ...
 # Subtest: straight artwork lines span the screen triangles throughout camera travel
 ok 226 - straight artwork lines span the screen triangles throughout camera travel
   ---
-  duration_ms: 91.519848
+  duration_ms: 134.628456
   type: 'test'
   ...
 # Subtest: camera approach and return preserve the actual screen geometry and frame transforms
 ok 227 - camera approach and return preserve the actual screen geometry and frame transforms
   ---
-  duration_ms: 20.976592
+  duration_ms: 27.392951
   type: 'test'
   ...
 # Subtest: a 180/240 Hz display cannot submit over 60 low/medium or 90 high frames a second
 ok 228 - a 180/240 Hz display cannot submit over 60 low/medium or 90 high frames a second
   ---
-  duration_ms: 5.021858
+  duration_ms: 6.538691
   type: 'test'
   ...
 # Subtest: frame pacing rejects invalid time and does not replay missed frames after a stall
 ok 229 - frame pacing rejects invalid time and does not replay missed frames after a stall
   ---
-  duration_ms: 0.166461
+  duration_ms: 0.179966
   type: 'test'
   ...
 # Subtest: mobile defaults to low without overriding explicit quality or music choices
 ok 230 - mobile defaults to low without overriding explicit quality or music choices
   ---
-  duration_ms: 0.949384
+  duration_ms: 1.103623
   type: 'test'
   ...
 # Subtest: compact retina low is sharper, while 2K and ultrawide stay within 900k pixels
 ok 231 - compact retina low is sharper, while 2K and ultrawide stay within 900k pixels
   ---
-  duration_ms: 0.262727
+  duration_ms: 0.274663
   type: 'test'
   ...
 # Subtest: reflection budget drops hidden MSAA, caches a stationary view, and invalidates camera/rotation changes
 ok 232 - reflection budget drops hidden MSAA, caches a stationary view, and invalidates camera/rotation changes
   ---
-  duration_ms: 3.501851
+  duration_ms: 2.068306
   type: 'test'
   ...
 # Subtest: reflection capture failures restore temporary atmosphere visibility
 ok 233 - reflection capture failures restore temporary atmosphere visibility
   ---
-  duration_ms: 0.76077
+  duration_ms: 0.863234
   type: 'test'
   ...
 # Subtest: mobile inference uses touch capability and screen size, not a small desktop window
 ok 234 - mobile inference uses touch capability and screen size, not a small desktop window
   ---
-  duration_ms: 0.405113
+  duration_ms: 0.478544
   type: 'test'
   ...
 # Subtest: unhovered holograms take a uniform early-out before noise and beam evaluation
 ok 235 - unhovered holograms take a uniform early-out before noise and beam evaluation
   ---
-  duration_ms: 9.004776
+  duration_ms: 12.988357
   type: 'test'
   ...
 # Subtest: absolute pointer look follows screen right and reverses the old downward drag pitch
 ok 236 - absolute pointer look follows screen right and reverses the old downward drag pitch
   ---
-  duration_ms: 2.39548
+  duration_ms: 2.919527
   type: 'test'
   ...
 # Subtest: pointer follow starts softly and converges at the same rate across frame rates
 ok 237 - pointer follow starts softly and converges at the same rate across frame rates
   ---
-  duration_ms: 4.082729
+  duration_ms: 4.945534
   type: 'test'
   ...
 # Subtest: leaving the pointer area eases back to the identical neutral overview
 ok 238 - leaving the pointer area eases back to the identical neutral overview
   ---
-  duration_ms: 0.464722
+  duration_ms: 0.603297
   type: 'test'
   ...
 # Subtest: pointer and neutral events cannot steer an approach, focused view, or return
 ok 239 - pointer and neutral events cannot steer an approach, focused view, or return
   ---
-  duration_ms: 1.131349
+  duration_ms: 1.382996
   type: 'test'
   ...
 # Subtest: approved overview poses remain exact while ultrawide horizontal FOV is bounded
 ok 240 - approved overview poses remain exact while ultrawide horizontal FOV is bounded
   ---
-  duration_ms: 0.373404
+  duration_ms: 0.397953
   type: 'test'
   ...
 # Subtest: resizing and returning from a panel retain the ultrawide overview lens
 ok 241 - resizing and returning from a panel retain the ultrawide overview lens
   ---
-  duration_ms: 0.473295
+  duration_ms: 0.651288
   type: 'test'
   ...
 # Subtest: every overview frustum edge stays within the real side and back wall arc
 ok 242 - every overview frustum edge stays within the real side and back wall arc
   ---
-  duration_ms: 91.267862
+  duration_ms: 155.662032
   type: 'test'
   ...
 # Subtest: impact envelope starts quietly, has one bounded opening pulse and clears on arrival/cancel/reduced motion
 ok 243 - impact envelope starts quietly, has one bounded opening pulse and clears on arrival/cancel/reduced motion
   ---
-  duration_ms: 0.983736
+  duration_ms: 1.661596
   type: 'test'
   ...
 # Subtest: Low keeps instanced particles and shutter sampling below the higher profiles
 ok 244 - Low keeps instanced particles and shutter sampling below the higher profiles
   ---
-  duration_ms: 0.11299
+  duration_ms: 0.188272
   type: 'test'
   ...
 # Subtest: opening atmosphere is anchored to the selected 3D banner, reused, and invisible off-transition
 ok 245 - opening atmosphere is anchored to the selected 3D banner, reused, and invisible off-transition
   ---
-  duration_ms: 2.006332
+  duration_ms: 3.29068
   type: 'test'
   ...
 # Subtest: corridor motion is accelerating and the lens widens without moving the banner or leaving the centerline
 ok 246 - corridor motion is accelerating and the lens widens without moving the banner or leaving the centerline
   ---
-  duration_ms: 0.345272
+  duration_ms: 0.592958
   type: 'test'
   ...
 # Subtest: portal shutter reprojects camera velocity, has no private render target, and resets on a cut
 ok 247 - portal shutter reprojects camera velocity, has no private render target, and resets on a cut
   ---
-  duration_ms: 0.949795
+  duration_ms: 1.572589
   type: 'test'
   ...
 # Subtest: optics attachment is idempotent, idle passes stay off, and cancellation releases every temporary effect
 ok 248 - optics attachment is idempotent, idle passes stay off, and cancellation releases every temporary effect
   ---
-  duration_ms: 3.290522
+  duration_ms: 3.616069
   type: 'test'
   ...
-# Subtest: interior shader preparation uses the real HDR scene target and restores renderer state
-not ok 249 - interior shader preparation uses the real HDR scene target and restores renderer state
+# Subtest: interior shader preparation warms real geometry in its HDR target and restores state
+ok 249 - interior shader preparation warms real geometry in its HDR target and restores state
   ---
-  duration_ms: 0.360735
+  duration_ms: 10.797622
   type: 'test'
-  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-effects.test.mjs:75:1'
-  failureType: 'testCodeFailure'
-  error: 'this.attachOptics is not a function'
-  code: 'ERR_TEST_FAILURE'
-  name: 'TypeError'
-  stack: |-
-    Object.prepare (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/src/scene/room-portal.js:80:33)
-    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-effects.test.mjs:79:39)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-    Test.postRun (node:internal/test_runner/test:1173:19)
-    Test.run (node:internal/test_runner/test:1101:12)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 # Subtest: temporary portal light/bloom/optical overrides restore even when rendering fails
 ok 250 - temporary portal light/bloom/optical overrides restore even when rendering fails
   ---
-  duration_ms: 17.158137
+  duration_ms: 30.052294
   type: 'test'
   ...
 # Subtest: all five doorways reverse across the plane exactly once and restore the original view
-not ok 251 - all five doorways reverse across the plane exactly once and restore the original view
+ok 251 - all five doorways reverse across the plane exactly once and restore the original view
   ---
-  duration_ms: 11.033222
+  duration_ms: 96.861688
   type: 'test'
-  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:18:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Expected values to be strictly equal:
-    
-    0 !== 1
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 1
-  actual: 0
-  operator: 'strictEqual'
-  stack: |-
-    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:23:56)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.start (node:internal/test_runner/test:944:17)
-    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
   ...
 # Subtest: reverse approach retraces the same Bezier and camera orientation, not a hard reset
-not ok 252 - reverse approach retraces the same Bezier and camera orientation, not a hard reset
+ok 252 - reverse approach retraces the same Bezier and camera orientation, not a hard reset
   ---
-  duration_ms: 3.734243
+  duration_ms: 2.459225
   type: 'test'
-  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:35:1'
-  failureType: 'testCodeFailure'
-  error: 'reverse sample 0'
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: true
-  actual: false
-  operator: '=='
-  stack: |-
-    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:39:75)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-    Test.postRun (node:internal/test_runner/test:1173:19)
-    Test.run (node:internal/test_runner/test:1101:12)
-    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
   ...
 # Subtest: reverse motion reuses signed camera reprojection and the existing effects without extra targets
 ok 253 - reverse motion reuses signed camera reprojection and the existing effects without extra targets
   ---
-  duration_ms: 3.936168
+  duration_ms: 2.085648
   type: 'test'
   ...
 # Subtest: resize during reverse flight or retreat preserves continuity and ends at the new viewport overview
 ok 254 - resize during reverse flight or retreat preserves continuity and ends at the new viewport overview
   ---
-  duration_ms: 8.234563
+  duration_ms: 7.59732
   type: 'test'
   ...
 # Subtest: reduced motion, cancellation and disposal cannot deliver a stale reverse callback
 ok 255 - reduced motion, cancellation and disposal cannot deliver a stale reverse callback
   ---
-  duration_ms: 2.38854
+  duration_ms: 3.338151
   type: 'test'
   ...
 # Subtest: Back/Home/history return keeps interactions locked until reverse arrival and ignores duplicate clicks
-not ok 256 - Back/Home/history return keeps interactions locked until reverse arrival and ignores duplicate clicks
+ok 256 - Back/Home/history return keeps interactions locked until reverse arrival and ignores duplicate clicks
   ---
-  duration_ms: 2.222768
+  duration_ms: 4.176907
   type: 'test'
-  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:74:1'
-  failureType: 'testCodeFailure'
-  error: 'this.root.getAttribute is not a function'
-  code: 'ERR_TEST_FAILURE'
-  name: 'TypeError'
-  stack: |-
-    SectionRoutes.finishReturn (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/src/ui/room-section-routes.js:116:31)
-    Object.callback (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/src/ui/room-section-routes.js:110:65)
-    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:79:12)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-    Test.postRun (node:internal/test_runner/test:1173:19)
-    Test.run (node:internal/test_runner/test:1101:12)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 # Subtest: history supersession and Escape cannot let a pending reverse callback overwrite a new page
-not ok 257 - history supersession and Escape cannot let a pending reverse callback overwrite a new page
+ok 257 - history supersession and Escape cannot let a pending reverse callback overwrite a new page
   ---
-  duration_ms: 0.446725
+  duration_ms: 0.63652
   type: 'test'
-  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:82:1'
-  failureType: 'testCodeFailure'
-  error: 'this.root.getAttribute is not a function'
-  code: 'ERR_TEST_FAILURE'
-  name: 'TypeError'
-  stack: |-
-    SectionRoutes.finishReturn (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/src/ui/room-section-routes.js:116:31)
-    SectionRoutes.close (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/src/ui/room-section-routes.js:103:8)
-    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:85:28)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-    Test.postRun (node:internal/test_runner/test:1173:19)
-    Test.run (node:internal/test_runner/test:1101:12)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 # Subtest: direct-page return waits for lazy scene preparation then reverses once; failure remains usable
-not ok 258 - direct-page return waits for lazy scene preparation then reverses once; failure remains usable
+ok 258 - direct-page return waits for lazy scene preparation then reverses once; failure remains usable
   ---
-  duration_ms: 0.227224
+  duration_ms: 0.51371
   type: 'test'
-  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:87:1'
-  failureType: 'testCodeFailure'
-  error: 'this.root.getAttribute is not a function'
-  code: 'ERR_TEST_FAILURE'
-  name: 'TypeError'
-  stack: |-
-    SectionRoutes.finishReturn (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/src/ui/room-section-routes.js:116:31)
-    Object.callback (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/src/ui/room-section-routes.js:110:65)
-    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:89:93)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-    Test.postRun (node:internal/test_runner/test:1173:19)
-    Test.run (node:internal/test_runner/test:1101:12)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 # Subtest: reduced-motion page returns bypass travel entirely
-not ok 259 - reduced-motion page returns bypass travel entirely
+ok 259 - reduced-motion page returns bypass travel entirely
   ---
-  duration_ms: 0.269508
+  duration_ms: 1.012031
   type: 'test'
-  location: '/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:92:1'
-  failureType: 'testCodeFailure'
-  error: 'this.root.getAttribute is not a function'
-  code: 'ERR_TEST_FAILURE'
-  name: 'TypeError'
-  stack: |-
-    SectionRoutes.finishReturn (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/src/ui/room-section-routes.js:116:31)
-    SectionRoutes.close (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/src/ui/room-section-routes.js:103:8)
-    TestContext.<anonymous> (file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/room-portal-return.test.mjs:93:49)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-    Test.postRun (node:internal/test_runner/test:1173:19)
-    Test.run (node:internal/test_runner/test:1101:12)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 # Subtest: portal coordinates match all five rigid banners and point into their own surface
 ok 260 - portal coordinates match all five rigid banners and point into their own surface
   ---
-  duration_ms: 1.292062
+  duration_ms: 2.202376
   type: 'test'
   ...
 # Subtest: travel crosses the banner center once and ends behind it, not in front of a fullscreen graphic
 ok 261 - travel crosses the banner center once and ends behind it, not in front of a fullscreen graphic
   ---
-  duration_ms: 10.178971
+  duration_ms: 17.323239
   type: 'test'
   ...
 # Subtest: portal and interior ray projections agree on both sides of the camera near plane
 ok 262 - portal and interior ray projections agree on both sides of the camera near plane
   ---
-  duration_ms: 2.370161
+  duration_ms: 3.765899
   type: 'test'
   ...
 # Subtest: each destination is a full accessible page with authored links, not an in-world decal
 ok 263 - each destination is a full accessible page with authored links, not an in-world decal
   ---
-  duration_ms: 1.088976
+  duration_ms: 1.665884
   type: 'test'
   ...
 # Subtest: resizing an active portal never redirects the camera to the showroom overview
 ok 264 - resizing an active portal never redirects the camera to the showroom overview
   ---
-  duration_ms: 5.216293
+  duration_ms: 7.054646
   type: 'test'
   ...
 # Subtest: destination layout removes the entire viewport-sized showroom wrapper
 ok 265 - destination layout removes the entire viewport-sized showroom wrapper
   ---
-  duration_ms: 5.125355
+  duration_ms: 10.93064
   type: 'test'
   ...
 # Subtest: arrival during a frame cannot leave an orphan RAF blocking the return to showroom
 ok 266 - arrival during a frame cannot leave an orphan RAF blocking the return to showroom
   ---
-  duration_ms: 17.304208
+  duration_ms: 30.906979
   type: 'test'
   ...
 # Subtest: approach and tunnel match acceleration and jerk, not only velocity, in both directions
 ok 267 - approach and tunnel match acceleration and jerk, not only velocity, in both directions
   ---
-  duration_ms: 99.157545
+  duration_ms: 135.668159
   type: 'test'
   ...
 # Subtest: camera starts and finishes with zero acceleration instead of a hard kick or sudden stop
 ok 268 - camera starts and finishes with zero acceleration instead of a hard kick or sudden stop
   ---
-  duration_ms: 0.572425
+  duration_ms: 1.737878
   type: 'test'
   ...
 # Subtest: finite clamped time and low/high refresh steps leave both directions on the same path
 ok 269 - finite clamped time and low/high refresh steps leave both directions on the same path
   ---
-  duration_ms: 3.923018
+  duration_ms: 8.085031
   type: 'test'
   ...
 # CLEARANCE {"samples":10640,"rotatingCarRadius":5.031635803879703,"carMargin":0.8767659727058195,"wallMargin":4.712312346565403}
 # Subtest: swept camera volume clears the full rotating car, other panels, walls, ceiling and foreground tires
 ok 270 - swept camera volume clears the full rotating car, other panels, walls, ceiling and foreground tires
   ---
-  duration_ms: 124.795135
+  duration_ms: 202.733315
   type: 'test'
   ...
 # Subtest: the camera footprint crosses only the open center of its selected physical screen
 ok 271 - the camera footprint crosses only the open center of its selected physical screen
   ---
-  duration_ms: 10.061954
+  duration_ms: 14.492646
   type: 'test'
   ...
 # Subtest: orientation and lens settle smoothly at the corridor junction
 ok 272 - orientation and lens settle smoothly at the corridor junction
   ---
-  duration_ms: 1.644305
+  duration_ms: 2.249154
   type: 'test'
   ...
 # Subtest: asset waits abort without waiting for the download and remove the listener
 ok 273 - asset waits abort without waiting for the download and remove the listener
   ---
-  duration_ms: 2.199624
+  duration_ms: 1.923305
   type: 'test'
   ...
 # Subtest: asset success, failure and pre-aborted signals all clean up their listeners
 ok 274 - asset success, failure and pre-aborted signals all clean up their listeners
   ---
-  duration_ms: 0.375438
+  duration_ms: 0.397433
   type: 'test'
   ...
 # Subtest: yield is asynchronous and abort cancels pending scheduled work
 ok 275 - yield is asynchronous and abort cancels pending scheduled work
   ---
-  duration_ms: 5.473831
+  duration_ms: 5.925858
   type: 'test'
   ...
 # Subtest: startup deduplicates uploads, batches linear scene compilation and preserves parents/state
 ok 276 - startup deduplicates uploads, batches linear scene compilation and preserves parents/state
   ---
-  duration_ms: 32.234408
+  duration_ms: 25.333602
   type: 'test'
   ...
 # Subtest: abort after a completed compile prevents later batches and restores renderer target
 ok 277 - abort after a completed compile prevents later batches and restores renderer target
   ---
-  duration_ms: 12.211693
+  duration_ms: 7.461175
   type: 'test'
   ...
 # Subtest: custom renderables are not cloned and shared-material variants are awaited separately
 ok 278 - custom renderables are not cloned and shared-material variants are awaited separately
   ---
-  duration_ms: 12.227016
+  duration_ms: 10.203201
   type: 'test'
   ...
 # Subtest: compilation failure restores a previously disabled shadow state and active target
 ok 279 - compilation failure restores a previously disabled shadow state and active target
   ---
-  duration_ms: 5.437536
+  duration_ms: 5.696678
   type: 'test'
   ...
 # Subtest: startup prepares the dedicated scene capture and final AA in their actual rendering domains
 ok 280 - startup prepares the dedicated scene capture and final AA in their actual rendering domains
   ---
-  duration_ms: 16.765033
+  duration_ms: 18.636324
   type: 'test'
   ...
 # Subtest: abort after output compilation prevents final AA and never reports a ready renderer
 ok 281 - abort after output compilation prevents final AA and never reports a ready renderer
   ---
-  duration_ms: 12.848305
+  duration_ms: 22.196177
   type: 'test'
   ...
 # Subtest: visual settings expose finite, bounded controls with a normalized default for each control
 ok 282 - visual settings expose finite, bounded controls with a normalized default for each control
   ---
-  duration_ms: 2.973519
+  duration_ms: 2.106788
   type: 'test'
   ...
 # Subtest: visual settings reject corrupt persisted values, clamp valid numbers and discard unknown keys
 ok 283 - visual settings reject corrupt persisted values, clamp valid numbers and discard unknown keys
   ---
-  duration_ms: 0.334115
+  duration_ms: 0.436375
   type: 'test'
   ...
 # Subtest: partial tuning preserves other validated values and zero effect settings remain exactly zero
 ok 284 - partial tuning preserves other validated values and zero effect settings remain exactly zero
   ---
-  duration_ms: 0.194524
+  duration_ms: 0.287888
   type: 'test'
   ...
 # Subtest: approved screenshot defaults replace the earlier experimental contrast
 ok 285 - approved screenshot defaults replace the earlier experimental contrast
   ---
-  duration_ms: 1.198572
+  duration_ms: 1.954413
   type: 'test'
   ...
 # Subtest: turntable attaches only the car and platform without moving their initial world coordinates
 ok 286 - turntable attaches only the car and platform without moving their initial world coordinates
   ---
-  duration_ms: 1.835744
+  duration_ms: 2.974049
   type: 'test'
   ...
 # Subtest: rotation is bounded per frame, damped, and settles without accumulating drift
 ok 287 - rotation is bounded per frame, damped, and settles without accumulating drift
   ---
-  duration_ms: 0.543541
+  duration_ms: 0.924197
   type: 'test'
   ...
 # Subtest: cancel and paused/reduced-motion release stop inertia; invalid inputs are harmless
 ok 288 - cancel and paused/reduced-motion release stop inertia; invalid inputs are harmless
   ---
-  duration_ms: 0.18509
+  duration_ms: 0.255928
   type: 'test'
   ...
 # Subtest: polished red material preserves color and clearcoat with a nonzero roughness floor
 ok 289 - polished red material preserves color and clearcoat with a nonzero roughness floor
   ---
-  duration_ms: 1.215858
+  duration_ms: 2.051334
   type: 'test'
   ...
 # Subtest: Berserk has a single bottom Play destination and no redundant RevLine link
 ok 290 - Berserk has a single bottom Play destination and no redundant RevLine link
   ---
-  duration_ms: 1.416701
+  duration_ms: 2.102078
   type: 'test'
   ...
 # Subtest: Berserk presents official imagery instead of a crop of the concept
 ok 291 - Berserk presents official imagery instead of a crop of the concept
   ---
-  duration_ms: 0.341597
+  duration_ms: 0.440734
   type: 'test'
   ...
 # Subtest: verified PC controls are available without invented game metrics
 ok 292 - verified PC controls are available without invented game metrics
   ---
-  duration_ms: 0.205761
+  duration_ms: 0.3001
   type: 'test'
   ...
 # Subtest: About uses the supplied black DXT wall and not a concept crop
 ok 293 - About uses the supplied black DXT wall and not a concept crop
   ---
-  duration_ms: 0.255446
+  duration_ms: 1.272849
   type: 'test'
   ...
 # Subtest: each group button has its own supplied banner, without duplicate group links
 ok 294 - each group button has its own supplied banner, without duplicate group links
   ---
-  duration_ms: 0.277389
+  duration_ms: 0.465179
   type: 'test'
   ...
 # Subtest: internal header retains one native home link and its click-spin effect
 ok 295 - internal header retains one native home link and its click-spin effect
   ---
-  duration_ms: 0.326564
+  duration_ms: 0.528168
   type: 'test'
   ...
 # Subtest: showroom brand retains the approved click-spin behavior
 ok 296 - showroom brand retains the approved click-spin behavior
   ---
-  duration_ms: 0.154333
+  duration_ms: 0.271728
   type: 'test'
   ...
 # Subtest: an unprovided intro video is not fabricated
 ok 297 - an unprovided intro video is not fabricated
   ---
-  duration_ms: 0.222857
+  duration_ms: 0.280825
   type: 'test'
   ...
 # Subtest: all five gallery entries reference real local files and preserve source aspect ratio
 ok 298 - all five gallery entries reference real local files and preserve source aspect ratio
   ---
-  duration_ms: 0.572585
+  duration_ms: 0.758338
   type: 'test'
   ...
 # Subtest: gallery next, previous and end wrap predictably
 ok 299 - gallery next, previous and end wrap predictably
   ---
-  duration_ms: 0.632216
+  duration_ms: 0.934587
   type: 'test'
   ...
 # Subtest: prepared asset preserves every original prepared attribute and triangle
 ok 300 - prepared asset preserves every original prepared attribute and triangle
   ---
-  duration_ms: 132.411558
+  duration_ms: 177.235889
   type: 'test'
   ...
 # Subtest: prepared materials, lamp emission, glass, visibility and shadows retain the prior appearance
 ok 301 - prepared materials, lamp emission, glass, visibility and shadows retain the prior appearance
   ---
-  duration_ms: 6.333045
+  duration_ms: 8.618439
   type: 'test'
   ...
 # Subtest: embedded texture bytes and model credits survive the offline bake
 ok 302 - embedded texture bytes and model credits survive the offline bake
   ---
-  duration_ms: 8.480174
+  duration_ms: 11.265957
   type: 'test'
   ...
 # Subtest: production car startup performs no vertex copies, transforms or geometry scans
 ok 303 - production car startup performs no vertex copies, transforms or geometry scans
   ---
-  duration_ms: 0.171689
+  duration_ms: 0.19782
   type: 'test'
   ...
 1..303
 # tests 303
 # suites 0
-# pass 295
-# fail 8
+# pass 303
+# fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 4192.901511
-node:internal/errors:983
-  const err = new Error(message);
-              ^
-
-Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --test tests/brand-asset-build.test.mjs tests/car-geometry.test.mjs tests/card-clip.test.mjs tests/core.test.mjs tests/elapsed.test.mjs tests/entrypoints.test.mjs tests/header-continuity.test.mjs tests/layout.test.mjs tests/music-bundled-asset.test.mjs tests/navbar-layout.test.mjs tests/optical-transition.test.mjs tests/perspective.test.mjs tests/portal-arrival.test.mjs tests/portal-end-plane.test.mjs tests/portal-wall.test.mjs tests/profile.test.mjs tests/rebuild.test.mjs tests/room-brand-logo.test.mjs tests/room-brand-metal.test.mjs tests/room-camera.test.mjs tests/room-continuity.test.mjs tests/room-core.test.mjs tests/room-dark-metal.test.mjs tests/room-geometry.test.mjs tests/room-hologram-lifecycle.test.mjs tests/room-hologram-upgrade.test.mjs tests/room-input.test.mjs tests/room-intro.test.mjs tests/room-lifecycle.test.mjs tests/room-main.test.mjs tests/room-materials.test.mjs tests/room-music-math.test.mjs tests/room-music-settings.test.mjs tests/room-music-ui.test.mjs tests/room-music.test.mjs tests/room-optics.test.mjs tests/room-panel-content.test.mjs tests/room-panel-data.test.mjs tests/room-panel-mapping.test.mjs tests/room-performance.test.mjs tests/room-pointer-camera.test.mjs tests/room-portal-effects.test.mjs tests/room-portal-return.test.mjs tests/room-portal.test.mjs tests/room-smooth-path.test.mjs tests/room-startup.test.mjs tests/room-visual-settings.test.mjs tests/room-wet-showcase.test.mjs tests/section-editorial.test.mjs tests/showroom-car.test.mjs
-    at genericNodeError (node:internal/errors:983:15)
-    at wrappedFn (node:internal/errors:537:14)
-    at checkExecSyncError (node:child_process:916:11)
-    at execFileSync (node:child_process:952:15)
-    at file:///home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tools/build.mjs:123:3 {
-  status: 1,
-  signal: null,
-  output: [ null, null, null ],
-  pid: 2927,
-  stdout: null,
-  stderr: null
-}
-
-Node.js v22.23.3
+# duration_ms 7268.537586
+DXT showroom build: 61 files, 20 browser modules, dxt-showroom-r21-wall.
