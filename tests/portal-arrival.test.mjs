@@ -16,3 +16,15 @@ test('portal direction state resets when returning and starting another journey'
 test('arriving does not schedule a second CSS entrance animation on return',()=>{const f=routes();f.r.open(0);f.scene.progress(1);f.scene.done();assert.equal(f.root.getAttribute('data-portal-arrival'),'arrived');f.r.close('none',true);assert.equal(f.root.getAttribute('data-portal-arrival'),'arrived');});
 test('a destination preview cannot be interacted with even when almost opaque',()=>{const f=routes();f.r.open(4);f.scene.progress(.98);assert.equal(+f.root.style.getPropertyValue('--arrival-opacity'),1);assert.equal(f.root.inert,true);assert.equal(f.root.getAttribute('aria-hidden'),'true');assert.equal(f.r.page,false);f.scene.done();assert.equal(f.r.page,true);assert.equal(f.root.inert,false);});
 test('a short page on a tall viewport does not reserve a nonexistent scrollbar',()=>{const f=routes();f.r.document.createElement=()=>({style:{},offsetWidth:100,clientWidth:85,remove(){}});f.r.document.body.append=()=>{};f.root.clientHeight=1800;f.root.scrollHeight=1800;f.r.open(2);assert.equal(f.root.style.getPropertyValue('--arrival-gutter'),'0px');f.root.clientHeight=480;f.root.scrollHeight=950;f.r.fitArrivalViewport();assert.equal(f.root.style.getPropertyValue('--arrival-gutter'),'15px');});
+
+test('precomputed page gutter avoids first-click forced DOM layout',()=>{
+ const f=routes();
+ f.r.document.defaultView.innerWidth=900;f.r.document.defaultView.innerHeight=600;
+ f.r.pageCache.set(0,{viewport:{width:900,height:600,gutter:15}});
+ f.r.arrival={index:0,token:f.r.token};
+ Object.defineProperty(f.root,'scrollHeight',{get(){throw Error('Forced synchronous page layout');}});
+ Object.defineProperty(f.root,'clientHeight',{get(){throw Error('Forced synchronous page layout');}});
+ assert.doesNotThrow(()=>f.r.fitArrivalViewport());
+ assert.equal(f.root.style.getPropertyValue('--arrival-gutter'),'15px');
+ assert.equal(f.r.arrival.viewport.contentWidth,885);
+});

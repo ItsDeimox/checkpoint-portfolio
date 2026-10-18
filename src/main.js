@@ -14,7 +14,7 @@ const main=document.querySelector('#main'),header=document.querySelector('#heade
 let stored={};try{stored=JSON.parse(localStorage.getItem('dxt-settings')||'{}');}catch{}
 const settings={...restoreVisitorSettings(stored),paused:false,sound:false,visual:restoreVisualSettings(stored),visualPreset:VISUAL_PRESET_VERSION};
 const save=()=>{try{localStorage.setItem('dxt-settings',JSON.stringify(settings));}catch{}};
-let persistentBrand=null,modulePromise=null,pageDisposed=false;
+let persistentBrand=null,modulePromise=null,pageDisposed=false,preloadTask=Promise.resolve();
 const loadExperience=()=>modulePromise??=import('./render/showroom.bundle.js');
 let scene=null,phase='loading',selectedPanel=null,intro=null,sections=null,started=false,bootTimedOut=false,startupTimeout=null;
 let musicState={enabled:false,status:'idle',title:DEFAULT_TRACK.title,error:null,hasTrack:Boolean(DEFAULT_TRACK.url)};
@@ -49,8 +49,12 @@ function unavailable(error){
  host.classList.remove('scene-ready','camera-travelling');host.classList.add('scene-unavailable');host.dataset.sceneStatus='unavailable';
  sections?.unavailable();updateHeader();intro?.fail();
 }
-function onReady(){
- if(bootTimedOut)return;clearTimeout(startupTimeout);phase='ready';updateHeader();intro?.ready();sections.ready();
+async function onReady(){
+ if(bootTimedOut||pageDisposed)return;
+ intro?.progress('Preparing destination pages');
+ try{await preloadTask;}catch(error){console.warn('[DXT] Destination preload could not finish:',error);}
+ if(bootTimedOut||pageDisposed)return;
+ clearTimeout(startupTimeout);phase='ready';updateHeader();intro?.ready();sections.ready();
 }
 const soundtrack=new RoomMusic({settings:settings.music,onState(state){musicState=state;settings.sound=state.enabled;updateMusicUI();scene?.wake();}});
 sections=new SectionRoutes({document,host,root:sectionRoot,canvas,footer,getScene:()=>scene,getPhase:()=>phase,
@@ -110,11 +114,12 @@ async function start(){
    externalBrand:true,music:soundtrack,introPending:()=>!intro.dismissed,onProgress:caption=>intro.progress(caption),
    onMusicState(state){musicState=state;settings.sound=state.enabled;updateMusicUI();}});
   await scene.readyPromise;
+  await preloadTask;
  }catch(error){unavailable(error);if(scene&&!scene.lost)await scene.dispose();}finally{clearTimeout(startupTimeout);}
 }
 const initialPanel=panelFromPath(location.pathname);
 if(initialPanel!==null){phase='dormant';sections.open(initialPanel,null,'none',true);intro.ready();}
-else{setLocation(null,'none');start();}
+else{setLocation(null,'none');preloadTask=sections.preload().catch(error=>{if(!pageDisposed)console.warn('[DXT] Destination preparation failed:',error);});start();}
 async function startBrand(){
  try{const {PersistentBrand}=await loadExperience();if(pageDisposed||!PersistentBrand)return;
   persistentBrand=new PersistentBrand({document,settings,onState:updateMusicUI});await persistentBrand.readyPromise;
