@@ -1,0 +1,344 @@
+{
+  "checks": [
+    {
+      "name": "all page shaders and portal draws finish before entry unlocks",
+      "pass": true,
+      "detail": {
+        "ready": true,
+        "prepared": true,
+        "beams": 0,
+        "strength": 0.035,
+        "selected": null,
+        "gl": 0
+      }
+    },
+    {
+      "name": "showroom starts neutral with the overhead volume removed",
+      "pass": true,
+      "detail": {
+        "ready": true,
+        "prepared": true,
+        "beams": 0,
+        "strength": 0.035,
+        "selected": null,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 0 selects the right color and dims all other screens",
+      "pass": true,
+      "detail": {
+        "selected": 0,
+        "color": "ff2348",
+        "levels": [
+          0.9999999994227626,
+          0.12000000101016535,
+          0.12000000101016535,
+          0.12000000101016535,
+          0.12000000101016535
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 0 preserves vehicle paint and raises no GL error",
+      "pass": true,
+      "detail": {
+        "selected": 0,
+        "color": "ff2348",
+        "levels": [
+          0.9999999994227626,
+          0.12000000101016535,
+          0.12000000101016535,
+          0.12000000101016535,
+          0.12000000101016535
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 1 selects the right color and dims all other screens",
+      "pass": true,
+      "detail": {
+        "selected": 1,
+        "color": "eef4ff",
+        "levels": [
+          0.12000000158740268,
+          0.9999999984125973,
+          0.12000000000000006,
+          0.12000000000000006,
+          0.12000000000000006
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 1 preserves vehicle paint and raises no GL error",
+      "pass": true,
+      "detail": {
+        "selected": 1,
+        "color": "eef4ff",
+        "levels": [
+          0.12000000158740268,
+          0.9999999984125973,
+          0.12000000000000006,
+          0.12000000000000006,
+          0.12000000000000006
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 2 selects the right color and dims all other screens",
+      "pass": true,
+      "detail": {
+        "selected": 2,
+        "color": "a66bff",
+        "levels": [
+          0.12000000000000006,
+          0.12000000158740268,
+          0.9999999984125973,
+          0.12000000000000006,
+          0.12000000000000006
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 2 preserves vehicle paint and raises no GL error",
+      "pass": true,
+      "detail": {
+        "selected": 2,
+        "color": "a66bff",
+        "levels": [
+          0.12000000000000006,
+          0.12000000158740268,
+          0.9999999984125973,
+          0.12000000000000006,
+          0.12000000000000006
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 3 selects the right color and dims all other screens",
+      "pass": true,
+      "detail": {
+        "selected": 3,
+        "color": "ff913d",
+        "levels": [
+          0.12000000000000006,
+          0.12000000000000006,
+          0.12000000158740268,
+          0.9999999984125973,
+          0.12000000000000006
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 3 preserves vehicle paint and raises no GL error",
+      "pass": true,
+      "detail": {
+        "selected": 3,
+        "color": "ff913d",
+        "levels": [
+          0.12000000000000006,
+          0.12000000000000006,
+          0.12000000158740268,
+          0.9999999984125973,
+          0.12000000000000006
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 4 selects the right color and dims all other screens",
+      "pass": true,
+      "detail": {
+        "selected": 4,
+        "color": "79d8ff",
+        "levels": [
+          0.12000000000000006,
+          0.12000000000000006,
+          0.12000000000000006,
+          0.12000000158740268,
+          0.9999999984125973
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "card 4 preserves vehicle paint and raises no GL error",
+      "pass": true,
+      "detail": {
+        "selected": 4,
+        "color": "79d8ff",
+        "levels": [
+          0.12000000000000006,
+          0.12000000000000006,
+          0.12000000000000006,
+          0.12000000158740268,
+          0.9999999984125973
+        ],
+        "paint": true,
+        "gl": 0
+      }
+    },
+    {
+      "name": "page 0 has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "page 0 retains only decoded real images",
+      "pass": true
+    },
+    {
+      "name": "Berserk has one play link, retained gallery and no community section",
+      "pass": true
+    },
+    {
+      "name": "Play Now uploads a propagating energy network on pointer interaction",
+      "pass": true
+    },
+    {
+      "name": "the button renderer stops after its energy has decayed",
+      "pass": true
+    },
+    {
+      "name": "page 1 has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "page 1 retains only decoded real images",
+      "pass": true
+    },
+    {
+      "name": "scroll, not an autoplay timer, switches the group",
+      "pass": true
+    },
+    {
+      "name": "group game media never navigates to a game",
+      "pass": true
+    },
+    {
+      "name": "groups stay still after scrolling",
+      "pass": true
+    },
+    {
+      "name": "page 2 has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "page 2 retains only decoded real images",
+      "pass": true
+    },
+    {
+      "name": "future car uses the live 3D surface and a complete catalogue",
+      "pass": true
+    },
+    {
+      "name": "scroll cue reveals the project catalogue",
+      "pass": true
+    },
+    {
+      "name": "page 3 has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "page 3 retains only decoded real images",
+      "pass": true
+    },
+    {
+      "name": "About has the authored bio and a real transparent portrait",
+      "pass": true
+    },
+    {
+      "name": "page 4 has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "page 4 retains only decoded real images",
+      "pass": true
+    },
+    {
+      "name": "390px page 0 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "390px page 1 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "390px page 2 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "390px page 3 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "390px page 4 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "320px page 0 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "320px page 1 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "320px page 2 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "320px page 3 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "320px page 4 fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "reduced motion draws the car once without an animation loop",
+      "pass": true
+    },
+    {
+      "name": "returning to showroom stops and detaches page graphics",
+      "pass": true
+    },
+    {
+      "name": "no browser or shader errors in tested flows",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "hover-0.png",
+    "hover-1.png",
+    "hover-2.png",
+    "hover-3.png",
+    "hover-4.png",
+    "play-energy.png",
+    "page-0.png",
+    "page-1.png",
+    "covered-car.png",
+    "page-2.png",
+    "page-3.png",
+    "page-4.png"
+  ],
+  "timings": [],
+  "browser": "141.0.7390.37"
+}

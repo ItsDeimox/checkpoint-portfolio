@@ -119,7 +119,7 @@ async function start(){
 }
 const initialPanel=panelFromPath(location.pathname);
 if(initialPanel!==null){phase='dormant';sections.open(initialPanel,null,'none',true);intro.ready();}
-else{setLocation(null,'none');preloadTask=sections.preload().catch(error=>{if(!pageDisposed)console.warn('[DXT] Destination preparation failed:',error);});start();}
+else{setLocation(null,'none');preloadTask=Promise.all([sections.preload(),sectionMedia.ready]).catch(error=>{if(!pageDisposed)console.warn('[DXT] Destination preparation failed:',error);});start();}
 async function startBrand(){
  try{const {PersistentBrand}=await loadExperience();if(pageDisposed||!PersistentBrand)return;
   persistentBrand=new PersistentBrand({document,settings,onState:updateMusicUI});await persistentBrand.readyPromise;

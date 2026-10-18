@@ -1,10 +1,17 @@
+import {RoomIdentity} from './room-identity.js';
 export {PersistentBrand} from './room-persistent-brand.js';
 import {HeroScene as ShowroomScene} from './room-hologram-scene.js';
 import {BannerPortal} from './room-portal.js';
 import {portalImpactEnvelope} from './room-portal-effects.js';
 export class HeroScene extends ShowroomScene {
- buildLights(){super.buildLights();this.bannerPortal=new BannerPortal(this);}
+ buildLights(){super.buildLights();this.bannerPortal=new BannerPortal(this);this.identity=new RoomIdentity(this);}
 
+ buildAtmosphere(){
+  super.buildAtmosphere();
+  // Keep the real spot/key lights, remove only the obstructing drawn cone.
+  for(const beam of this.beams??[]){this.scene.remove(beam);beam.geometry.dispose();beam.material.dispose();}
+  this.beams=[];
+ }
  enterPortal(index,onComplete,onProgress,getArrivalViewport){return this.bannerPortal.enter(index,onComplete,onProgress,getArrivalViewport);}
  returnPortal(index,onComplete,onProgress,getArrivalViewport){
   if(!this.ready||this.disposed||this.lost||this.reduced.matches)return false;
@@ -29,6 +36,7 @@ export class HeroScene extends ShowroomScene {
  resize(){super.resize();this.bannerPortal?.attachOptics(this.optics);if(this.bannerPortal?.active)this.bannerPortal.update(0);}
  render(dt,motion){
   if(this.pageActive)return;
+  this.identity?.update(dt,this.reduced.matches||(!this.ready&&!this.bannerPortal?.active));
   const portal=this.bannerPortal,optics=this.optics;
   if(!portal?.active&&!portal?.interior){super.render(dt,motion);return;}
   portal.prepareFrame(dt);
@@ -48,6 +56,8 @@ export class HeroScene extends ShowroomScene {
    bloom.value=baseBloom;light.position.copy(position);light.intensity=intensity;
   }
  }
- inspect(){return {...super.inspect(),portal:this.bannerPortal?.inspect(),sectionSleeping:Boolean(this.pageActive)};}
+ inspect(){return {...super.inspect(),portal:this.bannerPortal?.inspect(),sectionSleeping:Boolean(this.pageActive),identity:this.identity?{selected:this.identity.selected,color:this.identity.color.getHexString(),strength:this.identity.strength}:null};}
  async dispose(){await super.dispose();this.bannerPortal?.dispose();}
 }
+
+export {DestinationGraphics} from "./destination-graphics.js";

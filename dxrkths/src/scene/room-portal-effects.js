@@ -23,7 +23,7 @@ export function portalImpactEnvelope(age,progress,active=true,reduced=false) {
 
 const PARTICLE_VERTEX = /*glsl*/`
 attribute vec4 burstSeed;
-uniform float burstAge;uniform vec3 burstOrigin,burstRight,burstUp,burstNormal;
+uniform vec3 burstTint;uniform float burstAge;uniform vec3 burstOrigin,burstRight,burstUp,burstNormal;
 uniform vec2 burstHalf;uniform float sparkMode;
 varying vec2 vUv;varying float vLife,vSeed;
 void main(){
@@ -52,7 +52,7 @@ void main(){
   gl_Position=projectionMatrix*eye;
 }`;
 const SMOKE_FRAGMENT = /*glsl*/`
-uniform float burstAge;uniform float burstDensity;uniform float smokeDetail;
+uniform vec3 burstTint;uniform float burstAge;uniform float burstDensity;uniform float smokeDetail;
 varying vec2 vUv;varying float vLife,vSeed;
 ${noiseGLSL}
 void main(){
@@ -64,22 +64,22 @@ void main(){
   float alpha=smoothstep(.18,.75,n)*edge*burstDensity*(1.-smoothstep(.6,1.,vLife));
   if(alpha<.002)discard;
   float inner=exp(-length(p)*1.6);
-  vec3 smoke=mix(vec3(.065,.037,.049),vec3(.50,.12,.15),n);
-  smoke+=vec3(.82,.018,.034)*inner*(1.-vLife)*.45;
+  vec3 smoke=mix(vec3(.065,.037,.049),mix(burstTint*.5,vec3(.12),.22),n);
+  smoke+=burstTint*.82*inner*(1.-vLife)*.45;
   gl_FragColor=vec4(smoke,alpha);
 }`;
 const SPARK_FRAGMENT = /*glsl*/`
-uniform float burstDensity;varying vec2 vUv;varying float vLife,vSeed;
+uniform vec3 burstTint;uniform float burstDensity;varying vec2 vUv;varying float vLife,vSeed;
 void main(){
  if(vLife<=0.||vLife>=1.)discard;
  vec2 p=abs(vUv-.5)*2.;
  float a=pow(max(0.,1.-p.x),2.)*pow(max(0.,1.-p.y),.7);
  a*=burstDensity*(1.-smoothstep(.35,1.,vLife));
- vec3 color=mix(vec3(5.2,.028,.045),vec3(5.0,1.05,.40),vSeed*.6);
+ vec3 color=mix(burstTint*5.2,mix(burstTint,vec3(1.),.35)*5.0,vSeed*.6);
  gl_FragColor=vec4(color,a);
 }`;
 const WAVE_FRAGMENT = /*glsl*/`
-uniform float burstAge;uniform float wavePower;varying vec2 vUv;
+uniform vec3 burstTint;uniform float burstAge;uniform float wavePower;varying vec2 vUv;
 void main(){
  vec2 p=abs(vUv-.5)*2.;float d=max(p.x,p.y);
  float radius=.36+burstAge*.40;
@@ -87,7 +87,7 @@ void main(){
  float line=1.-smoothstep(pixel,pixel*2.5,edge);
  float halo=exp(-edge*64.)*.27;
  float corner=smoothstep(.08,.34,min(p.x,p.y));
- gl_FragColor=vec4(vec3(3.2,.015,.052)*(line+halo),wavePower*(.6+corner*.4));
+ gl_FragColor=vec4(burstTint*3.2*(line+halo),wavePower*(.6+corner*.4));
 }`;
 
 function makeParticles(count,uniforms,fragment,sparkMode) {
@@ -112,7 +112,7 @@ export class PortalEffects {
   constructor(scene) {
     this.scene=scene;this.group=new T.Group();this.group.name='Transient portal opening';this.group.visible=false;
     this.origin=new T.Vector3();this.normal=new T.Vector3();
-    this.uniforms={burstAge:{value:0},burstDensity:{value:0},smokeDetail:{value:2},wavePower:{value:0},
+    this.uniforms={burstTint:{value:new T.Color('#ff2348')},burstAge:{value:0},burstDensity:{value:0},smokeDetail:{value:2},wavePower:{value:0},
       burstOrigin:{value:this.origin},burstRight:{value:new T.Vector3()},burstUp:{value:new T.Vector3()},
       burstNormal:{value:this.normal},burstHalf:{value:new T.Vector2()}};
     this.smoke=makeParticles(24,this.uniforms,SMOKE_FRAGMENT,0);

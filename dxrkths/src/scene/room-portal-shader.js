@@ -1,7 +1,7 @@
 /** One bounded analytic ray hit, shared by the original doorway and its interior. */
 export const PORTAL_UNIFORMS=/*glsl*/`
  uniform float portalMix,portalReturn,portalAge,portalProgress,portalSpeed,portalOpening,portalLayerCount;
- uniform vec3 portalOrigin,portalRight,portalUp,portalForward;
+ uniform vec3 portalAccent,portalOrigin,portalRight,portalUp,portalForward;
  uniform vec2 portalHalf,portalExitHalf;
  uniform float portalExitDepth,portalExitOffset,portalTunnelEnd;
 `;
@@ -29,37 +29,37 @@ export const PORTAL_FUNCTIONS=/*glsl*/`
    vec2 grid=abs(fract(vec2(depth*.26,across*3.))-.5);
    float seam=1.-smoothstep(.46,.498,max(grid.x,grid.y));
    vec3 art=portalPicture(vec2(fract(depth*.06+across*.025),across*.5+.5));
-   color=(vec3(.011,.004,.008)+art*vec3(.09,.018,.026)*seam)*distanceFade;
+   color=(vec3(.011,.004,.008)+art*mix(vec3(.025),portalAccent*.09,.7)*seam)*distanceFade;
    float rail=exp(-pow((abs(across)-.86)*55.,2.));
-   color+=vec3(2.6,.008,.038)*rail*distanceFade*(1.+portalOpening*.4);
+   color+=portalAccent*2.6*rail*distanceFade*(1.+portalOpening*.4);
    float floorSide=horizontal*(1.-step(0.,hit.y));
    float lanes=exp(-pow((abs(across)-.34)*125.,2.));
    float dashed=exp(-pow(across*150.,2.))*smoothstep(.3,.36,fract(depth*.27));
-   color+=vec3(2.1,.22,.19)*(lanes*.65+dashed*.4)*distanceFade*floorSide;
+   color+=mix(portalAccent,vec3(1.),.13)*2.1*(lanes*.65+dashed*.4)*distanceFade*floorSide;
    // The nearest physical rib is sufficient after the ray has hit an opaque
    // wall. No summing 24 hidden frame planes through each other per pixel.
    float ribDistance=abs(fract(depth/2.35)-.5)*2.35;
    float aa=max(fwidth(depth),.012);
    float core=1.-smoothstep(.018,.018+aa,ribDistance);
    float halo=exp(-ribDistance*12.);
-   color+=vec3(2.5,.012,.058)*(core*.76+halo*.19)*distanceFade;
+   color+=portalAccent*2.5*(core*.76+halo*.19)*distanceFade;
    float lane=floor((across+1.)*14.),lanePos=abs(fract((across+1.)*14.)-.5);
    float seed=portalHash(vec2(lane,horizontal));
    float flow=fract(depth*(.06+seed*.035)-portalAge*(.25+seed*.5));
-   color+=vec3(3.5,.035,.06)*exp(-lanePos*70.)*step(.35,seed)*pow(1.-flow,9.)*distanceFade*(.4+portalSpeed);
+   color+=portalAccent*3.5*exp(-lanePos*70.)*step(.35,seed)*pow(1.-flow,9.)*distanceFade*(.4+portalSpeed);
    float vapor=portalNoise(vec2(across*4.,depth*.31-portalAge*.22));
-   color+=vec3(.035,.004,.01)*vapor*(1.-distanceFade)*(.5+portalSpeed);
+   color+=portalAccent*.035*vapor*(1.-distanceFade)*(.5+portalSpeed);
   }else{
    vec2 q=abs(hit.xy-vec2(portalExitOffset,0.))-portalExitHalf;
    float edge=max(q.x,q.y),aa=max(fwidth(edge),.008);
    color=vec3(.010,.004,.008);
-   color+=vec3(2.3,.018,.045)*(exp(-pow((edge-.06)/max(.018,aa),2.))*.35+exp(-abs(edge-.06)*9.)*.075);
+   color+=portalAccent*2.3*(exp(-pow((edge-.06)/max(.018,aa),2.))*.35+exp(-abs(edge-.06)*9.)*.075);
   }
   // A distinct terminal arch marks where the tunnel ends, in front of the wall.
   if(ro.z<portalTunnelEnd){
    float t=(portalTunnelEnd-ro.z)/rd.z;vec2 q=(ro+rd*t).xy/portalHalf;
    float d=abs(max(abs(q.x),abs(q.y))-1.),aa=max(fwidth(d),.003);
-   color+=vec3(2.5,.018,.055)*(1.-smoothstep(.007,.007+aa*1.5,d)+exp(-d*38.)*.12)*exp(-t*.035);
+   color+=portalAccent*2.5*(1.-smoothstep(.007,.007+aa*1.5,d)+exp(-d*38.)*.12)*exp(-t*.035);
   }
   // Radiance is preserved in BOTH directions. The page itself is the end wall.
   return color;
