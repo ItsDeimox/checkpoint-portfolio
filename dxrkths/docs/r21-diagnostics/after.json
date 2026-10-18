@@ -5,8 +5,8 @@
       "t": 0,
       "age": 1.05,
       "stage": "flight",
-      "cpu": 4.5,
-      "draw": 1561.1000000000058,
+      "cpu": 6.899999999994179,
+      "draw": 7.100000000005821,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -40,7 +40,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -48,7 +48,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -60,30 +60,30 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
       "glError": 0,
       "work": {
-        "LayoutCount": 1,
-        "RecalcStyleCount": 2,
-        "LayoutDuration": 0.0002659999999999989,
-        "RecalcStyleDuration": 0.0015340000000000006,
-        "ScriptDuration": 1.6943050000000002,
-        "TaskDuration": 3.266031
+        "LayoutCount": 2,
+        "RecalcStyleCount": 3,
+        "LayoutDuration": 0.00034,
+        "RecalcStyleDuration": 0.0023369999999999997,
+        "ScriptDuration": 0.35244000000000003,
+        "TaskDuration": 1.594912
       }
     },
     {
       "t": 0.05,
       "age": 1.1525,
       "stage": "flight",
-      "cpu": 0.9000000000087311,
-      "draw": 11.5,
+      "cpu": 0.5,
+      "draw": 3.7999999999883585,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -117,7 +117,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -125,7 +125,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -137,11 +137,11 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
@@ -149,18 +149,18 @@
       "work": {
         "LayoutCount": 1,
         "RecalcStyleCount": 2,
-        "LayoutDuration": 0.0002020000000000008,
-        "RecalcStyleDuration": 0.009928,
-        "ScriptDuration": 0.0008020000000001914,
-        "TaskDuration": 1.9333979999999986
+        "LayoutDuration": 0.0001760000000000008,
+        "RecalcStyleDuration": 0.004445999999999999,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.018517000000000117
       }
     },
     {
       "t": 0.25,
       "age": 1.5625,
       "stage": "flight",
-      "cpu": 2,
-      "draw": 1.2999999999883585,
+      "cpu": 1,
+      "draw": 1,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -194,7 +194,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -202,7 +202,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -214,30 +214,30 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
       "glError": 0,
       "work": {
         "LayoutCount": 0,
-        "RecalcStyleCount": 1,
+        "RecalcStyleCount": 2,
         "LayoutDuration": 0,
-        "RecalcStyleDuration": 0.0017019999999999987,
+        "RecalcStyleDuration": 0.0025520000000000004,
         "ScriptDuration": 0,
-        "TaskDuration": 0.0062429999999995545
+        "TaskDuration": 0.007727999999999957
       }
     },
     {
       "t": 0.45,
       "age": 1.9725000000000001,
       "stage": "flight",
-      "cpu": 1.3999999999941792,
-      "draw": 5.900000000008731,
+      "cpu": 1.1999999999970896,
+      "draw": 5.399999999994179,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -271,7 +271,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -279,7 +279,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -291,11 +291,11 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
@@ -304,17 +304,17 @@
         "LayoutCount": 0,
         "RecalcStyleCount": 2,
         "LayoutDuration": 0,
-        "RecalcStyleDuration": 0.00040799999999999864,
+        "RecalcStyleDuration": 0.00033299999999999996,
         "ScriptDuration": 0,
-        "TaskDuration": 0.015544999999999476
+        "TaskDuration": 0.010327999999999893
       }
     },
     {
       "t": 0.6,
       "age": 2.28,
       "stage": "flight",
-      "cpu": 0.6000000000058208,
-      "draw": 1.3000000000029104,
+      "cpu": 0.5,
+      "draw": 0.8999999999941792,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -348,7 +348,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -356,7 +356,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -368,11 +368,11 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
@@ -381,17 +381,17 @@
         "LayoutCount": 0,
         "RecalcStyleCount": 1,
         "LayoutDuration": 0,
-        "RecalcStyleDuration": 0.0002680000000000009,
+        "RecalcStyleDuration": 0.00022599999999999877,
         "ScriptDuration": 0,
-        "TaskDuration": 0.004158000000000328
+        "TaskDuration": 0.0030040000000000067
       }
     },
     {
       "t": 0.72,
       "age": 2.526,
       "stage": "flight",
-      "cpu": 1,
-      "draw": 1,
+      "cpu": 0.5999999999912689,
+      "draw": 0.6999999999970896,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -425,7 +425,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -433,7 +433,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -445,11 +445,11 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
@@ -458,17 +458,17 @@
         "LayoutCount": 0,
         "RecalcStyleCount": 1,
         "LayoutDuration": 0,
-        "RecalcStyleDuration": 0.0002599999999999998,
+        "RecalcStyleDuration": 0.0002399999999999989,
         "ScriptDuration": 0,
-        "TaskDuration": 0.003625999999998797
+        "TaskDuration": 0.0031890000000001084
       }
     },
     {
       "t": 0.82,
       "age": 2.731,
       "stage": "flight",
-      "cpu": 0.5999999999912689,
-      "draw": 1.1999999999970896,
+      "cpu": 0.3000000000029104,
+      "draw": 0.8999999999941792,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -502,7 +502,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -510,7 +510,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -522,11 +522,11 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
@@ -535,17 +535,17 @@
         "LayoutCount": 0,
         "RecalcStyleCount": 1,
         "LayoutDuration": 0,
-        "RecalcStyleDuration": 0.0002939999999999991,
+        "RecalcStyleDuration": 0.00023199999999999957,
         "ScriptDuration": 0,
-        "TaskDuration": 0.0033320000000003347
+        "TaskDuration": 0.003761999999999821
       }
     },
     {
       "t": 0.88,
       "age": 2.854,
       "stage": "flight",
-      "cpu": 0.5,
-      "draw": 1,
+      "cpu": 0.39999999999417923,
+      "draw": 0.8000000000029104,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -579,7 +579,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -587,7 +587,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -599,11 +599,11 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
@@ -612,17 +612,17 @@
         "LayoutCount": 0,
         "RecalcStyleCount": 2,
         "LayoutDuration": 0,
-        "RecalcStyleDuration": 0.00036500000000000074,
+        "RecalcStyleDuration": 0.00030699999999999825,
         "ScriptDuration": 0,
-        "TaskDuration": 0.0054800000000003735
+        "TaskDuration": 0.007168000000000063
       }
     },
     {
       "t": 0.93,
       "age": 2.9565,
       "stage": "flight",
-      "cpu": 0.5,
-      "draw": 1.0999999999912689,
+      "cpu": 0.40000000000873115,
+      "draw": 5.599999999991269,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -656,7 +656,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -664,7 +664,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -676,11 +676,11 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
@@ -689,17 +689,17 @@
         "LayoutCount": 0,
         "RecalcStyleCount": 1,
         "LayoutDuration": 0,
-        "RecalcStyleDuration": 0.0002690000000000019,
+        "RecalcStyleDuration": 0.00026500000000000135,
         "ScriptDuration": 0,
-        "TaskDuration": 0.005473999999999535
+        "TaskDuration": 0.007334000000000174
       }
     },
     {
       "t": 0.97,
       "age": 3.0385,
       "stage": "flight",
-      "cpu": 0.29999999998835847,
-      "draw": 0.9000000000087311,
+      "cpu": 0.19999999999708962,
+      "draw": 0.5999999999912689,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -733,7 +733,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -741,7 +741,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -753,11 +753,11 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
@@ -766,17 +766,17 @@
         "LayoutCount": 0,
         "RecalcStyleCount": 1,
         "LayoutDuration": 0,
-        "RecalcStyleDuration": 0.00028000000000000247,
+        "RecalcStyleDuration": 0.0002349999999999991,
         "ScriptDuration": 0,
-        "TaskDuration": 0.002947000000000699
+        "TaskDuration": 0.0020560000000000578
       }
     },
     {
       "t": 0.99,
       "age": 3.0794999999999995,
       "stage": "flight",
-      "cpu": 0.3000000000029104,
-      "draw": 1.1000000000058208,
+      "cpu": 0.6999999999970896,
+      "draw": 1.1999999999970896,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -810,7 +810,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -818,7 +818,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": true
         },
         {
@@ -830,30 +830,30 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
       "glError": 0,
       "work": {
         "LayoutCount": 0,
-        "RecalcStyleCount": 2,
+        "RecalcStyleCount": 1,
         "LayoutDuration": 0,
-        "RecalcStyleDuration": 0.0003610000000000002,
+        "RecalcStyleDuration": 0.0002139999999999989,
         "ScriptDuration": 0,
-        "TaskDuration": 0.0044709999999987815
+        "TaskDuration": 0.0045280000000000875
       }
     },
     {
       "t": 1,
       "age": 3.0999999999999996,
       "stage": "arrived",
-      "cpu": 3.8000000000029104,
-      "draw": 0.10000000000582077,
+      "cpu": 3.3000000000029104,
+      "draw": 0,
       "programs": 38,
       "geometry": 161,
       "textures": 40,
@@ -887,7 +887,7 @@
           "enabled": true
         },
         {
-          "name": "wa",
+          "name": "Aa",
           "enabled": false
         },
         {
@@ -895,7 +895,7 @@
           "enabled": true
         },
         {
-          "name": "Oa",
+          "name": "Ba",
           "enabled": false
         },
         {
@@ -907,22 +907,22 @@
           "enabled": true
         },
         {
-          "name": "ba",
+          "name": "Sa",
           "enabled": true
         },
         {
-          "name": "Sa",
+          "name": "Ta",
           "enabled": true
         }
       ],
       "glError": 0,
       "work": {
         "LayoutCount": 2,
-        "RecalcStyleCount": 3,
-        "LayoutDuration": 0.000341000000000001,
-        "RecalcStyleDuration": 0.0023009999999999975,
-        "ScriptDuration": 0.00002999999999886427,
-        "TaskDuration": 0.005007000000000872
+        "RecalcStyleCount": 6,
+        "LayoutDuration": 0.0003109999999999988,
+        "RecalcStyleDuration": 0.0019340000000000017,
+        "ScriptDuration": 0.0005150000000000432,
+        "TaskDuration": 0.0061670000000000336
       }
     }
   ],

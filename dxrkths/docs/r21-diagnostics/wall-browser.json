@@ -1,0 +1,2511 @@
+{
+  "checks": [
+    {
+      "name": "both interior and real banner pipeline are warmed before interaction",
+      "pass": true
+    },
+    {
+      "name": "panel 0 is seen beyond a shorter tunnel",
+      "pass": true,
+      "detail": {
+        "wall": 30.656363228101164,
+        "tunnel": 19.324945650511296
+      }
+    },
+    {
+      "name": "panel 0 has true early wall occlusion which reveals continuously",
+      "pass": true,
+      "detail": [
+        [
+          0.23605370139415788,
+          0.10580935103404801,
+          0.7808954511482151,
+          0.894190648965952
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "panel 0 commits without replacing the page or replaying its entrance",
+      "pass": true
+    },
+    {
+      "name": "panel 0 final viewport aligns without scale or scrollbar jump",
+      "pass": true,
+      "detail": {
+        "late": [
+          54,
+          280.484375,
+          440.015625,
+          56.421875
+        ],
+        "end": [
+          54,
+          280.484375,
+          440.015625,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "panel 0 does not move the navbar or persistent logo",
+      "pass": true
+    },
+    {
+      "name": "panel 0 return immediately retains the same page instead of fading to black",
+      "pass": true
+    },
+    {
+      "name": "panel 0 reverse wall perspective retraces entry",
+      "pass": true
+    },
+    {
+      "name": "panel 0 disappears behind the tunnel walls on return",
+      "pass": true
+    },
+    {
+      "name": "panel 0 rendering raises no GL errors",
+      "pass": true
+    },
+    {
+      "name": "panel 0 returns to the existing interactive showroom",
+      "pass": true
+    },
+    {
+      "name": "panel 1 is seen beyond a shorter tunnel",
+      "pass": true,
+      "detail": {
+        "wall": 30.176112442023555,
+        "tunnel": 19.55546602782854
+      }
+    },
+    {
+      "name": "panel 1 has true early wall occlusion which reveals continuously",
+      "pass": true,
+      "detail": [
+        [
+          0.2433925303511747,
+          0.10506145929552978,
+          0.7735566221911981,
+          0.8949385407044702
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "panel 1 commits without replacing the page or replaying its entrance",
+      "pass": true
+    },
+    {
+      "name": "panel 1 final viewport aligns without scale or scrollbar jump",
+      "pass": true,
+      "detail": {
+        "late": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "end": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "panel 1 does not move the navbar or persistent logo",
+      "pass": true
+    },
+    {
+      "name": "panel 1 return immediately retains the same page instead of fading to black",
+      "pass": true
+    },
+    {
+      "name": "panel 1 reverse wall perspective retraces entry",
+      "pass": true
+    },
+    {
+      "name": "panel 1 disappears behind the tunnel walls on return",
+      "pass": true
+    },
+    {
+      "name": "panel 1 rendering raises no GL errors",
+      "pass": true
+    },
+    {
+      "name": "panel 1 returns to the existing interactive showroom",
+      "pass": true
+    },
+    {
+      "name": "panel 2 is seen beyond a shorter tunnel",
+      "pass": true,
+      "detail": {
+        "wall": 31.038496517632257,
+        "tunnel": 19.14152167153638
+      }
+    },
+    {
+      "name": "panel 2 has true early wall occlusion which reveals continuously",
+      "pass": true,
+      "detail": [
+        [
+          0.23008992274861237,
+          0.1454476515444397,
+          0.7868592297937607,
+          0.8545523484555603
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "panel 2 commits without replacing the page or replaying its entrance",
+      "pass": true
+    },
+    {
+      "name": "panel 2 final viewport aligns without scale or scrollbar jump",
+      "pass": true,
+      "detail": {
+        "late": [
+          54,
+          345.984375,
+          426.703125,
+          56.421875
+        ],
+        "end": [
+          54,
+          345.984375,
+          426.703125,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "panel 2 does not move the navbar or persistent logo",
+      "pass": true
+    },
+    {
+      "name": "panel 2 return immediately retains the same page instead of fading to black",
+      "pass": true
+    },
+    {
+      "name": "panel 2 reverse wall perspective retraces entry",
+      "pass": true
+    },
+    {
+      "name": "panel 2 disappears behind the tunnel walls on return",
+      "pass": true
+    },
+    {
+      "name": "panel 2 rendering raises no GL errors",
+      "pass": true
+    },
+    {
+      "name": "panel 2 returns to the existing interactive showroom",
+      "pass": true
+    },
+    {
+      "name": "panel 3 is seen beyond a shorter tunnel",
+      "pass": true,
+      "detail": {
+        "wall": 30.00361398910376,
+        "tunnel": 19.638265285230048
+      }
+    },
+    {
+      "name": "panel 3 has true early wall occlusion which reveals continuously",
+      "pass": true,
+      "detail": [
+        [
+          0.245987106220938,
+          0.10046482322165935,
+          0.7709620463214348,
+          0.8995351767783406
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "panel 3 commits without replacing the page or replaying its entrance",
+      "pass": true
+    },
+    {
+      "name": "panel 3 final viewport aligns without scale or scrollbar jump",
+      "pass": true,
+      "detail": {
+        "late": [
+          54,
+          294.296875,
+          426.703125,
+          56.421875
+        ],
+        "end": [
+          54,
+          294.296875,
+          426.703125,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "panel 3 does not move the navbar or persistent logo",
+      "pass": true
+    },
+    {
+      "name": "panel 3 return immediately retains the same page instead of fading to black",
+      "pass": true
+    },
+    {
+      "name": "panel 3 reverse wall perspective retraces entry",
+      "pass": true
+    },
+    {
+      "name": "panel 3 disappears behind the tunnel walls on return",
+      "pass": true
+    },
+    {
+      "name": "panel 3 rendering raises no GL errors",
+      "pass": true
+    },
+    {
+      "name": "panel 3 returns to the existing interactive showroom",
+      "pass": true
+    },
+    {
+      "name": "panel 4 is seen beyond a shorter tunnel",
+      "pass": true,
+      "detail": {
+        "wall": 30.93671181810316,
+        "tunnel": 19.19037832731033
+      }
+    },
+    {
+      "name": "panel 4 has true early wall occlusion which reveals continuously",
+      "pass": true,
+      "detail": [
+        [
+          0.23168939504233016,
+          0.11724271560373081,
+          0.7852597575000427,
+          0.8827572843962691
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "panel 4 commits without replacing the page or replaying its entrance",
+      "pass": true
+    },
+    {
+      "name": "panel 4 final viewport aligns without scale or scrollbar jump",
+      "pass": true,
+      "detail": {
+        "late": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "end": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ]
+      }
+    },
+    {
+      "name": "panel 4 does not move the navbar or persistent logo",
+      "pass": true
+    },
+    {
+      "name": "panel 4 return immediately retains the same page instead of fading to black",
+      "pass": true
+    },
+    {
+      "name": "panel 4 reverse wall perspective retraces entry",
+      "pass": true
+    },
+    {
+      "name": "panel 4 disappears behind the tunnel walls on return",
+      "pass": true
+    },
+    {
+      "name": "panel 4 rendering raises no GL errors",
+      "pass": true
+    },
+    {
+      "name": "panel 4 returns to the existing interactive showroom",
+      "pass": true
+    },
+    {
+      "name": "return preserves the currently scrolled viewport",
+      "pass": false,
+      "detail": {
+        "scroll": {
+          "y": 550,
+          "top": 89.0372314453125
+        },
+        "restored": {
+          "y": 550,
+          "top": 83.99999237060547
+        }
+      }
+    }
+  ],
+  "records": [
+    {
+      "index": 0,
+      "a": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.3431279540240699,
+            0.34312795402407
+          ],
+          [
+            0.6516429777767322,
+            0.34312795402407004
+          ],
+          [
+            0.6516429777767322,
+            0.65687204597593
+          ],
+          [
+            0.3431279540240699,
+            0.6568720459759301
+          ]
+        ],
+        "clip": [
+          0.23605370139415788,
+          0.10580935103404801,
+          0.7808954511482151,
+          0.894190648965952
+        ],
+        "wall": 30.656363228101164,
+        "tunnel": 19.324945650511296,
+        "opacity": 1,
+        "clipCss": "inset(10.5809% 21.9105% 10.5809% 23.6054%)",
+        "title": [
+          325.75732421875,
+          307.6021728515625,
+          138.05227661132812,
+          17.7020263671875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 117,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 58
+      },
+      "b": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.23348958489030147,
+            0.23348958489030142
+          ],
+          [
+            0.7576267346060418,
+            0.23348958489030153
+          ],
+          [
+            0.7576267346060418,
+            0.7665104151096984
+          ],
+          [
+            0.23348958489030147,
+            0.7665104151096986
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.656363228101164,
+        "tunnel": 19.324945650511296,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          238.9237518310547,
+          298.9373474121094,
+          234.53749084472656,
+          30.07403564453125
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 117,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "c": {
+        "t": 0.84,
+        "age": 2.772,
+        "quad": [
+          [
+            0.013915917901819064,
+            0.013915917901818842
+          ],
+          [
+            0.9698812793615752,
+            0.013915917901818842
+          ],
+          [
+            0.9698812793615752,
+            0.9860840820981811
+          ],
+          [
+            0.013915917901819064,
+            0.9860840820981811
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.656363228101164,
+        "tunnel": 19.324945650511296,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          65.02140045166016,
+          281.5841369628906,
+          427.7691650390625,
+          54.8515625
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 117,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "late": {
+        "t": 0.9999,
+        "age": 3.0997950000000003,
+        "quad": [
+          [
+            -1.5502494843389059e-9,
+            -1.5502497063835108e-9
+          ],
+          [
+            0.9833333348319082,
+            -1.5502497063835108e-9
+          ],
+          [
+            0.9833333348319082,
+            1.0000000015502497
+          ],
+          [
+            -1.5502494843389059e-9,
+            1.0000000015502497
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.656363228101164,
+        "tunnel": 19.324945650511296,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          280.484375,
+          440.015625,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 117,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "end": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502588102123127e-9,
+            -1.5502590322569176e-9
+          ],
+          [
+            0.9833333348319172,
+            -1.5502590322569176e-9
+          ],
+          [
+            0.9833333348319172,
+            1.000000001550259
+          ],
+          [
+            -1.5502588102123127e-9,
+            1.000000001550259
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.656363228101164,
+        "tunnel": 19.324945650511296,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          280.484375,
+          440.015625,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 117,
+        "inert": false,
+        "attr": "arrived",
+        "hidden": false,
+        "hostHidden": true,
+        "gl": 0,
+        "layouts": 21
+      },
+      "start": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502588102123127e-9,
+            -1.5502590322569176e-9
+          ],
+          [
+            0.9833333348319172,
+            -1.5502590322569176e-9
+          ],
+          [
+            0.9833333348319172,
+            1.000000001550259
+          ],
+          [
+            -1.5502588102123127e-9,
+            1.000000001550259
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.656363228101164,
+        "tunnel": 19.324945650511296,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          280.484375,
+          440.015625,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 117,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "back": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.2334895848903028,
+            0.2334895848903028
+          ],
+          [
+            0.7576267346060406,
+            0.23348958489030291
+          ],
+          [
+            0.7576267346060406,
+            0.7665104151096971
+          ],
+          [
+            0.2334895848903028,
+            0.7665104151096972
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.656363228101164,
+        "tunnel": 19.324945650511296,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          238.9237518310547,
+          298.9373474121094,
+          234.53749084472656,
+          30.07403564453125
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 117,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "away": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.3431279540240699,
+            0.34312795402407004
+          ],
+          [
+            0.6516429777767322,
+            0.34312795402407004
+          ],
+          [
+            0.6516429777767322,
+            0.65687204597593
+          ],
+          [
+            0.3431279540240699,
+            0.65687204597593
+          ]
+        ],
+        "clip": [
+          0.2360537013941579,
+          0.10580935103404805,
+          0.7808954511482151,
+          0.894190648965952
+        ],
+        "wall": 30.656363228101164,
+        "tunnel": 19.324945650511296,
+        "opacity": 1,
+        "clipCss": "inset(10.5809% 21.9105% 10.5809% 23.6054%)",
+        "title": [
+          325.75732421875,
+          307.6021728515625,
+          138.05227661132812,
+          17.7020263671875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 117,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 58
+      }
+    },
+    {
+      "index": 1,
+      "a": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.35065119708106424,
+            0.3506511970810643
+          ],
+          [
+            0.6443705094883043,
+            0.3506511970810643
+          ],
+          [
+            0.6443705094883043,
+            0.6493488029189356
+          ],
+          [
+            0.35065119708106424,
+            0.6493488029189356
+          ]
+        ],
+        "clip": [
+          0.2433925303511747,
+          0.10506145929552978,
+          0.7735566221911981,
+          0.8949385407044702
+        ],
+        "wall": 30.176112442023555,
+        "tunnel": 19.55546602782854,
+        "opacity": 1,
+        "clipCss": "inset(10.5061% 22.6443% 10.5061% 24.3393%)",
+        "title": [
+          331.71575927734375,
+          332.0645751953125,
+          127.4552001953125,
+          16.85308837890625
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 54,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 66
+      },
+      "b": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.24196141466644683,
+            0.24196141466644555
+          ],
+          [
+            0.749437299155771,
+            0.24196141466644516
+          ],
+          [
+            0.749437299155771,
+            0.7580385853335548
+          ],
+          [
+            0.24196141466644683,
+            0.7580385853335545
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.176112442023555,
+        "tunnel": 19.55546602782854,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          245.63343811035156,
+          340.84466552734375,
+          220.2117156982422,
+          29.118011474609375
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 54,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "c": {
+        "t": 0.84,
+        "age": 2.772,
+        "quad": [
+          [
+            0.014819617278503394,
+            0.014819617278502839
+          ],
+          [
+            0.9690077032974476,
+            0.014819617278502839
+          ],
+          [
+            0.9690077032974476,
+            0.9851803827214969
+          ],
+          [
+            0.014819617278503394,
+            0.9851803827214969
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.176112442023555,
+        "tunnel": 19.55546602782854,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          65.73713684082031,
+          359.1934509277344,
+          414.05596923828125,
+          54.74957275390625
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 54,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "late": {
+        "t": 0.9999,
+        "age": 3.0997950000000003,
+        "quad": [
+          [
+            -1.5502494843389059e-9,
+            -1.5502499284281157e-9
+          ],
+          [
+            0.9833333348319082,
+            -1.5502499284281157e-9
+          ],
+          [
+            0.9833333348319082,
+            1.0000000015502497
+          ],
+          [
+            -1.5502494843389059e-9,
+            1.0000000015502497
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.176112442023555,
+        "tunnel": 19.55546602782854,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 54,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "end": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502594763461275e-9,
+            -1.5502598094130349e-9
+          ],
+          [
+            0.983333334831918,
+            -1.5502598094130349e-9
+          ],
+          [
+            0.983333334831918,
+            1.0000000015502595
+          ],
+          [
+            -1.5502594763461275e-9,
+            1.0000000015502595
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.176112442023555,
+        "tunnel": 19.55546602782854,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 54,
+        "inert": false,
+        "attr": "arrived",
+        "hidden": false,
+        "hostHidden": true,
+        "gl": 0,
+        "layouts": 21
+      },
+      "start": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502594763461275e-9,
+            -1.5502598094130349e-9
+          ],
+          [
+            0.983333334831918,
+            -1.5502598094130349e-9
+          ],
+          [
+            0.983333334831918,
+            1.0000000015502595
+          ],
+          [
+            -1.5502594763461275e-9,
+            1.0000000015502595
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.176112442023555,
+        "tunnel": 19.55546602782854,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 54,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "back": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.24196141466644822,
+            0.24196141466644694
+          ],
+          [
+            0.7494372991557695,
+            0.2419614146664466
+          ],
+          [
+            0.7494372991557695,
+            0.7580385853335534
+          ],
+          [
+            0.24196141466644822,
+            0.7580385853335531
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.176112442023555,
+        "tunnel": 19.55546602782854,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          245.63343811035156,
+          340.84466552734375,
+          220.2117156982422,
+          29.118011474609375
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 54,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "away": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.3506511970810643,
+            0.3506511970810643
+          ],
+          [
+            0.6443705094883043,
+            0.35065119708106435
+          ],
+          [
+            0.6443705094883043,
+            0.6493488029189356
+          ],
+          [
+            0.3506511970810643,
+            0.6493488029189356
+          ]
+        ],
+        "clip": [
+          0.24339253035117475,
+          0.10506145929552982,
+          0.7735566221911981,
+          0.8949385407044701
+        ],
+        "wall": 30.176112442023555,
+        "tunnel": 19.55546602782854,
+        "opacity": 1,
+        "clipCss": "inset(10.5061% 22.6443% 10.5061% 24.3393%)",
+        "title": [
+          331.71575927734375,
+          332.0645751953125,
+          127.4552001953125,
+          16.85308837890625
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 54,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 66
+      }
+    },
+    {
+      "index": 2,
+      "a": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.3373064545005526,
+            0.33730645450055263
+          ],
+          [
+            0.6572704273161325,
+            0.33730645450055263
+          ],
+          [
+            0.6572704273161325,
+            0.6626935454994474
+          ],
+          [
+            0.3373064545005526,
+            0.6626935454994474
+          ]
+        ],
+        "clip": [
+          0.23008992274861237,
+          0.1454476515444397,
+          0.7868592297937607,
+          0.8545523484555603
+        ],
+        "wall": 31.038496517632257,
+        "tunnel": 19.14152167153638,
+        "opacity": 1,
+        "clipCss": "inset(14.5448% 21.3141% 14.5448% 23.009%)",
+        "title": [
+          321.1466979980469,
+          328.4549560546875,
+          138.84365844726562,
+          18.35894775390625
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 60,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 68
+      },
+      "b": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.22712578876892564,
+            0.22712578876892564
+          ],
+          [
+            0.7637784041900386,
+            0.22712578876892553
+          ],
+          [
+            0.7637784041900386,
+            0.7728742112310746
+          ],
+          [
+            0.22712578876892564,
+            0.7728742112310745
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 31.038496517632257,
+        "tunnel": 19.14152167153638,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          233.8836212158203,
+          334.1809387207031,
+          232.87254333496094,
+          30.792144775390625
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 60,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "c": {
+        "t": 0.84,
+        "age": 2.772,
+        "quad": [
+          [
+            0.013271943912434803,
+            0.013271943912434914
+          ],
+          [
+            0.9705037875513134,
+            0.01327194391243447
+          ],
+          [
+            0.9705037875513134,
+            0.9867280560875656
+          ],
+          [
+            0.013271943912434803,
+            0.9867280560875652
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 31.038496517632257,
+        "tunnel": 19.14152167153638,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          64.5113754272461,
+          345.2946472167969,
+          415.37677001953125,
+          54.924224853515625
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 60,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "late": {
+        "t": 0.9999,
+        "age": 3.0997950000000003,
+        "quad": [
+          [
+            -1.5502498174058132e-9,
+            -1.5502497063835108e-9
+          ],
+          [
+            0.9833333348319085,
+            -1.5502501504727206e-9
+          ],
+          [
+            0.9833333348319085,
+            1.0000000015502502
+          ],
+          [
+            -1.5502498174058132e-9,
+            1.0000000015502497
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 31.038496517632257,
+        "tunnel": 19.14152167153638,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          345.984375,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 60,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "end": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502586991900102e-9,
+            -1.5502585881677078e-9
+          ],
+          [
+            0.9833333348319171,
+            -1.5502590322569176e-9
+          ],
+          [
+            0.9833333348319171,
+            1.000000001550259
+          ],
+          [
+            -1.5502586991900102e-9,
+            1.0000000015502586
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 31.038496517632257,
+        "tunnel": 19.14152167153638,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          345.984375,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 60,
+        "inert": false,
+        "attr": "arrived",
+        "hidden": false,
+        "hostHidden": true,
+        "gl": 0,
+        "layouts": 21
+      },
+      "start": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502586991900102e-9,
+            -1.5502585881677078e-9
+          ],
+          [
+            0.9833333348319171,
+            -1.5502590322569176e-9
+          ],
+          [
+            0.9833333348319171,
+            1.000000001550259
+          ],
+          [
+            -1.5502586991900102e-9,
+            1.0000000015502586
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 31.038496517632257,
+        "tunnel": 19.14152167153638,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          345.984375,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 60,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "back": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.22712578876892697,
+            0.22712578876892703
+          ],
+          [
+            0.7637784041900373,
+            0.22712578876892692
+          ],
+          [
+            0.7637784041900373,
+            0.7728742112310731
+          ],
+          [
+            0.22712578876892697,
+            0.772874211231073
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 31.038496517632257,
+        "tunnel": 19.14152167153638,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          233.8836212158203,
+          334.1809387207031,
+          232.87254333496094,
+          30.792144775390625
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 60,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "away": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.33730645450055263,
+            0.33730645450055274
+          ],
+          [
+            0.6572704273161324,
+            0.33730645450055263
+          ],
+          [
+            0.6572704273161324,
+            0.6626935454994474
+          ],
+          [
+            0.33730645450055263,
+            0.6626935454994474
+          ]
+        ],
+        "clip": [
+          0.23008992274861242,
+          0.14544765154443975,
+          0.7868592297937607,
+          0.8545523484555602
+        ],
+        "wall": 31.038496517632257,
+        "tunnel": 19.14152167153638,
+        "opacity": 1,
+        "clipCss": "inset(14.5448% 21.3141% 14.5448% 23.009%)",
+        "title": [
+          321.1466979980469,
+          328.4549560546875,
+          138.84365844726562,
+          18.35894775390625
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 60,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 68
+      }
+    },
+    {
+      "index": 3,
+      "a": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.3534116256161679,
+            0.353411625616168
+          ],
+          [
+            0.6417020952377044,
+            0.353411625616168
+          ],
+          [
+            0.6417020952377044,
+            0.6465883743838321
+          ],
+          [
+            0.3534116256161679,
+            0.6465883743838321
+          ]
+        ],
+        "clip": [
+          0.245987106220938,
+          0.10046482322165935,
+          0.7709620463214348,
+          0.8995351767783406
+        ],
+        "wall": 30.00361398910376,
+        "tunnel": 19.638265285230048,
+        "opacity": 1,
+        "clipCss": "inset(10.0465% 22.9038% 10.0465% 24.5987%)",
+        "title": [
+          333.9020080566406,
+          312.46441650390625,
+          125.09939575195312,
+          16.541595458984375
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 47,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 70
+      },
+      "b": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.24514251867743758,
+            0.24514251867743841
+          ],
+          [
+            0.7463622319451416,
+            0.2451425186774387
+          ],
+          [
+            0.7463622319451416,
+            0.7548574813225613
+          ],
+          [
+            0.24514251867743758,
+            0.7548574813225616
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.00361398910376,
+        "tunnel": 19.638265285230048,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          248.1528778076172,
+          306.8987121582031,
+          217.49693298339844,
+          28.759063720703125
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 47,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "c": {
+        "t": 0.84,
+        "age": 2.772,
+        "quad": [
+          [
+            0.015173546433164375,
+            0.015173546433164598
+          ],
+          [
+            0.9686655717812742,
+            0.015173546433164098
+          ],
+          [
+            0.9686655717812742,
+            0.9848264535668358
+          ],
+          [
+            0.015173546433164375,
+            0.9848264535668353
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.00361398910376,
+        "tunnel": 19.638265285230048,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          66.01744842529297,
+          295.0768737792969,
+          413.75390625,
+          54.70965576171875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 47,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "late": {
+        "t": 0.9999,
+        "age": 3.0997950000000003,
+        "quad": [
+          [
+            -1.550248818205091e-9,
+            -1.550249040249696e-9
+          ],
+          [
+            0.9833333348319077,
+            -1.5502494843389059e-9
+          ],
+          [
+            0.9833333348319077,
+            1.0000000015502493
+          ],
+          [
+            -1.550248818205091e-9,
+            1.0000000015502488
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.00361398910376,
+        "tunnel": 19.638265285230048,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          294.296875,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 47,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "end": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502594763461275e-9,
+            -1.550259365323825e-9
+          ],
+          [
+            0.9833333348319175,
+            -1.5502599204353373e-9
+          ],
+          [
+            0.9833333348319175,
+            1.0000000015502597
+          ],
+          [
+            -1.5502594763461275e-9,
+            1.0000000015502593
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.00361398910376,
+        "tunnel": 19.638265285230048,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          294.296875,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 47,
+        "inert": false,
+        "attr": "arrived",
+        "hidden": false,
+        "hostHidden": true,
+        "gl": 0,
+        "layouts": 21
+      },
+      "start": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502594763461275e-9,
+            -1.550259365323825e-9
+          ],
+          [
+            0.9833333348319175,
+            -1.5502599204353373e-9
+          ],
+          [
+            0.9833333348319175,
+            1.0000000015502597
+          ],
+          [
+            -1.5502594763461275e-9,
+            1.0000000015502593
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.00361398910376,
+        "tunnel": 19.638265285230048,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          294.296875,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 47,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "back": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.24514251867743903,
+            0.2451425186774398
+          ],
+          [
+            0.7463622319451404,
+            0.24514251867744008
+          ],
+          [
+            0.7463622319451404,
+            0.7548574813225599
+          ],
+          [
+            0.24514251867743903,
+            0.7548574813225601
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.00361398910376,
+        "tunnel": 19.638265285230048,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          248.1528778076172,
+          306.8987121582031,
+          217.49693298339844,
+          28.759063720703125
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 47,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "away": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.35341162561616796,
+            0.353411625616168
+          ],
+          [
+            0.6417020952377044,
+            0.35341162561616807
+          ],
+          [
+            0.6417020952377044,
+            0.646588374383832
+          ],
+          [
+            0.35341162561616796,
+            0.6465883743838321
+          ]
+        ],
+        "clip": [
+          0.24598710622093803,
+          0.10046482322165935,
+          0.7709620463214348,
+          0.8995351767783406
+        ],
+        "wall": 30.00361398910376,
+        "tunnel": 19.638265285230048,
+        "opacity": 1,
+        "clipCss": "inset(10.0465% 22.9038% 10.0465% 24.5987%)",
+        "title": [
+          333.9020080566406,
+          312.46441650390625,
+          125.09939575195312,
+          16.541595458984375
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 47,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 70
+      }
+    },
+    {
+      "index": 4,
+      "a": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.3388431492974463,
+            0.3388431492974461
+          ],
+          [
+            0.6557849556791355,
+            0.3388431492974461
+          ],
+          [
+            0.6557849556791355,
+            0.6611568507025538
+          ],
+          [
+            0.3388431492974463,
+            0.6611568507025538
+          ]
+        ],
+        "clip": [
+          0.23168939504233016,
+          0.11724271560373081,
+          0.7852597575000427,
+          0.8827572843962691
+        ],
+        "wall": 30.93671181810316,
+        "tunnel": 19.19037832731033,
+        "opacity": 1,
+        "clipCss": "inset(11.7243% 21.474% 11.7243% 23.1689%)",
+        "title": [
+          322.36376953125,
+          333.0184631347656,
+          137.53225708007812,
+          18.185516357421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 70,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 58
+      },
+      "b": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.22878980525939796,
+            0.22878980525939752
+          ],
+          [
+            0.7621698549159162,
+            0.2287898052593974
+          ],
+          [
+            0.7621698549159162,
+            0.7712101947406025
+          ],
+          [
+            0.22878980525939796,
+            0.7712101947406025
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.93671181810316,
+        "tunnel": 19.19037832731033,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          235.20152282714844,
+          341.9086608886719,
+          231.4524383544922,
+          30.6043701171875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 70,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "c": {
+        "t": 0.84,
+        "age": 2.772,
+        "quad": [
+          [
+            0.013437576213928437,
+            0.013437576213928437
+          ],
+          [
+            0.9703436763265357,
+            0.013437576213928437
+          ],
+          [
+            0.9703436763265357,
+            0.9865624237860714
+          ],
+          [
+            0.013437576213928437,
+            0.9865624237860714
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.93671181810316,
+        "tunnel": 19.19037832731033,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          64.6425552368164,
+          359.30511474609375,
+          415.23541259765625,
+          54.905517578125
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 70,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "late": {
+        "t": 0.9999,
+        "age": 3.0997950000000003,
+        "quad": [
+          [
+            -1.5502508166065354e-9,
+            -1.550250705584233e-9
+          ],
+          [
+            0.9833333348319089,
+            -1.550250705584233e-9
+          ],
+          [
+            0.9833333348319089,
+            1.0000000015502506
+          ],
+          [
+            -1.5502508166065354e-9,
+            1.0000000015502506
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.93671181810316,
+        "tunnel": 19.19037832731033,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 70,
+        "inert": true,
+        "attr": "preview",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "end": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502599204353373e-9,
+            -1.5502598094130349e-9
+          ],
+          [
+            0.9833333348319175,
+            -1.5502598094130349e-9
+          ],
+          [
+            0.9833333348319175,
+            1.0000000015502595
+          ],
+          [
+            -1.5502599204353373e-9,
+            1.0000000015502595
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.93671181810316,
+        "tunnel": 19.19037832731033,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 70,
+        "inert": false,
+        "attr": "arrived",
+        "hidden": false,
+        "hostHidden": true,
+        "gl": 0,
+        "layouts": 21
+      },
+      "start": {
+        "t": 1,
+        "age": 3.0999999999999996,
+        "quad": [
+          [
+            -1.5502599204353373e-9,
+            -1.5502598094130349e-9
+          ],
+          [
+            0.9833333348319175,
+            -1.5502598094130349e-9
+          ],
+          [
+            0.9833333348319175,
+            1.0000000015502595
+          ],
+          [
+            -1.5502599204353373e-9,
+            1.0000000015502595
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.93671181810316,
+        "tunnel": 19.19037832731033,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          54,
+          360.390625,
+          426.703125,
+          56.421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 70,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "back": {
+        "t": 0.52,
+        "age": 2.1159999999999997,
+        "quad": [
+          [
+            0.22878980525939924,
+            0.22878980525939885
+          ],
+          [
+            0.7621698549159148,
+            0.22878980525939874
+          ],
+          [
+            0.7621698549159148,
+            0.7712101947406012
+          ],
+          [
+            0.22878980525939924,
+            0.7712101947406012
+          ]
+        ],
+        "clip": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "wall": 30.93671181810316,
+        "tunnel": 19.19037832731033,
+        "opacity": 1,
+        "clipCss": "none",
+        "title": [
+          235.20152282714844,
+          341.9086608886719,
+          231.4524383544922,
+          30.6043701171875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 70,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 21
+      },
+      "away": {
+        "t": 0.1,
+        "age": 1.2550000000000001,
+        "quad": [
+          [
+            0.3388431492974463,
+            0.33884314929744613
+          ],
+          [
+            0.6557849556791355,
+            0.33884314929744613
+          ],
+          [
+            0.6557849556791355,
+            0.6611568507025538
+          ],
+          [
+            0.3388431492974463,
+            0.6611568507025538
+          ]
+        ],
+        "clip": [
+          0.23168939504233027,
+          0.11724271560373092,
+          0.7852597575000426,
+          0.8827572843962691
+        ],
+        "wall": 30.93671181810316,
+        "tunnel": 19.19037832731033,
+        "opacity": 1,
+        "clipCss": "inset(11.7243% 21.474% 11.7243% 23.1689%)",
+        "title": [
+          322.36376953125,
+          333.0184631347656,
+          137.53225708007812,
+          18.185516357421875
+        ],
+        "brand": [
+          37.34375,
+          25.796875,
+          74,
+          44
+        ],
+        "same": true,
+        "nodeCount": 70,
+        "inert": true,
+        "attr": "retreat",
+        "hidden": false,
+        "hostHidden": false,
+        "gl": 0,
+        "layouts": 58
+      }
+    }
+  ],
+  "errors": [],
+  "error": "Error: return preserves the currently scrolled viewport {\"scroll\":{\"y\":550,\"top\":89.0372314453125},\"restored\":{\"y\":550,\"top\":83.99999237060547}}\n    at check (/home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall-browser.cjs:3:158)\n    at /home/runner/work/checkpoint-portfolio/checkpoint-portfolio/dxrkths/tests/portal-wall-browser.cjs:26:470"
+}

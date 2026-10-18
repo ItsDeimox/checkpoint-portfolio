@@ -1,0 +1,319 @@
+{
+  "before": [
+    {
+      "t": 0,
+      "draw": 627.1000000000058,
+      "cpu": 1.7999999999883585,
+      "work": {
+        "LayoutCount": 1,
+        "RecalcStyleCount": 1,
+        "LayoutDuration": 0.00016700000000000048,
+        "RecalcStyleDuration": 0.0010929999999999998,
+        "ScriptDuration": 0.000012000000000000002,
+        "TaskDuration": 0.6335489999999999
+      }
+    },
+    {
+      "t": 0.05,
+      "draw": 5.5,
+      "cpu": 4.80000000000291,
+      "work": {
+        "LayoutCount": 1,
+        "RecalcStyleCount": 5,
+        "LayoutDuration": 0.0002009999999999998,
+        "RecalcStyleDuration": 0.0069359999999999995,
+        "ScriptDuration": 0,
+        "TaskDuration": 1.6118219999999992
+      }
+    },
+    {
+      "t": 0.25,
+      "draw": 7.80000000000291,
+      "cpu": 13,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 16,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.013169,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.030043000000000042
+      }
+    },
+    {
+      "t": 0.45,
+      "draw": 3.5,
+      "cpu": 24.60000000000582,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 16,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.019701999999999997,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.0362019999999994
+      }
+    },
+    {
+      "t": 0.6,
+      "draw": 1,
+      "cpu": 6.69999999999709,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 13,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.0069200000000000025,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.01112699999999922
+      }
+    },
+    {
+      "t": 0.72,
+      "draw": 3.8999999999941792,
+      "cpu": 14.80000000000291,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 11,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.009017999999999998,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.061353000000000435
+      }
+    },
+    {
+      "t": 0.82,
+      "draw": 0.6000000000058208,
+      "cpu": 4.099999999991269,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 8,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.0044360000000000024,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.008154000000000217
+      }
+    },
+    {
+      "t": 0.88,
+      "draw": 4,
+      "cpu": 8.5,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 7,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.007888000000000006,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.01533600000000046
+      }
+    },
+    {
+      "t": 0.93,
+      "draw": 0.8000000000029104,
+      "cpu": 3.3999999999941792,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 5,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.004889999999999992,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.008044000000000828
+      }
+    },
+    {
+      "t": 0.97,
+      "draw": 1,
+      "cpu": 1.8999999999941792,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 5,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.002688999999999997,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.005673999999999957
+      }
+    },
+    {
+      "t": 0.99,
+      "draw": 2.6999999999970896,
+      "cpu": 1.8000000000029104,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 3,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.002264000000000002,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.008563000000000542
+      }
+    },
+    {
+      "t": 1,
+      "draw": 0.09999999999126885,
+      "cpu": 4.19999999999709,
+      "work": {
+        "LayoutCount": 2,
+        "RecalcStyleCount": 8,
+        "LayoutDuration": 0.00032800000000000017,
+        "RecalcStyleDuration": 0.002828999999999998,
+        "ScriptDuration": 0.0005929999999998437,
+        "TaskDuration": 0.008556999999999704
+      }
+    }
+  ],
+  "after": [
+    {
+      "t": 0,
+      "draw": 7.100000000005821,
+      "cpu": 6.899999999994179,
+      "work": {
+        "LayoutCount": 2,
+        "RecalcStyleCount": 3,
+        "LayoutDuration": 0.00034,
+        "RecalcStyleDuration": 0.0023369999999999997,
+        "ScriptDuration": 0.35244000000000003,
+        "TaskDuration": 1.594912
+      }
+    },
+    {
+      "t": 0.05,
+      "draw": 3.7999999999883585,
+      "cpu": 0.5,
+      "work": {
+        "LayoutCount": 1,
+        "RecalcStyleCount": 2,
+        "LayoutDuration": 0.0001760000000000008,
+        "RecalcStyleDuration": 0.004445999999999999,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.018517000000000117
+      }
+    },
+    {
+      "t": 0.25,
+      "draw": 1,
+      "cpu": 1,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 2,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.0025520000000000004,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.007727999999999957
+      }
+    },
+    {
+      "t": 0.45,
+      "draw": 5.399999999994179,
+      "cpu": 1.1999999999970896,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 2,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.00033299999999999996,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.010327999999999893
+      }
+    },
+    {
+      "t": 0.6,
+      "draw": 0.8999999999941792,
+      "cpu": 0.5,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 1,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.00022599999999999877,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.0030040000000000067
+      }
+    },
+    {
+      "t": 0.72,
+      "draw": 0.6999999999970896,
+      "cpu": 0.5999999999912689,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 1,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.0002399999999999989,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.0031890000000001084
+      }
+    },
+    {
+      "t": 0.82,
+      "draw": 0.8999999999941792,
+      "cpu": 0.3000000000029104,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 1,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.00023199999999999957,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.003761999999999821
+      }
+    },
+    {
+      "t": 0.88,
+      "draw": 0.8000000000029104,
+      "cpu": 0.39999999999417923,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 2,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.00030699999999999825,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.007168000000000063
+      }
+    },
+    {
+      "t": 0.93,
+      "draw": 5.599999999991269,
+      "cpu": 0.40000000000873115,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 1,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.00026500000000000135,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.007334000000000174
+      }
+    },
+    {
+      "t": 0.97,
+      "draw": 0.5999999999912689,
+      "cpu": 0.19999999999708962,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 1,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.0002349999999999991,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.0020560000000000578
+      }
+    },
+    {
+      "t": 0.99,
+      "draw": 1.1999999999970896,
+      "cpu": 0.6999999999970896,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 1,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.0002139999999999989,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.0045280000000000875
+      }
+    },
+    {
+      "t": 1,
+      "draw": 0,
+      "cpu": 3.3000000000029104,
+      "work": {
+        "LayoutCount": 2,
+        "RecalcStyleCount": 6,
+        "LayoutDuration": 0.0003109999999999988,
+        "RecalcStyleDuration": 0.0019340000000000017,
+        "ScriptDuration": 0.0005150000000000432,
+        "TaskDuration": 0.0061670000000000336
+      }
+    }
+  ],
+  "errors": []
+}
