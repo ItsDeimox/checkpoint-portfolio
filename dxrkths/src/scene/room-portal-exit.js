@@ -16,7 +16,7 @@ export function projectPortalExit(camera,basis,finalPose,viewport={}){
  const exitDepth=finalDepth+distance;
  // Leave breathing room in front of the destination: the camera exits the
  // corridor before it finishes approaching the wall.
- const tunnelEndDepth=Math.max(5,finalDepth-distance*.48);
+ const tunnelEndDepth=Math.max(5,finalDepth-distance*.12);
  const exitOffset=-halfWidth*(1-ratio),exitHalf=[halfWidth*ratio,halfHeight];
  const center=basis.center.clone().addScaledVector(basis.forward,exitDepth).addScaledVector(basis.right,exitOffset);
  camera.updateMatrixWorld(true);

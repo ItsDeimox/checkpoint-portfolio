@@ -1,0 +1,127 @@
+{
+  "baseline": "7ee85756dbf07a98cfe3213775c66d83503376f6",
+  "runtimeAndTestFiles": [
+    {
+      "path": "dxrkths/docs/PORTAL-WALL-R21.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b5645d5c6bbb93428a26f48697708c1a1049bb8d"
+    },
+    {
+      "path": "dxrkths/docs/portal-wall-r21/forward-sequence.webp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fcda957be229205014d94294ff255f2d5444ece9"
+    },
+    {
+      "path": "dxrkths/docs/portal-wall-r21/return-wall.webp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f66db21ba8d2120d9e68eacd268a757d816c27a6"
+    },
+    {
+      "path": "dxrkths/docs/portal-wall-r21/validation.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc409ef091d271056616ff3442dc7df88a7adc87"
+    },
+    {
+      "path": "dxrkths/src/scene/room-portal-exit.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fdd9031edaf2491122521a686c7cf04379ea14d6"
+    },
+    {
+      "path": "dxrkths/src/scene/room-portal-scene.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "afb3306be45e50abb5eff2887c6ca96aebcf2f9d"
+    },
+    {
+      "path": "dxrkths/src/scene/room-portal-shader.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ee56074fdd7a74d710df99d4c46a24b97bdc516"
+    },
+    {
+      "path": "dxrkths/src/scene/room-portal.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "16f41dd1cbf4dc79136dfa694c289f914a89174e"
+    },
+    {
+      "path": "dxrkths/src/scene/room-scene.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5e7c3f0a835fce00754332b711df36b5d085eaf"
+    },
+    {
+      "path": "dxrkths/src/styles-sections.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "90c39e47bd1b35e46a76530d77937b0adcefb49b"
+    },
+    {
+      "path": "dxrkths/src/ui/portal-arrival.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0cdc1a624b2c9f8b4898756df0f00cdaf82273f"
+    },
+    {
+      "path": "dxrkths/src/ui/room-section-routes.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "43101ab8572e7eef8fc77e4d490d7fadb34c350d"
+    },
+    {
+      "path": "dxrkths/tests/entrypoints.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "487de7bac5e330a6b5e0c0c89961c252b8dbc417"
+    },
+    {
+      "path": "dxrkths/tests/portal-arrival.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f7568e2ba9534cf1243e9e8dab583a822e3a5705"
+    },
+    {
+      "path": "dxrkths/tests/portal-end-plane.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3435efff1297f9ee1caab92dc4525b5b0296249"
+    },
+    {
+      "path": "dxrkths/tests/portal-wall-browser.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c1b3ad499c84903b42eecb2641ec487404a1b1bd"
+    },
+    {
+      "path": "dxrkths/tests/portal-wall.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b7f8748710f9a8cbfd7e80e3e6b9cf347dbb2196"
+    },
+    {
+      "path": "dxrkths/tests/room-portal-effects.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9dffacaa75ba4c44ca065d2631b23ef501b22905"
+    },
+    {
+      "path": "dxrkths/tests/room-portal-return.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ef96cb0c059cda53700089216e989bbdbcde744"
+    },
+    {
+      "path": "dxrkths/tools/build.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4ed99209528a40a87121b17649f36d62b44b0c9"
+    }
+  ],
+  "cpuTests": 304,
+  "browserChecks": 62
+}
