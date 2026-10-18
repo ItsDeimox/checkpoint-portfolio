@@ -1,0 +1,37 @@
+{
+  "validatedAt": "2026-10-18T05:11:17.639847+00:00",
+  "baseline": "7ee85756dbf07a98cfe3213775c66d83503376f6",
+  "recoveredImplementation": "e0ca87ce19d9411262b791fe798eb3f8075e840b",
+  "buildVersion": "dxt-showroom-r21-wall",
+  "build": {
+    "command": "npm run build",
+    "exitCode": 0,
+    "tests": 310,
+    "passed": 310,
+    "failed": 0,
+    "runtimeFiles": 61,
+    "bundleSha256": "7cb6a4e6987eeb85ab1f96bce82d4ee1c5100da38ac0b19a2f19ebd5a6a9f48f"
+  },
+  "nativeShaders": {
+    "report": "release-glsl.json",
+    "compiledAndLinked": 23,
+    "errors": 0,
+    "scope": "Compile and link only; no rendered frames or FPS measurement."
+  },
+  "browser": {
+    "fresh3DRender": false,
+    "limitation": "Current cloud browser reports GL_VENDOR=Disabled and GL_RENDERER=Disabled; it cannot create WebGL. Its network cannot reach the local preview server.",
+    "historicalChecks": 62,
+    "historicalReport": "validation.json",
+    "historicalScope": "Recovered R21 wall and reverse-flight implementation, before final approach/startup fixes. Historical images are retained as historical evidence."
+  },
+  "regressions": [
+    "Page visible during approach for all five destinations",
+    "Closed and partially open doorway clipping",
+    "Matching approach and retreat projection/opacity",
+    "DOM opacity at zero flight progress",
+    "Warm draw behind a parked page and camera restoration",
+    "One preparation owner per initialization/context-restoration cycle",
+    "AbortSignal propagation while waiting for driver work"
+  ]
+}

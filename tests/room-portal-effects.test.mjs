@@ -72,13 +72,19 @@ test('optics attachment is idempotent, idle passes stay off, and cancellation re
  portal.dispose();
 });
 
-test('interior shader preparation uses the real HDR scene target and restores renderer state',async()=>{
- const target={name:'scene-linear'},prior={name:'previous'},scene={name:'portal'};let active=prior,captured;
- const renderer={getRenderTarget:()=>active,setRenderTarget:x=>{active=x;},async compileAsync(s){captured={target:active,scene:s};}};
- const owner={fullScene:scene,view:{renderer,camera:{},optics:{sceneTarget:target}}};
- await BannerPortal.prototype.prepare.call(owner);
- assert.equal(captured.target,target);assert.equal(captured.scene,scene);assert.equal(active,prior);
- renderer.compileAsync=async()=>{throw Error('lost context');};await assert.rejects(BannerPortal.prototype.prepare.call(owner),/lost context/);assert.equal(active,prior);
+test('interior shader preparation warms real geometry in its HDR target and restores state',async()=>{
+ const target={name:'scene-linear'},prior={name:'previous'},viewport=new T.Vector4(2,3,80,60),scissor=new T.Vector4(4,5,20,30);let active=prior,captured,draws=0,clip=false;
+ const camera=new T.PerspectiveCamera(48,1.5,.08,100),rig=new RoomCamera(camera,900);
+ const panels=createFixedPanelLayout().map(p=>({...p,material:new T.ShaderMaterial({uniforms:{artwork:{value:null},projection:{value:new T.Matrix3()}},fragmentShader:'void main(){vec3 c=vec3(0.);gl_FragColor=vec4(c,1.);}'})}));
+ const renderer={getRenderTarget:()=>active,setRenderTarget:x=>{active=x;},getViewport:v=>v.copy(viewport),getScissor:v=>v.copy(scissor),getScissorTest:()=>clip,
+  setViewport(...a){if(a[0]?.isVector4)viewport.copy(a[0]);else viewport.set(...a);},setScissor(...a){if(a[0]?.isVector4)scissor.copy(a[0]);else scissor.set(...a);},setScissorTest:v=>{clip=v;},
+  async compileAsync(scene){captured={target:active,scene};},render(){draws++;},getContext:()=>({})};
+ const optics={sceneTarget:target,composer:{passes:[],insertPass(p){this.passes.push(p);}},bloomPass:{},resetHistory(){}};
+ const view={renderer,camera,cameraRig:rig,panels,scene:new T.Scene(),optics};const owner=new BannerPortal(view);
+ await owner.prepare();assert.equal(captured.target,target);assert.equal(captured.scene,owner.fullScene);assert.equal(active,prior);assert.equal(draws,1);assert.equal(owner.prepared,true);
+ assert.deepEqual(viewport.toArray(),[2,3,80,60]);assert.deepEqual(scissor.toArray(),[4,5,20,30]);assert.equal(clip,false);
+ renderer.compileAsync=async()=>{throw Error('lost context');};await assert.rejects(owner.prepare(),/lost context/);assert.equal(active,prior);assert.deepEqual(viewport.toArray(),[2,3,80,60]);
+ owner.dispose();owner.shutter.dispose();panels.forEach(p=>p.material.dispose());
 });
 test('temporary portal light/bloom/optical overrides restore even when rendering fails',async()=>{
  const {HeroScene}=await import('../src/scene/room-portal-scene.js');

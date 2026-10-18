@@ -4,14 +4,14 @@ import {BannerPortal} from './room-portal.js';
 import {portalImpactEnvelope} from './room-portal-effects.js';
 export class HeroScene extends ShowroomScene {
  buildLights(){super.buildLights();this.bannerPortal=new BannerPortal(this);}
- async prepareEnvironment(signal){await super.prepareEnvironment(signal);signal.throwIfAborted();await this.bannerPortal.prepare();}
+
  enterPortal(index,onComplete,onProgress,getArrivalViewport){return this.bannerPortal.enter(index,onComplete,onProgress,getArrivalViewport);}
- returnPortal(index,onComplete){
+ returnPortal(index,onComplete,onProgress,getArrivalViewport){
   if(!this.ready||this.disposed||this.lost||this.reduced.matches)return false;
   const parked=this.pageActive;this.sleep();this.pageActive=true;this.resize();
-  if(!this.bannerPortal.returnToShowroom(index,onComplete)){this.pageActive=parked;return false;}
+  if(!this.bannerPortal.returnToShowroom(index,onComplete,onProgress,getArrivalViewport)){this.pageActive=parked;return false;}
   this.pageActive=false;
-  // Paint the dark end of the corridor before the outgoing HTML page fades away.
+  // The page remains on the world wall as the camera retreats into the tunnel.
   this.render(1/60,0);this.wake();return true;
  }
  parkSection(){this.pageActive=true;this.sleep();this.brandLogo?.restoreFallback();}
@@ -23,6 +23,9 @@ export class HeroScene extends ShowroomScene {
   super.frame(now);
   if(this.pageActive)this.sleep();
  }
+ updatePanels(dt){if(this.bannerPortal?.active&&this.bannerPortal.interior)return false;return super.updatePanels(dt);}
+ updateAtmosphere(){if(!this.bannerPortal?.active||!this.bannerPortal.interior)super.updateAtmosphere();}
+ updateLinkProjection(){if(!this.bannerPortal?.active)super.updateLinkProjection();}
  resize(){super.resize();this.bannerPortal?.attachOptics(this.optics);if(this.bannerPortal?.active)this.bannerPortal.update(0);}
  render(dt,motion){
   if(this.pageActive)return;

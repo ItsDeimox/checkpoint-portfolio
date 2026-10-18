@@ -130,6 +130,7 @@ export class HeroScene {
     this.updateAtmosphere();
     this.renderer.shadowMap.needsUpdate = true;
     this.render(1 / 60, 0);
+    await this.bannerPortal?.prepareScene(signal);
     // First geometry upload and shadow draw stay behind the loading state.
     await yieldToBrowser(signal);
     this.ready = true;
@@ -275,6 +276,7 @@ export class HeroScene {
     await this.preparation;
     this.renderer.shadowMap.needsUpdate = true;
     this.render(1 / 60, 0);
+    await this.bannerPortal?.prepareScene(signal);
     await yieldToBrowser(signal);
     this.ready = true;
     this.host.classList.add('scene-ready');

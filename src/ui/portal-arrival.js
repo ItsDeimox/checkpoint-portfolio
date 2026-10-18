@@ -1,5 +1,6 @@
-/** Only the tiny far-end reveal fades in. There is no timed scale or screen-wide
- * crossfade: all magnification is provided by the camera's projected world quad.
+/** Compatibility for progress-only callers. The physical portal supplies its
+ * opening opacity directly, including during approach. All magnification is
+ * provided by the camera's projected world quad.
  */
 export function arrivalVisual(progress){
  const p=Math.max(0,Math.min(1,Number.isFinite(progress)?progress:0));
@@ -29,4 +30,12 @@ export function destinationGutter(document){
  probe.style.cssText='position:absolute;left:-10000px;top:0;width:100px;height:100px;overflow:scroll;visibility:hidden;pointer-events:none;border:0;padding:0;';
  document.body.append(probe);
  const width=Math.max(0,(probe.offsetWidth||0)-(probe.clientWidth||0));probe.remove();return width;
+}
+
+/** Tunnel occlusion in the same source coordinate system as arrivalTransform. */
+export function arrivalClip(frame){
+ if(!frame?.clip)return 'none';
+ const [left,top,right,bottom]=frame.clip;
+ if(left===0&&top===0&&right===1&&bottom===1)return 'none';
+ return `inset(${top*100}% ${(1-right)*100}% ${(1-bottom)*100}% ${left*100}%)`;
 }

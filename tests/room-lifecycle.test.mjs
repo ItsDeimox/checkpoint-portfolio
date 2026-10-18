@@ -17,7 +17,7 @@ import * as turntable from '../src/scene/room-turntable.js';
 import * as lighting from '../src/scene/room-lighting.js';
 import { normalizeVisualSettings } from '../src/scene/room-visual-settings.js';
 import { elapsedFrameTime } from '../src/core.js';
-import { waitForAsset } from '../src/scene/room-startup.js';
+import { waitForAsset, prepareRoomRenderer } from '../src/scene/room-startup.js';
 
 // Execute the actual lifecycle with Three's CPU objects and a GPU-free renderer.
 // Only external work is controlled: network, shader completion and browser frames.
@@ -76,6 +76,8 @@ function harness(config = {}) {
     getRenderTarget() { return this.target; }
     setRenderTarget(target) { this.target = target; }
     setClearColor() {}
+    initRenderTarget() {}
+    initTexture() {}
     setPixelRatio() {}
     setSize(width, height) { canvas.width = width; canvas.height = height; }
     compileAsync() { events.push('environment-compile'); return config.compile?.(++compileNumber) ?? Promise.resolve(); }
@@ -87,7 +89,10 @@ function harness(config = {}) {
     dispose() {}
   }
   class Optics {
-    constructor(renderer) { this.renderer = renderer; this.composer = {}; this.sceneTarget = new Three.WebGLRenderTarget(); }
+    constructor(renderer) {
+      this.renderer = renderer; this.sceneTarget = new Three.WebGLRenderTarget();
+      this.composer = { readBuffer: this.sceneTarget, writeBuffer: this.sceneTarget };
+    }
     attachTurntable(root) { this.turntableRoot = root; }
     setQuality() {}
     setVisualSettings(values) { this.visualSettings = normalizeVisualSettings(values, this.visualSettings); }
@@ -197,6 +202,67 @@ test('initialization primes the real pipeline before marking the persistent scen
     assert.ok(events.indexOf(render) < events.indexOf('ready'));
     assert.equal(events.filter(event => event === 'renderer-created').length, 1);
   } finally { await instance.dispose(); }
+});
+
+test('initialization and restoration each await one portal preparation with their current signal', async () => {
+  const phases = Array.from({ length: 2 }, () => ({ started: deferred(), finish: deferred() }));
+  const preparations = [], scenePreparations = [];
+  const { instance, events, canvas } = harness({
+    async prepare(view, options) {
+      view.bannerPortal ??= {
+        async prepare(signal) {
+          preparations.push({ signal, optics: view.optics, ready: view.ready });
+          events.push('portal-preparation');
+        },
+        async prepareScene(signal) {
+          const phase = phases[scenePreparations.length];
+          scenePreparations.push({ signal, ready: view.ready });
+          events.push('portal-scene-start');
+          phase.started.resolve();
+          await phase.finish.promise;
+          events.push('portal-scene-finish');
+        },
+      };
+      await prepareRoomRenderer(view, options);
+    },
+  });
+  try {
+    for (let cycle = 0; cycle < phases.length; cycle++) {
+      if (cycle) {
+        canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+        canvas.dispatchEvent(new Event('webglcontextrestored'));
+      }
+      const completion = cycle ? instance.restoration : instance.readyPromise;
+      const phase = phases[cycle];
+      assert.equal(await Promise.race([
+        phase.started.promise.then(() => 'portal-scene'),
+        completion.then(() => 'ready'),
+      ]), 'portal-scene', 'Readiness must wait for the portal scene warm-up');
+      assert.equal(preparations.length, cycle + 1, 'The portal was prepared more than once in one startup cycle');
+      assert.equal(preparations[cycle].signal, instance.workController.signal);
+      assert.equal(preparations[cycle].optics, instance.optics);
+      assert.ok(preparations[cycle].optics.sceneTarget);
+      assert.equal(preparations[cycle].ready, false);
+      assert.equal(scenePreparations[cycle].signal, instance.workController.signal);
+      assert.equal(scenePreparations[cycle].ready, false);
+      assert.equal(instance.ready, false);
+      assert.equal(events.filter(event => event === 'ready').length, cycle);
+      const start = events.lastIndexOf('portal-preparation');
+      const render = events.findIndex((event, index) => index > start && event?.render);
+      assert.ok(render > start);
+      assert.ok(render < events.lastIndexOf('portal-scene-start'));
+      phase.finish.resolve();
+      await completion;
+      assert.equal(instance.ready, true);
+      assert.ok(events.lastIndexOf('portal-scene-finish') < events.lastIndexOf('ready'));
+    }
+    assert.notEqual(preparations[0].signal, preparations[1].signal);
+    assert.equal(preparations[0].signal.aborted, true);
+    assert.equal(preparations[1].signal.aborted, false);
+  } finally {
+    phases.forEach(phase => phase.finish.resolve());
+    await instance.dispose();
+  }
 });
 
 test('navigation requests during the initial paint cannot access an unbuilt scene', async () => {

@@ -157,3 +157,40 @@ test('abort after output compilation prevents final AA and never reports a ready
   assert.ok(!progress.some(event => event.stage === 'ready'));
   assert.equal(view.renderer.getRenderTarget(), original);
 });
+
+test('portal preparation receives cancellation and settles its driver work before startup restores state', async () => {
+  const { view, original } = fixture(), controller = new AbortController(), progress = [];
+  let enterPortal, finishDriver, receivedSignal, settled = false, portalDraws = 0;
+  const entered = new Promise(resolve => { enterPortal = resolve; });
+  const driver = new Promise(resolve => { finishDriver = resolve; });
+  view.bannerPortal = {
+    async prepare(signal) {
+      receivedSignal = signal;
+      enterPortal();
+      await driver;
+      signal?.throwIfAborted();
+      portalDraws++;
+    },
+  };
+  const preparation = prepareRoomRenderer(view, {
+    signal: controller.signal,
+    onProgress: event => progress.push(event),
+  });
+  preparation.then(() => { settled = true; }, () => { settled = true; });
+  try {
+    await entered;
+    assert.equal(receivedSignal, controller.signal);
+    const reason = new DOMException('Context lost during portal compilation', 'AbortError');
+    controller.abort(reason);
+    await Promise.resolve();
+    assert.equal(settled, false, 'Startup must not abandon in-flight driver work');
+    finishDriver();
+    await assert.rejects(preparation, error => error === reason);
+    assert.equal(portalDraws, 0);
+    assert.ok(!progress.some(event => event.stage === 'ready'));
+    assert.equal(view.renderer.getRenderTarget(), original);
+  } finally {
+    finishDriver();
+    await preparation.catch(() => {});
+  }
+});

@@ -1,0 +1,165 @@
+{
+  "checkedAt": "2026-10-18T05:10:22.088326+00:00",
+  "threeRevision": "180",
+  "method": "Existing NativeCompiler via installed EGL/GLES; shader compile/link only; zero draw calls and no browser.",
+  "scope": "Existing room shader suite plus all five actual fogged/holographic portal banners, BannerPortal.fullMaterial, vapor, sparks, pressure wave and shutter.",
+  "materialExtraction": "Exact ShaderMaterial constructor expression from room-environment.js; actual roomVertex/displayFragment; actual configurePanelHologram and BannerPortal constructors.",
+  "limitations": "Reconstructed Three ShaderMaterial prefixes as in existing validator; does not validate browser composition, framebuffer behavior, appearance, animation smoothness or device GPU performance.",
+  "projectSourceSha256": {
+    "src/scene/room-environment.js": "6db3aad9c51c85fcba979ff4af8ab245033955bfcbc00a6a69fca996d9887390",
+    "src/scene/room-shaders.js": "70dc4e699cbf881c79002b1fbff8070cc75c5abe9d7db283c70f594601e17d67",
+    "src/scene/room-hologram.js": "68c1f636dd1f2109df24af124545c055ac3f7291fc9db3efc6fedd88baac741e",
+    "src/scene/room-portal.js": "13c1be7dfeb4e50657cf6cbc876100d53a14b0f8e4abc03950ec6e99f2d35320",
+    "src/scene/room-portal-shader.js": "6c5cbda385ac0274232d479d2d4786cc15aa2e14f8b73f43227e0ce8c852ade4",
+    "src/scene/room-portal-effects.js": "104513787696051278444f1e6ae3e355fe2aef1b7065669a8356d22def8a4bf5",
+    "src/scene/room-portal-optics.js": "cdf53964399e929b4a63a87cf8944d3196046ab6fecdc7343452a2fb7240e6f5",
+    "src/scene/room-optics.js": "9673b5ec0ed202ca169dd747c14de5ff7954f6c592fdadff9d532a6c5cb700d3",
+    "tools/validate-room-glsl.py": "ba82d3a610e0e723fb4c61ffe62146524e402531623c7e97a374a613fb17ed5e"
+  },
+  "compiler": {
+    "eglVersion": "1.5",
+    "shadingLanguage": "OpenGL ES GLSL ES 3.20",
+    "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)"
+  },
+  "checks": [
+    {
+      "shader": "display",
+      "status": "compiled_and_linked",
+      "sourceSha256": "886b179ed6923802ce2ecd73c0a16c720820cb3748d299038447ad710884bd4b",
+      "errors": []
+    },
+    {
+      "shader": "floor",
+      "status": "compiled_and_linked",
+      "sourceSha256": "42cf0669583f603c54306a295ea1b6d930134c976ccea3e20e56118a075fd4b9",
+      "errors": []
+    },
+    {
+      "shader": "smoke",
+      "status": "compiled_and_linked",
+      "sourceSha256": "dcf4b15bcc3aa126514df672485b184c085df47ea79e299d34efa148467c84da",
+      "errors": []
+    },
+    {
+      "shader": "beam",
+      "status": "compiled_and_linked",
+      "sourceSha256": "946f1ecf0d0cf4f56101c118fa3cb041aa9c7525dc40c0f4c8d8edc1897ac240",
+      "errors": []
+    },
+    {
+      "shader": "contact",
+      "status": "compiled_and_linked",
+      "sourceSha256": "74054b2d74128e574ebb0573c5bab228b99e16e7227e32e08272c047afabf9c0",
+      "errors": []
+    },
+    {
+      "shader": "DXT.DepthLens",
+      "status": "compiled_and_linked",
+      "sourceSha256": "5cf0e7d432e8f8eac53187979f8bc52c4a4aa39bbd0b0400d1c8c3f94ef74bd4",
+      "errors": []
+    },
+    {
+      "shader": "DXT.LensGrade",
+      "status": "compiled_and_linked",
+      "sourceSha256": "6571ed9b333b6eb33ef2453cddc6fc1c3c9ae9061b0df1637875db02d0aa04d9",
+      "errors": []
+    },
+    {
+      "shader": "DXT.FXAA",
+      "status": "compiled_and_linked",
+      "sourceSha256": "354ab61f5bf99f9a9d3c587a8aa1935a437379b69ffda832c6ad64b0b3bb95f7",
+      "errors": []
+    },
+    {
+      "shader": "DXT.SoftThreshold",
+      "status": "compiled_and_linked",
+      "sourceSha256": "75c6c0b2c170758931bcb337a46dc76d695638887894e44bfabf14d4496753cc",
+      "errors": []
+    },
+    {
+      "shader": "DXT.SmallGaussian",
+      "status": "compiled_and_linked",
+      "sourceSha256": "83cd9a69842aa2f93d04d493a2ec9819ff41d013f08e06b768dc3395d1c00a0a",
+      "errors": []
+    },
+    {
+      "shader": "DXT.HorizontalStreak",
+      "status": "compiled_and_linked",
+      "sourceSha256": "9f6ddfe5800759b9ba55e1efe231ae9a5fd83b46fd419e3ceec87f9237094405",
+      "errors": []
+    },
+    {
+      "shader": "OutputPass.ACES.sRGB",
+      "status": "compiled_and_linked",
+      "sourceSha256": "ca1630808a34c6a2c36aeebf67b5ae2833612d50ee194211995a675f761af355",
+      "errors": []
+    },
+    {
+      "shader": "Weathered.MeshStandard.Fog.Lights.Env.Shadows",
+      "status": "compiled_and_linked",
+      "sourceSha256": "73fb7e7167923843aa1ff091a7a52e88ec5dcdd31895d162ed1d9b187ba15656",
+      "errors": []
+    },
+    {
+      "shader": "DXT.Banner.0.Hologram.Portal.Fog",
+      "status": "compiled_and_linked",
+      "sourceSha256": "c1e1dcf7283afa3cc06ffb1804a0962d671cd56b1a5fe929bb3abbbe509c514c",
+      "errors": []
+    },
+    {
+      "shader": "DXT.Banner.1.Hologram.Portal.Fog",
+      "status": "compiled_and_linked",
+      "sourceSha256": "c1e1dcf7283afa3cc06ffb1804a0962d671cd56b1a5fe929bb3abbbe509c514c",
+      "errors": []
+    },
+    {
+      "shader": "DXT.Banner.2.Hologram.Portal.Fog",
+      "status": "compiled_and_linked",
+      "sourceSha256": "c1e1dcf7283afa3cc06ffb1804a0962d671cd56b1a5fe929bb3abbbe509c514c",
+      "errors": []
+    },
+    {
+      "shader": "DXT.Banner.3.Hologram.Portal.Fog",
+      "status": "compiled_and_linked",
+      "sourceSha256": "c1e1dcf7283afa3cc06ffb1804a0962d671cd56b1a5fe929bb3abbbe509c514c",
+      "errors": []
+    },
+    {
+      "shader": "DXT.Banner.4.Hologram.Portal.Fog",
+      "status": "compiled_and_linked",
+      "sourceSha256": "c1e1dcf7283afa3cc06ffb1804a0962d671cd56b1a5fe929bb3abbbe509c514c",
+      "errors": []
+    },
+    {
+      "shader": "DXT.PortalInterior",
+      "status": "compiled_and_linked",
+      "sourceSha256": "5dba1df7bd90ebcdb6295dce336d48888f2239eddab61f1e2d67f0c548f22dd4",
+      "errors": []
+    },
+    {
+      "shader": "DXT.PortalVapor",
+      "status": "compiled_and_linked",
+      "sourceSha256": "422a0b3c1118f0ba955a4230e9c4bbd1e46b1949642f3a9888ffb5c9752e3a9a",
+      "errors": []
+    },
+    {
+      "shader": "DXT.PortalSparks",
+      "status": "compiled_and_linked",
+      "sourceSha256": "29d7ccb870e65a5cc6793318e11dacc4f07d56ad02e6ec131b7ed81f94bf0689",
+      "errors": []
+    },
+    {
+      "shader": "DXT.PortalPressureWave",
+      "status": "compiled_and_linked",
+      "sourceSha256": "53a07090c746da66126cb14ecfe2d4ddc44b76ad0b1786d814b9e8181dfc3202",
+      "errors": []
+    },
+    {
+      "shader": "DXT.PortalShutter",
+      "status": "compiled_and_linked",
+      "sourceSha256": "99b748d6bf00b8afb452d1970ab0cf88e966c8769d5fea53b0ae8a911d818155",
+      "errors": []
+    }
+  ],
+  "status": "passed"
+}

@@ -20,11 +20,11 @@ test('all five doorways reverse across the plane exactly once and restore the or
  for(const [w,h] of [[960,640],[390,844]])for(let i=0;i<5;i++){
   const f=fixture(w,h),v=f.camera;f.cameraRig.pointLook(.6,-.3);advance(f,2);
   const home={p:v.position.clone(),q:v.quaternion.clone(),fov:v.fov};let arrivals=0,returns=0;
-  f.portal.enter(i,()=>arrivals++);advance(f,3);assert.equal(arrivals,1);
+  f.portal.enter(i,()=>arrivals++);advance(f,A+F+.1);assert.equal(arrivals,1);
   assert.equal(f.portal.returnToShowroom(i,()=>returns++),true);
   assert.equal(f.portal.returning,true);assert.ok(f.portal.basis.toLocal(v.position).z>20);
   let last=23,crossings=0;
-  for(let n=0;n<110;n++){f.cameraRig.update(1/60);const z=f.portal.basis.toLocal(v.position).z;if(last>0&&z<=0)crossings++;if(f.portal.stage==='flight')assert.ok(z<=last+1e-6);last=z;}
+  for(let n=0;n<Math.ceil((F+.2)*60);n++){f.cameraRig.update(1/60);const z=f.portal.basis.toLocal(v.position).z;if(last>0&&z<=0)crossings++;if(f.portal.stage==='flight')assert.ok(z<=last+1e-6);last=z;}
   advance(f,1.5);assert.equal(crossings,1);assert.equal(returns,1);assert.equal(arrivals,1);
   assert.ok(v.position.distanceTo(home.p)<1e-7);assert.ok(v.quaternion.angleTo(home.q)<1e-7);assert.ok(Math.abs(v.fov-home.fov)<1e-6);
   assert.equal(f.portal.active,false);assert.equal(f.portal.interior,false);assert.equal(f.cameraRig.mode,'overview');
@@ -35,7 +35,7 @@ test('all five doorways reverse across the plane exactly once and restore the or
 test('reverse approach retraces the same Bezier and camera orientation, not a hard reset',()=>{
  const f=fixture();const samples=[];f.portal.enter(4,()=>{});
  for(let i=0;i<=12;i++){if(i)advance(f,A/12);samples.push({p:f.camera.position.clone(),q:f.camera.quaternion.clone(),fov:f.camera.fov});}
- advance(f,2);assert.equal(typeof f.portal.returnToShowroom,'function');f.portal.returnToShowroom(4,()=>{});advance(f,F);
+ advance(f,F+.1);assert.equal(typeof f.portal.returnToShowroom,'function');f.portal.returnToShowroom(4,()=>{});advance(f,F);
  for(let i=0;i<=12;i++){if(i)advance(f,A/12);const s=samples[12-i];assert.ok(f.camera.position.distanceTo(s.p)<1e-5,`reverse sample ${i}`);assert.ok(f.camera.quaternion.angleTo(s.q)<1e-5);}
  dispose(f);
 });
@@ -65,7 +65,7 @@ test('reduced motion, cancellation and disposal cannot deliver a stale reverse c
  }
 });
 function routesFixture({ready=true,reduced=false}={}){
- const element=()=>({hidden:false,inert:false,innerHTML:'',style:{setProperty(){}},classList:{add(){},remove(){}},setAttribute(){},removeAttribute(){},querySelector:()=>null,focus(){},getBoundingClientRect:()=>({top:0})});
+ const element=()=>({hidden:false,inert:false,innerHTML:'',style:{setProperty(){}},classList:{add(){},remove(){}},setAttribute(){},removeAttribute(){},getAttribute:()=>null,querySelector:()=>null,focus(){},getBoundingClientRect:()=>({top:0})});
  const calls=[],scene={ready,reduced:{matches:reduced},returnPortal(index,callback){calls.push({index,callback});return true;},cancelPortal(){},resumeShowroom(){calls.push('resume');},parkSection(){calls.push('park');}};
  const doc={body:element(),defaultView:{scrollTo(){}}},root=element(),host=element(),footer=element(),canvas=element();let phase=ready?'ready':'dormant';
  const routes=new SectionRoutes({document:doc,root,host,footer,canvas,getScene:()=>scene,getPhase:()=>phase,entered:()=>true,setLocation:(i,m)=>calls.push({path:i,mode:m}),onSelect(){},onNeedScene:()=>calls.push('load'),onRefresh(){}});
