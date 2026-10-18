@@ -6,14 +6,22 @@ import {createHash} from 'node:crypto';
 import {build} from 'esbuild';
 
 const PROJECT_ROOT = fileURLToPath(new URL('..', import.meta.url));
-export const BUILD_VERSION = 'dxt-showroom-r21-wall';
+export const BUILD_VERSION = 'dxt-showroom-r22-worlds';
 export const ROOM_ALIASES = Object.freeze(['groups', 'projects', 'about', 'contact', 'berserk']);
 
-// Keep archived source/assets in the repository. Only the persistent room's
-// browser entrypoints and their actual assets belong in the published tree.
+// Only the persistent room's browser entrypoints and real assets are published.
 export const RUNTIME_FILES = Object.freeze([
   'index.html',
   'src/main.js',
+  'src/world-themes.js',
+  'src/pages/world-content.js',
+  'src/pages/world-pages.js',
+  'src/pages/section-pages-base.js',
+  'src/ui/energy-field.js',
+  'src/ui/group-deck.js',
+  'src/ui/world-experience.js',
+  'src/shaders/world-graphics.js',
+  'src/styles-worlds.css',
   'src/pages/section-pages.js',
   'src/pages/berserk-media.js',
   'src/ui/section-media.js',
@@ -66,7 +74,7 @@ export const RUNTIME_FILES = Object.freeze([
   'assets/fonts/FONT-SOURCES.txt',
 ]);
 
-/** Reject missing or legacy browser imports before copying any deployment files. */
+/** Reject missing or legacy browser imports before copying deployment files. */
 export async function validateRuntimeGraph(root = PROJECT_ROOT) {
   const result = await build({
     absWorkingDir: root,
@@ -84,10 +92,9 @@ export async function validateRuntimeGraph(root = PROJECT_ROOT) {
   return inputs;
 }
 
-/** Package an already bundled/tested source tree. Exported for deployment tests. */
+/** Package an already bundled/tested source tree. */
 export async function buildSite({root = PROJECT_ROOT, output = path.join(root, 'dist')} = {}) {
   const runtimeImports = await validateRuntimeGraph(root);
-  // Verify every source first, so a missing asset cannot destroy a prior build.
   await Promise.all(RUNTIME_FILES.map(name => fs.access(path.join(root, name))));
   await fs.rm(output, {recursive: true, force: true});
   await fs.mkdir(output, {recursive: true});
@@ -120,7 +127,7 @@ export async function buildSite({root = PROJECT_ROOT, output = path.join(root, '
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   execFileSync(process.execPath, ['tools/bundle.mjs'], {cwd: PROJECT_ROOT, stdio: 'inherit'});
   const tests = (await fs.readdir(path.join(PROJECT_ROOT, 'tests'))).filter(name => name.endsWith('.test.mjs')).sort();
-  execFileSync(process.execPath, ['--test', ...tests.map(name => `tests/${name}`)], {cwd: PROJECT_ROOT, stdio: 'inherit'});
+  execFileSync(process.execPath, ['--test','--test-reporter=./tools/ci-test-reporter.mjs', ...tests.map(name => `tests/${name}`)], {cwd: PROJECT_ROOT, stdio: 'inherit'});
   const info = await buildSite();
   console.log(`DXT showroom build: ${Object.keys(info.files).length + 1} files, ${info.runtimeImports.length} browser modules, ${info.version}.`);
 }

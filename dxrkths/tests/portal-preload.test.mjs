@@ -66,7 +66,8 @@ test('all five destinations are parsed, decoded, laid out and reused under the l
   assert.equal(await routes.preload(),true);
   assert.equal(routes.pageCache.size,5);
   assert.equal(FakeElement.parses,5,'all templates are built before the visitor can interact');
-  assert.ok(started.some(src=>src.includes('showroom-reference.png')),'SVG artwork must also be decoded');
+  // R22 replaces the photographed reference crop with actual identity artwork.
+  for(const asset of ['icons/dxt.webp','images/avatar.webp','images/pattern-dark.webp','images/revline-pattern.webp','images/frost-card.webp'])assert.ok(started.some(src=>src.includes(asset)),`Page artwork must be decoded: ${asset}`);
   assert.ok(started.some(src=>src.includes('berserk/game-5.webp')),'lazy gallery images must be decoded');
   assert.equal(new Set(started).size,started.length,'preloading should not decode a URL twice');
   assert.ok(fonts.includes('500 64px "Barlow Condensed"'));

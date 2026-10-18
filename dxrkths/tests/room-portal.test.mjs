@@ -51,9 +51,16 @@ test('each destination is a full accessible page with authored links, not an in-
   const html=sections.renderSectionPage(i);
   assert.match(html,/class="section-layout/);assert.match(html,/id="section-title"/);
   assert.match(html,/data-return-showroom/);assert.doesNotMatch(html,/data-room-panel-action|aria-modal|<canvas/);
-  assert.match(html,/rel="noopener noreferrer"/);
+  assert.match(html,/class="section-navigation"/);
+  // Future Projects now has a supplied catalog, but no invented game URLs.
+  // Validate every external link instead of requiring an external link on it.
+  for(const [anchor] of html.matchAll(/<a\b[^>]*href="https?:[^>]*>/g)){
+   assert.match(anchor,/target="_blank"/);assert.match(anchor,/rel="noopener noreferrer"/);
+  }
  }
- assert.match(sections.renderSectionPage(2),/No new projects have been announced/);
+ const future=sections.renderSectionPage(2);
+ assert.match(future,/BERSERK DRIFT: RALLY/);assert.match(future,/Procedural Tiremark generator/);assert.match(future,/FFB System/);
+ assert.doesNotMatch(future,/No new projects have been announced/);
 });
 
 test('resizing an active portal never redirects the camera to the showroom overview',async()=>{

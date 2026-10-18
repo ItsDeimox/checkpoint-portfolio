@@ -1,8 +1,11 @@
 import {BERSERK_MEDIA,galleryIndex} from '../pages/berserk-media.js';
-/** Delegated to the stable destination host. No new renderer or per-route frame loop. */
+import {getSectionExperience} from './world-experience.js';
+/** Delegated to the stable destination host. Native links and gallery controls
+ * remain independent of optional GPU effects and their availability. */
 export class SectionMedia {
  constructor(root){
   this.root=root;this.controller=new AbortController();this.sequence=0;this.current=null;
+  this.experience=getSectionExperience(root);this.experience?.prepare().catch(()=>{});
   const signal=this.controller.signal;
   root.addEventListener('click',event=>{const button=event.target.closest?.('[data-gallery-select],[data-gallery-step]');if(!button)return;const gallery=button.closest('[data-game-gallery]');if(!gallery)return;const index=Number(gallery.dataset.activeIndex||0);this.select(gallery,button.hasAttribute('data-gallery-select')?Number(button.dataset.gallerySelect):index+Number(button.dataset.galleryStep));},{signal});
   root.addEventListener('keydown',event=>{if(!event.target.closest?.('.game-gallery-thumbs'))return;const offset=event.key==='ArrowLeft'?-1:event.key==='ArrowRight'?1:0;if(!offset&&event.key!=='Home'&&event.key!=='End')return;event.preventDefault();const gallery=event.target.closest('[data-game-gallery]'),index=event.key==='Home'?0:event.key==='End'?BERSERK_MEDIA.length-1:Number(gallery.dataset.activeIndex||0)+offset;this.select(gallery,index,true);},{signal});
@@ -19,5 +22,5 @@ export class SectionMedia {
   gallery.querySelector('[data-gallery-count]').textContent=`${String(index+1).padStart(2,'0')} / ${String(BERSERK_MEDIA.length).padStart(2,'0')}`;
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches)this.animation=image.animate([{opacity:.5,transform:'scale(1.008)'},{opacity:1,transform:'none'}],{duration:240,easing:'ease-out'});
  }
- dispose(){this.sequence++;this.animation?.cancel();this.controller.abort();}
+ dispose(){this.sequence++;this.animation?.cancel();this.experience?.dispose();this.controller.abort();}
 }

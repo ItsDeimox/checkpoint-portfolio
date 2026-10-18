@@ -4,6 +4,14 @@ export class MusicLights {
  constructor(view){
   this.view=view;this.lights=[];this.materials=[];this.active=false;
   const seen=new Set();
+  // The themed showroom starts white. Select its known practicals, rather than
+  // assuming that reactive sources must still be red at construction time.
+  if(view.worldTheme){
+   this.lights=view.worldTheme.lights.map(({light})=>({light,base:light.intensity}));
+   const practicals=[...view.worldTheme.practicals,...view.worldTheme.panelTints.flatMap(entry=>entry.strips)];
+   for(const {material} of practicals){if(seen.has(material))continue;seen.add(material);this.materials.push({material,base:material.color.clone()});}
+   return;
+  }
   view.scene.traverse(object=>{
    const color=object.color;
    if(object.isLight&&object!==view.screenLight&&color?.r>color.g*3&&color.r>color.b*2)this.lights.push({light:object,base:object.intensity});
