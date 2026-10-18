@@ -1,13 +1,13 @@
-name: DXT fresh-session native performance comparison
+name: DXT wall zoom release verification
 on:
   push:
     branches: [build/dxt-portal-wall-r21]
 permissions:
   contents: write
 jobs:
-  inspect:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
         with:
@@ -15,20 +15,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Prepare exact existing source
+      - name: Build and run every CPU regression
         run: |
+          set -euo pipefail
           cd dxrkths
           npm ci --no-audit --no-fund
-          npm run bundle
-          npm install --prefix /tmp/dxt-browser --no-audit --no-fund playwright
+          npm run build | tee docs/r21-diagnostics/resume-build.txt
+          npm install --prefix /tmp/dxt-browser --no-audit --no-fund playwright sharp
           /tmp/dxt-browser/node_modules/.bin/playwright install --with-deps chromium
-      - name: Compare fresh native entry and return without resize stress
+      - name: Fresh-session real entry and return, before and after
         run: |
+          set -euo pipefail
+          (cd dxrkths && node tools/server.mjs --host 0.0.0.0 --port 3000) >/tmp/site.log 2>&1 &
+          for i in {1..30}; do curl --fail -s http://127.0.0.1:3000/ >/dev/null && break || sleep 1; done
+          NODE_PATH=/tmp/dxt-browser/node_modules node .r21/fresh-native.cjs | tee dxrkths/docs/r21-diagnostics/resume-native.txt
+      - name: All five portals, clipping, reverse projection and continuity
+        run: |
+          set -euo pipefail
           cd dxrkths
-          node tools/server.mjs --host 0.0.0.0 --port 3000 >/tmp/site.log 2>&1 &
-          cd ..
-          NODE_PATH=/tmp/dxt-browser/node_modules node .r21/fresh-native.cjs
-      - name: Retain measured result only on working branch
+          NODE_PATH=/tmp/dxt-browser/node_modules node tests/portal-wall-browser.cjs | tee docs/r21-diagnostics/resume-browser.txt
+      - name: Preserve the fresh verification result on the working branch
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -36,8 +42,8 @@ jobs:
           set -euo pipefail
           git config user.name 'Deimox'
           git config user.email '123704758+ItsDeimox@users.noreply.github.com'
-          git add dxrkths/docs/r21-diagnostics/fresh-native.json
+          git add dxrkths/docs/r21-diagnostics/fresh-native.json dxrkths/docs/r21-diagnostics/resume-*.txt dxrkths/docs/r21-diagnostics/wall-browser.json
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Record fresh-session native portal performance [skip ci]'
+          git commit -m 'Retain fresh R21 release verification evidence [skip ci]'
           auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/build/dxt-portal-wall-r21
