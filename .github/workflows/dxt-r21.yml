@@ -1,13 +1,13 @@
-name: DXT portal perspective and performance checks
+name: DXT fresh-session native performance comparison
 on:
   push:
     branches: [build/dxt-portal-wall-r21]
 permissions:
   contents: write
 jobs:
-  diagnose:
+  inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
@@ -15,34 +15,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Dependencies
+      - name: Prepare exact existing source
         run: |
           cd dxrkths
           npm ci --no-audit --no-fund
-          npm install --prefix /tmp/dxt-browser --no-audit --no-fund playwright sharp
+          npm run bundle
+          npm install --prefix /tmp/dxt-browser --no-audit --no-fund playwright
           /tmp/dxt-browser/node_modules/.bin/playwright install --with-deps chromium
-      - name: Validate final perspective
-        run: |
-          python3 .r21/release.py
-          cd dxrkths
-          set +e
-          npm run build >docs/r21-diagnostics/build.txt 2>&1
-          code=$?
-          grep -A26 '^not ok' docs/r21-diagnostics/build.txt >docs/r21-diagnostics/failures.txt
-          tail -15 docs/r21-diagnostics/build.txt
-          cat docs/r21-diagnostics/failures.txt
-          exit "$code"
-      - name: Measure and validate exact source
+      - name: Compare fresh native entry and return without resize stress
         run: |
           cd dxrkths
           node tools/server.mjs --host 0.0.0.0 --port 3000 >/tmp/site.log 2>&1 &
-          sed -e 's/baseline-/after-/g' -e 's/baseline.json/after.json/g' -e 's/1.05+t\*1.15/1.05+t*2.05/g' tests/r21-probe.cjs >tests/r21-probe-after.cjs
-          NODE_PATH=/tmp/dxt-browser/node_modules node tests/r21-probe-after.cjs >docs/r21-diagnostics/after-browser.txt 2>&1
-          rm tests/r21-probe-after.cjs
-          NODE_PATH=/tmp/dxt-browser/node_modules node tests/portal-wall-browser.cjs >docs/r21-diagnostics/wall-browser-output.txt 2>&1
           cd ..
-          NODE_PATH=/tmp/dxt-browser/node_modules node .r21/package.cjs
-      - name: Retain tested source and results on working branch
+          NODE_PATH=/tmp/dxt-browser/node_modules node .r21/fresh-native.cjs
+      - name: Retain measured result only on working branch
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -50,8 +36,8 @@ jobs:
           set -euo pipefail
           git config user.name 'Deimox'
           git config user.email '123704758+ItsDeimox@users.noreply.github.com'
-          git add dxrkths/src/scene/room-portal-exit.js dxrkths/src/scene/room-portal-shader.js dxrkths/src/scene/room-portal.js dxrkths/src/scene/room-portal-scene.js dxrkths/src/scene/room-scene.js dxrkths/src/ui/portal-arrival.js dxrkths/src/ui/room-section-routes.js dxrkths/src/styles-sections.css dxrkths/tools/build.mjs dxrkths/tests dxrkths/docs
+          git add dxrkths/docs/r21-diagnostics/fresh-native.json
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Validate final wall occlusion, smooth zoom and return [skip ci]'
+          git commit -m 'Record fresh-session native portal performance [skip ci]'
           auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/build/dxt-portal-wall-r21
