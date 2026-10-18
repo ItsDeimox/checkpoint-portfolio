@@ -1,1 +1,1360 @@
-{"error":"locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('header [data-open-panel=\"0\"]')\n\n    at /home/runner/work/checkpoint-portfolio/checkpoint-portfolio/.r21/fresh-native.cjs:9:73"}
+[
+  {
+    "label": "baseline",
+    "entryMs": 80407,
+    "returnMs": 25636,
+    "samples": [
+      {
+        "now": 17636.1,
+        "cpu": 30184.90000000001,
+        "stage": "approach",
+        "age": 0.1,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 47818.2,
+        "cpu": 11.60000000000582,
+        "stage": "approach",
+        "age": 0.2,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 47851.6,
+        "cpu": 9.200000000011642,
+        "stage": "approach",
+        "age": 0.23340000000000147,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 47868.3,
+        "cpu": 7.5,
+        "stage": "approach",
+        "age": 0.2501000000000058,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 47901.6,
+        "cpu": 7.800000000017462,
+        "stage": "approach",
+        "age": 0.28340000000000143,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 48001.6,
+        "cpu": 10.89999999999418,
+        "stage": "approach",
+        "age": 0.3834000000000014,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 48018.2,
+        "cpu": 8.700000000011642,
+        "stage": "approach",
+        "age": 0.39999999999999997,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 48035,
+        "cpu": 7.300000000017462,
+        "stage": "approach",
+        "age": 0.4168000000000029,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 48218.2,
+        "cpu": 5.5,
+        "stage": "approach",
+        "age": 0.5168000000000029,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 51768.2,
+        "cpu": 6,
+        "stage": "approach",
+        "age": 0.6168000000000029,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 55101.3,
+        "cpu": 7.7000000000116415,
+        "stage": "approach",
+        "age": 0.7168000000000029,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 58867.8,
+        "cpu": 8.200000000011642,
+        "stage": "approach",
+        "age": 0.8168000000000029,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 60317.8,
+        "cpu": 6,
+        "stage": "approach",
+        "age": 0.9168000000000028,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 60351.1,
+        "cpu": 3.900000000023283,
+        "stage": "approach",
+        "age": 0.9500999999999985,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 60367.8,
+        "cpu": 2.3999999999941792,
+        "stage": "approach",
+        "age": 0.9668000000000029,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 60384.4,
+        "cpu": 2.5,
+        "stage": "approach",
+        "age": 0.9834000000000014,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 60401.1,
+        "cpu": 3.5,
+        "stage": "approach",
+        "age": 1.0000999999999984,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 60417.8,
+        "cpu": 3.3999999999941792,
+        "stage": "approach",
+        "age": 1.0168000000000028,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 62367.6,
+        "cpu": 3.6000000000058208,
+        "stage": "flight",
+        "age": 1.116800000000003,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 62701,
+        "cpu": 7.899999999994179,
+        "stage": "flight",
+        "age": 1.216800000000003,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 62734.3,
+        "cpu": 7516.100000000006,
+        "stage": "flight",
+        "age": 1.250100000000006,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 70250.7,
+        "cpu": 0.9000000000232831,
+        "stage": "flight",
+        "age": 1.350100000000006,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 70267.4,
+        "cpu": 1,
+        "stage": "flight",
+        "age": 1.3668000000000031,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 74017.2,
+        "cpu": 1.1999999999825377,
+        "stage": "flight",
+        "age": 1.4668000000000032,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 77650.4,
+        "cpu": 1.3000000000174623,
+        "stage": "flight",
+        "age": 1.5668000000000033,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 81000.2,
+        "cpu": 4.300000000017462,
+        "stage": "flight",
+        "age": 1.6668000000000034,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 81216.9,
+        "cpu": 1.599999999976717,
+        "stage": "flight",
+        "age": 1.7668000000000035,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 84216.9,
+        "cpu": 1,
+        "stage": "flight",
+        "age": 1.8668000000000036,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 87266.7,
+        "cpu": 1,
+        "stage": "flight",
+        "age": 1.9668000000000037,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 89599.9,
+        "cpu": 0.8000000000174623,
+        "stage": "flight",
+        "age": 2.0668000000000037,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 91483.2,
+        "cpu": 0.7999999999883585,
+        "stage": "flight",
+        "age": 2.166800000000004,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 98582.9,
+        "cpu": 0.7999999999883585,
+        "stage": "flight",
+        "age": 2.2,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 101666.1,
+        "cpu": 1.099999999976717,
+        "stage": "flight",
+        "age": 2.0999999999999996,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 101682.8,
+        "cpu": 3.2999999999883585,
+        "stage": "flight",
+        "age": 2.083300000000003,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 101699.4,
+        "cpu": 0,
+        "stage": "flight",
+        "age": 2.083300000000003,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 102049.4,
+        "cpu": 1.099999999976717,
+        "stage": "flight",
+        "age": 1.983300000000003,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 103799.4,
+        "cpu": 0.8999999999941792,
+        "stage": "flight",
+        "age": 1.8833000000000029,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 103816,
+        "cpu": 1.2000000000116415,
+        "stage": "flight",
+        "age": 1.8666999999999971,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 109032.5,
+        "cpu": 1,
+        "stage": "flight",
+        "age": 1.766699999999997,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 109049.1,
+        "cpu": 0.7000000000116415,
+        "stage": "flight",
+        "age": 1.750099999999991,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 109565.8,
+        "cpu": 0.6000000000058208,
+        "stage": "flight",
+        "age": 1.6500999999999912,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 110599.1,
+        "cpu": 0.6000000000058208,
+        "stage": "flight",
+        "age": 1.5500999999999912,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 111199.1,
+        "cpu": 0.5,
+        "stage": "flight",
+        "age": 1.4500999999999913,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 111565.7,
+        "cpu": 0.7000000000116415,
+        "stage": "flight",
+        "age": 1.3500999999999914,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 112765.7,
+        "cpu": 0.7999999999883585,
+        "stage": "flight",
+        "age": 1.2500999999999913,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 113249,
+        "cpu": 2.900000000023283,
+        "stage": "flight",
+        "age": 1.1500999999999912,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 113732.3,
+        "cpu": 2.2000000000116415,
+        "stage": "flight",
+        "age": 1.0500999999999912,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 114932.3,
+        "cpu": 5.600000000005821,
+        "stage": "approach",
+        "age": 0.9500999999999912,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 115932.2,
+        "cpu": 6.599999999976717,
+        "stage": "approach",
+        "age": 0.8500999999999911,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 116665.6,
+        "cpu": 4.5,
+        "stage": "approach",
+        "age": 0.7500999999999911,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 117248.8,
+        "cpu": 3,
+        "stage": "approach",
+        "age": 0.6500999999999911,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 117765.4,
+        "cpu": 8.700000000011642,
+        "stage": "approach",
+        "age": 0.5500999999999912,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 118315.4,
+        "cpu": 11,
+        "stage": "approach",
+        "age": 0.4500999999999911,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 118915.5,
+        "cpu": 7.399999999994179,
+        "stage": "approach",
+        "age": 0.35009999999999125,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 119432.1,
+        "cpu": 10.700000000011642,
+        "stage": "approach",
+        "age": 0.2500999999999913,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 120032,
+        "cpu": 11.89999999999418,
+        "stage": "approach",
+        "age": 0.15009999999999124,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 120582,
+        "cpu": 6.400000000023283,
+        "stage": "approach",
+        "age": 0.050099999999991256,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      }
+    ],
+    "longTasks": [
+      {
+        "t": 7819.199999999997,
+        "ms": 6725
+      },
+      {
+        "t": 17645.399999999994,
+        "ms": 30188
+      },
+      {
+        "t": 62741.59999999999,
+        "ms": 7517
+      }
+    ],
+    "startup": {
+      "assetsMs": 2406,
+      "preparation": {
+        "textures": 15,
+        "targets": 20,
+        "sceneVariants": 97,
+        "opticalMaterials": 9
+      },
+      "readyMs": 5999
+    },
+    "errors": [],
+    "entry": {
+      "frames": 31,
+      "gapMedianMs": 333.40000000000146,
+      "gapP95Ms": 7516.399999999994,
+      "cpuMedianMs": 4.300000000017462,
+      "cpuP95Ms": 7516.100000000006,
+      "cpuMaxMs": 30184.90000000001
+    },
+    "return": {
+      "frames": 26,
+      "gapMedianMs": 550,
+      "gapP95Ms": 3083.2000000000116,
+      "cpuMedianMs": 2.2000000000116415,
+      "cpuP95Ms": 11,
+      "cpuMaxMs": 11.89999999999418
+    }
+  },
+  {
+    "label": "revised",
+    "entryMs": 56596,
+    "returnMs": 22719,
+    "samples": [
+      {
+        "now": 17503.9,
+        "cpu": 29.79999999998836,
+        "stage": "approach",
+        "age": 0.05,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 17553.9,
+        "cpu": 17.199999999953434,
+        "stage": "approach",
+        "age": 0.1,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 17587.3,
+        "cpu": 10.200000000011642,
+        "stage": "approach",
+        "age": 0.13339999999999783,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 17603.9,
+        "cpu": 34.5,
+        "stage": "approach",
+        "age": 0.15000000000000002,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 17637.3,
+        "cpu": 34.79999999998836,
+        "stage": "approach",
+        "age": 0.18339999999999784,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 17670.6,
+        "cpu": 25.5,
+        "stage": "approach",
+        "age": 0.21669999999999712,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 21337.1,
+        "cpu": 12.700000000011642,
+        "stage": "approach",
+        "age": 0.3166999999999971,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 21620.5,
+        "cpu": 7.800000000046566,
+        "stage": "approach",
+        "age": 0.4166999999999971,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 25070.3,
+        "cpu": 6.2999999999883585,
+        "stage": "approach",
+        "age": 0.516699999999997,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 25137,
+        "cpu": 5.400000000023283,
+        "stage": "approach",
+        "age": 0.5833999999999978,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 25237,
+        "cpu": 3.7000000000116415,
+        "stage": "approach",
+        "age": 0.6833999999999978,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 25453.6,
+        "cpu": 4.5,
+        "stage": "approach",
+        "age": 0.7833999999999978,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 28753.4,
+        "cpu": 8,
+        "stage": "approach",
+        "age": 0.8833999999999977,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 28786.8,
+        "cpu": 6.599999999976717,
+        "stage": "approach",
+        "age": 0.9167999999999956,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 29020.1,
+        "cpu": 4.099999999976717,
+        "stage": "approach",
+        "age": 1.0167999999999957,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 29086.8,
+        "cpu": 3.6000000000349246,
+        "stage": "flight",
+        "age": 1.0834999999999964,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 32620,
+        "cpu": 9,
+        "stage": "flight",
+        "age": 1.1834999999999964,
+        "interior": false,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 32720,
+        "cpu": 1.2999999999883585,
+        "stage": "flight",
+        "age": 1.2834999999999965,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 36203.2,
+        "cpu": 1.099999999976717,
+        "stage": "flight",
+        "age": 1.3834999999999966,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 41203,
+        "cpu": 1,
+        "stage": "flight",
+        "age": 1.4834999999999967,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 43536.3,
+        "cpu": 1.2000000000116415,
+        "stage": "flight",
+        "age": 1.5834999999999968,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 43769.5,
+        "cpu": 1.5,
+        "stage": "flight",
+        "age": 1.6834999999999969,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 46586.1,
+        "cpu": 1.3999999999650754,
+        "stage": "flight",
+        "age": 1.783499999999997,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 47986,
+        "cpu": 0.8999999999650754,
+        "stage": "flight",
+        "age": 1.883499999999997,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 48036,
+        "cpu": 1.099999999976717,
+        "stage": "flight",
+        "age": 1.933499999999997,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 48102.7,
+        "cpu": 1.5,
+        "stage": "flight",
+        "age": 2.000199999999994,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 51252.5,
+        "cpu": 0.8999999999650754,
+        "stage": "flight",
+        "age": 2.1001999999999943,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 51835.9,
+        "cpu": 4.900000000023283,
+        "stage": "flight",
+        "age": 2.2001999999999944,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 54869.1,
+        "cpu": 1.099999999976717,
+        "stage": "flight",
+        "age": 2.3001999999999945,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 57969,
+        "cpu": 0.7999999999883585,
+        "stage": "flight",
+        "age": 2.4001999999999946,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 60285.5,
+        "cpu": 0.8999999999650754,
+        "stage": "flight",
+        "age": 2.5001999999999946,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 62285.5,
+        "cpu": 1.1000000000349246,
+        "stage": "flight",
+        "age": 2.6001999999999947,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 64052.1,
+        "cpu": 1.1000000000349246,
+        "stage": "flight",
+        "age": 2.700199999999995,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 65852,
+        "cpu": 1,
+        "stage": "flight",
+        "age": 2.800199999999995,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 67652,
+        "cpu": 2.300000000046566,
+        "stage": "flight",
+        "age": 2.900199999999995,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 67768.6,
+        "cpu": 1.1999999999534339,
+        "stage": "flight",
+        "age": 3.000199999999995,
+        "interior": true,
+        "returning": false,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 73001.766,
+        "cpu": 0.7000000000116415,
+        "stage": "flight",
+        "age": 3.0999999999999996,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 74668.3,
+        "cpu": 0.7999999999883585,
+        "stage": "flight",
+        "age": 3,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 74684.9,
+        "cpu": 0.09999999997671694,
+        "stage": "flight",
+        "age": 3,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 74718.3,
+        "cpu": 0.9000000000232831,
+        "stage": "flight",
+        "age": 2.9499999999999997,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 75668.3,
+        "cpu": 0.7999999999883585,
+        "stage": "flight",
+        "age": 2.8499999999999996,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 77151.5,
+        "cpu": 0.7000000000116415,
+        "stage": "flight",
+        "age": 2.75,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 78218.1,
+        "cpu": 1,
+        "stage": "flight",
+        "age": 2.65,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 78801.5,
+        "cpu": 1.1000000000349246,
+        "stage": "flight",
+        "age": 2.55,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 79834.7,
+        "cpu": 0.8999999999650754,
+        "stage": "flight",
+        "age": 2.4499999999999997,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 80484.8,
+        "cpu": 0.7999999999883585,
+        "stage": "flight",
+        "age": 2.3499999999999996,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 80501.4,
+        "cpu": 0.5,
+        "stage": "flight",
+        "age": 2.333400000000009,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 81001.4,
+        "cpu": 0.8000000000465661,
+        "stage": "flight",
+        "age": 2.2334000000000085,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 81401.4,
+        "cpu": 0.6999999999534339,
+        "stage": "flight",
+        "age": 2.133400000000009,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 82234.7,
+        "cpu": 0.8000000000465661,
+        "stage": "flight",
+        "age": 2.0334000000000088,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 83051.3,
+        "cpu": 0.5999999999767169,
+        "stage": "flight",
+        "age": 1.9334000000000087,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 83484.6,
+        "cpu": 0.7999999999883585,
+        "stage": "flight",
+        "age": 1.8334000000000086,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 84984.6,
+        "cpu": 0.7999999999883585,
+        "stage": "flight",
+        "age": 1.7334000000000085,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 85417.9,
+        "cpu": 1,
+        "stage": "flight",
+        "age": 1.6334000000000084,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 85817.9,
+        "cpu": 0.9000000000232831,
+        "stage": "flight",
+        "age": 1.5334000000000083,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 86251.2,
+        "cpu": 0.9000000000232831,
+        "stage": "flight",
+        "age": 1.4334000000000082,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 86684.5,
+        "cpu": 3.2000000000116415,
+        "stage": "flight",
+        "age": 1.3334000000000081,
+        "interior": true,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 87101.2,
+        "cpu": 8.299999999988358,
+        "stage": "flight",
+        "age": 1.233400000000008,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 87534.5,
+        "cpu": 5.5,
+        "stage": "flight",
+        "age": 1.133400000000008,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 87951.1,
+        "cpu": 7.7999999999883585,
+        "stage": "approach",
+        "age": 1.0334000000000079,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 88401.1,
+        "cpu": 5.2000000000116415,
+        "stage": "approach",
+        "age": 0.933400000000008,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 88884.4,
+        "cpu": 5.5,
+        "stage": "approach",
+        "age": 0.8334000000000079,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 89417.7,
+        "cpu": 5.300000000046566,
+        "stage": "approach",
+        "age": 0.7334000000000079,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 89951.1,
+        "cpu": 5.099999999976717,
+        "stage": "approach",
+        "age": 0.633400000000008,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 90484.3,
+        "cpu": 8.299999999988358,
+        "stage": "approach",
+        "age": 0.533400000000008,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 90934.4,
+        "cpu": 10.700000000011642,
+        "stage": "approach",
+        "age": 0.43340000000000795,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 91067.7,
+        "cpu": 8.600000000034925,
+        "stage": "approach",
+        "age": 0.3334000000000081,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 91584.3,
+        "cpu": 9.300000000046566,
+        "stage": "approach",
+        "age": 0.23340000000000807,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 92034.2,
+        "cpu": 15.5,
+        "stage": "approach",
+        "age": 0.13340000000000807,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      },
+      {
+        "now": 92534.3,
+        "cpu": 15.900000000023283,
+        "stage": "approach",
+        "age": 0.03340000000000808,
+        "interior": false,
+        "returning": true,
+        "width": 900,
+        "height": 640
+      }
+    ],
+    "longTasks": [
+      {
+        "t": 14571.800000000017,
+        "ms": 2872
+      }
+    ],
+    "startup": {
+      "assetsMs": 754,
+      "preparation": {
+        "textures": 15,
+        "targets": 20,
+        "sceneVariants": 97,
+        "opticalMaterials": 9
+      },
+      "readyMs": 11431
+    },
+    "errors": [],
+    "entry": {
+      "frames": 36,
+      "gapMedianMs": 583.4000000000015,
+      "gapP95Ms": 3666.5,
+      "cpuMedianMs": 3.6000000000349246,
+      "cpuP95Ms": 34.5,
+      "cpuMaxMs": 34.79999999998836
+    },
+    "return": {
+      "frames": 34,
+      "gapMedianMs": 483.29999999998836,
+      "gapP95Ms": 1500,
+      "cpuMedianMs": 1,
+      "cpuP95Ms": 15.5,
+      "cpuMaxMs": 15.900000000023283
+    }
+  }
+]

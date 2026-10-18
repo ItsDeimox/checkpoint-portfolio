@@ -1,0 +1,63 @@
+PASS both interior and real banner pipeline are warmed before interaction
+PASS panel 0 is seen beyond a shorter tunnel
+PASS panel 0 has true early wall occlusion which reveals continuously
+PASS panel 0 commits without replacing the page or replaying its entrance
+PASS panel 0 final viewport aligns without scale or scrollbar jump
+PASS panel 0 does not move the navbar or persistent logo
+PASS panel 0 return immediately retains the same page instead of fading to black
+PASS panel 0 reverse wall perspective retraces entry
+PASS panel 0 disappears behind the tunnel walls on return
+PASS panel 0 rendering raises no GL errors
+PASS panel 0 returns to the existing interactive showroom
+PASS panel 1 is seen beyond a shorter tunnel
+PASS panel 1 has true early wall occlusion which reveals continuously
+PASS panel 1 commits without replacing the page or replaying its entrance
+PASS panel 1 final viewport aligns without scale or scrollbar jump
+PASS panel 1 does not move the navbar or persistent logo
+PASS panel 1 return immediately retains the same page instead of fading to black
+PASS panel 1 reverse wall perspective retraces entry
+PASS panel 1 disappears behind the tunnel walls on return
+PASS panel 1 rendering raises no GL errors
+PASS panel 1 returns to the existing interactive showroom
+PASS panel 2 is seen beyond a shorter tunnel
+PASS panel 2 has true early wall occlusion which reveals continuously
+PASS panel 2 commits without replacing the page or replaying its entrance
+PASS panel 2 final viewport aligns without scale or scrollbar jump
+PASS panel 2 does not move the navbar or persistent logo
+PASS panel 2 return immediately retains the same page instead of fading to black
+PASS panel 2 reverse wall perspective retraces entry
+PASS panel 2 disappears behind the tunnel walls on return
+PASS panel 2 rendering raises no GL errors
+PASS panel 2 returns to the existing interactive showroom
+PASS panel 3 is seen beyond a shorter tunnel
+PASS panel 3 has true early wall occlusion which reveals continuously
+PASS panel 3 commits without replacing the page or replaying its entrance
+PASS panel 3 final viewport aligns without scale or scrollbar jump
+PASS panel 3 does not move the navbar or persistent logo
+PASS panel 3 return immediately retains the same page instead of fading to black
+PASS panel 3 reverse wall perspective retraces entry
+PASS panel 3 disappears behind the tunnel walls on return
+PASS panel 3 rendering raises no GL errors
+PASS panel 3 returns to the existing interactive showroom
+PASS panel 4 is seen beyond a shorter tunnel
+PASS panel 4 has true early wall occlusion which reveals continuously
+PASS panel 4 commits without replacing the page or replaying its entrance
+PASS panel 4 final viewport aligns without scale or scrollbar jump
+PASS panel 4 does not move the navbar or persistent logo
+PASS panel 4 return immediately retains the same page instead of fading to black
+PASS panel 4 reverse wall perspective retraces entry
+PASS panel 4 disappears behind the tunnel walls on return
+PASS panel 4 rendering raises no GL errors
+PASS panel 4 returns to the existing interactive showroom
+PASS return preserves the currently scrolled viewport
+PASS viewport 390x844 handoff preserves page layout
+PASS viewport 390 does not overflow horizontally
+PASS viewport 320x640 handoff preserves page layout
+PASS viewport 320 does not overflow horizontally
+PASS viewport 1440x1800 handoff preserves page layout
+PASS viewport 1440 does not overflow horizontally
+PASS logo keeps spin and home navigation together
+PASS native entry and return keep either the room or the page visible
+PASS native return shows a clipped world page rather than CSS departure fade
+PASS no JavaScript errors in tested flows
+TOTAL 62
