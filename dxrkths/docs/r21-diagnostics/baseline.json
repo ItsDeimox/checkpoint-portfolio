@@ -1,0 +1,930 @@
+{
+  "browser": "156.0.8078.4",
+  "samples": [
+    {
+      "t": 0,
+      "age": 1.05,
+      "stage": "flight",
+      "cpu": 1.7999999999883585,
+      "draw": 627.1000000000058,
+      "programs": 38,
+      "geometry": 160,
+      "textures": 40,
+      "drawCalls": 86,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 0; --arrival-transform: matrix3d(0.09441550885141219,0,0,0,0,0.09441550885141214,0,0,0,0,1,0,362.23379645943515,226.39612278714696,0,1);",
+      "title": [
+        366.7657470703125,
+        252.94163513183594,
+        37.372314453125,
+        5.2017059326171875
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": false,
+        "panel": 0,
+        "depth": -3.2,
+        "age": 1.05,
+        "burstVisible": true,
+        "shutter": 0,
+        "chromaticPixels": 0
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 1,
+        "RecalcStyleCount": 1,
+        "LayoutDuration": 0.00016700000000000048,
+        "RecalcStyleDuration": 0.0010929999999999998,
+        "ScriptDuration": 0.000012000000000000002,
+        "TaskDuration": 0.6335489999999999
+      }
+    },
+    {
+      "t": 0.05,
+      "age": 1.1075,
+      "stage": "flight",
+      "cpu": 4.80000000000291,
+      "draw": 5.5,
+      "programs": 38,
+      "geometry": 160,
+      "textures": 40,
+      "drawCalls": 83,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 0.724792480468751; --arrival-transform: matrix3d(0.09717960283687269,0,0,0,0,0.09717960283687278,0,0,0,0,1,0,361.12815886525095,225.70509929078182,0,1);",
+      "title": [
+        365.79278564453125,
+        253.0277557373047,
+        38.466400146484375,
+        5.3539886474609375
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": false,
+        "panel": 0,
+        "depth": -2.3917232773437505,
+        "age": 1.1075,
+        "burstVisible": true,
+        "shutter": 0,
+        "chromaticPixels": 0.024798064701299864
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 1,
+        "RecalcStyleCount": 5,
+        "LayoutDuration": 0.0002009999999999998,
+        "RecalcStyleDuration": 0.0069359999999999995,
+        "ScriptDuration": 0,
+        "TaskDuration": 1.6118219999999992
+      }
+    },
+    {
+      "t": 0.25,
+      "age": 1.3375,
+      "stage": "flight",
+      "cpu": 13,
+      "draw": 7.80000000000291,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 1; --arrival-transform: matrix3d(0.11148568301876174,0,0,0,0,0.11148568301876162,0,0,0,0,1,0,355.40572679249533,222.1285792453096,0,1);",
+      "title": [
+        360.7570495605469,
+        253.47348022460938,
+        44.129150390625,
+        6.14215087890625
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": true,
+        "panel": 0,
+        "depth": 1.9916137695312721,
+        "age": 1.3375,
+        "burstVisible": false,
+        "shutter": 0,
+        "chromaticPixels": 1.1105334372053033
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 16,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.013169,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.030043000000000042
+      }
+    },
+    {
+      "t": 0.45,
+      "age": 1.5675,
+      "stage": "flight",
+      "cpu": 24.60000000000582,
+      "draw": 3.5,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 1; --arrival-transform: matrix3d(0.15406001191742916,0,0,0,0,0.15406001191742916,0,0,0,0,1,0,338.37599523302833,211.4849970206427,0,1);",
+      "title": [
+        345.7708740234375,
+        254.7999267578125,
+        60.981292724609375,
+        8.487762451171875
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": true,
+        "panel": 0,
+        "depth": 10.26165514140632,
+        "age": 1.5675,
+        "burstVisible": false,
+        "shutter": 0,
+        "chromaticPixels": 2.668612899257871
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 16,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.019701999999999997,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.0362019999999994
+      }
+    },
+    {
+      "t": 0.6,
+      "age": 1.74,
+      "stage": "flight",
+      "cpu": 6.69999999999709,
+      "draw": 1,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 1; --arrival-transform: matrix3d(0.26825982773934487,0,0,0,0,0.26825982773934476,0,0,0,0,1,0,292.69606890426206,182.9350430651638,0,1);",
+      "title": [
+        305.5725402832031,
+        258.35797119140625,
+        106.18478393554688,
+        14.779449462890625
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": true,
+        "panel": 0,
+        "depth": 17.138521600000093,
+        "age": 1.74,
+        "burstVisible": false,
+        "shutter": 0,
+        "chromaticPixels": 3.2
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 13,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.0069200000000000025,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.01112699999999922
+      }
+    },
+    {
+      "t": 0.72,
+      "age": 1.8780000000000001,
+      "stage": "flight",
+      "cpu": 14.80000000000291,
+      "draw": 3.8999999999941792,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 1; --arrival-transform: matrix3d(0.510858602125401,0,0,0,0,0.5108586021254022,0,0,0,0,1,0,195.6565591498394,122.28534946864944,0,1);",
+      "title": [
+        220.17776489257812,
+        265.91644287109375,
+        202.21221923828125,
+        28.145111083984375
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": true,
+        "panel": 0,
+        "depth": 20.98399676809226,
+        "age": 1.8780000000000001,
+        "burstVisible": false,
+        "shutter": 0,
+        "chromaticPixels": 3.2
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 11,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.009017999999999998,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.061353000000000435
+      }
+    },
+    {
+      "t": 0.82,
+      "age": 1.9929999999999999,
+      "stage": "flight",
+      "cpu": 4.099999999991269,
+      "draw": 0.6000000000058208,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 1; --arrival-transform: matrix3d(0.822620061885774,0,0,0,0,0.8226200618857755,0,0,0,0,1,0,70.9519752456898,44.34498452855612,0,1);",
+      "title": [
+        110.43773651123047,
+        275.6297607421875,
+        325.61614990234375,
+        45.32122802734375
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": true,
+        "panel": 0,
+        "depth": 22.54655950203785,
+        "age": 1.9929999999999999,
+        "burstVisible": false,
+        "shutter": 0,
+        "chromaticPixels": 3.2
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 8,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.0044360000000000024,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.008154000000000217
+      }
+    },
+    {
+      "t": 0.88,
+      "age": 2.0620000000000003,
+      "stage": "flight",
+      "cpu": 8.5,
+      "draw": 4,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 1; --arrival-transform: matrix3d(0.952596472988087,0,0,0,0,0.9525964729880887,0,0,0,0,1,0,18.961410804764878,11.850881752977799,0,1);",
+      "title": [
+        64.68604278564453,
+        279.6793212890625,
+        377.0644836425781,
+        52.48211669921875
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": true,
+        "panel": 0,
+        "depth": 22.895355407728673,
+        "age": 2.0620000000000003,
+        "burstVisible": false,
+        "shutter": 0.8973760932944389,
+        "chromaticPixels": 3.022740524781268
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 7,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.007888000000000006,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.01533600000000046
+      }
+    },
+    {
+      "t": 0.93,
+      "age": 2.1195,
+      "stage": "flight",
+      "cpu": 3.3999999999941792,
+      "draw": 0.8000000000029104,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 1; --arrival-transform: matrix3d(0.993516244261286,0,0,0,0,0.9935162442612878,0,0,0,0,1,0,2.5935022954852727,1.6209389346780456,0,1);",
+      "title": [
+        50.282283782958984,
+        280.9542541503906,
+        393.26165771484375,
+        54.73651123046875
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": true,
+        "panel": 0,
+        "depth": 22.986276440287792,
+        "age": 2.1195,
+        "burstVisible": false,
+        "shutter": 0.47499999999995873,
+        "chromaticPixels": 1.599999999999861
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 5,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.004889999999999992,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.008044000000000828
+      }
+    },
+    {
+      "t": 0.97,
+      "age": 2.1654999999999998,
+      "stage": "flight",
+      "cpu": 1.8999999999941792,
+      "draw": 1,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 1; --arrival-transform: matrix3d(0.9997575994767703,0,0,0,0,0.999757599476772,0,0,0,0,1,0,0.09696020929110816,0.0606001308069426,0,1);",
+      "title": [
+        48.085323333740234,
+        281.1487121582031,
+        395.732177734375,
+        55.08038330078125
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": true,
+        "panel": 0,
+        "depth": 22.999490136477434,
+        "age": 2.1654999999999998,
+        "burstVisible": false,
+        "shutter": 0.11217201166178109,
+        "chromaticPixels": 0.37784256559757845
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 5,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.002688999999999997,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.005673999999999957
+      }
+    },
+    {
+      "t": 0.99,
+      "age": 2.1885,
+      "stage": "flight",
+      "cpu": 1.8000000000029104,
+      "draw": 2.6999999999970896,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "--arrival-gutter: 0px; --arrival-opacity: 1; --arrival-transform: matrix3d(0.9999968619403596,0,0,0,0,0.9999968619403613,0,0,0,0,1,0,0.0012552238553897865,0.0007845149096186166,0,1);",
+      "title": [
+        48.00110626220703,
+        281.1561584472656,
+        395.8268737792969,
+        55.09356689453125
+      ],
+      "portal": {
+        "active": true,
+        "returning": false,
+        "stage": "flight",
+        "interior": true,
+        "panel": 0,
+        "depth": 22.99999340100716,
+        "age": 2.1885,
+        "burstVisible": false,
+        "shutter": 0.013848396501446907,
+        "chromaticPixels": 0.04664723032066327
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": true
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 3,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0.002264000000000002,
+        "ScriptDuration": 0,
+        "TaskDuration": 0.008563000000000542
+      }
+    },
+    {
+      "t": 1,
+      "age": 2.2,
+      "stage": "arrived",
+      "cpu": 4.19999999999709,
+      "draw": 0.09999999999126885,
+      "programs": 38,
+      "geometry": 161,
+      "textures": 40,
+      "drawCalls": 21,
+      "canvas": [
+        800,
+        500
+      ],
+      "rootStyle": "",
+      "title": [
+        48,
+        281.15625,
+        395.828125,
+        55.09375
+      ],
+      "portal": {
+        "active": false,
+        "returning": false,
+        "stage": "arrived",
+        "interior": true,
+        "panel": 0,
+        "depth": 23.00000000000003,
+        "age": 2.2,
+        "burstVisible": false,
+        "shutter": 0,
+        "chromaticPixels": 0
+      },
+      "passes": [
+        {
+          "name": "Yl",
+          "enabled": true
+        },
+        {
+          "name": "wa",
+          "enabled": false
+        },
+        {
+          "name": "jl",
+          "enabled": true
+        },
+        {
+          "name": "Oa",
+          "enabled": false
+        },
+        {
+          "name": "Zl",
+          "enabled": true
+        },
+        {
+          "name": "E0",
+          "enabled": true
+        },
+        {
+          "name": "ba",
+          "enabled": true
+        },
+        {
+          "name": "Sa",
+          "enabled": true
+        }
+      ],
+      "glError": 0,
+      "work": {
+        "LayoutCount": 2,
+        "RecalcStyleCount": 8,
+        "LayoutDuration": 0.00032800000000000017,
+        "RecalcStyleDuration": 0.002828999999999998,
+        "ScriptDuration": 0.0005929999999998437,
+        "TaskDuration": 0.008556999999999704
+      }
+    }
+  ],
+  "errors": []
+}
