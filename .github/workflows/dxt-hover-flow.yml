@@ -1,4 +1,4 @@
-name: DXT hover flow isolated source
+name: DXT hover flow isolated dependencies
 on:
   push:
     branches: [codex/dxt-hover-flow]
@@ -12,15 +12,17 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Snapshot exact approved app
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Prepare exact locked dependencies
         run: |
+          npm ci --prefix dxrkths
           mkdir -p /tmp/dxt-flow-input
-          tar -czf /tmp/dxt-flow-input/source.tar.gz dxrkths
-          git ls-tree -r HEAD > /tmp/dxt-flow-input/source-tree.txt
-          git rev-parse HEAD > /tmp/dxt-flow-input/commit.txt
+          tar -czf /tmp/dxt-flow-input/dependencies.tar.gz dxrkths/node_modules
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: dxt-flow-input
+          name: dxt-flow-dependencies
           path: /tmp/dxt-flow-input
           retention-days: 2
           compression-level: 0
