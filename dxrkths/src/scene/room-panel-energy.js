@@ -1,9 +1,9 @@
 import {DataTexture,FloatType,RGBAFormat,NearestFilter,Vector2} from 'three';
 import {CubeSurface} from '../ui/cube-surface.js';
-import {CUBE_NETWORK_GLSL} from '../shaders/cube-network.js';
+import {PANEL_PRISM_GLSL} from '../shaders/panel-prism.js';
 
-/** Same wave solver + fragment sampling as the real portfolio cube. No overlay
- * canvas, billboard, geometry displacement, shader rebuild or per-panel RAF. */
+/** The approved wave solver feeds a card-specific prismatic light signature.
+ * It reuses the same atlas without adding another canvas, pass, geometry, or RAF. */
 export class RoomPanelEnergy {
  constructor(view){
   this.view=view;this.entries=view.panels.map(panel=>{
@@ -11,12 +11,12 @@ export class RoomPanelEnergy {
    texture.name=`DXT.CubeEnergy.${panel.index}`;texture.minFilter=texture.magFilter=NearestFilter;texture.needsUpdate=true;
    field.setAspect(panel.corners[0].distanceTo(panel.corners[1])/panel.corners[0].distanceTo(panel.corners[3]));
    const m=panel.material;
-   Object.assign(m.uniforms,{uEnergyMap:{value:texture},uEnergySize:{value:field.size},uEnergyActive:{value:0},uReduced:{value:0},uSurfaceSpan:{value:new Vector2(...field.span)}});
-   m.fragmentShader='varying vec2 vUv;uniform vec2 uSurfaceSpan;\n'+CUBE_NETWORK_GLSL+'\n'+m.fragmentShader.replace('varying vec2 vUv;','');
+   Object.assign(m.uniforms,{uEnergyMap:{value:texture},uEnergySize:{value:field.size},uEnergyActive:{value:0},uReduced:{value:0},uSurfaceSpan:{value:new Vector2(...field.span)},uSignalSeed:{value:1+panel.index*.91}});
+   m.fragmentShader='varying vec2 vUv;uniform vec2 uSurfaceSpan;\n'+PANEL_PRISM_GLSL+'\n'+m.fragmentShader.replace('varying vec2 vUv;','');
    m.fragmentShader=m.fragmentShader.replace('p+holoWarp(p)','p');
-   m.fragmentShader=m.fragmentShader.replace('c += holoLight(p);',`vec2 cubeWave=network(4,(vUv-.5)*uSurfaceSpan+.5);
-    vec3 cubeTint=mix(vec3(.80,.92,1.),cardAccent,.60);
-    c+=mix(cubeTint,cardAccent,.70)*(cubeWave.x*.42+cubeWave.y*.46)*(1.-portalMix);`);
+   m.fragmentShader=m.fragmentShader.replace('c += holoLight(p);',`vec2 refracted=prismTrail(vUv,hoverUv,hoverTime,uSurfaceSpan,uSignalSeed);
+    vec3 prismTint=mix(vec3(.78,.91,1.),cardAccent,.75);
+    c+=prismTint*(refracted.x*.65+refracted.y*.95)*(1.-portalMix);`);
    m.needsUpdate=true;return{panel,field,texture,version:field.version};
   });
   this.selected=-1;
