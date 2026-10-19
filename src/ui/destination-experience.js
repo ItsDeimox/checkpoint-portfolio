@@ -1,15 +1,15 @@
-import {EnergyNetwork} from './energy-network.js';
+import {CubeSurface} from './cube-surface.js';
 
 /** Delegated page interactions survive cached DOM navigation. One scheduler,
  * active only for an on-screen covered car or a decaying pointer energy pulse. */
 export class DestinationExperience {
  constructor(root){
   this.root=root;this.document=root.ownerDocument;this.window=this.document.defaultView;
-  this.controller=new AbortController();this.network=new EnergyNetwork();this.pointer=null;this.raf=0;this.time=0;this.visible=true;
+  this.controller=new AbortController();this.network=new CubeSurface();this.pointer=null;this.raf=0;this.time=0;this.visible=true;
   this.reduced=this.window.matchMedia('(prefers-reduced-motion: reduce)');
   const on=(el,event,handler,options={})=>el?.addEventListener(event,handler,{...options,signal:this.controller.signal});
   on(root,'pointermove',e=>this.point(e));
-  on(root,'pointerout',e=>{const button=e.target.closest?.('[data-energy-button]');if(button&&!button.contains(e.relatedTarget)){this.pointer=null;this.wake();}});
+  on(root,'pointerout',e=>{const button=e.target.closest?.('[data-energy-button]');if(button&&!button.contains(e.relatedTarget)){this.pointer=null;this.network.release();this.wake();}});
   on(root,'focusin',e=>{if(e.target.closest?.('[data-energy-button]')){this.network.inject(.5,.5,.7);this.wake();}});
   on(root,'click',e=>this.click(e));
   on(root,'wheel',e=>this.wheel(e),{passive:false});
@@ -28,6 +28,11 @@ export class DestinationExperience {
    }
   },{threshold:.06});
   this.ready=this.prepare();
+ }
+ async preparePage(stage){
+  await this.ready;if(!this.gpuReady||this.disposed)return;
+  const surface=stage.querySelector('[data-destination-surface]');
+  if(surface)await this.graphics.prepareSurface(surface,this.controller.signal);
  }
  async prepare(){
   try{
@@ -58,6 +63,9 @@ export class DestinationExperience {
     section.classList.toggle('reveal-enabled',!this.reduced.matches&&Boolean(this.intersection));this.intersection?.observe(section);
    }
   }
+  // The cached, already rendered preview rides the wall. No second GPU
+  // context draws while the showroom owns the portal animation.
+  if(this.root.inert){this.sleep();return;}
   if(this.gpuReady){this.graphics.attach(surface,surface.dataset.destinationSurface);this.drawOnce();}
   // The baked first frame can travel on the portal wall. Its camera starts
   // moving only once the native page owns input and the showroom is asleep.
@@ -66,10 +74,10 @@ export class DestinationExperience {
  point(event){
   const button=event.target.closest?.('[data-energy-button]');if(!button||this.root.inert)return;
   const r=button.getBoundingClientRect();if(!r.width||!r.height)return;
+  this.network.setAspect(r.width/r.height);
   const x=(event.clientX-r.left)/r.width,y=(event.clientY-r.top)/r.height;
-  button.style.setProperty('--pointer-x',`${x*100}%`);button.style.setProperty('--pointer-y',`${y*100}%`);
   if(this.reduced.matches)return;
-  this.pointer={x,y:1-y};this.network.inject(x,1-y,.3);this.wake();
+  this.pointer={x,y:1-y};this.network.point(x,1-y,event.timeStamp);this.wake();
  }
  wheel(event){
   const track=event.target.closest?.('[data-group-track]');if(!track||event.ctrlKey||this.root.inert||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
@@ -108,7 +116,7 @@ export class DestinationExperience {
  }
  wake(){
   if(this.raf||this.disposed||!this.gpuReady||!this.surface||this.root.inert||this.root.hidden||this.document.hidden||!this.visible||this.reduced.matches)return;
-  if(this.surface.dataset.destinationSurface==='energy'&&!this.pointer&&this.network.total()<.006)return;
+  if(this.surface.dataset.destinationSurface==='energy'&&!this.network.awake)return;
   this.last=this.window.performance.now();this.raf=this.window.requestAnimationFrame(now=>this.frame(now));
  }
  frame(now){
@@ -118,11 +126,10 @@ export class DestinationExperience {
   if(step<1/30){this.raf=this.window.requestAnimationFrame(t=>this.frame(t));return;}
   const dt=Math.min(.05,step);this.last=now;this.time+=dt;
   if(this.surface.dataset.destinationSurface==='energy'){
-   if(this.pointer)this.network.inject(this.pointer.x,this.pointer.y,dt*4.5);
    this.network.step(dt);this.graphics.uploadEnergy(this.network);
   }
   this.graphics.draw(dt,this.time);
-  if(this.surface.dataset.destinationSurface==='car'||this.pointer||this.network.total()>.006)this.raf=this.window.requestAnimationFrame(t=>this.frame(t));
+  if(this.surface.dataset.destinationSurface==='car'||this.network.awake)this.raf=this.window.requestAnimationFrame(t=>this.frame(t));
   else{this.network.clear();this.graphics.uploadEnergy(this.network);this.graphics.draw(0,0,true);}
  }
  sleep(){if(this.raf)this.window.cancelAnimationFrame(this.raf);this.raf=0;}

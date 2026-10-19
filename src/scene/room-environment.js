@@ -83,8 +83,9 @@ function buildFloor(view){
  Object.assign(view.ground.material.uniforms,T.UniformsUtils.clone(T.UniformsLib.fog));view.ground.material.fog=true;
  view.ground.rotation.x=-Math.PI/2;view.ground.position.y=.024;view.scene.add(view.ground);
  const shadow=new T.Mesh(new T.PlaneGeometry(20,20),new T.ShadowMaterial({opacity:.47}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.027;shadow.receiveShadow=true;view.scene.add(shadow);
- const contact=new T.Mesh(new T.PlaneGeometry(4.9,9.6),new T.ShaderMaterial({vertexShader:roomVertex,fragmentShader:contactFragment,transparent:true,depthWrite:false}));contact.rotation.x=-Math.PI/2;contact.rotation.z=-.460715;contact.position.set(-.67248,.030,1.28199);view.scene.add(contact);view.turntableParts.push(contact);
+ const contact=new T.Mesh(new T.PlaneGeometry(4.9,9.6),new T.ShaderMaterial({vertexShader:roomVertex,fragmentShader:contactFragment,transparent:true,depthWrite:false}));contact.rotation.x=-Math.PI/2;contact.rotation.z=-.460715;contact.position.set(0,.030,1.458534911);view.scene.add(contact);view.turntableParts.push(contact);
  const metal=material({color:0x08090b,roughness:.30}),red=new T.MeshBasicMaterial({color:new T.Color(8,.01,.018)}),dim=new T.MeshBasicMaterial({color:new T.Color(1.6,.008,.012)});
+ red.userData.destinationEmitter=true;dim.userData.destinationEmitter=true;
  const radii=[5.38,5.47,5.72];
  for(const [i,r] of radii.entries()){
   const rail=new T.Mesh(new T.TorusGeometry(r*.964340418,i===1?.018:.009,8,160),i===1?red:dim);rail.rotation.x=Math.PI/2;rail.position.set(0,.06,1.458534911);view.scene.add(rail);view.turntableParts.push(rail);
@@ -115,6 +116,7 @@ export function createRoomShell({wall=weatheredMetal(),metal=material({color:0x1
 }
 export function buildRoomArchitecture(view){
  const wall=weatheredMetal(),metal=material({color:0x1c1d22,roughness:.38}),silver=material({color:0x73767c,roughness:.25}),red=new T.MeshBasicMaterial({color:new T.Color(5.5,.008,.018)});
+ red.userData.destinationEmitter=true;
  view.structure=createRoomShell({wall,metal});view.scene.add(view.structure);
  const trim=new T.InstancedMesh(new T.BoxGeometry(.025,.48,.033),red,24);
  for(let i=0;i<24;i++){const a=-1.7+i*.148,m=new T.Matrix4().makeTranslation(Math.sin(a)*11.8,3.9+(i%2)*1.2,2+Math.cos(a)*11.8);trim.setMatrixAt(i,m);}view.scene.add(trim);
@@ -131,7 +133,7 @@ export function buildRoomArchitecture(view){
  for(const [radius,tube,mat,y] of [[4.67,.075,metal,0],[4.55,.023,silver,-.12],[4.41,.018,silver,-.09],[3.45,.035,metal,-.16],[3.33,.019,silver,-.17],[4.76,.012,red,.07]]){
   const o=new T.Mesh(new T.TorusGeometry(radius*.78,tube,8,120),mat);o.rotation.x=Math.PI/2;o.position.copy(center).add(new T.Vector3(0,y,0));view.scene.add(o);
  }
- const white=new T.MeshBasicMaterial({color:new T.Color(5,5.3,5.8)}),ring=new T.Mesh(new T.TorusGeometry(4.49*.78,.013,8,120),white);ring.rotation.x=Math.PI/2;ring.position.copy(center).add(new T.Vector3(0,-.13,0));view.scene.add(ring);
+ const white=new T.MeshBasicMaterial({color:new T.Color(5,5.3,5.8)}),ring=new T.Mesh(new T.TorusGeometry(4.49*.78,.013,8,120),white);white.userData.destinationEmitter=true;ring.name='Ceiling neon';ring.rotation.x=Math.PI/2;ring.position.copy(center).add(new T.Vector3(0,-.13,0));view.scene.add(ring);
  // Blurred foreground tire stacks are geometry and therefore carry real depth.
  const rubber=material({color:0x08090c,metalness:.06,roughness:.54});
  const gs=[];

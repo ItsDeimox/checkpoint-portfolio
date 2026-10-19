@@ -1,3 +1,5 @@
+import {QualityTransition,warmInteractivePaths,prepareQualityTargets} from './room-quality.js';
+import {GpuFrameGate,waitForGpu,installShaderChecks} from './room-gpu-gate.js';
 import {FramePacer,frameRateLimit} from './room-performance.js';
 import {ReflectionBudget} from './room-reflection-budget.js';
 import * as T from 'three';
@@ -57,8 +59,10 @@ export class HeroScene {
     // Paint the lightweight page before creating a context or allocating GPU work.
     await yieldToBrowser(signal);
     this.renderer = new T.WebGLRenderer({ canvas: this.canvas, antialias: false, powerPreference: 'high-performance' });
+    installShaderChecks(this.renderer);
     this.bindContext();
     this.gl = this.renderer.getContext();
+    this.gpuFrameGate = new GpuFrameGate(this.gl);
     Object.assign(this.renderer, { outputColorSpace: T.SRGBColorSpace, toneMapping: T.ACESFilmicToneMapping, toneMappingExposure: 1.05 });
     Object.assign(this.renderer.shadowMap, { enabled: this.settings.quality !== 'low', type: T.PCFSoftShadowMap, autoUpdate: false });
     this.renderer.setClearColor(0x030305);
@@ -123,16 +127,19 @@ export class HeroScene {
     this.panelLinks = [...this.host.querySelectorAll('.room-panel-link')];
     this.bind();
     this.progress('Preparing light and reflections');
-    this.preparation = prepareRoomRenderer(this, { signal });
+    this.preparation = prepareRoomRenderer(this, { signal, allQualities:true });
     this.startup.preparation = await this.preparation;
     await yieldToBrowser(signal);
     this.scene.updateMatrixWorld(true);
     this.updateAtmosphere();
     this.renderer.shadowMap.needsUpdate = true;
     this.render(1 / 60, 0);
-    await this.bannerPortal?.prepareScene(signal);
+    if(!await warmInteractivePaths(this,signal))await this.bannerPortal?.prepareScene(signal);
+    await prepareQualityTargets(this,signal);
+    if(this.renderer.getSize){this.render(1/60,0);await waitForGpu(this.renderer,signal);}
     // First geometry upload and shadow draw stay behind the loading state.
     await yieldToBrowser(signal);
+    this.appliedQuality=this.settings.quality;
     this.ready = true;
     this.startup.readyMs = Math.round(performance.now() - this.startedAt);
     this.host.classList.remove('scene-unavailable');
@@ -173,7 +180,7 @@ export class HeroScene {
 
   async buildVehicle() {
     this.carPivot = new T.Group();
-    this.carPivot.position.set(-.67248, -.084365, 1.28199);
+    this.carPivot.position.set(0, -.084365, 1.458534911);
     this.carPivot.rotation.y = -.460715;
     this.carPivot.scale.setScalar(1.922749);
     this.scene.add(this.carPivot);
@@ -244,6 +251,7 @@ export class HeroScene {
     this.canvas.addEventListener('webglcontextlost', event => {
       event.preventDefault(); this.lost = true; this.ready = false;
       this.sleep(); this.audio?.suspend();
+      this.gpuFrameGate?.reset();
       this.workController.abort(new DOMException('WebGL context lost', 'AbortError'));
       this.callbacks.onUnavailable?.(new Error('WebGL context lost'));
     }, { signal: this.controller.signal });
@@ -272,12 +280,15 @@ export class HeroScene {
     this.host.classList.remove('scene-unavailable', 'scene-ready');
     this.progress('Restoring the showroom');
     await this.prepareEnvironment(signal);
-    this.preparation = prepareRoomRenderer(this, { signal });
+    this.preparation = prepareRoomRenderer(this, { signal, allQualities:true });
     await this.preparation;
     this.renderer.shadowMap.needsUpdate = true;
     this.render(1 / 60, 0);
-    await this.bannerPortal?.prepareScene(signal);
+    if(!await warmInteractivePaths(this,signal))await this.bannerPortal?.prepareScene(signal);
+    await prepareQualityTargets(this,signal);
+    if(this.renderer.getSize){this.render(1/60,0);await waitForGpu(this.renderer,signal);}
     await yieldToBrowser(signal);
+    this.appliedQuality=this.settings.quality;
     this.ready = true;
     this.host.classList.add('scene-ready');
     this.host.dataset.sceneStatus = 'ready';
@@ -332,6 +343,7 @@ export class HeroScene {
   }
 
   clearHover() {
+    this.panelEnergy?.release();
     this.hoverPanel = -1;
     if (this.contentPanel !== null) this.panelContent?.setHovered(this.contentPanel, null);
   }
@@ -358,6 +370,7 @@ export class HeroScene {
       clickable = Boolean(action);
     }
     if (this.hoverPanel >= 0) this.panels[this.hoverPanel].material.uniforms.hoverUv.value.copy(hit.uv);
+    this.panelEnergy?.point(this.hoverPanel,hit?.uv,performance.now());
     this.canvas.style.cursor = this.drag?.mode === 'turntable' || this.drag?.type === 'touch' ? 'grabbing' : clickable ? 'pointer' : this.cameraRig.mode === 'overview' && hit?.object.userData.turntable ? 'grab' : 'default';
   }
 
@@ -434,20 +447,26 @@ export class HeroScene {
  }
 
   setSettings() {
-    if (!this.ready || !this.optics) return;
-    this.optics.setQuality(this.settings.quality);
-    this.reflectionBudget?.configure(this.settings.quality);
-    this.framePacer?.reset();
-    this.applyAtmosphereQuality();
-    this.optics.setVisualSettings(this.settings.visual);
-    for(const beam of this.beams ?? [])beam.material.uniforms.beamSamples.value=this.settings.quality==='high'?32:this.settings.quality==='low'?12:20;
-    if(this.settings.paused || this.reduced.matches)this.turntable?.end(false);
-    if (this.reduced.matches) { this.cameraRig.neutralLook(); this.cameraRig.update(60); }
-    const shadows = this.settings.quality !== 'low';
-    if (this.renderer.shadowMap.enabled !== shadows) {
-      this.renderer.shadowMap.enabled = shadows; this.renderer.shadowMap.needsUpdate = true;
+    if(!this.ready||!this.optics)return;
+    if(this.settings.paused||this.reduced.matches)this.turntable?.end(false);
+    if(this.reduced.matches){this.cameraRig.neutralLook();this.cameraRig.update(60);}
+    if(this.appliedQuality!==this.settings.quality||this.qualityChanging){
+      this.qualityTransition??=new QualityTransition(this);
+      return this.qualityTransition.request(this.settings.quality);
     }
-    this.resize(); this.wake();
+    this.optics.setVisualSettings(this.settings.visual);this.resize();this.wake();
+  }
+
+  applyQuality(quality){
+    this.settings.quality=quality;
+    // Defer optics resizing until the one viewport resize below. Otherwise it
+    // allocates the old DPR, discards it, then allocates the new DPR again.
+    this.optics.setQuality(quality,{resize:false});
+    this.reflectionBudget?.configure(quality);this.applyAtmosphereQuality();
+    this.optics.setVisualSettings(this.settings.visual);
+    for(const beam of this.beams??[])beam.material.uniforms.beamSamples.value=quality==='high'?24:quality==='low'?8:16;
+    this.renderer.shadowMap.enabled=quality!=='low';this.renderer.shadowMap.needsUpdate=true;
+    this.viewportKey=null;this.resize();
   }
 
   setVisualSettings(values) {
@@ -517,7 +536,7 @@ export class HeroScene {
   }
 
   wake() {
-    if (!this.ready || this.disposed || this.raf || this.inFrame || document.hidden || this.lost) return;
+    if (!this.ready || this.disposed || this.raf || this.inFrame || this.qualityChanging || document.hidden || this.lost) return;
     this.last = performance.now(); this.raf = requestAnimationFrame(now => this.frame(now));
   }
   sleep() { cancelAnimationFrame(this.raf); this.raf = 0; this.framePacer?.reset(); this.reflectionBudget?.invalidate(); }
@@ -525,6 +544,9 @@ export class HeroScene {
   frame(now) {
     this.raf = 0;
     if (!this.ready || this.disposed || this.lost || document.hidden) return;
+    if(this.qualityChanging)return;
+    try{if(this.gpuFrameGate&&!this.gpuFrameGate.available()){this.raf=requestAnimationFrame(time=>this.frame(time));return;}}
+    catch(error){this.ready=false;this.sleep();this.callbacks.onUnavailable?.(error);return;}
     const limit=frameRateLimit(this.settings.quality,this.settings.mobileDevice);
     if(!this.framePacer.take(now,limit)){
       this.raf=requestAnimationFrame(time=>this.frame(time));return;
@@ -547,6 +569,7 @@ export class HeroScene {
       this.updateHover();
       const surfacesMoving = this.updatePanels(dt);
       this.updateAtmosphere(); this.render(dt, moving || rotating ? .65 : 0);
+      this.gpuFrameGate?.submit();
       if (moving) this.updateLinkProjection();
       continueFrames = animated || moving || rotating || this.turntable?.moving || surfacesMoving || Boolean(this.pendingPick);
     } finally { this.inFrame = false; }
@@ -563,6 +586,7 @@ export class HeroScene {
       activePanel: this.activePanel, frames: this.frames,
       width: this.canvas.width, height: this.canvas.height,
       drawCalls: this.renderer?.info.render.calls, triangles: this.renderer?.info.render.triangles,
+      qualityChanging:Boolean(this.qualityChanging),gpuBackpressure:this.gpuFrameGate?.skipped??0,qualityError:this.qualityError??null,
       quality: this.settings.quality, fixedPanels: true, contentPanel: this.contentPanel,
       sceneSamples: this.optics?.sceneTarget.samples, visual: this.optics?.visualSettings,
       turntableAngle:this.turntable?.angle,turntableVelocity:this.turntable?.velocity,
@@ -584,6 +608,8 @@ export class HeroScene {
     await this.readyPromise.catch(() => {});
     await this.restoration?.catch(() => {});
     await this.preparation?.catch(() => {});
+    await this.qualityTask?.catch(() => {});
+    this.gpuFrameGate?.dispose();
     disposeObjects(this.scene); disposeObjects(this.pickOccluders);disposeObjects(this.turntablePick);
     this.textures?.forEach(texture => texture.dispose());
     this.panelContent?.dispose();

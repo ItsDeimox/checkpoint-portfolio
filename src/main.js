@@ -33,7 +33,7 @@ function updateMusicUI(){
 }
 function updateHeader(){
  const open=header.querySelector('.room-audio-menu')?.open,focus=header.contains(document.activeElement)?document.activeElement.id:null;
- header.innerHTML=renderRoomHeader(settings,{returnToShowroom:selectedPanel!==null||Boolean(sections?.returning)});header.querySelector('#quality').disabled=phase==='loading'&&!sections?.page;
+ header.innerHTML=renderRoomHeader(settings,{returnToShowroom:selectedPanel!==null||Boolean(sections?.returning)});header.querySelector('#quality').disabled=Boolean(scene?.qualityChanging)||sections?.travelling||(phase==='loading'&&!sections?.page);
  if(open)header.querySelector('.room-audio-menu').open=true;
  const homeLink=header.querySelector('.room-home-link');if(selectedPanel!==null)homeLink?.removeAttribute('aria-current');
  header.querySelector('[data-open-panel]')?.setAttribute('aria-controls','room-section-page');
@@ -59,7 +59,7 @@ async function onReady(){
 const soundtrack=new RoomMusic({settings:settings.music,onState(state){musicState=state;settings.sound=state.enabled;updateMusicUI();scene?.wake();}});
 sections=new SectionRoutes({document,host,root:sectionRoot,canvas,footer,getScene:()=>scene,getPhase:()=>phase,
  entered:()=>!intro||intro.dismissed,setLocation,onSelect(index){selectedPanel=index;announcer.textContent=index===null?'Showroom overview.':`Opening ${ROOM_PANELS[index].title}.`;},
- onNeedScene(){if(!started)start();},onRefresh:updateHeader});
+ onNeedScene(){if(!started)start();},onPreparePage:stage=>sectionMedia.experience?.preparePage(stage),onRefresh:updateHeader});
 updateHeader();
 intro=mountIntro(document,{onActivate(){save();return soundtrack.setEnabled(true);},onDismiss(){sections.ready();const focus=sections.page?sectionRoot.querySelector('#section-title'):canvas;focus?.focus({preventScroll:true});scene?.wake();}});
 const entryNote=document.querySelector('.intro-audio-note');if(entryNote)entryNote.textContent=`Click to enter · Music starts at ${Math.round(settings.music.volume*100)}%`;
@@ -81,7 +81,12 @@ document.addEventListener('click',async event=>{
  }
  if(target.closest('[data-return-showroom], [data-reset-room], [data-close-panel]')){event.preventDefault();sections.close();return;}
  const focus=target.closest('[data-focus-panel]');if(focus){scene?.focusPanel(Number(focus.dataset.focusPanel));return;}
- if(target.closest('#quality')){settings.qualityPreference='manual';settings.quality=QUALITY_VALUES[(QUALITY_VALUES.indexOf(settings.quality)+1)%QUALITY_VALUES.length];save();scene?.setSettings();updateHeader();}
+ if(target.closest('#quality')){
+  if(scene?.qualityChanging||sections.travelling)return;
+  settings.qualityPreference='manual';settings.quality=QUALITY_VALUES[(QUALITY_VALUES.indexOf(settings.quality)+1)%QUALITY_VALUES.length];save();
+  const preparation=scene?.setSettings();updateHeader();
+  await preparation;if(!pageDisposed){save();updateHeader();sections.ready();}
+ }
  else if(target.closest('#sound-toggle, #intro-sound-toggle')){
   settings.sound=!settings.sound;
   try{await soundtrack.setEnabled(settings.sound);}catch{settings.sound=false;musicState={...musicState,enabled:false,status:'error',error:'Unable to play music. Try again.'};updateMusicUI();}
@@ -109,8 +114,13 @@ async function start(){
  if(started)return;started=true;phase='loading';updateHeader();
  startupTimeout=setTimeout(()=>{if(phase!=='loading')return;bootTimedOut=true;unavailable(Error('Showroom preparation timed out.'));scene?.dispose();},60000);startupTimeout.unref?.();
  try{
+  await preloadTask;if(bootTimedOut||pageDisposed)return;
   const {HeroScene}=await loadExperience();if(bootTimedOut)return;
   scene=new HeroScene(canvas,settings,{onPanelRequest:(index,trigger)=>sections.open(index,trigger),onResetRequest:()=>sections.close(),onReady,onUnavailable:unavailable,
+   onQualityState(busy){
+    document.body.classList.toggle('quality-preparing',busy);
+    announcer.textContent=busy?'Preparing graphics quality…':'Graphics quality ready.';updateHeader();
+   },onQualityError(error){announcer.textContent='Quality could not be changed. Previous setting retained.';console.warn('[DXT] Graphics preparation:',error.message);},
    externalBrand:true,music:soundtrack,introPending:()=>!intro.dismissed,onProgress:caption=>intro.progress(caption),
    onMusicState(state){musicState=state;settings.sound=state.enabled;updateMusicUI();}});
   await scene.readyPromise;

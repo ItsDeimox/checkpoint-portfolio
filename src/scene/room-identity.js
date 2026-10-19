@@ -2,6 +2,7 @@ import {Color,MathUtils} from 'three';
 import {DESTINATION_THEMES} from '../pages/destination-data.js';
 
 const neutral=new Color('#eef4ff');
+const inVehicle=(o,root)=>{for(let n=o;n;n=n.parent)if(n===root)return true;return false;};
 const isRed=color=>color&&color.r>color.g*3&&color.r>color.b*2;
 /** Bind authored emitters once; all subsequent interaction changes uniforms.
  * Car materials are deliberately outside the set (no recoloring, no clones). */
@@ -31,12 +32,12 @@ export class RoomIdentity {
   }
   const seen=new Set();
   view.scene.traverse(object=>{
-   if(panelObjects.has(object))return;
+   if(panelObjects.has(object)||inVehicle(object,view.carPivot))return;
    if(object.isLight&&object!==view.screenLight&&isRed(object.color)){
     object.userData.destinationEmitter=true;this.lights.push({object,intensity:object.intensity});
    }
    for(const material of [object.material].flat().filter(Boolean)){
-    if(!material.isMeshBasicMaterial||seen.has(material)||!isRed(material.color))continue;
+    if(!material.isMeshBasicMaterial||seen.has(material)||!(material.userData.destinationEmitter||isRed(material.color)))continue;
     seen.add(material);material.userData.destinationEmitter=true;
     this.emitters.push({material,intensity:Math.max(material.color.r,material.color.g,material.color.b)});
    }

@@ -1,3 +1,4 @@
+import {waitForGpu} from './room-gpu-gate.js';
 import {DESTINATION_THEMES} from '../pages/destination-data.js';
 import {yieldToBrowser} from './room-startup.js';
 import {projectPortalExit} from './room-portal-exit.js';
@@ -94,11 +95,7 @@ export class BannerPortal {
    renderer.setViewport(0,0,4,4);renderer.setScissor(0,0,4,4);renderer.setScissorTest(true);
    renderer.render(this.fullScene,warm);
   }finally{renderer.setRenderTarget(old);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(test);}
-  const gl=renderer.getContext(),fence=gl.fenceSync?.(gl.SYNC_GPU_COMMANDS_COMPLETE,0);
-  if(fence){
-   gl.flush();try{for(let i=0;i<180;i++){signal?.throwIfAborted();const status=gl.clientWaitSync(fence,0,0);if(status!==gl.TIMEOUT_EXPIRED)break;await yieldToBrowser(signal);}}
-   finally{gl.deleteSync(fence);}
-  }
+  await waitForGpu(renderer,signal);
   this.prepared=true;await yieldToBrowser(signal);
  }
  async prepareScene(signal){
@@ -129,7 +126,7 @@ export class BannerPortal {
      panel.portalUniforms.portalMix.value=smooth(sample.age/.75);
      this.sampleExit();this.syncReturnEffects();
      v.render(1/60,0);
-     await yieldToBrowser(signal);
+     await waitForGpu(v.renderer,signal);await yieldToBrowser(signal);
     }
     this.effects.reset();
     panel.portalUniforms.portalMix.value=0;panel.portalUniforms.portalProgress.value=0;
@@ -148,8 +145,7 @@ export class BannerPortal {
    this.panel=null;this.basis=null;this.exitFrame=null;
    if(!signal?.aborted&&!v.pageActive)v.render(1/60,0);
   }
-  const gl=v.renderer.getContext(),fence=gl.fenceSync?.(gl.SYNC_GPU_COMMANDS_COMPLETE,0);
-  if(fence){gl.flush();try{for(let i=0;i<180;i++){signal?.throwIfAborted();if(gl.clientWaitSync(fence,0,0)!==gl.TIMEOUT_EXPIRED)break;await yieldToBrowser(signal);}}finally{gl.deleteSync(fence);}}
+  await waitForGpu(v.renderer,signal);
   signal?.throwIfAborted();this.scenePrepared=true;await yieldToBrowser(signal);
  }
  attachOptics(optics){

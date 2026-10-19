@@ -28,3 +28,20 @@ test('precomputed page gutter avoids first-click forced DOM layout',()=>{
  assert.equal(f.root.style.getPropertyValue('--arrival-gutter'),'15px');
  assert.equal(f.r.arrival.viewport.contentWidth,885);
 });
+
+test('Back waits for a quality transaction instead of drawing into reallocating targets',async()=>{
+ const f=routes();f.r.open(2,null,'none',true);let done,returns=0;
+ f.scene.qualityChanging=true;f.scene.qualityTask=new Promise(resolve=>done=resolve);
+ f.scene.returnPortal=()=>{returns++;return true;};
+ f.r.close();assert.equal(returns,0,'Back submitted a frame while attachments were changing');assert.equal(f.r.page,true);
+ f.scene.qualityChanging=false;done();await f.scene.qualityTask;await Promise.resolve();
+ assert.equal(returns,1);assert.equal(f.r.returning,true);
+});
+test('superseding a deferred Back prevents a late quality callback from closing the new page',async()=>{
+ const f=routes();f.r.open(2,null,'none',true);let done,returns=0;
+ f.scene.qualityChanging=true;f.scene.qualityTask=new Promise(resolve=>done=resolve);
+ f.scene.returnPortal=()=>{returns++;return true;};
+ f.r.close();f.r.open(4,null,'none',true);
+ f.scene.qualityChanging=false;done();await f.scene.qualityTask;await Promise.resolve();
+ assert.equal(returns,0);assert.equal(f.r.index,4);assert.equal(f.r.page,true);
+});

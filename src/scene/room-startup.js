@@ -135,7 +135,7 @@ function prepareOutputDefines(pass, renderer) {
  * compileAsync itself cannot be cancelled: abort stops the next batch after
  * the in-flight driver compilation settles. Await this before renderer disposal.
  */
-export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
+export async function prepareRoomRenderer(view, { signal, onProgress, allQualities = false } = {}) {
   checkAbort(signal);
   const { renderer, scene, camera, optics } = view;
   const linearTarget = optics?.composer?.readBuffer;
@@ -201,7 +201,12 @@ export async function prepareRoomRenderer(view, { signal, onProgress } = {}) {
         group.children.push(proxy);
       }
       renderer.setRenderTarget(sceneTarget);
-      await renderer.compileAsync(group, camera, scene);
+      for(const shadows of allQualities?[true,false]:[oldShadows]){
+        checkAbort(signal);renderer.shadowMap.enabled=shadows;
+        await renderer.compileAsync(group, camera, scene);
+        if(allQualities)await yieldToBrowser(signal);
+      }
+      renderer.shadowMap.enabled=oldShadows;
       group.children.length = 0;
       compiled += batch.length;
       report('scene', compiled, representatives.length);

@@ -1,4 +1,7 @@
 import * as T from 'three';
+import {CubeSurface} from '../ui/cube-surface.js';
+import {CUBE_NETWORK_GLSL} from '../shaders/cube-network.js';
+import {waitForGpu,installShaderChecks} from './room-gpu-gate.js';
 import {createCoveredCarGeometry} from './covered-car.js';
 import {yieldToBrowser} from './room-startup.js';
 
@@ -9,6 +12,7 @@ export class DestinationGraphics {
   this.document=document;this.ready=false;this.mode=null;
   this.canvas=document.createElement('canvas');this.canvas.className='destination-graphics';this.canvas.setAttribute('aria-hidden','true');
   this.renderer=new T.WebGLRenderer({canvas:this.canvas,alpha:true,antialias:true,powerPreference:'low-power'});
+  installShaderChecks(this.renderer);
   this.renderer.setPixelRatio(1);this.renderer.setSize(900,660,false);this.renderer.setClearColor(0x000000,0);
   this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.05;
   this.buildCar();this.buildEnergy();
@@ -40,25 +44,18 @@ export class DestinationGraphics {
  }
  buildEnergy(){
   this.energyScene=new T.Scene();this.energyCamera=new T.OrthographicCamera(-1,1,1,-1,0,1);
-  this.energyBytes=new Uint8Array(40*12*4);this.energyTexture=new T.DataTexture(this.energyBytes,40,12,T.RGBAFormat);this.energyTexture.minFilter=this.energyTexture.magFilter=T.NearestFilter;this.energyTexture.needsUpdate=true;
-  this.energyMaterial=new T.ShaderMaterial({transparent:true,depthTest:false,depthWrite:false,toneMapped:false,
-   uniforms:{uEnergyMap:{value:this.energyTexture},uGrid:{value:new T.Vector2(40,12)},uTheme:{value:new T.Color('#ff2348')}},
+  const blank=new CubeSurface();
+  this.energyTexture=new T.DataTexture(blank.data,blank.textureWidth,blank.textureHeight,T.RGBAFormat,T.FloatType);
+  this.energyTexture.minFilter=this.energyTexture.magFilter=T.NearestFilter;this.energyTexture.needsUpdate=true;
+  this.energyMaterial=new T.ShaderMaterial({depthTest:false,depthWrite:false,
+   uniforms:{uEnergyMap:{value:this.energyTexture},uEnergySize:{value:blank.size},uEnergyActive:{value:0},uReduced:{value:0},uSurfaceSpan:{value:new T.Vector2(1,1)},uTheme:{value:new T.Color('#ff2348')}},
    vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
-   fragmentShader:`varying vec2 vUv;uniform sampler2D uEnergyMap;uniform vec2 uGrid;uniform vec3 uTheme;
-    float line(float d,float w){return 1.-smoothstep(w,w+max(fwidth(d),.00035),abs(d));}
-    vec4 cell(vec2 p){return texture2D(uEnergyMap,(p+.5)/uGrid);}
-    void main(){
-     vec2 g=clamp(vUv,0.,.99999)*(uGrid-1.),f=fract(g),c=floor(g);
-     vec4 a=cell(c),b=cell(c+vec2(1,0)),d=cell(c+vec2(1,1)),c0=cell(c+vec2(0,1));
-     float e=mix(mix(a.r,b.r,f.x),mix(c0.r,d.r,f.x),f.y)*2.;
-     float wires=max(max(line(f.x,.016)*step(.26,a.g),line(f.y,.016)*step(.28,a.b)),line((f.x-f.y)*.707,.012)*step(.76,a.g));
-     float radiance=pow(max(e-.02,0.),.92)*(1.+3.7*smoothstep(.18,1.1,e));
-     float signal=radiance*wires*.98;
-     float dotNode=exp(-dot(min(f,1.-f),min(f,1.-f))*280.)*radiance;
-     float glow=signal*.40+dotNode*.24+radiance*.025;
-     vec3 color=mix(uTheme,vec3(1.,.75,.77),clamp(signal*.09,0.,.4));
-     gl_FragColor=vec4(color*min(glow*2.,2.),clamp(glow,0.,.94));
-    }`});
+   fragmentShader:`varying vec2 vUv;uniform vec3 uTheme;uniform vec2 uSurfaceSpan;${CUBE_NETWORK_GLSL}
+   void main(){vec2 wave=network(4,(vUv-.5)*uSurfaceSpan+.5);vec3 tint=mix(vec3(.80,.92,1.),uTheme,.60);
+    gl_FragColor=vec4(mix(tint,uTheme,.70)*(wave.x*.42+wave.y*.46),1.);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+   }`});
   this.energyScene.add(new T.Mesh(new T.PlaneGeometry(2,2),this.energyMaterial));
  }
  async prepare(signal){
@@ -66,10 +63,10 @@ export class DestinationGraphics {
   await this.renderer.compileAsync(this.carScene,this.carCamera);signal?.throwIfAborted();
   this.renderer.render(this.carScene,this.carCamera);await yieldToBrowser(signal);
   // Nonzero data also exercises the network draw, not just an empty program.
-  this.energyBytes.fill(127);this.energyTexture.needsUpdate=true;
+  const warm=new CubeSurface();warm.inject(.5,.5,.8);warm.step(1/30);this.uploadEnergy(warm);
   await this.renderer.compileAsync(this.energyScene,this.energyCamera);signal?.throwIfAborted();
   this.renderer.render(this.energyScene,this.energyCamera);await yieldToBrowser(signal);
-  this.energyBytes.fill(0);this.energyTexture.needsUpdate=true;this.ready=true;
+  warm.clear();this.uploadEnergy(warm);await waitForGpu(this.renderer,signal);this.ready=true;
  }
  attach(host,mode){
   if(!this.ready||this.disposed)return;
@@ -83,16 +80,26 @@ export class DestinationGraphics {
   const ratio=Math.min(limit,this.document.defaultView?.devicePixelRatio||1,960/cssWidth,660/cssHeight);
   const w=Math.round(cssWidth*ratio),h=Math.round(cssHeight*ratio);
   if(this.canvas.width!==w||this.canvas.height!==h)this.renderer.setSize(w,h,false);
+  this.energyMaterial.uniforms.uSurfaceSpan.value.set(...(cssWidth>=cssHeight?[1,cssHeight/cssWidth]:[cssWidth/cssHeight,1]));
   this.carCamera.aspect=cssWidth/cssHeight;this.carCamera.updateProjectionMatrix();
  }
  uploadEnergy(grid){
-  const a=grid.values;
-  for(let i=0;i<a.length;i++){
-   this.energyBytes[i*4]=Math.min(255,a[i]*127.5);
-   this.energyBytes[i*4+1]=(Math.imul(i+7,1103515245)>>>16)&255;
-   this.energyBytes[i*4+2]=(Math.imul(i+29,1664525)>>>8)&255;this.energyBytes[i*4+3]=255;
+  const u=this.energyMaterial.uniforms;
+  u.uEnergyActive.value=grid.awake?1:0;
+  if(this.uploadedField===grid&&this.uploadedVersion===grid.version)return;
+  this.energyTexture.image.data=grid.data;this.energyTexture.needsUpdate=true;
+  this.uploadedField=grid;this.uploadedVersion=grid.version;
+ }
+ async prepareSurface(host,signal){
+  this.attach(host,host.dataset.destinationSurface);this.draw(0,0,true);
+  await waitForGpu(this.renderer,signal);
+  if(this.mode==='car'){
+   const image=this.document.createElement('img');image.className='destination-preview';image.alt='';image.setAttribute('aria-hidden','true');
+   // Synchronous readback is confined to the loading cover.
+   this.draw(0,0,true);image.src=this.canvas.toDataURL('image/png');
+   await image.decode();host.append(image);
   }
-  this.energyTexture.needsUpdate=true;
+  this.detach();
  }
  draw(dt,time,reduced=false){
   if(this.disposed||!this.ready)return;
@@ -102,7 +109,7 @@ export class DestinationGraphics {
    this.renderer.render(this.carScene,this.carCamera);
   }else if(this.mode==='energy')this.renderer.render(this.energyScene,this.energyCamera);
  }
- detach(){this.host?.parentElement?.removeAttribute('data-graphics-ready');this.canvas.remove();this.host=null;this.mode=null;}
+ detach(){if(!this.host?.querySelector('.destination-preview'))this.host?.parentElement?.removeAttribute('data-graphics-ready');this.canvas.remove();this.host=null;this.mode=null;}
  dispose(){
   if(this.disposed)return;this.disposed=true;this.detach();
   for(const scene of [this.carScene,this.energyScene])scene.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
