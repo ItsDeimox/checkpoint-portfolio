@@ -48,11 +48,11 @@ export class DestinationGraphics {
   this.energyTexture=new T.DataTexture(blank.data,blank.textureWidth,blank.textureHeight,T.RGBAFormat,T.FloatType);
   this.energyTexture.minFilter=this.energyTexture.magFilter=T.NearestFilter;this.energyTexture.needsUpdate=true;
   this.energyMaterial=new T.ShaderMaterial({depthTest:false,depthWrite:false,
-   uniforms:{uEnergyMap:{value:this.energyTexture},uEnergySize:{value:blank.size},uEnergyActive:{value:0},uReduced:{value:0},uSurfaceSpan:{value:new T.Vector2(1,1)},uTheme:{value:new T.Color('#ff2348')}},
+   uniforms:{uEnergyMap:{value:this.energyTexture},uEnergySize:{value:blank.size},uEnergyActive:{value:0},uEnergyStrength:{value:.20},uReduced:{value:0},uSurfaceSpan:{value:new T.Vector2(1,1)},uTheme:{value:new T.Color('#ff2348')}},
    vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
-   fragmentShader:`varying vec2 vUv;uniform vec3 uTheme;uniform vec2 uSurfaceSpan;${CUBE_NETWORK_GLSL}
+   fragmentShader:`varying vec2 vUv;uniform vec3 uTheme;uniform vec2 uSurfaceSpan;uniform float uEnergyStrength;${CUBE_NETWORK_GLSL}
    void main(){vec2 wave=network(4,(vUv-.5)*uSurfaceSpan+.5);vec3 tint=mix(vec3(.80,.92,1.),uTheme,.60);
-    gl_FragColor=vec4(mix(tint,uTheme,.70)*(wave.x*.42+wave.y*.46),1.);
+    gl_FragColor=vec4(mix(tint,uTheme,.70)*(wave.x*.42+wave.y*.46)*uEnergyStrength,1.);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
    }`});

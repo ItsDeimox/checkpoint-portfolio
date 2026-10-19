@@ -5,17 +5,17 @@ import {CubeSurface} from './cube-surface.js';
 export class DestinationExperience {
  constructor(root){
   this.root=root;this.document=root.ownerDocument;this.window=this.document.defaultView;
-  this.controller=new AbortController();this.network=new CubeSurface();this.pointer=null;this.raf=0;this.time=0;this.visible=true;
+  this.controller=new AbortController();this.network=new CubeSurface();this.pointer=null;this.pendingPointer=null;this.raf=0;this.time=0;this.visible=true;
   this.reduced=this.window.matchMedia('(prefers-reduced-motion: reduce)');
   const on=(el,event,handler,options={})=>el?.addEventListener(event,handler,{...options,signal:this.controller.signal});
   on(root,'pointermove',e=>this.point(e));
-  on(root,'pointerout',e=>{const button=e.target.closest?.('[data-energy-button]');if(button&&!button.contains(e.relatedTarget)){this.pointer=null;this.network.release();this.wake();}});
+  on(root,'pointerout',e=>{const button=e.target.closest?.('[data-energy-button]');if(button&&!button.contains(e.relatedTarget)){this.pointer=null;this.pendingPointer=null;this.network.release();this.wake();}});
   on(root,'focusin',e=>{if(e.target.closest?.('[data-energy-button]')){this.network.inject(.5,.5,.7);this.wake();}});
   on(root,'click',e=>this.click(e));
   on(root,'wheel',e=>this.wheel(e),{passive:false});
   on(root,'scroll',e=>{if(e.target.matches?.('[data-group-track]'))this.groupScroll(e.target);},{capture:true,passive:true});
   on(this.document,'visibilitychange',()=>this.document.hidden?this.sleep():this.sync());
-  on(this.reduced,'change',()=>{this.sleep();this.network.clear();this.sync();});
+  on(this.reduced,'change',()=>{this.sleep();this.pendingPointer=null;this.network.clear();this.sync();});
   on(this.window,'resize',()=>{this.graphics?.resize();this.drawOnce();});
   if(typeof this.window.MutationObserver==='function'){
    this.observer=new this.window.MutationObserver(()=>this.sync());this.observer.observe(root,{childList:true});
@@ -55,9 +55,9 @@ export class DestinationExperience {
   if(this.disposed)return;
   const surface=this.root.querySelector('[data-destination-surface]');
   const canShow=!this.root.hidden&&Boolean(surface);
-  if(!canShow){this.sleep();this.graphics?.detach();this.surface=null;this.pointer=null;return;}
+  if(!canShow){this.sleep();this.graphics?.detach();this.surface=null;this.pointer=null;this.pendingPointer=null;return;}
   if(this.surface!==surface){
-   this.intersection?.disconnect();this.surface=surface;this.pointer=null;this.network.clear();this.visible=true;
+   this.intersection?.disconnect();this.surface=surface;this.pointer=null;this.pendingPointer=null;this.network.clear();this.visible=true;
    this.intersection?.observe(surface);
    for(const section of this.root.querySelectorAll('[data-scroll-reveal]')){
     section.classList.toggle('reveal-enabled',!this.reduced.matches&&Boolean(this.intersection));this.intersection?.observe(section);
@@ -77,7 +77,10 @@ export class DestinationExperience {
   this.network.setAspect(r.width/r.height);
   const x=(event.clientX-r.left)/r.width,y=(event.clientY-r.top)/r.height;
   if(this.reduced.matches)return;
-  this.pointer={x,y:1-y};this.network.point(x,1-y,event.timeStamp);this.wake();
+  this.pointer={x,y:1-y};
+  // Coalesce high-frequency pointer events. The reference solver runs once
+  // for the most recent position at the next painted frame, not per event.
+  this.pendingPointer={x,y:1-y,time:event.timeStamp};this.wake();
  }
  wheel(event){
   const track=event.target.closest?.('[data-group-track]');if(!track||event.ctrlKey||this.root.inert||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
@@ -116,7 +119,7 @@ export class DestinationExperience {
  }
  wake(){
   if(this.raf||this.disposed||!this.gpuReady||!this.surface||this.root.inert||this.root.hidden||this.document.hidden||!this.visible||this.reduced.matches)return;
-  if(this.surface.dataset.destinationSurface==='energy'&&!this.network.awake)return;
+  if(this.surface.dataset.destinationSurface==='energy'&&!this.network.awake&&!this.pendingPointer)return;
   this.last=this.window.performance.now();this.raf=this.window.requestAnimationFrame(now=>this.frame(now));
  }
  frame(now){
@@ -126,6 +129,9 @@ export class DestinationExperience {
   if(step<1/30){this.raf=this.window.requestAnimationFrame(t=>this.frame(t));return;}
   const dt=Math.min(.05,step);this.last=now;this.time+=dt;
   if(this.surface.dataset.destinationSurface==='energy'){
+   if(this.pendingPointer){
+    const p=this.pendingPointer;this.pendingPointer=null;this.network.point(p.x,p.y,p.time);
+   }
    this.network.step(dt);this.graphics.uploadEnergy(this.network);
   }
   this.graphics.draw(dt,this.time);

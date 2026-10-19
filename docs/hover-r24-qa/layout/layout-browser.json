@@ -1,0 +1,51 @@
+{
+  "scope": "Native desktop and mobile page layout",
+  "errors": [],
+  "checks": [
+    {
+      "test": "CTA wave decays without a stationary cursor source",
+      "pass": true
+    },
+    {
+      "test": "page 1",
+      "pass": true
+    },
+    {
+      "test": "page 2",
+      "pass": true
+    },
+    {
+      "test": "page 3",
+      "pass": true
+    },
+    {
+      "test": "page 4",
+      "pass": true
+    },
+    {
+      "test": "mobile 0",
+      "pass": true,
+      "width": 390
+    },
+    {
+      "test": "mobile 1",
+      "pass": true,
+      "width": 390
+    },
+    {
+      "test": "mobile 2",
+      "pass": true,
+      "width": 390
+    },
+    {
+      "test": "mobile 3",
+      "pass": true,
+      "width": 390
+    },
+    {
+      "test": "mobile 4",
+      "pass": true,
+      "width": 390
+    }
+  ]
+}

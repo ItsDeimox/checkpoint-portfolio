@@ -46,7 +46,7 @@ export function configurePortal(panel){
  m.fragmentShader=m.fragmentShader.replace('vec3 h=projection*vec3(artUv,1.);',`artUv+=vec2(sin(artUv.y*35.-portalAge*9.),cos(artUv.x*22.+portalAge*6.))*portalMix*(1.-portalMix)*.065;artUv=clamp(artUv,vec2(.001),vec2(.999));vec3 h=projection*vec3(artUv,1.);`);
  m.fragmentShader=m.fragmentShader.replace('gl_FragColor=vec4(c,1.);',`if(portalMix>0.){
   float radius=portalMix*1.22;float aperture=1.-smoothstep(radius-.09,radius,max(abs(p.x-.5),abs(p.y-.5))*2.);
-  c=mix(c,portalRadiance(cameraPosition,normalize(vWorld-cameraPosition)),aperture);
+  if(aperture>0.)c=mix(c,portalRadiance(cameraPosition,normalize(vWorld-cameraPosition)),aperture);
   float rim=abs(max(abs(p.x-.5),abs(p.y-.5))*2.-radius);
   float filament=1.-smoothstep(.005,.022,rim);
   float halo=exp(-rim*38.)*.32;
@@ -262,7 +262,10 @@ export class BannerPortal {
  }
  update(delta){
   if(!this.active)return false;
-  const dt=Number.isFinite(delta)?Math.max(0,Math.min(delta,.1)):0;
+  // The curve is sampled by elapsed time, not by the number of GPU draws.
+  // A slow frame must not turn the 3.1-second trip into a 20-second crawl.
+  // Visibility resume resets the scene clock; work is bounded to one journey.
+  const dt=Number.isFinite(delta)?Math.max(0,Math.min(delta,PORTAL_APPROACH_SECONDS+PORTAL_FLIGHT_SECONDS)):0;
   if(this.returning)return this.updateReturn(dt);
   const v=this.view,u=this.panel.portalUniforms;
   this.age+=dt;u.portalAge.value=this.age;u.portalMix.value=smooth(this.age/.75);

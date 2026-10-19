@@ -1,0 +1,92 @@
+{
+  "result": {
+    "orientation": [
+      {
+        "index": 0,
+        "y": 0.16,
+        "hit": 24497,
+        "mirror": 0,
+        "pass": true
+      },
+      {
+        "index": 0,
+        "y": 0.84,
+        "hit": 25841,
+        "mirror": 0,
+        "pass": true
+      },
+      {
+        "index": 1,
+        "y": 0.16,
+        "hit": 49022,
+        "mirror": 0,
+        "pass": true
+      },
+      {
+        "index": 1,
+        "y": 0.84,
+        "hit": 54094,
+        "mirror": 0,
+        "pass": true
+      },
+      {
+        "index": 2,
+        "y": 0.16,
+        "hit": 32685,
+        "mirror": 0,
+        "pass": true
+      },
+      {
+        "index": 2,
+        "y": 0.84,
+        "hit": 34727,
+        "mirror": 0,
+        "pass": true
+      },
+      {
+        "index": 3,
+        "y": 0.16,
+        "hit": 30507,
+        "mirror": 0,
+        "pass": true
+      },
+      {
+        "index": 3,
+        "y": 0.84,
+        "hit": 32447,
+        "mirror": 0,
+        "pass": true
+      },
+      {
+        "index": 4,
+        "y": 0.16,
+        "hit": 38070,
+        "mirror": 0,
+        "pass": true
+      },
+      {
+        "index": 4,
+        "y": 0.84,
+        "hit": 38841,
+        "mirror": 0,
+        "pass": true
+      }
+    ],
+    "cta": [
+      {
+        "gain": 1,
+        "sum": 744455,
+        "peak": 255
+      },
+      {
+        "gain": 0.2,
+        "sum": 210981,
+        "peak": 236
+      }
+    ],
+    "allOriented": true,
+    "reduced": true,
+    "glError": 0
+  },
+  "errors": []
+}

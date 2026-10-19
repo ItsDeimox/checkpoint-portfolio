@@ -14,7 +14,7 @@ export class RoomPanelEnergy {
    Object.assign(m.uniforms,{uEnergyMap:{value:texture},uEnergySize:{value:field.size},uEnergyActive:{value:0},uReduced:{value:0},uSurfaceSpan:{value:new Vector2(...field.span)}});
    m.fragmentShader='varying vec2 vUv;uniform vec2 uSurfaceSpan;\n'+CUBE_NETWORK_GLSL+'\n'+m.fragmentShader.replace('varying vec2 vUv;','');
    m.fragmentShader=m.fragmentShader.replace('p+holoWarp(p)','p');
-   m.fragmentShader=m.fragmentShader.replace('c += holoLight(p);',`vec2 cubeWave=network(4,(p-.5)*uSurfaceSpan+.5);
+   m.fragmentShader=m.fragmentShader.replace('c += holoLight(p);',`vec2 cubeWave=network(4,(vUv-.5)*uSurfaceSpan+.5);
     vec3 cubeTint=mix(vec3(.80,.92,1.),cardAccent,.60);
     c+=mix(cubeTint,cardAccent,.70)*(cubeWave.x*.42+cubeWave.y*.46)*(1.-portalMix);`);
    m.needsUpdate=true;return{panel,field,texture,version:field.version};
@@ -28,6 +28,16 @@ export class RoomPanelEnergy {
   this.entries[index]?.field.point(uv.x,uv.y,time);
  }
  update(dt){
+  // Once navigation owns the surface, no hover is visible. Stop the five
+  // closed wave graphs instead of simulating/uploading them inside the tunnel.
+  if(this.view.bannerPortal?.active||this.view.bannerPortal?.interior){
+   this.release();
+   for(const {panel,field,texture}of this.entries){
+    if(field.awake){field.clear();texture.needsUpdate=true;}
+    panel.material.uniforms.uEnergyActive.value=0;
+   }
+   return false;
+  }
   let moving=false;
   for(const {panel,field,texture} of this.entries){
    const u=panel.material.uniforms;
