@@ -1,13 +1,17 @@
-name: DXT hover flow isolated dependencies
+name: DXT continuous hover verification
 on:
   push:
     branches: [codex/dxt-hover-flow]
 permissions:
   contents: read
 jobs:
-  source:
+  verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 18
+    permissions:
+      contents: write
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /tmp/dxt-browsers
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -15,14 +19,46 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Prepare exact locked dependencies
+      - name: Apply exact locally tested change
+        run: |
+          node -e 'const fs=require("fs"),z=require("zlib"),c=require("crypto");const d=fs.readFileSync(".github/dxt-hover-flow.br");if(c.createHash("sha256").update(d).digest("hex")!=="678bfd5bafcc8d102b44b3b62640bab817472c80bf46004abb7e34c4250cc237")throw Error("Patch mismatch");fs.writeFileSync("/tmp/flow.patch",z.brotliDecompressSync(d))'
+          git apply --check /tmp/flow.patch
+          git apply --index /tmp/flow.patch
+          git diff --cached --check
+      - name: Install locked app and pinned test browser
         run: |
           npm ci --prefix dxrkths
-          mkdir -p /tmp/dxt-flow-input
-          tar -czf /tmp/dxt-flow-input/dependencies.tar.gz dxrkths/node_modules
+          npm install --prefix /tmp/dxt-browser --no-package-lock --no-audit --no-fund playwright@1.56.1
+          node /tmp/dxt-browser/node_modules/playwright/cli.js install --with-deps --only-shell chromium
+      - name: Complete production build
+        run: |
+          set -o pipefail
+          npm run build --prefix dxrkths | tee /tmp/dxt-flow-build.log
+      - name: Verify continuous rendered pixels and unchanged native navigation
+        env:
+          NODE_PATH: /tmp/dxt-browser/node_modules
+        run: |
+          cd dxrkths
+          node tools/server.mjs --port 3000 >/tmp/dxt-flow-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3000/ >/dev/null && break; sleep .2; done
+          export DXT_QA_OUT=/tmp/dxt-flow-qa
+          mkdir -p "$DXT_QA_OUT"
+          node tests/hover-gpu-browser.cjs
+          node tests/card-flow-browser.cjs
+          node tests/stability-browser.cjs
+      - name: Save verified candidate without changing any branch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .github/dxt-hover-flow-candidate.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
         with:
-          name: dxt-flow-dependencies
-          path: /tmp/dxt-flow-input
+          name: dxt-continuous-hover-qa
+          path: |
+            /tmp/dxt-flow-qa/
+            /tmp/dxt-flow-build.log
+            candidate.json
           retention-days: 2
-          compression-level: 0
+          if-no-files-found: warn
