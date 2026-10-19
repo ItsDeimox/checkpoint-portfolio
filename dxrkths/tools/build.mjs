@@ -6,7 +6,7 @@ import {createHash} from 'node:crypto';
 import {build} from 'esbuild';
 
 const PROJECT_ROOT = fileURLToPath(new URL('..', import.meta.url));
-export const BUILD_VERSION = 'dxt-showroom-r25-gpu-raster-aa';
+export const BUILD_VERSION = 'dxt-showroom-r26-native-portal';
 export const ROOM_ALIASES = Object.freeze(['groups', 'projects', 'about', 'contact', 'berserk']);
 
 // Keep archived source/assets in the repository. Only the persistent room's
@@ -35,6 +35,7 @@ export const RUNTIME_FILES = Object.freeze([
   'assets/images/berserk/game-5.webp',
   'src/ui/room-section-routes.js',
   'src/ui/portal-arrival.js',
+  'src/ui/portal-page-surface.js',
   'src/styles-sections.css',
   'src/core.js',
   'src/content.js',

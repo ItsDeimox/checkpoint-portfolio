@@ -1,5 +1,6 @@
 import {arrivalVisual,arrivalTransform,arrivalClip,destinationGutter} from './portal-arrival.js';
 import {renderSectionPage} from '../pages/section-pages.js';
+import {PortalPageSurface} from './portal-page-surface.js';
 
 /** Yield past a paint opportunity while the loading cover is still visible. */
 function preloadPaint(view){
@@ -14,12 +15,13 @@ function preloadPaint(view){
 
 /** One physical page surface for both directions; history owns cancellation. */
 export class SectionRoutes {
- constructor({document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage,onCaptureReturn}){
-  Object.assign(this,{document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage,onCaptureReturn});
+ constructor({document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage}){
+  Object.assign(this,{document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage});
   this.onArrivalResize=()=>this.fitArrivalViewport();
   document.defaultView?.addEventListener?.('resize',this.onArrivalResize,{passive:true});
   this.index=null;this.token=0;this.page=false;this.travelling=false;this.pending=false;this.returning=false;this.waitingReturn=false;
   this.pageCache=new Map();this.mountedIndex=null;this.previewIndex=null;this.preloadTask=null;this.preloadedImages=[];
+  this.pageSurface=new PortalPageSurface(document,root);
  }
  /** Parse, decode and lay out every destination under the intro cover.
   * Only moving already-created nodes and compositor transforms remains on click. */
@@ -115,7 +117,6 @@ export class SectionRoutes {
  prepareArrival(index,token,reuse=false,scroll=0){
   this.arrival={index,token,reverse:reuse,opacity:reuse?1:0,scroll};
   if(!reuse&&!this.usePreview(index))this.mountPage(index);
-  if(reuse&&this.returnPreview){this.stashMounted();this.root.replaceChildren(this.returnPreview);this.previewIndex=index;scroll=0;}
   this.root.setAttribute('data-portal-arrival',reuse?'retreat':'preview');this.root.setAttribute('aria-hidden','true');
   this.root.style.setProperty('--arrival-gutter','0px');this.root.style.opacity=reuse?'1':'0';
   this.root.style.transform='none';this.root.style.clipPath='none';this.root.inert=true;this.root.hidden=false;
@@ -126,8 +127,11 @@ export class SectionRoutes {
  fitArrivalViewport(){
   if(!this.arrival)return;
   const win=this.document.defaultView,width=win?.innerWidth||this.canvas.clientWidth||this.root.clientWidth||900,height=win?.innerHeight||this.canvas.clientHeight||this.root.clientHeight||600;
+  if(this.pageSurface.active&&(this.pageSurface.width!==width||this.pageSurface.height!==height)){
+   this.pageSurface.finish();this.root.scrollTop=this.arrival.scroll;
+  }
   this.root.style.setProperty('--arrival-gutter','0px');
-  const cached=this.returnPreviewViewport??this.pageCache.get(this.arrival.index)?.viewport;
+  const cached=this.pageCache.get(this.arrival.index)?.viewport;
   if(this.previewIndex!==null&&(cached?.width!==width||cached?.height!==height)){
    this.mountPage(this.arrival.index);this.root.scrollTop=this.arrival.scroll;
   }
@@ -142,7 +146,7 @@ export class SectionRoutes {
   if(token!==this.token||!this.arrival||this.arrival.index!==index)return;
   const v=this.arrival.viewport;
   const transform=arrivalTransform(frame,v?.contentWidth,v?.height);
-  if(!transform){this.root.style.opacity='0';return;}
+  if(!transform){this.root.style.opacity='0';this.pageSurface.update({transform:'none',opacity:0,clip:'none'});return;}
   this.root.style.transform=transform;
   this.root.style.clipPath=arrivalClip(frame);
   const opacity=frame.opacity??arrivalVisual(progress).opacity;
@@ -150,11 +154,11 @@ export class SectionRoutes {
    this.arrival.opacity=opacity;this.root.style.opacity=String(opacity);
    this.root.style.setProperty('--arrival-opacity',String(opacity));
   }
+  this.pageSurface.update({transform,opacity,clip:this.root.style.clipPath});
  }
  clearReturn(){
-  this.returnCaptureController?.abort();this.returnCaptureController=null;this.capturingReturn=false;this.returnPreviewReady=false;
-  if(this.returnPreview){this.returnPreview.width=this.returnPreview.height=0;this.returnPreview=null;}
-  this.returnPreviewViewport=null;
+  this.pageSurface.finish();this.nativeReturnReady=false;this.nativeReturnScroll=null;
+  this.capturingReturn=false;
   this.returning=this.waitingReturn=false;this.root.inert=false;this.root.removeAttribute('aria-busy');
   this.document.body.classList.remove('section-returning','section-return-pending');
  }
@@ -172,8 +176,13 @@ export class SectionRoutes {
   this.document.body.classList.add('portal-travelling');this.document.body.classList.remove('section-active');
   this.canvas.inert=true;this.footer.inert=true;
   this.prepareArrival(index,token);
-  const started=scene.enterPortal(index,()=>this.show(index,token),(p,frame)=>this.revealArrival(index,token,p,frame),()=>this.arrivalViewport());
-  if(!started)this.show(index,token);
+  const start=()=>{
+   if(token!==this.token)return;
+   const started=scene.enterPortal(index,()=>this.show(index,token),(p,frame)=>this.revealArrival(index,token,p,frame),()=>this.arrivalViewport());
+   if(!started)this.show(index,token);
+  };
+  if(this.previewIndex===null&&this.pageSurface.supported){scene.sleep?.();this.pageSurface.capture().then(start);}
+  else start();
  }
  ready(){
   if(this.waitingReturn){this.startReturn(this.token);return;}
@@ -203,27 +212,16 @@ export class SectionRoutes {
    Promise.resolve(busy.qualityTask).then(()=>{if(pendingToken===this.token)this.close(historyMode);});
    return;
   }
-  const fromPage=this.page,index=this.index,scroll=this.document.defaultView?.scrollY??Math.max(0,-(this.root.getBoundingClientRect?.().top??0));
-  // The native page is stationary and the room is asleep during capture. This
-  // preserves gallery, slider and scroll state without moving a cold DOM layer
-  // through the GPU compositor on the first return.
-  if(!immediate&&fromPage&&busy?.ready&&this.document.defaultView?.innerWidth&&this.entered()&&!busy.reduced?.matches&&this.getPhase()!=='unavailable'&&this.onCaptureReturn&&!this.returnPreviewReady){
-   const token=++this.token,win=this.document.defaultView;
-   const viewport={width:win.innerWidth,height:win.innerHeight,gutter:Math.max(0,win.innerWidth-this.root.clientWidth)};
-   const controller=this.returnCaptureController=new AbortController();
-   this.capturingReturn=true;this.root.inert=true;this.root.setAttribute('aria-busy','true');
-   const finish=preview=>{
-    if(token!==this.token||controller.signal.aborted){if(preview)preview.width=preview.height=0;return;}
-    if(preview&&(win.innerWidth!==viewport.width||win.innerHeight!==viewport.height)){preview.width=preview.height=0;preview=null;}
-    this.returnPreview=preview;this.returnPreviewViewport=preview?viewport:null;
-    this.capturingReturn=false;this.returnPreviewReady=true;this.close(historyMode,false);
-   };
-   Promise.resolve().then(()=>this.onCaptureReturn(this.root,{height:viewport.height,scroll},controller.signal)).then(finish,error=>{
-    if(!controller.signal.aborted&&token===this.token){console.warn('[DXT] Return preview uses the DOM fallback:',error.message);finish(null);}
+  const fromPage=this.page,index=this.index,scroll=this.nativeReturnScroll??this.document.defaultView?.scrollY??Math.max(0,-(this.root.getBoundingClientRect?.().top??0));
+  if(!immediate&&fromPage&&busy?.ready&&this.entered()&&!busy.reduced?.matches&&this.getPhase()!=='unavailable'&&this.pageSurface.supported&&!this.nativeReturnReady){
+   const token=++this.token;this.nativeReturnScroll=scroll;this.capturingReturn=true;this.root.inert=true;
+   this.pageSurface.capture({scroll,reverse:true}).then(()=>{
+    if(token!==this.token)return;
+    this.capturingReturn=false;this.nativeReturnReady=true;this.close(historyMode,false);
    });
    return;
   }
-  this.returnPreviewReady=false;
+  this.nativeReturnReady=false;
   // Preserve the exact visible pose if a direct-page entrance is still
   // settling when Back is pressed. Do not snap that content to its final pose.
   const layout=fromPage&&!immediate?this.root.querySelector('.section-layout'):null;

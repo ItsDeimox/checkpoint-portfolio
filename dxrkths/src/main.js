@@ -62,9 +62,6 @@ sections=new SectionRoutes({document,host,root:sectionRoot,canvas,footer,getScen
  onNeedScene(){if(!started)start();},onPreparePage:async(stage,signal)=>{
   await sectionMedia.experience?.preparePage(stage);
   const {capturePagePreview}=await loadExperience();return capturePagePreview(stage,signal);
- },onCaptureReturn:async(root,viewport,signal)=>{
-  sectionMedia.experience?.sleep();sectionMedia.experience?.drawOnce();
-  const {capturePagePreview}=await loadExperience();return capturePagePreview(root,signal,viewport);
  },onRefresh:updateHeader});
 updateHeader();
 intro=mountIntro(document,{onActivate(){save();return soundtrack.setEnabled(true);},onDismiss(){sections.ready();const focus=sections.page?sectionRoot.querySelector('#section-title'):canvas;focus?.focus({preventScroll:true});scene?.wake();}});

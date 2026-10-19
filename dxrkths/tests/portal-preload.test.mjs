@@ -49,36 +49,36 @@ function returnFixture(capture){
  root.innerHTML='<article>current gallery</article>';root.querySelector=()=>null;root.clientWidth=1185;canvas.focus=()=>{};
  const original=root.firstChild,win={innerWidth:1200,innerHeight:800,scrollY:140,scrollTo(){}};
  const scene={ready:true,reduced:{matches:false},returnPortal(i,done){this.started=(this.started??0)+1;this.done=done;return true;},resumeShowroom(){}};
- const routes=new SectionRoutes({document:{body,defaultView:win},root,canvas,host:new FakeElement(),footer:new FakeElement(),getScene:()=>scene,getPhase:()=> 'ready',entered:()=>true,onSelect(){},setLocation(){},onCaptureReturn:capture});
+ const routes=new SectionRoutes({document:{body,defaultView:win},root,canvas,host:new FakeElement(),footer:new FakeElement(),getScene:()=>scene,getPhase:()=> 'ready',entered:()=>true,onSelect(){},setLocation(){}});
+ routes.pageSurface={supported:true,active:false,width:1200,height:800,capture(options){this.active=true;return Promise.resolve(capture(options));},finish(){this.active=false;},update(){}};
  routes.page=true;routes.index=1;routes.mountedIndex=1;routes.pageCache.set(1,{holder,viewport:{width:1200,height:800,gutter:15}});
  return {routes,root,scene,holder,original};
 }
 const nextTask=()=>new Promise(resolve=>setImmediate(resolve));
-test('return captures current scroll once while parked, then animates only the bitmap and releases it',async()=>{
- let resolve,calls=0;const preview=new FakeElement('canvas');preview.width=1200;preview.height=800;
- const f=returnFixture((root,viewport)=>{calls++;assert.equal(viewport.scroll,140);assert.equal(viewport.height,800);return new Promise(r=>resolve=r);});
+test('return captures current scroll once while parked and releases the native surface on completion',async()=>{
+ let resolve,calls=0;
+ const f=returnFixture(options=>{calls++;assert.equal(options.scroll,140);assert.equal(options.reverse,true);return new Promise(r=>resolve=r);});
  f.routes.close();f.routes.close();await nextTask();
  assert.equal(calls,1);assert.equal(f.root.inert,true);assert.equal(f.scene.started,undefined);
- resolve(preview);await nextTask();
- assert.equal(f.scene.started,1);assert.equal(f.root.firstChild,preview);assert.equal(f.root.scrollTop,0,'bitmap already contains the visible scrolled viewport');
- assert.equal(f.holder.firstChild,f.original);f.scene.done();assert.equal(preview.width,0);assert.equal(f.root.hidden,true);
+ resolve(true);await nextTask();
+ assert.equal(f.scene.started,1);assert.equal(f.root.firstChild,f.original);assert.equal(f.root.scrollTop,140);
+ f.scene.done();assert.equal(f.holder.firstChild,f.original);assert.equal(f.routes.pageSurface.active,false);assert.equal(f.root.hidden,true);
 });
 test('cancelled return capture cannot start travel or overwrite navigation',async()=>{
- let resolve;const preview=new FakeElement('canvas');preview.width=1200;preview.height=800;
+ let resolve;
  const f=returnFixture(()=>new Promise(r=>resolve=r));f.routes.close();await nextTask();
- f.routes.close('none',true);resolve(preview);await nextTask();
- assert.equal(f.scene.started,undefined);assert.equal(f.root.hidden,true);assert.equal(preview.width,0);
+ f.routes.close('none',true);resolve(true);await nextTask();
+ assert.equal(f.scene.started,undefined);assert.equal(f.root.hidden,true);assert.equal(f.routes.pageSurface.active,false);
 });
 
-test('resize during a bitmap return restores the original scroll in the live DOM',async()=>{
- const preview=new FakeElement('canvas');preview.width=1200;preview.height=800;
- const f=returnFixture(()=>preview);f.routes.close();await nextTask();
+test('resize during a native return restores the original scroll in the live DOM',async()=>{
+ const f=returnFixture(()=>true);f.routes.close();await nextTask();
  f.routes.document.defaultView.innerWidth=900;f.routes.fitArrivalViewport();
  assert.equal(f.root.firstChild,f.original);assert.equal(f.root.scrollTop,140);
- f.scene.done();assert.equal(preview.width,0);
+ f.scene.done();assert.equal(f.routes.pageSurface.active,false);
 });
 test('failed return snapshot falls back to the current DOM without a retry loop',async()=>{
- let calls=0;const f=returnFixture(()=>{calls++;throw Error('capture unavailable');});
+ let calls=0;const f=returnFixture(()=>{calls++;return false;});
  f.routes.close();await nextTask();assert.equal(calls,1);assert.equal(f.scene.started,1);assert.equal(f.root.firstChild,f.original);f.scene.done();
 });
 

@@ -636,8 +636,9 @@ test('disposal cancels scheduled rendering, clears captured gestures and blocks 
   assert.equal(instance.drag, null);
 });
 
-test('real frame loop renders sixty updates at 180 Hz without duplicate callbacks or lost elapsed time',async()=>{
- const f=harness({settings:{quality:'low',paused:false}}),v=f.instance;
+for(const [quality,mobileDevice,expected] of [['low',false,180],['high',false,180],['low',true,30],['high',true,60]])
+test(`real frame loop delivers ${expected} ${quality}/${mobileDevice?'mobile':'desktop'} updates at 180 Hz without duplicate callbacks or lost time`,async()=>{
+ const f=harness({settings:{quality,mobileDevice,paused:false}}),v=f.instance;
  try{
   await v.readyPromise;const start=v.last,initial=v.frames;let maximum=0;
   for(let i=1;i<=180;i++){
@@ -645,7 +646,7 @@ test('real frame loop renders sixty updates at 180 Hz without duplicate callback
    const [id,callback]=pending;f.frames.delete(id);callback(start+i*1000/180);
    maximum=Math.max(maximum,f.frames.size);
   }
-  assert.ok(v.frames-initial>=59&&v.frames-initial<=61);
+  assert.ok(Math.abs(v.frames-initial-expected)<=1);
   assert.ok(v.time>.97&&v.time<=1.01,`elapsed simulation ${v.time}`);
   assert.equal(maximum,1);v.sleep();assert.equal(f.frames.size,0);
  }finally{await v.dispose();}
