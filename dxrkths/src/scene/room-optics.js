@@ -49,6 +49,13 @@ function supportedSceneSamples(renderer, hdr) {
   }
 }
 
+function sceneSamples(supported, requested) {
+  if (!requested) return 0;
+  // Some D3D11 drivers expose 4x without 2x for the HDR/depth pair.
+  // Use the smallest compatible fallback instead of silently losing MSAA.
+  return supported.find(count => count <= requested) ?? supported.at(-1) ?? 0;
+}
+
 const VERTEX = /* glsl */`
   varying vec2 vUv;
   void main() {
@@ -452,7 +459,7 @@ export class RoomOptics {
     this.sceneTarget = new WebGLRenderTarget(1, 1, {
       type, colorSpace: LinearSRGBColorSpace, minFilter: LinearFilter, magFilter: LinearFilter,
       depthBuffer: true, stencilBuffer: false,
-      samples: this.supportedSamples.find(count => count <= this.profile.msaaSamples) ?? 0,
+      samples: sceneSamples(this.supportedSamples, this.profile.msaaSamples),
       resolveDepthBuffer: true, resolveStencilBuffer: false,
       depthTexture: new DepthTexture(1, 1, UnsignedIntType),
     });
@@ -527,7 +534,7 @@ export class RoomOptics {
     this.lensPass.uniforms.uMotionLimit.value = (this.quality === 'low' ? 6 : 8) * this.pixelRatio;
     this.bloomPass.setProfile(this.profile);
     this.gradePass.uniforms.tWideBloom.value=this.bloomPass.wide.texture;
-    const samples = this.supportedSamples.find(count => count <= this.profile.msaaSamples) ?? 0;
+    const samples = sceneSamples(this.supportedSamples, this.profile.msaaSamples);
     if (samples !== this.sceneTarget.samples) {
       this.sceneTarget.dispose();
       this.sceneTarget.samples = samples;

@@ -13,6 +13,10 @@ test('screen artwork maps all four corners without affine perspective drift',()=
 test('panel selection wraps for repeated keyboard and swipe navigation',()=>{
  assert.equal(panelIndex(-1),4);assert.equal(panelIndex(5),0);assert.equal(panelIndex(12),2);
 });
+test('High preserves native 1440p edges instead of enlarging an undersized image',()=>{
+ const b=renderBudget(2560,1440,1,'high');
+ assert.equal(b.width,2560);assert.equal(b.height,1440);assert.equal(b.ratio,1);
+});
 test('ultrawide and high-DPR views keep GPU targets within the declared budget',()=>{
  for(const q of ['low','auto','high'])for(const [w,h,dpr] of [[5120,2160,2],[390,844,3],[1672,941,1]]){
   const b=renderBudget(w,h,dpr,q);

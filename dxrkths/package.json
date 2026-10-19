@@ -14,6 +14,7 @@
     "pretest": "node tools/prepare-brand.mjs && node tools/prepare-music.mjs"
   },
   "dependencies": {
+    "html-to-image": "1.11.13",
     "three": "0.180.0"
   },
   "devDependencies": {

@@ -1,14 +1,15 @@
 import {Color,MathUtils} from 'three';
 import {DESTINATION_THEMES} from '../pages/destination-data.js';
 
-const neutral=new Color('#eef4ff');
+const neutral=new Color('#ffffff');
+const IDLE_STRENGTH=.30;
 const inVehicle=(o,root)=>{for(let n=o;n;n=n.parent)if(n===root)return true;return false;};
 const isRed=color=>color&&color.r>color.g*3&&color.r>color.b*2;
 /** Bind authored emitters once; all subsequent interaction changes uniforms.
  * Car materials are deliberately outside the set (no recoloring, no clones). */
 export class RoomIdentity {
  constructor(view){
-  this.view=view;this.selected=null;this.color=neutral.clone();this.strength=.035;this.emitters=[];this.lights=[];this.cards=[];this.reflectionTime=0;
+  this.view=view;this.selected=null;this.color=neutral.clone();this.strength=IDLE_STRENGTH;this.emitters=[];this.lights=[];this.cards=[];this.reflectionTime=0;
   const panelObjects=new Set();
   for(const [index,panel] of view.panels.entries()){
    const tint=new Color(DESTINATION_THEMES[index].color),materials=new Map();
@@ -50,14 +51,14 @@ export class RoomIdentity {
   this.selected=selected;
   const target=selected===null?neutral:this.cards[selected]?.tint??neutral;
   const dt=MathUtils.clamp(Number.isFinite(delta)?delta:0,0,.1),alpha=reduced?1:1-Math.exp(-dt*8);
-  this.color.lerp(target,alpha);this.strength=MathUtils.lerp(this.strength,selected===null?.035:.62,alpha);
+  this.color.lerp(target,alpha);this.strength=MathUtils.lerp(this.strength,selected===null?IDLE_STRENGTH:.62,alpha);
   for(const {material,intensity} of this.emitters)material.color.copy(this.color).multiplyScalar(intensity*this.strength);
   for(const {object,intensity} of this.lights){object.color.copy(this.color);object.intensity=intensity*this.strength;}
   v.screenLight?.color.copy(this.color);
   for(const entry of this.cards){
    const active=entry.panel.index===selected;
    entry.level=MathUtils.lerp(entry.level,selected===null?.68:active?1:.12,alpha);
-   entry.glow=MathUtils.lerp(entry.glow,selected===null?.08:active?3.9:.015,alpha);
+   entry.glow=MathUtils.lerp(entry.glow,selected===null?.8:active?3.9:.015,alpha);
    entry.panel.material.uniforms.cardLevel.value=entry.level;
    for(const [i,m] of entry.materials.entries())m.color.copy(active?entry.tint:neutral).multiplyScalar(entry.glow*(i===0?.22:1));
   }
@@ -68,8 +69,8 @@ export class RoomIdentity {
   const moving=this.color.distanceTo?.(target)??Math.abs(this.color.r-target.r)+Math.abs(this.color.g-target.g)+Math.abs(this.color.b-target.b);
   this.reflectionTime+=dt;
   if(this.reflectionTime>.12&&moving>.002){v.reflectionBudget?.invalidate();this.reflectionTime=0;}
-  const theme=selected===null?'238 244 255':DESTINATION_THEMES[selected].rgb;
+  const theme=selected===null?'255 255 255':DESTINATION_THEMES[selected].rgb;
   if(theme!==this.lastTheme){v.host?.style?.setProperty('--showroom-accent-rgb',theme);v.host?.ownerDocument?.body?.style.setProperty('--scene-ui-accent-rgb',theme);this.lastTheme=theme;}
-  return moving>.002||Math.abs(this.strength-(selected===null?.035:.62))>.002;
+  return moving>.002||Math.abs(this.strength-(selected===null?IDLE_STRENGTH:.62))>.002;
  }
 }

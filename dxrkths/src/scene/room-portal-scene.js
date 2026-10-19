@@ -61,3 +61,4 @@ export class HeroScene extends ShowroomScene {
 }
 
 export {DestinationGraphics} from "./destination-graphics.js";
+export {capturePagePreview} from './room-page-preview.js';

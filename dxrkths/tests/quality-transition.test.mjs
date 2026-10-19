@@ -36,6 +36,7 @@ test('restoration warms the real shadow/geometry paths even behind a parked page
  assert.deepEqual(draws,[{shadow:true,smoke:true},{shadow:false,smoke:true}]);
  assert.equal(view.pageActive,true);assert.equal(smoke.visible,false);assert.equal(renderer.shadowMap.enabled,false);
  assert.deepEqual(sizes.at(-1),[900,600]);
+ assert.ok(sizes.every(([w,h])=>w===900&&h===600),'preparation must exercise the actual raster dimensions before interaction');
 });
 test('failed allocation restores the last applied quality instead of keeping a half-applied profile',async()=>{
  const {QualityTransition}=await load(),changes=[],errors=[];

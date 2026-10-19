@@ -44,8 +44,21 @@ test('reflection budget drops hidden MSAA, caches a stationary view, and invalid
  view.camera.position.x=1;view.camera.updateMatrixWorld();capture();assert.equal(draws,2);
  view.turntable.angle=.1;capture();assert.equal(draws,3);
  budget.invalidate();capture();assert.equal(draws,4);
- budget.configure('high');assert.equal(target.samples,4);capture();assert.equal(draws,5);
+ budget.configure('high');assert.equal(target.samples,0);capture();assert.equal(draws,5);
+ budget.advance(1/60);capture();assert.equal(draws,5,'stationary high-quality reflections need at most 30 captures/s');
+ budget.advance(1/60);capture();assert.equal(draws,6);
  target.dispose();ground.geometry.dispose();ground.material.dispose();
+});
+
+test('high-quality reflection omits volumetric overdraw and restores the visible scene',()=>{
+ const smokes=Array.from({length:20},()=>new T.Object3D()),beam=new T.Object3D(),target=new T.WebGLRenderTarget(2,2);
+ let reflectedSmoke,reflectedBeam;
+ const view={settings:{quality:'high'},ground:{getRenderTarget:()=>target,onBeforeRender(){reflectedSmoke=smokes.filter(s=>s.visible).length;reflectedBeam=beam.visible;}},smokes,beams:[beam]};
+ const gate=new reflections.ReflectionBudget(view);gate.configure('high');
+ view.ground.onBeforeRender({}, {},new T.PerspectiveCamera());
+ assert.ok(reflectedSmoke<=4,'the blurred reflection must not redraw all 20 smoke layers');
+ assert.equal(reflectedBeam,false);
+ assert.ok(smokes.every(s=>s.visible));assert.equal(beam.visible,true);target.dispose();
 });
 
 test('reflection capture failures restore temporary atmosphere visibility',()=>{

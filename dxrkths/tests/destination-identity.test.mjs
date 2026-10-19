@@ -17,11 +17,11 @@ function fixture(){
  const view={scene,panels,screenLight,hoverPanel:-1,settings:{},reduced:{matches:false},reflectionBudget:{invalidate(){}},host:{style:{setProperty(){}}}};
  return {view,carPaint,env,light,clean(){scene.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});panels.forEach(p=>p.material.dispose());}};
 }
-test('identity controller starts dim/white, isolates card emitters, and never changes paint',()=>{
+test('identity controller restores visible white light after hover without changing paint',()=>{
  assert.equal(typeof mod.RoomIdentity,'function');const f=fixture(),paint=f.carPaint.color.clone();
  const id=new mod.RoomIdentity(f.view);id.update(1,false);
- assert.ok(Math.abs(f.env.material.color.r-f.env.material.color.g)<.06);
- assert.ok(f.env.material.color.r<.4);assert.ok(f.light.intensity<.5);
+ assert.ok(Math.abs(f.env.material.color.r-f.env.material.color.g)<.001);
+ assert.ok(f.env.material.color.r>=1);assert.ok(f.light.intensity>=.75);
  assert.notEqual(f.view.panels[0].frame.children[0].material,f.view.panels[1].frame.children[0].material);
  f.view.hoverPanel=2;for(let i=0;i<100;i++)id.update(1/60,false);
  assert.equal(id.selected,2);assert.ok(f.env.material.color.b>f.env.material.color.g);
@@ -29,8 +29,8 @@ test('identity controller starts dim/white, isolates card emitters, and never ch
  assert.ok(f.view.panels[0].material.uniforms.cardLevel.value<.2);
  assert.ok(f.carPaint.color.equals(paint));
  f.view.hoverPanel=-1;for(let i=0;i<100;i++)id.update(1/60,false);
- assert.equal(id.selected,null);assert.ok(f.light.intensity<.5);
- assert.ok(Math.abs(f.env.material.color.r-f.env.material.color.g)<.06);f.clean();
+ assert.equal(id.selected,null);assert.ok(f.light.intensity>=.75);
+ assert.ok(Math.abs(f.env.material.color.r-f.env.material.color.g)<.001);f.clean();
 });
 test('an active portal keeps its own identity after pointer hover clears',()=>{
  assert.equal(typeof mod.RoomIdentity,'function');const f=fixture(),id=new mod.RoomIdentity(f.view);
