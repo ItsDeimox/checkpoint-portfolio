@@ -1,0 +1,26 @@
+name: DXT hover flow isolated source
+on:
+  push:
+    branches: [codex/dxt-hover-flow]
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Snapshot exact approved app
+        run: |
+          mkdir -p /tmp/dxt-flow-input
+          tar -czf /tmp/dxt-flow-input/source.tar.gz dxrkths
+          git ls-tree -r HEAD > /tmp/dxt-flow-input/source-tree.txt
+          git rev-parse HEAD > /tmp/dxt-flow-input/commit.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dxt-flow-input
+          path: /tmp/dxt-flow-input
+          retention-days: 2
+          compression-level: 0
