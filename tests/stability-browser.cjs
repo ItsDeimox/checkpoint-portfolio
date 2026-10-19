@@ -59,9 +59,9 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
   }
   check('five bounded page bitmaps are prepared before the first click',await page.evaluate(()=>{const entries=[...__STABILITY__.routes().pageCache.values()];return entries.length===5&&entries.every(e=>e.preview?.width>0&&e.preview.width*e.preview.height<=3686400);}));
   await page.evaluate(()=>{
-   const routes=__STABILITY__.routes(),capture=routes.onCaptureReturn;
-   routes.onCaptureReturn=async(...args)=>{const start=performance.now(),canvas=await capture(...args);
-    window.__RETURN_CAPTURE={ms:performance.now()-start,viewport:args[1],width:canvas?.width,height:canvas?.height,png:canvas?.toDataURL()};return canvas;};
+   const surface=__STABILITY__.routes().pageSurface,capture=surface.capture.bind(surface);
+   surface.capture=async(options)=>{const start=performance.now(),ok=await capture(options);
+    if(options?.reverse)window.__RETURN_CAPTURE={ms:performance.now()-start,scroll:options.scroll,width:__STABILITY__.routes().root.clientWidth,height:innerHeight,native:ok,hidden:__STABILITY__.routes().root.style.visibility==='hidden'};return ok;};
   });
   const prepared=await page.evaluate(()=>{let s=__STABILITY__.scene(),e=__STABILITY__.experience(),r=__STABILITY__.routes();return{pageGraphics:e.gpuReady,portal:s.bannerPortal.prepared&&s.bannerPortal.scenePrepared,snap:r.pageCache.get(2).holder.querySelector('.destination-preview')?.naturalWidth,car:s.carPivot.position.toArray(),spot:s.carSpot?.intensity,beam:s.beams[0]?.material.uniforms.beamStrength.value};});
   check('all paths and the covered-car wall preview exist before entry unlocks',prepared.portal&&prepared.pageGraphics&&prepared.snap>200,prepared);
@@ -113,8 +113,7 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
    await page.screenshot({path:path.join(out,'before-return-'+index+'.png')});
    await page.keyboard.press('Escape');await page.waitForFunction(()=>!__STABILITY__.routes().travelling&&!__STABILITY__.routes().page,null,{timeout:120000});
    const capture=await page.evaluate(()=>__RETURN_CAPTURE);
-   if(capture?.png){fs.writeFileSync(path.join(out,'return-preview-'+index+'.png'),Buffer.from(capture.png.split(',')[1],'base64'));delete capture.png;}
-   check('return '+index+' captures the current visible viewport before moving',capture?.width>0&&capture.width*capture.height<=3686400,capture);
+   check('return '+index+' uses the native surface without serializing or encoding the page',capture?.native&&capture.hidden&&capture.width>0&&capture.height===600,capture);
    const returned=await sample('returned-'+index);
    check('return '+index+' restores one live showroom and no stale graphics surface',await page.evaluate(()=>{let s=__STABILITY__.scene();return !s.pageActive&&!s.bannerPortal.active&&!__STABILITY__.experience().graphics.canvas.isConnected&&!!s.raf;}),returned);
    await page.mouse.move(450,555);await page.waitForTimeout(300);

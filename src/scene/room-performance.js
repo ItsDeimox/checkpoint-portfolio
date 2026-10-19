@@ -5,6 +5,7 @@ export class FramePacer {
   reset(){this.next=null;this.limit=null;this.skipped=0;}
   take(now,limit=60){
     if(!Number.isFinite(now))return false;
+    if(limit===0){this.next=null;this.limit=0;return true;}
     const fps=Number.isFinite(limit)&&limit>0?limit:60, interval=1000/fps;
     if(this.next===null||fps!==this.limit){this.limit=fps;this.next=now+interval;return true;}
     if(now+.15<this.next){this.skipped++;return false;}
@@ -14,5 +15,5 @@ export class FramePacer {
 }
 export function frameRateLimit(quality,mobile=false){
   if(mobile)return quality==='low'?30:60;
-  return quality==='high'?90:60;
+  return 0;
 }

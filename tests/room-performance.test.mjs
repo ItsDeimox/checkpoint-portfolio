@@ -5,7 +5,14 @@ import {renderBudget} from '../src/scene/room-core.js';
 import {restoreVisitorSettings} from '../src/ui/room-visitor-settings.js';
 const perf=await import('../src/scene/room-performance.js').catch(()=>({}));
 const reflections=await import('../src/scene/room-reflection-budget.js').catch(()=>({}));
-test('a 180/240 Hz display cannot submit over 60 low/medium or 90 high frames a second',()=>{
+
+test('desktop follows display refresh without a software FPS ceiling; mobile retains its budget',()=>{
+ for(const quality of ['low','auto','high'])assert.equal(perf.frameRateLimit(quality,false),0);
+ assert.equal(perf.frameRateLimit('low',true),30);assert.equal(perf.frameRateLimit('high',true),60);
+ const pacer=new perf.FramePacer();for(let i=0;i<240;i++)assert.equal(pacer.take(i*1000/240,0),true);
+ assert.equal(pacer.skipped,0);
+});
+test('explicit finite frame budgets remain bounded across display refresh rates',()=>{
  assert.equal(typeof perf.FramePacer,'function');
  for(const hz of [60,120,144,165,180,240])for(const limit of [30,60,90]){
   const gate=new perf.FramePacer();let count=0;
