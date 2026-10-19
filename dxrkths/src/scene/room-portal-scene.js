@@ -1,16 +1,16 @@
+import {RoomPanelEnergy} from './room-panel-energy.js';
 import {RoomIdentity} from './room-identity.js';
 export {PersistentBrand} from './room-persistent-brand.js';
 import {HeroScene as ShowroomScene} from './room-hologram-scene.js';
 import {BannerPortal} from './room-portal.js';
 import {portalImpactEnvelope} from './room-portal-effects.js';
 export class HeroScene extends ShowroomScene {
- buildLights(){super.buildLights();this.bannerPortal=new BannerPortal(this);this.identity=new RoomIdentity(this);}
+ buildLights(){super.buildLights();this.bannerPortal=new BannerPortal(this);this.identity=new RoomIdentity(this);this.panelEnergy=new RoomPanelEnergy(this);}
 
  buildAtmosphere(){
   super.buildAtmosphere();
-  // Keep the real spot/key lights, remove only the obstructing drawn cone.
-  for(const beam of this.beams??[]){this.scene.remove(beam);beam.geometry.dispose();beam.material.dispose();}
-  this.beams=[];
+  // The real neutral spotlight is retained. Its narrow, low-density shaft is
+  // bounded above the roof rather than washing over the entire middle card.
  }
  enterPortal(index,onComplete,onProgress,getArrivalViewport){return this.bannerPortal.enter(index,onComplete,onProgress,getArrivalViewport);}
  returnPortal(index,onComplete,onProgress,getArrivalViewport){
@@ -30,7 +30,7 @@ export class HeroScene extends ShowroomScene {
   super.frame(now);
   if(this.pageActive)this.sleep();
  }
- updatePanels(dt){if(this.bannerPortal?.active&&this.bannerPortal.interior)return false;return super.updatePanels(dt);}
+ updatePanels(dt){const energy=this.panelEnergy?.update(dt)||false;if(this.bannerPortal?.active&&this.bannerPortal.interior)return energy;return super.updatePanels(dt)||energy;}
  updateAtmosphere(){if(!this.bannerPortal?.active||!this.bannerPortal.interior)super.updateAtmosphere();}
  updateLinkProjection(){if(!this.bannerPortal?.active)super.updateLinkProjection();}
  resize(){super.resize();this.bannerPortal?.attachOptics(this.optics);if(this.bannerPortal?.active)this.bannerPortal.update(0);}
@@ -57,7 +57,7 @@ export class HeroScene extends ShowroomScene {
   }
  }
  inspect(){return {...super.inspect(),portal:this.bannerPortal?.inspect(),sectionSleeping:Boolean(this.pageActive),identity:this.identity?{selected:this.identity.selected,color:this.identity.color.getHexString(),strength:this.identity.strength}:null};}
- async dispose(){await super.dispose();this.bannerPortal?.dispose();}
+ async dispose(){await super.dispose();this.panelEnergy?.dispose();this.bannerPortal?.dispose();}
 }
 
 export {DestinationGraphics} from "./destination-graphics.js";

@@ -1,3 +1,5 @@
+import * as gpuGate from '../src/scene/room-gpu-gate.js';
+import * as qualityTransition from '../src/scene/room-quality.js';
 import * as performanceBudget from '../src/scene/room-performance.js';
 import * as reflectionBudget from '../src/scene/room-reflection-budget.js';
 import test from 'node:test';
@@ -153,6 +155,8 @@ function harness(config = {}) {
     './room-lighting.js': lighting,
     './room-turntable.js': turntable,
     './room-performance.js': performanceBudget,
+    './room-gpu-gate.js': gpuGate,
+    './room-quality.js': qualityTransition,
     './room-reflection-budget.js': reflectionBudget,
     './room-startup.js': {
       waitForAsset,

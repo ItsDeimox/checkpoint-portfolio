@@ -14,8 +14,8 @@ function preloadPaint(view){
 
 /** One physical page surface for both directions; history owns cancellation. */
 export class SectionRoutes {
- constructor({document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh}){
-  Object.assign(this,{document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh});
+ constructor({document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage}){
+  Object.assign(this,{document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage});
   this.onArrivalResize=()=>this.fitArrivalViewport();
   document.defaultView?.addEventListener?.('resize',this.onArrivalResize,{passive:true});
   this.index=null;this.token=0;this.page=false;this.travelling=false;this.pending=false;this.returning=false;this.waitingReturn=false;
@@ -70,6 +70,7 @@ export class SectionRoutes {
     signal?.throwIfAborted();
     mounted=entry;stage.replaceChildren(...Array.from(entry.holder.childNodes));
     await preloadPaint(view);signal?.throwIfAborted();
+    await this.onPreparePage?.(stage);
     entry.viewport={width,height,gutter:stage.scrollHeight>stage.clientHeight+1?scrollbar:0};
     stage.getBoundingClientRect?.();
     await preloadPaint(view);
@@ -147,6 +148,9 @@ export class SectionRoutes {
   const fromPage=this.page,token=++this.token;this.clearArrival();this.clearReturn();this.index=index;this.onSelect(index);this.setLocation(index,historyMode);
   const scene=this.getScene();scene?.cancelPortal?.();
   if(direct||fromPage||this.getPhase()==='unavailable'||scene?.reduced?.matches){this.show(index,token);return;}
+  if(scene?.qualityChanging){
+   this.pending=true;Promise.resolve(scene.qualityTask).then(()=>{if(token===this.token)this.ready();});return;
+  }
   if(!scene?.ready||!this.entered()){this.pending=true;return;}
   this.pending=false;this.page=false;this.travelling=true;this.root.hidden=true;this.host.hidden=false;
   this.document.body.classList.add('portal-travelling');this.document.body.classList.remove('section-active');
@@ -172,6 +176,12 @@ export class SectionRoutes {
  }
  close(historyMode='push',immediate=false){
   if(this.returning&&!immediate)return;
+  const busy=this.getScene();
+  if(!immediate&&busy?.qualityChanging){
+   const pendingToken=this.token;
+   Promise.resolve(busy.qualityTask).then(()=>{if(pendingToken===this.token)this.close(historyMode);});
+   return;
+  }
   const fromPage=this.page,index=this.index,scroll=this.document.defaultView?.scrollY??Math.max(0,-(this.root.getBoundingClientRect?.().top??0));
   // Preserve the exact visible pose if a direct-page entrance is still
   // settling when Back is pressed. Do not snap that content to its final pose.

@@ -23,7 +23,8 @@ export function buildRoomLights(view) {
     light.position.set(...position); light.lookAt(...target); view.scene.add(light);
   }
   const spot = new T.SpotLight(0xdceaff, 115, 22, .31, .82, 2);
-  spot.position.set(0, 7.48, .1); spot.target.position.set(0, .15, .1);
+  spot.name='Car spotlight';view.carSpot=spot;
+  spot.position.set(0, 7.48, 1.458534911); spot.target.position.set(0, .65, 1.458534911);
   view.scene.add(spot, spot.target);
   // One precompiled light follows the active surface; no light-count changes
   // or new shader programs occur when the user enters or hovers a screen.
@@ -78,13 +79,13 @@ export function buildRoomAtmosphere(view) {
   }
   // A single world-space cone replaces five camera-facing light billboards.
   // The fragment shader integrates only the finite ray/cone segment.
-  const apex = new T.Vector3(0, 7.55, .1), floor = .12, radius = 2.18;
+  const apex = new T.Vector3(0, 7.55, 1.458534911), floor = 1.25, radius = 1.30;
   const beam = new T.Mesh(new T.ConeGeometry(radius, apex.y - floor, 48, 1, false), new T.ShaderMaterial({
     vertexShader: roomVertex, fragmentShader: beamFragment,
-    uniforms: { time: { value: 0 }, apex: { value: apex }, bottom: { value: floor }, slope: { value: radius / (apex.y - floor) }, beamSamples: { value: view.settings?.quality === 'high' ? 32 : view.settings?.quality === 'low' ? 12 : 20 } },
+    uniforms: { time: { value: 0 }, apex: { value: apex }, bottom: { value: floor }, slope: { value: radius / (apex.y - floor) }, beamStrength:{value:.19}, beamSamples: { value: view.settings?.quality === 'high' ? 24 : view.settings?.quality === 'low' ? 8 : 16 } },
     transparent: true, depthWrite: false, side: T.BackSide, blending: T.AdditiveBlending,
   }));
-  beam.name = 'Overhead light volume'; beam.position.set(apex.x, (apex.y + floor) / 2, apex.z); beam.renderOrder = 4;
+  beam.name = 'Restrained car spotlight volume'; beam.position.set(apex.x, (apex.y + floor) / 2, apex.z); beam.renderOrder = 4;
   view.scene.add(beam); view.beams = [beam];
   const positions = [];
   for (let i = 0; i < 160; i++) positions.push((random() - .5) * 10, .25 + random() * 6.4, (random() - .5) * 6);

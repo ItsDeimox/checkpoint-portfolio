@@ -517,7 +517,7 @@ export class RoomOptics {
     this.resetHistory();
   }
 
-  setQuality(quality) {
+  setQuality(quality,{resize=true}={}) {
     if (this.disposed) return;
     this.quality = Object.hasOwn(PROFILES, quality) ? quality : 'auto';
     this.profile = PROFILES[this.quality];
@@ -532,7 +532,7 @@ export class RoomOptics {
       this.sceneTarget.dispose();
       this.sceneTarget.samples = samples;
     }
-    this.resize(this.width, this.height, this.requestedPixelRatio);
+    if(resize)this.resize(this.width, this.height, this.requestedPixelRatio);
     this.setVisualSettings(this.visualSettings);
   }
 
