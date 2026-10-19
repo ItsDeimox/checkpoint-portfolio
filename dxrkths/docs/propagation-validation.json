@@ -1,0 +1,87 @@
+{
+  "base": "2254c2aeb6d2a80fc26dd1bab522aaca8045f6da",
+  "unitPassed": 368,
+  "propagation": [
+    {
+      "index": 0,
+      "early": {
+        "radius": 0.0375679691568863,
+        "outside": 0,
+        "total": 32465
+      },
+      "later": {
+        "radius": 0.25834277057672156,
+        "outside": 36610,
+        "total": 65086
+      },
+      "impulses": 3,
+      "pass": true
+    },
+    {
+      "index": 1,
+      "early": {
+        "radius": 0.03847384353940283,
+        "outside": 0,
+        "total": 71044
+      },
+      "later": {
+        "radius": 0.2554462098921509,
+        "outside": 83235,
+        "total": 148179
+      },
+      "impulses": 3,
+      "pass": true
+    },
+    {
+      "index": 2,
+      "early": {
+        "radius": 0.03656424659510475,
+        "outside": 0,
+        "total": 42764
+      },
+      "later": {
+        "radius": 0.26418224174967164,
+        "outside": 48232,
+        "total": 83812
+      },
+      "impulses": 3,
+      "pass": true
+    },
+    {
+      "index": 3,
+      "early": {
+        "radius": 0.03695279677987601,
+        "outside": 0,
+        "total": 38853
+      },
+      "later": {
+        "radius": 0.254841612018319,
+        "outside": 42280,
+        "total": 75619
+      },
+      "impulses": 3,
+      "pass": true
+    },
+    {
+      "index": 4,
+      "early": {
+        "radius": 0.037924580948716966,
+        "outside": 0,
+        "total": 49021
+      },
+      "later": {
+        "radius": 0.2636009741840408,
+        "outside": 57766,
+        "total": 100698
+      },
+      "impulses": 3,
+      "pass": true
+    }
+  ],
+  "orientationChecks": 10,
+  "nativeChecks": 13,
+  "errors": [],
+  "renderer": "Chromium ANGLE SwiftShader; no RTX performance benchmark",
+  "scope": "Original network and brightness restored; only static card edge conductance differs from pre-Prism rendering. CTA, cadence, capture, tunnel, quality, camera and lighting unchanged.",
+  "bundleSha256": "3d52cf707909784f77ae279cbaf57a0cc6704143dfdb5430bc2b48d42623f17e"
+}
