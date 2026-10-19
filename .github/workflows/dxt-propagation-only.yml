@@ -1,0 +1,53 @@
+name: DXT propagation-only verification
+on:
+  push:
+    branches: [codex/dxt-propagation-only]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /tmp/dxt-browsers
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Install locked app and pinned verification browser
+        run: |
+          npm ci --prefix dxrkths
+          npm install --prefix /tmp/dxt-browser --no-package-lock --no-audit --no-fund playwright@1.56.1
+          node /tmp/dxt-browser/node_modules/playwright/cli.js install --with-deps --only-shell chromium
+      - name: Build with the complete regression suite
+        run: |
+          set -o pipefail
+          npm run build --prefix dxrkths | tee /tmp/dxt-propagation-build.log
+      - name: Verify rendered spreading and native input without changing the scheduler
+        env:
+          NODE_PATH: /tmp/dxt-browser/node_modules
+        run: |
+          cd dxrkths
+          node tools/server.mjs --port 3000 >/tmp/dxt-propagation-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for i in $(seq 1 50); do curl -fsS http://127.0.0.1:3000/ >/dev/null && break; sleep .2; done
+          DXT_QA_OUT=docs/propagation-qa node ../.github/dxt-propagation-probes.cjs
+      - name: Create tested app-only candidate without changing any branch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .github/dxt-propagation-candidate.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dxt-propagation-verified
+          path: |
+            candidate.json
+            dxrkths/docs/propagation-qa/
+            /tmp/dxt-propagation-build.log
+          retention-days: 2
