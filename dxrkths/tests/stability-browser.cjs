@@ -29,7 +29,7 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
  });
  const phase=name=>page.evaluate(name=>__AUDIT__.phase=name,name);
  const sample=async label=>{
-  const s=await page.evaluate(label=>{let s=__STABILITY__.scene();return{label,quality:s.settings.quality,changing:!!s.qualityChanging,error:s.qualityError,frames:s.frames,programs:s.renderer.info.programs.length,memory:{...s.renderer.info.memory},calls:{...__AUDIT__.calls},gpuWaits:s.gpuFrameGate.skipped};},label);
+  const s=await page.evaluate(label=>{let s=__STABILITY__.scene();return{label,quality:s.settings.quality,changing:!!s.qualityChanging,error:s.qualityError,frames:s.frames,programs:s.renderer.info.programs.length,memory:{...s.renderer.info.memory},calls:{...__AUDIT__.calls},gpuWaits:s.gpuFrameGate.skipped,pendingDraws:s.drawQueue?.pending,peakDraws:s.drawQueue?.peak,deferredDraws:s.drawQueue?.skipped};},label);
   report.samples.push(s);save();return s;
  };
  const position=async index=>page.evaluate(index=>{
@@ -60,7 +60,7 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
    const before=performance.now();await page.locator('#quality').click();
    await page.waitForFunction(()=>!__STABILITY__.scene().qualityChanging&&__STABILITY__.scene().ready);
    const after=await sample('quality-'+i);
-   check('quality change '+i+' completes without late program/geometry construction',!after.error&&after.programs===initial.programs&&after.calls.createProgram===initial.calls.createProgram&&after.calls.bufferData===initial.calls.bufferData,{...after,elapsedMs:performance.now()-before});
+   check('quality change '+i+' completes without late program/geometry construction',!after.error&&after.peakDraws<=2&&after.programs===initial.programs&&after.calls.createProgram===initial.calls.createProgram&&after.calls.bufferData===initial.calls.bufferData,{...after,elapsedMs:performance.now()-before});
   }
   const paint=await page.evaluate(()=>{const s=__STABILITY__.scene(),colors=[];s.carPivot.traverse(o=>{for(const m of[o.material].flat().filter(Boolean))if(m.color)colors.push(m.color.getHexString());});return colors;});
   for(const index of[0,1,2,3,4]){
@@ -107,7 +107,7 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
   await phase('resolution-quality');await page.setViewportSize({width:2560,height:1440});
   await page.locator('#quality').click();await page.waitForFunction(()=>!__STABILITY__.scene().qualityChanging);
   await page.locator('#quality').click();await page.waitForFunction(()=>!__STABILITY__.scene().qualityChanging);
-  const high=await sample('1440p-high');check('1440p High stays bounded and responds after allocation',high.quality==='high'&&!high.error&&high.programs===initial.programs,high);
+  const high=await sample('1440p-high');check('1440p High stays bounded and responds after allocation',high.quality==='high'&&!high.error&&high.peakDraws<=2&&high.programs===initial.programs,high);
   await page.locator('#quality').click();await page.waitForFunction(()=>!__STABILITY__.scene().qualityChanging);
   await page.setViewportSize({width:900,height:600});
   await phase('reduced-motion');await page.emulateMedia({reducedMotion:'reduce'});

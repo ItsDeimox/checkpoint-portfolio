@@ -50,7 +50,12 @@ export class QualityTransition {
     while(v.bannerPortal.active){signal.throwIfAborted();await yieldToBrowser(signal);}
     v.qualityChanging=true;v.sleep();
    }
-   await v.gpuFrameGate?.wait(signal);signal.throwIfAborted();
+   // Drain the bounded draw pipeline after sleep(), before changing storage.
+   // This explicit barrier also covers direct draws outside the RAF queue.
+   if(v.gpuFrameGate){v.gpuFrameGate.submit?.();await v.gpuFrameGate.wait(signal);}
+   else await waitForGpu(v.renderer,signal);
+   v.drawQueue?.reset();
+   signal.throwIfAborted();
    const requested=this.requested;
    this.mutated=true;await v.applyQuality(requested);await prepareQualityTargets(v,signal);
    signal.throwIfAborted();

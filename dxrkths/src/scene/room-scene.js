@@ -1,5 +1,5 @@
 import {QualityTransition,warmInteractivePaths,prepareQualityTargets} from './room-quality.js';
-import {GpuFrameGate,waitForGpu,installShaderChecks} from './room-gpu-gate.js';
+import {GpuDrawQueue,GpuFrameGate,waitForGpu,installShaderChecks} from './room-gpu-gate.js';
 import {FramePacer,frameRateLimit} from './room-performance.js';
 import {ReflectionBudget} from './room-reflection-budget.js';
 import * as T from 'three';
@@ -63,6 +63,7 @@ export class HeroScene {
     this.bindContext();
     this.gl = this.renderer.getContext();
     this.gpuFrameGate = new GpuFrameGate(this.gl);
+    this.drawQueue = new GpuDrawQueue(this.gl);
     Object.assign(this.renderer, { outputColorSpace: T.SRGBColorSpace, toneMapping: T.ACESFilmicToneMapping, toneMappingExposure: 1.05 });
     Object.assign(this.renderer.shadowMap, { enabled: this.settings.quality !== 'low', type: T.PCFSoftShadowMap, autoUpdate: false });
     this.renderer.setClearColor(0x030305);
@@ -251,7 +252,7 @@ export class HeroScene {
     this.canvas.addEventListener('webglcontextlost', event => {
       event.preventDefault(); this.lost = true; this.ready = false;
       this.sleep(); this.audio?.suspend();
-      this.gpuFrameGate?.reset();
+      this.gpuFrameGate?.reset();this.drawQueue?.reset();
       this.workController.abort(new DOMException('WebGL context lost', 'AbortError'));
       this.callbacks.onUnavailable?.(new Error('WebGL context lost'));
     }, { signal: this.controller.signal });
@@ -539,14 +540,14 @@ export class HeroScene {
     if (!this.ready || this.disposed || this.raf || this.inFrame || this.qualityChanging || document.hidden || this.lost) return;
     this.last = performance.now(); this.raf = requestAnimationFrame(now => this.frame(now));
   }
-  sleep() { cancelAnimationFrame(this.raf); this.raf = 0; this.framePacer?.reset(); this.reflectionBudget?.invalidate(); }
+  sleep() { cancelAnimationFrame(this.raf); this.raf = 0; this.framePacer?.reset(); this.lastDraw=null; this.reflectionBudget?.invalidate(); }
 
   frame(now) {
     this.raf = 0;
     if (!this.ready || this.disposed || this.lost || document.hidden) return;
     if(this.qualityChanging)return;
-    try{if(this.gpuFrameGate&&!this.gpuFrameGate.available()){this.raf=requestAnimationFrame(time=>this.frame(time));return;}}
-    catch(error){this.ready=false;this.sleep();this.callbacks.onUnavailable?.(error);return;}
+    // Always process input and elapsed camera time. Backpressure limits only
+    // drawing below, after updating the latest pose, never the whole RAF.
     const limit=frameRateLimit(this.settings.quality,this.settings.mobileDevice);
     if(!this.framePacer.take(now,limit)){
       this.raf=requestAnimationFrame(time=>this.frame(time));return;
@@ -568,10 +569,17 @@ export class HeroScene {
       if (moving && this.lastPointer && this.cameraRig.mode === 'overview') this.pendingPick = this.lastPointer;
       this.updateHover();
       const surfacesMoving = this.updatePanels(dt);
-      this.updateAtmosphere(); this.render(dt, moving || rotating ? .65 : 0);
-      this.gpuFrameGate?.submit();
+      this.updateAtmosphere();
+      const drawAllowed=this.drawQueue?.canSubmit()??true;
+      if(drawAllowed&&!this.pageActive){
+        const drawDelta=this.lastDraw==null?dt:elapsedFrameTime(now,this.lastDraw);
+        this.render(drawDelta, moving || rotating ? .65 : 0);this.lastDraw=now;
+        this.drawQueue?.submitted();
+      }
       if (moving) this.updateLinkProjection();
-      continueFrames = animated || moving || rotating || this.turntable?.moving || surfacesMoving || Boolean(this.pendingPick);
+      continueFrames = !drawAllowed || animated || moving || rotating || this.turntable?.moving || surfacesMoving || Boolean(this.pendingPick);
+    } catch(error) {
+      this.ready=false;this.sleep();this.callbacks.onUnavailable?.(error);return;
     } finally { this.inFrame = false; }
     if (continueFrames && this.ready && !this.disposed && !this.lost && !document.hidden) {
       this.raf = requestAnimationFrame(time => this.frame(time));
@@ -586,7 +594,7 @@ export class HeroScene {
       activePanel: this.activePanel, frames: this.frames,
       width: this.canvas.width, height: this.canvas.height,
       drawCalls: this.renderer?.info.render.calls, triangles: this.renderer?.info.render.triangles,
-      qualityChanging:Boolean(this.qualityChanging),gpuBackpressure:this.gpuFrameGate?.skipped??0,qualityError:this.qualityError??null,
+      qualityChanging:Boolean(this.qualityChanging),gpuBackpressure:this.drawQueue?.skipped??0,gpuPendingDraws:this.drawQueue?.pending??0,gpuPeakDraws:this.drawQueue?.peak??0,qualityError:this.qualityError??null,
       quality: this.settings.quality, fixedPanels: true, contentPanel: this.contentPanel,
       sceneSamples: this.optics?.sceneTarget.samples, visual: this.optics?.visualSettings,
       turntableAngle:this.turntable?.angle,turntableVelocity:this.turntable?.velocity,
@@ -609,7 +617,7 @@ export class HeroScene {
     await this.restoration?.catch(() => {});
     await this.preparation?.catch(() => {});
     await this.qualityTask?.catch(() => {});
-    this.gpuFrameGate?.dispose();
+    this.gpuFrameGate?.dispose();this.drawQueue?.dispose();
     disposeObjects(this.scene); disposeObjects(this.pickOccluders);disposeObjects(this.turntablePick);
     this.textures?.forEach(texture => texture.dispose());
     this.panelContent?.dispose();

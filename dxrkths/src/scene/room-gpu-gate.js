@@ -1,6 +1,33 @@
 import {yieldToBrowser} from './room-startup.js';
 
-/** At most one submitted frame. Polling never waits inside the input/RAF task. */
+/** A two-draw pipeline, not an input gate. The CPU may update the latest pose
+ * while the GPU is busy; only redundant render submissions are held back.
+ * Two slots preserve CPU/GPU overlap. Poll only when full, with zero timeout;
+ * RAF's frame boundary flushes commands, so never explicitly flush here. */
+export class GpuDrawQueue {
+ constructor(gl){this.gl=gl;this.fences=[];this.skipped=0;this.peak=0;}
+ get pending(){return this.fences.length;}
+ canSubmit(){
+  if(this.fences.length<2)return true;
+  const gl=this.gl,status=gl.clientWaitSync(this.fences[0],0,0);
+  if(status===gl.TIMEOUT_EXPIRED){this.skipped++;return false;}
+  gl.deleteSync(this.fences.shift());
+  if(status===gl.WAIT_FAILED){this.reset();throw Error('GPU draw completion check failed.');}
+  return true;
+ }
+ submitted(){
+  if(!this.gl?.fenceSync)return;
+  if(this.fences.length>=2)throw Error('GPU draw queue capacity exceeded.');
+  const fence=this.gl.fenceSync(this.gl.SYNC_GPU_COMMANDS_COMPLETE,0);
+  if(fence){this.fences.push(fence);this.peak=Math.max(this.peak,this.fences.length);}
+ }
+ reset(){for(const fence of this.fences)this.gl.deleteSync(fence);this.fences.length=0;}
+ dispose(){this.reset();}
+}
+
+
+/** Explicit preparation barrier, never a per-frame animation throttle.
+ * Polling yields to the browser and never waits inside an input/RAF task. */
 export class GpuFrameGate {
  constructor(gl){this.gl=gl;this.fence=null;this.skipped=0;}
  available(){

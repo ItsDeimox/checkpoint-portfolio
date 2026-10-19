@@ -1,0 +1,57 @@
+{
+  "scope": "Native direct routes, parked-page recovery and quality changes",
+  "checks": [
+    {
+      "name": "direct Future Projects is interactive without constructing a hidden showroom",
+      "pass": true
+    },
+    {
+      "name": "direct page return warms the dormant showroom and restores native input",
+      "pass": true
+    },
+    {
+      "name": "About page is parked before testing main GPU loss",
+      "pass": true
+    },
+    {
+      "name": "context loss leaves the existing HTML page readable",
+      "pass": true
+    },
+    {
+      "name": "restoration warms both shadow paths behind the parked page",
+      "pass": true,
+      "detail": {
+        "ready": true,
+        "parked": true,
+        "prepared": true,
+        "programs": 63,
+        "quality": "low"
+      }
+    },
+    {
+      "name": "quality after recovery creates no new shader program and keeps page asleep",
+      "pass": true,
+      "detail": {
+        "programs": 63,
+        "parked": true,
+        "raf": 0,
+        "quality": "auto",
+        "error": null
+      }
+    },
+    {
+      "name": "native return remains functional after loss and interrupted quality change",
+      "pass": true
+    },
+    {
+      "name": "optional CTA graphics recover without breaking the native Play link",
+      "pass": true
+    },
+    {
+      "name": "no page crash or shader error across deliberate context losses",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}
