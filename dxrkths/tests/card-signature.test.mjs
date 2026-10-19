@@ -16,18 +16,16 @@ function fixture(){
  return {view,hover,panels,dispose(){hover.dispose();for(const p of panels)p.material.dispose();}};
 }
 
-test('physical cards use their own diagonal energy ribbons, not the cube lattice shader',()=>{
+test('physical cards use recorded continuous wakes, not the rejected fragments or cube lattice',()=>{
  const f=fixture();try{
-  for(const {panel,texture}of f.hover.entries){
+  for(const {panel,texture,wake}of f.hover.entries){
    const code=panel.material.fragmentShader;
-   assert.match(code,/prismTrail\(vUv,\s*hoverUv,\s*hoverTime/);
-   assert.doesNotMatch(code,/network\(4,|float wires=max\(/);
-   assert.match(code,/uSignalSeed/);
+   assert.match(code,/flowTrail\(vUv,uSurfaceSpan\)/);
+   assert.doesNotMatch(code,/prismTrail|shardA|gatedA|network\(4,|float wires=max\(/);
    assert.ok(panel.material.uniforms.uEnergyMap.value===texture);
+   assert.ok(panel.material.uniforms.uWakePoints.value===wake.data);
    assert.equal(panel.material.uniforms.uEnergyActive.value,0);
   }
-  const seeds=f.panels.map(p=>p.material.uniforms.uSignalSeed.value);
-  assert.equal(new Set(seeds).size,5,'each panel has a subtly different trail phase');
  }finally{f.dispose();}
 });
 
