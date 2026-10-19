@@ -67,9 +67,8 @@ export class QualityTransition {
  }
 }
 
-/** Exercise both shadow programs and all geometry at bounded raster size.
- * Render-target storage is restored once at the actual viewport before entry.
- * The approved portal path itself is unchanged. */
+/** Exercise actual viewport/MSAA storage while the intro still covers the scene.
+ * Tiny raster warm-ups miss driver work on the first full-size portal draw. */
 export async function warmInteractivePaths(view,signal){
  const {renderer,optics}=view;
  if(!renderer?.getSize||!optics?.sceneTarget)return false;
@@ -79,7 +78,6 @@ export async function warmInteractivePaths(view,signal){
  const dustCount=view.dust?.geometry.drawRange.count;
  try{
   view.pageActive=false;
-  renderer.setPixelRatio(1);renderer.setSize(64,64,false);optics.resize(64,64,1);
   view.panelEnergy?.prime();for(const [s]of smokeState)s.visible=true;
   view.dust?.geometry.setDrawRange(0,160);
   for(const shadowed of [true,false]){

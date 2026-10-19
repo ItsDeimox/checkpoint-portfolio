@@ -243,7 +243,8 @@ body.section-arriving .section-page {
  will-change: transform;
 }
 .section-page[data-portal-arrival] .section-layout { animation: none; }
-body.section-arriving .berserk-play-dock { opacity: 1; pointer-events: none; }
+body.section-arriving .berserk-play-dock,
+.section-page[data-portal-arrival="preview"] .berserk-play-dock { opacity: 1; pointer-events: none; }
 @media(prefers-reduced-motion:reduce) {
  body.section-arriving .section-page { transform: none; }
 }
@@ -262,6 +263,7 @@ body.section-return-pending.section-arriving .section-page {
 body.section-arriving .section-page { opacity: 0; }
 body.section-retreating .section-page { opacity: 1; }
 body.section-arriving .section-layout { animation: none; }
+.portal-page-preview{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
 
 /* R22 / Five destinations, one consistent material and navigation language. */
 .section-page{--accent:#ff2348;--accent-rgb:255 35 72;--ink:#efeef1;--muted:#a4a2ad;background:radial-gradient(ellipse at 92% 16%,rgb(var(--accent-rgb)/.075),transparent 56%),#07070a;color:var(--ink)}

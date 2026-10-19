@@ -14,12 +14,12 @@ function preloadPaint(view){
 
 /** One physical page surface for both directions; history owns cancellation. */
 export class SectionRoutes {
- constructor({document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage}){
-  Object.assign(this,{document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage});
+ constructor({document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage,onCaptureReturn}){
+  Object.assign(this,{document,host,root,canvas,footer,getScene,getPhase,entered,setLocation,onSelect,onNeedScene,onRefresh,onPreparePage,onCaptureReturn});
   this.onArrivalResize=()=>this.fitArrivalViewport();
   document.defaultView?.addEventListener?.('resize',this.onArrivalResize,{passive:true});
   this.index=null;this.token=0;this.page=false;this.travelling=false;this.pending=false;this.returning=false;this.waitingReturn=false;
-  this.pageCache=new Map();this.mountedIndex=null;this.preloadTask=null;this.preloadedImages=[];
+  this.pageCache=new Map();this.mountedIndex=null;this.previewIndex=null;this.preloadTask=null;this.preloadedImages=[];
  }
  /** Parse, decode and lay out every destination under the intro cover.
   * Only moving already-created nodes and compositor transforms remains on click. */
@@ -39,6 +39,7 @@ export class SectionRoutes {
   const stage=doc.createElement('section');
   stage.className='section-page';stage.inert=true;stage.setAttribute('aria-hidden','true');
   Object.assign(stage.style,{position:'fixed',inset:'0',height:'100dvh',minHeight:'0',zIndex:'9',overflow:'hidden',pointerEvents:'none',contain:'layout style paint'});
+  stage.setAttribute('data-portal-arrival','preview');
   doc.body.appendChild(stage);
   const urls=new Set();let mounted=null;
   try{
@@ -68,11 +69,13 @@ export class SectionRoutes {
    const scrollbar=destinationGutter(doc);
    for(const entry of this.pageCache.values()){
     signal?.throwIfAborted();
-    mounted=entry;stage.replaceChildren(...Array.from(entry.holder.childNodes));
+    mounted=entry;stage.style.right='0px';stage.replaceChildren(...Array.from(entry.holder.childNodes));
     await preloadPaint(view);signal?.throwIfAborted();
-    await this.onPreparePage?.(stage);
     entry.viewport={width,height,gutter:stage.scrollHeight>stage.clientHeight+1?scrollbar:0};
+    stage.style.right=`${entry.viewport.gutter}px`;
     stage.getBoundingClientRect?.();
+    try{entry.preview=await this.onPreparePage?.(stage,signal)??null;}
+    catch(error){signal?.throwIfAborted();console.warn('[DXT] Page preview uses the DOM fallback:',error.message);}
     await preloadPaint(view);
     entry.holder.append(...Array.from(stage.childNodes));mounted=null;
    }
@@ -83,6 +86,7 @@ export class SectionRoutes {
   }
  }
  stashMounted(){
+  if(this.previewIndex!==null){this.root.replaceChildren();this.previewIndex=null;return;}
   if(this.mountedIndex===null)return;
   const entry=this.pageCache.get(this.mountedIndex);
   if(entry?.holder&&this.root.firstChild)entry.holder.append(...Array.from(this.root.childNodes));
@@ -96,6 +100,11 @@ export class SectionRoutes {
   else this.root.innerHTML=renderSectionPage(index);
   this.mountedIndex=index;
  }
+ usePreview(index){
+  const entry=this.pageCache.get(index),win=this.document.defaultView;
+  if(!entry?.preview||entry.viewport?.width!==win?.innerWidth||entry.viewport?.height!==win?.innerHeight)return false;
+  this.stashMounted();this.root.replaceChildren(entry.preview);this.previewIndex=index;return true;
+ }
  clearArrival(retain=false){
   this.arrival=null;
   this.document.body.classList.remove('section-arriving','section-retreating');
@@ -104,8 +113,9 @@ export class SectionRoutes {
   for(const name of ['--arrival-opacity','--arrival-transform','--arrival-gutter','transform','opacity','clip-path'])this.root.style.removeProperty?.(name);
  }
  prepareArrival(index,token,reuse=false,scroll=0){
-  this.arrival={index,token,reverse:reuse,opacity:reuse?1:0};
-  if(!reuse)this.mountPage(index);
+  this.arrival={index,token,reverse:reuse,opacity:reuse?1:0,scroll};
+  if(!reuse&&!this.usePreview(index))this.mountPage(index);
+  if(reuse&&this.returnPreview){this.stashMounted();this.root.replaceChildren(this.returnPreview);this.previewIndex=index;scroll=0;}
   this.root.setAttribute('data-portal-arrival',reuse?'retreat':'preview');this.root.setAttribute('aria-hidden','true');
   this.root.style.setProperty('--arrival-gutter','0px');this.root.style.opacity=reuse?'1':'0';
   this.root.style.transform='none';this.root.style.clipPath='none';this.root.inert=true;this.root.hidden=false;
@@ -117,7 +127,10 @@ export class SectionRoutes {
   if(!this.arrival)return;
   const win=this.document.defaultView,width=win?.innerWidth||this.canvas.clientWidth||this.root.clientWidth||900,height=win?.innerHeight||this.canvas.clientHeight||this.root.clientHeight||600;
   this.root.style.setProperty('--arrival-gutter','0px');
-  const cached=this.pageCache.get(this.arrival.index)?.viewport;
+  const cached=this.returnPreviewViewport??this.pageCache.get(this.arrival.index)?.viewport;
+  if(this.previewIndex!==null&&(cached?.width!==width||cached?.height!==height)){
+   this.mountPage(this.arrival.index);this.root.scrollTop=this.arrival.scroll;
+  }
   const gutter=cached?.width===width&&cached.height===height?cached.gutter:this.root.scrollHeight>this.root.clientHeight+1?destinationGutter(this.document):0;
   this.root.style.setProperty('--arrival-gutter',`${gutter}px`);
   // Measured once, not after each transform write. No forced style/layout reads
@@ -139,6 +152,9 @@ export class SectionRoutes {
   }
  }
  clearReturn(){
+  this.returnCaptureController?.abort();this.returnCaptureController=null;this.capturingReturn=false;this.returnPreviewReady=false;
+  if(this.returnPreview){this.returnPreview.width=this.returnPreview.height=0;this.returnPreview=null;}
+  this.returnPreviewViewport=null;
   this.returning=this.waitingReturn=false;this.root.inert=false;this.root.removeAttribute('aria-busy');
   this.document.body.classList.remove('section-returning','section-return-pending');
  }
@@ -167,6 +183,11 @@ export class SectionRoutes {
  show(index,token){
   if(token!==this.token||this.index!==index)return;
   const prepared=this.arrival?.index===index&&this.arrival?.token===token;
+  if(this.previewIndex!==null)this.mountPage(index);
+  // After interaction, the gallery/slider/scroll state can differ from the
+  // introductory bitmap. Later visits reuse the now-warm live DOM instead.
+  const entry=this.pageCache.get(index);
+  if(entry?.preview){entry.preview.width=entry.preview.height=0;entry.preview=null;}
   this.clearArrival(prepared);this.clearReturn();this.page=true;this.pending=false;this.travelling=false;
   this.getScene()?.parkSection();if(!prepared)this.mountPage(index);this.root.hidden=false;
   this.host.hidden=true;this.footer.hidden=true;this.canvas.inert=true;
@@ -175,7 +196,7 @@ export class SectionRoutes {
   this.onRefresh?.();this.root.querySelector('#section-title')?.focus({preventScroll:true});
  }
  close(historyMode='push',immediate=false){
-  if(this.returning&&!immediate)return;
+  if((this.returning||this.capturingReturn)&&!immediate)return;
   const busy=this.getScene();
   if(!immediate&&busy?.qualityChanging){
    const pendingToken=this.token;
@@ -183,6 +204,26 @@ export class SectionRoutes {
    return;
   }
   const fromPage=this.page,index=this.index,scroll=this.document.defaultView?.scrollY??Math.max(0,-(this.root.getBoundingClientRect?.().top??0));
+  // The native page is stationary and the room is asleep during capture. This
+  // preserves gallery, slider and scroll state without moving a cold DOM layer
+  // through the GPU compositor on the first return.
+  if(!immediate&&fromPage&&busy?.ready&&this.document.defaultView?.innerWidth&&this.entered()&&!busy.reduced?.matches&&this.getPhase()!=='unavailable'&&this.onCaptureReturn&&!this.returnPreviewReady){
+   const token=++this.token,win=this.document.defaultView;
+   const viewport={width:win.innerWidth,height:win.innerHeight,gutter:Math.max(0,win.innerWidth-this.root.clientWidth)};
+   const controller=this.returnCaptureController=new AbortController();
+   this.capturingReturn=true;this.root.inert=true;this.root.setAttribute('aria-busy','true');
+   const finish=preview=>{
+    if(token!==this.token||controller.signal.aborted){if(preview)preview.width=preview.height=0;return;}
+    if(preview&&(win.innerWidth!==viewport.width||win.innerHeight!==viewport.height)){preview.width=preview.height=0;preview=null;}
+    this.returnPreview=preview;this.returnPreviewViewport=preview?viewport:null;
+    this.capturingReturn=false;this.returnPreviewReady=true;this.close(historyMode,false);
+   };
+   Promise.resolve().then(()=>this.onCaptureReturn(this.root,{height:viewport.height,scroll},controller.signal)).then(finish,error=>{
+    if(!controller.signal.aborted&&token===this.token){console.warn('[DXT] Return preview uses the DOM fallback:',error.message);finish(null);}
+   });
+   return;
+  }
+  this.returnPreviewReady=false;
   // Preserve the exact visible pose if a direct-page entrance is still
   // settling when Back is pressed. Do not snap that content to its final pose.
   const layout=fromPage&&!immediate?this.root.querySelector('.section-layout'):null;
@@ -224,5 +265,5 @@ export class SectionRoutes {
   this.onRefresh?.();this.canvas.focus({preventScroll:true});
  }
  unavailable(){if(this.returning)this.finishReturn(this.token);else if(this.index!==null)this.show(this.index,this.token);}
- dispose(){this.preloadController?.abort();this.document.defaultView?.removeEventListener?.('resize',this.onArrivalResize);++this.token;this.clearArrival();this.clearReturn();this.stashMounted();this.pageCache.clear();this.preloadedImages.length=0;this.getScene()?.cancelPortal?.();}
+ dispose(){this.preloadController?.abort();this.document.defaultView?.removeEventListener?.('resize',this.onArrivalResize);++this.token;this.clearArrival();this.clearReturn();this.stashMounted();for(const entry of this.pageCache.values())if(entry.preview)entry.preview.width=entry.preview.height=0;this.pageCache.clear();this.preloadedImages.length=0;this.getScene()?.cancelPortal?.();}
 }

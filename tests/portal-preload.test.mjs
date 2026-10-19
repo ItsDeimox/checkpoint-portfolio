@@ -44,6 +44,68 @@ class FakeElement {
 }
 FakeElement.parses=0;
 
+function returnFixture(capture){
+ const root=new FakeElement('section'),body=new FakeElement('body'),canvas=new FakeElement('canvas'),holder=new FakeElement();
+ root.innerHTML='<article>current gallery</article>';root.querySelector=()=>null;root.clientWidth=1185;canvas.focus=()=>{};
+ const original=root.firstChild,win={innerWidth:1200,innerHeight:800,scrollY:140,scrollTo(){}};
+ const scene={ready:true,reduced:{matches:false},returnPortal(i,done){this.started=(this.started??0)+1;this.done=done;return true;},resumeShowroom(){}};
+ const routes=new SectionRoutes({document:{body,defaultView:win},root,canvas,host:new FakeElement(),footer:new FakeElement(),getScene:()=>scene,getPhase:()=> 'ready',entered:()=>true,onSelect(){},setLocation(){},onCaptureReturn:capture});
+ routes.page=true;routes.index=1;routes.mountedIndex=1;routes.pageCache.set(1,{holder,viewport:{width:1200,height:800,gutter:15}});
+ return {routes,root,scene,holder,original};
+}
+const nextTask=()=>new Promise(resolve=>setImmediate(resolve));
+test('return captures current scroll once while parked, then animates only the bitmap and releases it',async()=>{
+ let resolve,calls=0;const preview=new FakeElement('canvas');preview.width=1200;preview.height=800;
+ const f=returnFixture((root,viewport)=>{calls++;assert.equal(viewport.scroll,140);assert.equal(viewport.height,800);return new Promise(r=>resolve=r);});
+ f.routes.close();f.routes.close();await nextTask();
+ assert.equal(calls,1);assert.equal(f.root.inert,true);assert.equal(f.scene.started,undefined);
+ resolve(preview);await nextTask();
+ assert.equal(f.scene.started,1);assert.equal(f.root.firstChild,preview);assert.equal(f.root.scrollTop,0,'bitmap already contains the visible scrolled viewport');
+ assert.equal(f.holder.firstChild,f.original);f.scene.done();assert.equal(preview.width,0);assert.equal(f.root.hidden,true);
+});
+test('cancelled return capture cannot start travel or overwrite navigation',async()=>{
+ let resolve;const preview=new FakeElement('canvas');preview.width=1200;preview.height=800;
+ const f=returnFixture(()=>new Promise(r=>resolve=r));f.routes.close();await nextTask();
+ f.routes.close('none',true);resolve(preview);await nextTask();
+ assert.equal(f.scene.started,undefined);assert.equal(f.root.hidden,true);assert.equal(preview.width,0);
+});
+
+test('resize during a bitmap return restores the original scroll in the live DOM',async()=>{
+ const preview=new FakeElement('canvas');preview.width=1200;preview.height=800;
+ const f=returnFixture(()=>preview);f.routes.close();await nextTask();
+ f.routes.document.defaultView.innerWidth=900;f.routes.fitArrivalViewport();
+ assert.equal(f.root.firstChild,f.original);assert.equal(f.root.scrollTop,140);
+ f.scene.done();assert.equal(preview.width,0);
+});
+test('failed return snapshot falls back to the current DOM without a retry loop',async()=>{
+ let calls=0;const f=returnFixture(()=>{calls++;throw Error('capture unavailable');});
+ f.routes.close();await nextTask();assert.equal(calls,1);assert.equal(f.scene.started,1);assert.equal(f.root.firstChild,f.original);f.scene.done();
+});
+
+test('bitmap travel preserves cached DOM, restores it on arrival and falls back after resize',()=>{
+ const root=new FakeElement('section'),body=new FakeElement('body'),canvas=new FakeElement('canvas'),holder=new FakeElement();
+ holder.innerHTML='<article>interactive page</article>';
+ const original=holder.firstChild,preview=new FakeElement('canvas');preview.width=1200;preview.height=800;
+ root.querySelector=()=>null;
+ const win={innerWidth:1200,innerHeight:800,scrollTo(){}};
+ const routes=new SectionRoutes({document:{body,defaultView:win},root,canvas,host:new FakeElement(),footer:new FakeElement(),getScene:()=>({parkSection(){}})});
+ routes.pageCache.set(1,{holder,preview,viewport:{width:1200,height:800,gutter:15}});
+ routes.index=1;routes.token=2;routes.prepareArrival(1,2);
+ assert.equal(root.firstChild,preview);assert.equal(holder.firstChild,original);assert.equal(root.inert,true);
+ routes.show(1,2);
+ assert.equal(root.firstChild,original);assert.equal(root.inert,false);assert.equal(routes.previewIndex,null);
+ assert.equal(routes.pageCache.get(1).preview,null,'discard the introductory bitmap before gallery or slider state can change');
+ routes.prepareArrival(1,3);
+ assert.equal(root.firstChild,original,'later visits must retain the live interactive state');
+ routes.pageCache.get(1).preview=preview;routes.prepareArrival(1,3);
+ assert.equal(root.firstChild,preview);assert.equal(holder.firstChild,original);
+ win.innerWidth=900;routes.fitArrivalViewport();
+ assert.equal(root.firstChild,original,'resize must use live responsive layout, not stretch a stale snapshot');
+ routes.stashMounted();win.innerWidth=1200;routes.prepareArrival(1,4);routes.stashMounted();
+ assert.equal(holder.firstChild,original,'cancellation must never stash the bitmap as page content');
+ routes.dispose();assert.equal(preview.width,0);assert.equal(preview.height,0);
+});
+
 test('all five destinations are parsed, decoded, laid out and reused under the loading cover',async()=>{
  FakeElement.parses=0;
  const started=[],fonts=[];

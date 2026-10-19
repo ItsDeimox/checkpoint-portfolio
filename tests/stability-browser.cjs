@@ -2,13 +2,14 @@
  * synthetic frame deltas or disabled application RAF. Run with Playwright 1.56.1.
  * A software GPU validates behavior, not RTX 2060 frame-rate guarantees. */
 const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path');
+const hardware=process.env.DXT_HARDWARE_GPU==='1';
 const base=process.env.DXT_BASE_URL||'http://127.0.0.1:3000',out=process.env.DXT_QA_OUT||'docs/stability-r23-qa';
 fs.mkdirSync(out,{recursive:true});
-const report={scope:'Native input and live render loops; software WebGL2',checks:[],errors:[],samples:[]};
+const report={scope:'Native input and live render loops; '+(hardware?'hardware WebGL2':'software WebGL2'),checks:[],errors:[],samples:[]};
 const save=()=>fs.writeFileSync(path.join(out,'native-browser.json'),JSON.stringify(report,null,2));
 const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});console.log(`${pass?'PASS':'FAIL'} ${name}`,detail??'');save();if(!pass)throw Error(name);};
 (async()=>{
- const browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ const browser=await chromium.launch(hardware?{channel:process.env.DXT_BROWSER_CHANNEL||'msedge',headless:true,args:['--enable-gpu','--use-angle=d3d11','--disable-software-rasterizer','--disable-background-timer-throttling','--disable-renderer-backgrounding']}:{headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  const page=await browser.newPage({viewport:{width:900,height:600}});page.setDefaultTimeout(90000);
  page.on('pageerror',error=>report.errors.push(error.message));page.on('crash',()=>{report.errors.push('PAGE CRASH');save();});
  page.on('console',message=>{if(message.type()==='error'&&/THREE.WebGLProgram|VALIDATE_STATUS|shader error/i.test(message.text()))report.errors.push(message.text());});
@@ -52,6 +53,16 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
   await page.goto(base+'/?debug',{waitUntil:'load'});await page.locator('#intro-enter').click();
   await page.waitForFunction(()=>window.__DXT__?.inspect().phase==='ready'&&!document.body.classList.contains('intro-pending'),null,{timeout:180000});
   const initial=await sample('initial');
+  if(hardware){
+   report.gpu=await page.evaluate(()=>{const gl=__STABILITY__.scene().gl,ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);});
+   check('hardware benchmark actually uses the GPU',!(/swiftshader|llvmpipe|software|basic render/i.test(report.gpu)),report.gpu);
+  }
+  check('five bounded page bitmaps are prepared before the first click',await page.evaluate(()=>{const entries=[...__STABILITY__.routes().pageCache.values()];return entries.length===5&&entries.every(e=>e.preview?.width>0&&e.preview.width*e.preview.height<=3686400);}));
+  await page.evaluate(()=>{
+   const routes=__STABILITY__.routes(),capture=routes.onCaptureReturn;
+   routes.onCaptureReturn=async(...args)=>{const start=performance.now(),canvas=await capture(...args);
+    window.__RETURN_CAPTURE={ms:performance.now()-start,viewport:args[1],width:canvas?.width,height:canvas?.height,png:canvas?.toDataURL()};return canvas;};
+  });
   const prepared=await page.evaluate(()=>{let s=__STABILITY__.scene(),e=__STABILITY__.experience(),r=__STABILITY__.routes();return{pageGraphics:e.gpuReady,portal:s.bannerPortal.prepared&&s.bannerPortal.scenePrepared,snap:r.pageCache.get(2).holder.querySelector('.destination-preview')?.naturalWidth,car:s.carPivot.position.toArray(),spot:s.carSpot?.intensity,beam:s.beams[0]?.material.uniforms.beamStrength.value};});
   check('all paths and the covered-car wall preview exist before entry unlocks',prepared.portal&&prepared.pageGraphics&&prepared.snap>200,prepared);
   check('car is centered and the neutral spotlight remains restrained',Math.abs(prepared.car[0])<.001&&prepared.spot===115&&prepared.beam>0&&prepared.beam<.3,prepared);
@@ -65,7 +76,7 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
   const paint=await page.evaluate(()=>{const s=__STABILITY__.scene(),colors=[];s.carPivot.traverse(o=>{for(const m of[o.material].flat().filter(Boolean))if(m.color)colors.push(m.color.getHexString());});return colors;});
   for(const index of[0,1,2,3,4]){
    await phase('hover-'+index);await aim(index);
-   await page.waitForFunction(i=>{const s=__STABILITY__.scene();return s.identity.selected===i&&s.panels[i].material.uniforms.cardLevel.value>.98;},index);
+   await page.waitForFunction(i=>{const s=__STABILITY__.scene();return s.identity.selected===i&&s.panels[i].material.uniforms.cardLevel.value>.98&&s.panels.every((p,j)=>j===i||p.material.uniforms.cardLevel.value<.15);},index);
    const hover=await page.evaluate(({index,paint})=>{
     const s=__STABILITY__.scene(),t=s.identity.color,ceil=s.scene.getObjectByName('Ceiling neon').material.color;
     const normalized=ceil.clone().multiplyScalar(1/Math.max(ceil.r,ceil.g,ceil.b)),goal=t.clone().multiplyScalar(1/Math.max(t.r,t.g,t.b));
@@ -99,7 +110,11 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
     check('covered car is live only after arrival and all seven projects remain',await page.evaluate(()=>__STABILITY__.experience().graphics.mode==='car'&&document.querySelectorAll('.future-project').length===7));
    }
    await phase('return-'+index);
-   await page.locator('.section-return').click();await page.waitForFunction(()=>!__STABILITY__.routes().travelling&&!__STABILITY__.routes().page,null,{timeout:120000});
+   await page.screenshot({path:path.join(out,'before-return-'+index+'.png')});
+   await page.keyboard.press('Escape');await page.waitForFunction(()=>!__STABILITY__.routes().travelling&&!__STABILITY__.routes().page,null,{timeout:120000});
+   const capture=await page.evaluate(()=>__RETURN_CAPTURE);
+   if(capture?.png){fs.writeFileSync(path.join(out,'return-preview-'+index+'.png'),Buffer.from(capture.png.split(',')[1],'base64'));delete capture.png;}
+   check('return '+index+' captures the current visible viewport before moving',capture?.width>0&&capture.width*capture.height<=3686400,capture);
    const returned=await sample('returned-'+index);
    check('return '+index+' restores one live showroom and no stale graphics surface',await page.evaluate(()=>{let s=__STABILITY__.scene();return !s.pageActive&&!s.bannerPortal.active&&!__STABILITY__.experience().graphics.canvas.isConnected&&!!s.raf;}),returned);
    await page.mouse.move(450,555);await page.waitForTimeout(300);

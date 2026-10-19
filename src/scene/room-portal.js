@@ -105,6 +105,7 @@ export class BannerPortal {
   const samples=[
    {progress:0,age:.45,stage:'approach'},
    {progress:.38,age:PORTAL_APPROACH_SECONDS+.38*PORTAL_FLIGHT_SECONDS,stage:'flight'},
+   {progress:.39,age:PORTAL_APPROACH_SECONDS+.39*PORTAL_FLIGHT_SECONDS,stage:'flight'},
    {progress:1,age:PORTAL_APPROACH_SECONDS+PORTAL_FLIGHT_SECONDS,stage:'flight'},
   ];
   try{
@@ -121,7 +122,7 @@ export class BannerPortal {
      signal?.throwIfAborted();
      const pose=portalTravelPose(this.basis,sample.progress);
      c.position.copy(pose.position);c.quaternion.copy(pose.rotation);v.cameraRig.setFov(pose.fov);c.updateMatrixWorld(true);
-     this.stage=sample.stage;this.age=sample.age;this.interior=sample.progress===1;
+     this.stage=sample.stage;this.age=sample.age;this.interior=sample.stage==='flight';
      panel.portalUniforms.portalProgress.value=sample.progress;
      panel.portalUniforms.portalMix.value=smooth(sample.age/.75);
      this.sampleExit();this.syncReturnEffects();

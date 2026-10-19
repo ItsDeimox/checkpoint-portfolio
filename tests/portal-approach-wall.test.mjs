@@ -70,7 +70,7 @@ test('scene warm-up temporarily renders even when restoration happens behind a p
  v.render=()=>{assert.equal(v.pageActive,false,'parked page suppresses the portal warm draw');draws++;assert.ok(f.portal.effects.uniforms.burstHalf.value.x>0,'opening effects must use the real doorway');};
  try{
   await f.portal.prepareScene(new AbortController().signal);
-  assert.equal(draws,15,'all five destinations must warm three actual draw states');assert.equal(v.pageActive,true);
+  assert.equal(draws,20,'all five destinations must warm exterior, interior and moving interior');assert.equal(v.pageActive,true);
   assert.ok(v.camera.position.equals(initialPosition));assert.ok(v.camera.quaternion.equals(initialRotation));
   assert.equal(f.portal.active,false);assert.equal(f.portal.effects.group.visible,false);assert.equal(f.portal.scenePrepared,true);
  }finally{f.dispose();}
@@ -78,16 +78,18 @@ test('scene warm-up temporarily renders even when restoration happens behind a p
 
 test('portal prewarm covers every page, exterior effects and interior path before first input',async()=>{
  const f=journey(),v=f.view,seen=[];
+ f.portal.attached=true;
  v.pageActive=false;v.renderer={shadowMap:{needsUpdate:false},getContext:()=>({})};
- v.render=()=>{if(!f.portal.panel)return;seen.push({index:f.portal.panel.index,interior:f.portal.interior,progress:f.portal.panel.portalUniforms.portalProgress.value,fx:f.portal.effects.group.visible,stage:f.portal.stage});};
+ v.render=()=>{if(!f.portal.panel)return;f.portal.prepareFrame(1/60);seen.push({index:f.portal.panel.index,interior:f.portal.interior,progress:f.portal.panel.portalUniforms.portalProgress.value,fx:f.portal.effects.group.visible,stage:f.portal.stage,shutter:f.portal.shutter.uniforms.uShutter.value});};
  try{
   await f.portal.prepareScene(new AbortController().signal);
   for(let index=0;index<5;index++){
    const samples=seen.filter(s=>s.index===index);
-   assert.equal(samples.length,3);
-   assert.deepEqual(samples.map(s=>s.progress),[0,.38,1]);
+   assert.equal(samples.length,4);
+   assert.deepEqual(samples.map(s=>s.progress),[0,.38,.39,1]);
    assert.ok(samples.some(s=>s.stage==='approach'&&!s.interior&&s.fx));
    assert.ok(samples.some(s=>s.interior));
+   assert.ok(samples.some(s=>s.interior&&s.shutter>0),'moving corridor shader must be drawn before the first click');
    assert.equal(v.panels[index].portalUniforms.portalMix.value,0);
   }
   assert.equal(f.portal.panel,null);

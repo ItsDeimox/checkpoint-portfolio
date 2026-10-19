@@ -95,15 +95,19 @@ test('quality caps actual format-compatible MSAA samples and keeps postprocess t
   } finally { optics.dispose(); }
 });
 
-test('unsupported HDR sample counts retain HDR with FXAA, and the byte fallback queries RGBA8', () => {
+test('Medium retains geometry AA on four-sample-only devices, and byte fallback queries RGBA8', () => {
   const limited = fixture({ samples: [4], depthSamples: [4] });
   const byte = fixture({ hdr: false, samples: [4, 2], maxSamples: 2 });
   try {
     assert.ok(limited.optics.sceneTarget);
-    assert.equal(limited.optics.sceneTarget.samples, 0, 'Auto must not silently allocate four samples for a two-sample budget');
+    assert.equal(limited.optics.sceneTarget.samples, 4, 'Medium must retain geometry AA when the driver supports four samples but not two');
     assert.equal(limited.optics.sceneTarget.texture.type, HalfFloatType);
     assert.equal(limited.optics.aaPass.enabled, true);
     limited.optics.setQuality('high');
+    assert.equal(limited.optics.sceneTarget.samples, 4);
+    limited.optics.setQuality('low');
+    assert.equal(limited.optics.sceneTarget.samples, 0);
+    limited.optics.setQuality('auto');
     assert.equal(limited.optics.sceneTarget.samples, 4);
     byte.optics.setQuality('high');
     assert.equal(byte.optics.sceneTarget.samples, 2);

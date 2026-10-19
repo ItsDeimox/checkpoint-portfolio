@@ -59,7 +59,13 @@ async function onReady(){
 const soundtrack=new RoomMusic({settings:settings.music,onState(state){musicState=state;settings.sound=state.enabled;updateMusicUI();scene?.wake();}});
 sections=new SectionRoutes({document,host,root:sectionRoot,canvas,footer,getScene:()=>scene,getPhase:()=>phase,
  entered:()=>!intro||intro.dismissed,setLocation,onSelect(index){selectedPanel=index;announcer.textContent=index===null?'Showroom overview.':`Opening ${ROOM_PANELS[index].title}.`;},
- onNeedScene(){if(!started)start();},onPreparePage:stage=>sectionMedia.experience?.preparePage(stage),onRefresh:updateHeader});
+ onNeedScene(){if(!started)start();},onPreparePage:async(stage,signal)=>{
+  await sectionMedia.experience?.preparePage(stage);
+  const {capturePagePreview}=await loadExperience();return capturePagePreview(stage,signal);
+ },onCaptureReturn:async(root,viewport,signal)=>{
+  sectionMedia.experience?.sleep();sectionMedia.experience?.drawOnce();
+  const {capturePagePreview}=await loadExperience();return capturePagePreview(root,signal,viewport);
+ },onRefresh:updateHeader});
 updateHeader();
 intro=mountIntro(document,{onActivate(){save();return soundtrack.setEnabled(true);},onDismiss(){sections.ready();const focus=sections.page?sectionRoot.querySelector('#section-title'):canvas;focus?.focus({preventScroll:true});scene?.wake();}});
 const entryNote=document.querySelector('.intro-audio-note');if(entryNote)entryNote.textContent=`Click to enter · Music starts at ${Math.round(settings.music.volume*100)}%`;
@@ -73,7 +79,7 @@ document.addEventListener('click',async event=>{
  const brand=target.closest('[data-spin-logo]');
  if(brand){
   event.preventDefault();
-  if(sections.returning)return;
+  if(sections.returning||sections.capturingReturn)return;
   try{if(persistentBrand)persistentBrand.spin();else scene?.spinLogo();}
   catch(error){console.warn('[DXT] Logo animation unavailable:',error);}
   if(brand.matches('[data-return-showroom]'))sections.close();
@@ -102,7 +108,7 @@ header.addEventListener('change',event=>{if(event.target.matches?.('[data-music-
 document.addEventListener('click',event=>{if(!event.target.closest?.('.room-audio-controls'))header.querySelector('.room-audio-menu')?.removeAttribute('open');});
 document.addEventListener('keydown',event=>{
  if(event.key!=='Escape')return;
- if(selectedPanel!==null||sections.returning){event.preventDefault();sections.close('push',sections.returning);}
+ if(selectedPanel!==null||sections.returning||sections.capturingReturn){event.preventDefault();sections.close('push',sections.returning||sections.capturingReturn);}
  else{const menu=header.querySelector('.room-audio-menu');if(menu?.open){menu.removeAttribute('open');header.querySelector('#music-settings-toggle')?.focus();}}
 });
 window.addEventListener('popstate',()=>{const index=panelFromPath(location.pathname);if(index===null)sections.close('none');else sections.open(index,null,'none',true);});
