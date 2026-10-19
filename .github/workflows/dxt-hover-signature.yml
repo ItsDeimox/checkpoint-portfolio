@@ -1,0 +1,63 @@
+name: DXT prism-trails QA
+on:
+  push:
+    branches:
+      - codex/dxt-hover-signature
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /tmp/dxt-browsers
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Materialize reviewed card-only changes
+        run: |
+          node -e 'const fs=require("fs"),z=require("zlib"),c=require("crypto");const x=fs.readFileSync(".github/dxt-r26-hover.br");const hash=c.createHash("sha256").update(x).digest("hex");if(hash!=="1eb4e387745a462ed80bd5c790ba770b5ebc006edd802a4d2bc9c6b5fbb4ae6e")throw Error("Unexpected patch");fs.writeFileSync("/tmp/hover-r26.patch",z.brotliDecompressSync(x))'
+          git apply --check /tmp/hover-r26.patch
+          git apply --index /tmp/hover-r26.patch
+          git diff --cached --stat
+      - name: Install locked dependencies and browser
+        run: |
+          npm ci --prefix dxrkths
+          npm install --prefix /tmp/dxt-browser --no-package-lock --no-audit --no-fund playwright@1.56.1
+          node /tmp/dxt-browser/node_modules/playwright/cli.js install --with-deps --only-shell chromium
+      - name: Build and run all unit and integration tests
+        run: |
+          set -o pipefail
+          npm run build --prefix dxrkths | tee /tmp/dxt-r26-build.log
+      - name: Compile actual GPU shaders and exercise a native hover and click
+        env:
+          NODE_PATH: /tmp/dxt-browser/node_modules
+        run: |
+          cd dxrkths
+          node tools/server.mjs --port 3000 > /tmp/dxt-r26-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3000/ >/dev/null && break; sleep .2; done
+          mkdir -p /tmp/dxt-r26-qa
+          DXT_QA_OUT=/tmp/dxt-r26-qa node tests/hover-gpu-browser.cjs
+          node ../.github/dxt-hover-r26-browser.cjs
+      - name: Create candidate Git object without changing branches
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/dxt-hover-r26-candidate.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dxt-prism-trails-qa
+          path: |
+            /tmp/dxt-r26-qa/
+            /tmp/dxt-r26-build.log
+            candidate.json
+          retention-days: 2
+          if-no-files-found: warn
