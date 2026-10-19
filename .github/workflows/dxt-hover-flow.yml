@@ -24,6 +24,7 @@ jobs:
           node -e 'const fs=require("fs"),z=require("zlib"),c=require("crypto");const d=fs.readFileSync(".github/dxt-hover-flow.br");if(c.createHash("sha256").update(d).digest("hex")!=="678bfd5bafcc8d102b44b3b62640bab817472c80bf46004abb7e34c4250cc237")throw Error("Patch mismatch");fs.writeFileSync("/tmp/flow.patch",z.brotliDecompressSync(d))'
           git apply --check /tmp/flow.patch
           git apply --index /tmp/flow.patch
+          python3 .github/dxt-hover-flow-smoothing.py
           git diff --cached --check
       - name: Install locked app and pinned test browser
         run: |
