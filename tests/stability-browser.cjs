@@ -102,8 +102,14 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
     check('CTA renderer sleeps after the wave decays',true);
    }
    if(index===1){
-    await page.locator('[data-group-track]').hover();await page.mouse.wheel(0,220);await page.waitForTimeout(800);
-    check('groups advance only on explicit scroll and games remain non-links',await page.evaluate(()=>{let t=document.querySelector('[data-group-track]');return t.scrollLeft>t.clientWidth*.7&&[...document.querySelectorAll('[data-group-game]')].every(e=>!e.closest('a')&&!e.querySelector('a'));}));
+    const track=page.locator('[data-group-track]');await track.hover();
+    const x=await track.evaluate(t=>t.scrollLeft);
+    await page.mouse.wheel(0,220);await page.waitForTimeout(300);
+    check('vertical page wheel never advances the group',await track.evaluate((t,x)=>Math.abs(t.scrollLeft-x)<2,x));
+    await track.hover();
+    await track.evaluate(t=>t.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,shiftKey:true,deltaY:220})));
+    await page.waitForTimeout(800);
+    check('explicit horizontal gesture changes groups while games remain non-links',await page.evaluate(()=>{let t=document.querySelector('[data-group-track]');return t.scrollLeft>t.clientWidth*.7&&[...document.querySelectorAll('[data-group-game]')].every(e=>!e.closest('a')&&!e.querySelector('a'));}));
    }
    if(index===2){
     await page.screenshot({path:path.join(out,'future-car.png')});
