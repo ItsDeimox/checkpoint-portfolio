@@ -78,7 +78,17 @@ export class SectionRoutes {
     stage.getBoundingClientRect?.();
     try{entry.preview=await this.onPreparePage?.(stage,signal)??null;}
     catch(error){signal?.throwIfAborted();console.warn('[DXT] Page preview uses the DOM fallback:',error.message);}
-    await preloadPaint(view);
+    // A decoded canvas is not necessarily a painted/composited canvas. Prime
+    // its full-size pixels behind the intro rather than uploading its very
+    // first visible layer during the visitor's first portal journey.
+    if(entry.preview){
+     stage.appendChild(entry.preview);
+     try{
+      await preloadPaint(view);
+      await preloadPaint(view);
+      signal?.throwIfAborted();
+     }finally{entry.preview.remove();}
+    }else await preloadPaint(view);
     entry.holder.append(...Array.from(stage.childNodes));mounted=null;
    }
    return true;
@@ -113,6 +123,22 @@ export class SectionRoutes {
   this.root.inert=false;this.root.removeAttribute('aria-hidden');
   if(retain)this.root.setAttribute('data-portal-arrival','arrived');else this.root.removeAttribute('data-portal-arrival');
   for(const name of ['--arrival-opacity','--arrival-transform','--arrival-gutter','transform','opacity','clip-path'])this.root.style.removeProperty?.(name);
+ }
+ /** Give the mounted first-visit bitmap two actual paint opportunities before
+  * the camera moves. The layer is practically invisible while being promoted;
+  * no HTML serialization, animation loop or GPU renderer is started on click. */
+ async primeFirstArrival(index,token){
+  if(token!==this.token||this.previewIndex!==index)return false;
+  const opacity=this.root.style.opacity;
+  this.root.style.opacity='0.002';
+  try{
+   await preloadPaint(this.document.defaultView);
+   if(token!==this.token||this.previewIndex!==index)return false;
+   await preloadPaint(this.document.defaultView);
+   return token===this.token&&this.travelling&&this.previewIndex===index;
+  }finally{
+   if(token===this.token&&this.arrival?.index===index)this.root.style.opacity=opacity;
+  }
  }
  prepareArrival(index,token,reuse=false,scroll=0){
   this.arrival={index,token,reverse:reuse,opacity:reuse?1:0,scroll};
@@ -177,11 +203,16 @@ export class SectionRoutes {
   this.canvas.inert=true;this.footer.inert=true;
   this.prepareArrival(index,token);
   const start=()=>{
-   if(token!==this.token)return;
+   if(token!==this.token||!this.travelling)return;
    const started=scene.enterPortal(index,()=>this.show(index,token),(p,frame)=>this.revealArrival(index,token,p,frame),()=>this.arrivalViewport());
    if(!started)this.show(index,token);
   };
-  if(this.previewIndex===null&&this.pageSurface.supported){scene.sleep?.();this.pageSurface.capture().then(start);}
+  if(this.previewIndex!==null){
+   scene.sleep?.();
+   this.primeFirstArrival(index,token).then(ready=>{if(ready)start();},()=>{
+    if(token===this.token&&this.travelling)start();
+   });
+  }else if(this.pageSurface.supported){scene.sleep?.();this.pageSurface.capture().then(start);}
   else start();
  }
  ready(){
