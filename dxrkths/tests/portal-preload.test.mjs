@@ -144,3 +144,57 @@ test('all five destinations are parsed, decoded, laid out and reused under the l
   assert.equal(FakeElement.parses,5,'none of the five templates is rebuilt during entry');
  }finally{routes.dispose();}
 });
+
+/** The initial snapshot's pixels must be composited before the first animated
+ * portal frame, not merely decoded and held as a detached canvas. */
+test('intro prepares and paints each viewport preview before it is cached',async()=>{
+ const painted=[],previews=[],body=new FakeElement('body');
+ const win={innerWidth:1200,innerHeight:800,requestAnimationFrame(callback){
+  const stage=body.childNodes.find(el=>el.tagName==='section');
+  if(stage?.childNodes.some(node=>node.tagName==='canvas'))painted.push(stage);
+  return setTimeout(callback,0);
+ }};
+ const doc={body,defaultView:win,createElement:name=>new FakeElement(name)};
+ const routes=new SectionRoutes({document:doc,root:new FakeElement('section'),host:new FakeElement(),canvas:new FakeElement(),footer:new FakeElement(),
+  getScene:()=>null,getPhase:()=> 'ready',entered:()=>true,setLocation(){},onSelect(){},
+  onPreparePage(){const canvas=new FakeElement('canvas');previews.push(canvas);return canvas;}});
+ try{
+  assert.equal(await routes.preload(),true);
+  assert.equal(previews.length,5);
+  assert.equal(painted.length,10,'two paint opportunities per canvas are prepared under the intro');
+  assert.ok(previews.every(canvas=>canvas.parentNode===null),'the staging DOM does not retain canvases');
+  assert.ok([...routes.pageCache.values()].every(entry=>previews.includes(entry.preview)));
+  assert.equal(body.childNodes.length,0);
+ }finally{routes.dispose();}
+});
+
+test('first click waits for the mounted bitmap to paint before portal motion; cancellation cannot restart it',async()=>{
+ const make=()=>{
+  const callbacks=[],events=[],holder=new FakeElement('div'),root=new FakeElement('section');
+  holder.innerHTML='<article>cached page</article>';root.querySelector=()=>null;
+  const scene={ready:true,reduced:{matches:false},sleep(){events.push('sleep');},
+   enterPortal(){events.push('start');return true;},resumeShowroom(){events.push('resume');},cancelPortal(){}};
+  const doc={body:new FakeElement('body'),defaultView:{
+   innerWidth:1200,innerHeight:800,scrollTo(){},requestAnimationFrame(cb){callbacks.push(cb);}
+  }};
+  const routes=new SectionRoutes({document:doc,host:new FakeElement(),root,canvas:new FakeElement(),footer:new FakeElement(),
+   getScene:()=>scene,getPhase:()=> 'ready',entered:()=>true,setLocation(){},onSelect(){}});
+  const preview=new FakeElement('canvas');preview.width=1200;preview.height=800;
+  routes.pageCache.set(1,{holder,preview,viewport:{width:1200,height:800,gutter:15}});
+  return {routes,callbacks,events,root};
+ };
+ const tick=async f=>{const cb=f.callbacks.shift();assert.equal(typeof cb,'function');cb();await new Promise(resolve=>setTimeout(resolve,5));};
+ const f=make();try{
+  f.routes.open(1);
+  assert.deepEqual(f.events,['sleep']);assert.equal(f.callbacks.length,1);
+  assert.equal(f.root.style.opacity,'0.002','first mount stays optically invisible while it is painted');
+  await tick(f);assert.deepEqual(f.events,['sleep']);
+  await tick(f);assert.deepEqual(f.events,['sleep','start']);
+  assert.equal(f.root.style.opacity,'0');
+ }finally{f.routes.dispose();}
+ const abandoned=make();try{
+  abandoned.routes.open(1);abandoned.routes.close('none',true);
+  await tick(abandoned);
+  assert.ok(!abandoned.events.includes('start'),'cancelled/stale preparation must not animate a portal');
+ }finally{abandoned.routes.dispose();}
+});

@@ -19,7 +19,7 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
   await page.goto(base+'/projects?debug',{waitUntil:'load'});await page.locator('#intro-enter').click();
   await page.waitForFunction(()=>!document.body.classList.contains('intro-pending')&&window.__RECOVERY__.experience().gpuReady);
   check('direct Future Projects is interactive without constructing a hidden showroom',await page.evaluate(()=>!__RECOVERY__.scene()&&__RECOVERY__.routes().page&&__RECOVERY__.experience().gpuReady));
-  await page.locator('.section-return').click();
+  await page.locator('#brand-spin').click();
   await page.waitForFunction(()=>__RECOVERY__.scene()?.ready&&!__RECOVERY__.routes().travelling&&!__RECOVERY__.routes().page,null,{timeout:180000});
   check('direct page return warms the dormant showroom and restores native input',await page.evaluate(()=>{let s=__RECOVERY__.scene();return s.bannerPortal.scenePrepared&&s.appliedQuality==='low'&&!s.pageActive&&!!s.raf;}));
   await page.locator('[data-open-panel="3"]').first().click();
@@ -38,7 +38,7 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
   // A real, immediate Back click during the next quality allocation must wait
   // for that transaction rather than submit a competing portal frame.
   await page.locator('#quality').click();
-  await page.locator('.section-return').click();await page.waitForFunction(()=>!__RECOVERY__.scene().qualityChanging&&!__RECOVERY__.routes().travelling&&!__RECOVERY__.routes().page,null,{timeout:180000});
+  await page.locator('#brand-spin').click();await page.waitForFunction(()=>!__RECOVERY__.scene().qualityChanging&&!__RECOVERY__.routes().travelling&&!__RECOVERY__.routes().page,null,{timeout:180000});
   check('native return remains functional after loss and interrupted quality change',await page.evaluate(()=>{let s=__RECOVERY__.scene();return s.ready&&!s.lost&&!s.pageActive&&!!s.raf&&!document.body.classList.contains('quality-preparing');}));
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.locator('[data-open-panel="3"]').first().click();await page.waitForFunction(()=>__RECOVERY__.routes().page);

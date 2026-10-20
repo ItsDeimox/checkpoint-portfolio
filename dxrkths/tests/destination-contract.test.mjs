@@ -20,6 +20,9 @@ test('the authored biography appears with a frameless avatar',()=>{
 test('the future page contains a real render surface and the complete seven-item catalogue',()=>{
  const html=renderSectionPage(2);assert.match(html,/data-covered-car/);
  for(const label of ['BERSERK DRIFT: RALLY','Unnamed Drift Game','Right Cut!','Procedural Tiremark Generator','Procedural Vegetation Placer','Drift Judge Score System','FFB System'])assert.ok(html.includes(label),label);
+ assert.equal((html.match(/class="future-project" role="listitem"/g)||[]).length,7);
+ assert.equal((html.match(/class="future-project-list" role="list"/g)||[]).length,3);
+ assert.doesNotMatch(html,/Back to showroom|class="section-return"/);
 });
 test('groups are scroll controlled, with non-link game media and no invented release list',()=>{
  const html=renderSectionPage(1);assert.match(html,/data-group-track/);assert.match(html,/data-group-slide/);

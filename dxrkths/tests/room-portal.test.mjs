@@ -50,7 +50,7 @@ test('each destination is a full accessible page with authored links, not an in-
  for(let i=0;i<5;i++){
   const html=sections.renderSectionPage(i);
   assert.match(html,/class="section-layout/);assert.match(html,/id="section-title"/);
-  assert.match(html,/data-return-showroom/);assert.doesNotMatch(html,/data-room-panel-action|aria-modal|<canvas/);
+  assert.doesNotMatch(html,/data-return-showroom|Back to showroom|data-room-panel-action|aria-modal|<canvas/);
   assert.match(html,/rel="noopener noreferrer"/);
  }
  assert.match(sections.renderSectionPage(2),/BERSERK DRIFT: RALLY/);
