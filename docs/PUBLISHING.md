@@ -29,3 +29,6 @@ As publicações seguintes acontecem automaticamente após cada push criado pelo
 - Confirme que o e-mail do autor do commit está verificado no GitHub.
 - Verifique se Git e o gerenciador de credenciais estão autenticados.
 
+## Qualidade da publicação
+
+Antes de entregar o site, consulte [revisão pré-publicação de qualidade, acessibilidade e conformidade](WEB_QUALITY_PRE_RELEASE.md). É um roteiro contextual: nem todos os 17 itens se aplicam a um portfólio estático, e a revisão não substitui auditoria jurídica.
