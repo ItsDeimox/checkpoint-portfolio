@@ -13,13 +13,21 @@ function rig(){
   setPointerCapture(){this.captured=true;},hasPointerCapture(){return this.captured;},releasePointerCapture(){this.captured=false;}};
  const target={closest:selector=>selector==='[data-group-track]'?track:null};
  const page=Object.create(DestinationExperience.prototype);
- page.root={inert:false};page.reduced={matches:false};page.window={performance:{now:()=>1000}};
+ let now=1000,nextRaf=1;const frames=new Map();
+ page.root={inert:false};page.reduced={matches:false};page.window={
+  performance:{now:()=>now},
+  requestAnimationFrame(callback){const id=nextRaf++;frames.set(id,callback);return id;},
+  cancelAnimationFrame(id){frames.delete(id);}
+ };
  let prevented=0;
  const wheel=(props={})=>({target,deltaX:0,deltaY:230,deltaMode:0,
   shiftKey:false,ctrlKey:false,preventDefault(){prevented++;},...props});
  const pointer=(props={})=>({target,pointerType:'mouse',button:0,pointerId:17,
   clientX:750,clientY:250,cancelable:true,type:'pointermove',preventDefault(){prevented++;},...props});
- return {page,track,target,events,classes,wheel,pointer,get prevented(){return prevented;}};
+ return {page,track,target,events,classes,wheel,pointer,
+  tick(ms=16){now+=ms;const due=[...frames.values()];frames.clear();for(const frame of due)frame(now);},
+  get pendingFrames(){return frames.size;},
+  get prevented(){return prevented;}};
 }
 
 test('ordinary vertical wheel always belongs to the document even mid horizontal-snap cooldown',()=>{
@@ -53,20 +61,68 @@ test('Shift + vertical wheel intentionally changes carousel once, preserving bou
  f.page.wheel(f.wheel({shiftKey:true,deltaY:200}));
  assert.equal(f.events.at(-1).behavior,'instant','reduced motion avoids smooth snap');
 });
-test('horizontal mouse drag captures only after intent threshold and snaps to a real slide',()=>{
+test('released drag smoothly settles from its CURRENT position, without an instant native snap',()=>{
  const f=rig();
  f.page.groupPointerStart(f.pointer({type:'pointerdown'}));
  assert.ok(f.page.groupDrag);assert.equal(f.track.captured,false);
  f.page.groupPointerMove(f.pointer({clientX:747,clientY:248}));
  assert.equal(f.track.captured,false);assert.equal(f.prevented,0);
- f.page.groupPointerMove(f.pointer({clientX:700,clientY:247}));
+ f.tick(16);f.page.groupPointerMove(f.pointer({clientX:700,clientY:247}));
  assert.equal(f.track.captured,true);assert.ok(f.classes.has('is-dragging'));
- f.page.groupPointerMove(f.pointer({clientX:10,clientY:247}));
+ f.tick(16);f.page.groupPointerMove(f.pointer({clientX:10,clientY:247}));
  assert.ok(f.track.scrollLeft>700);
- f.page.groupPointerEnd(f.pointer({type:'pointerup',clientX:10,clientY:247}));
+ const released=f.track.scrollLeft;
+ f.tick(16);f.page.groupPointerEnd(f.pointer({type:'pointerup',clientX:10,clientY:247}));
  assert.equal(f.track.captured,false);assert.ok(!f.classes.has('is-dragging'));
- assert.equal(f.events.at(-1).left,1028,'release snaps to closest group');
- assert.equal(f.page.groupDrag,null);
+ assert.ok(f.classes.has('is-settling'),'native snap must remain off through the transition');
+ assert.equal(f.track.scrollLeft,released,'pointer release itself must not teleport the carousel');
+ assert.equal(f.page.groupDrag,null);assert.equal(f.pendingFrames,1);
+ f.tick(16);
+ assert.ok(f.track.scrollLeft>released&&f.track.scrollLeft<1028,'animated step stays between the released position and next group');
+ const intermediate=f.track.scrollLeft;f.tick(100);
+ assert.ok(f.track.scrollLeft>intermediate&&f.track.scrollLeft<1028,'progress advances over multiple painted frames');
+ f.tick(800);
+ assert.equal(f.track.scrollLeft,1028);
+ assert.ok(!f.classes.has('is-settling'),'native snap is restored at the exact destination only');
+ assert.equal(f.pendingFrames,0);
+});
+test('a slow short drag eases backwards instead of snapping immediately to the previous group',()=>{
+ const f=rig();
+ f.page.groupPointerStart(f.pointer({type:'pointerdown'}));
+ f.tick(20);f.page.groupPointerMove(f.pointer({clientX:730,clientY:250}));
+ f.tick(20);f.page.groupPointerMove(f.pointer({clientX:570,clientY:250}));
+ const released=f.track.scrollLeft;assert.ok(released>150&&released<250);
+ f.tick(140);f.page.groupPointerEnd(f.pointer({type:'pointerup'}));
+ assert.equal(f.track.scrollLeft,released);
+ assert.ok(f.classes.has('is-settling'));
+ f.tick(100);assert.ok(f.track.scrollLeft>0&&f.track.scrollLeft<released);
+ f.tick(600);assert.equal(f.track.scrollLeft,0);
+});
+test('dragging during the previous settle rebases to its current frame without a jump',()=>{
+ const f=rig();f.page.groupPointerStart(f.pointer({type:'pointerdown'}));
+ f.tick(16);f.page.groupPointerMove(f.pointer({clientX:720}));
+ f.tick(16);f.page.groupPointerMove(f.pointer({clientX:10}));
+ f.page.groupPointerEnd(f.pointer({type:'pointerup',clientX:10}));
+ f.tick(80);assert.ok(f.classes.has('is-settling'));
+ f.page.groupPointerStart(f.pointer({type:'pointerdown',clientX:600}));
+ const observed=f.track.scrollLeft;
+ f.page.groupPointerMove(f.pointer({clientX:575}));
+ assert.equal(f.track.scrollLeft,observed,'interruption picks up the painted position');
+ assert.ok(f.classes.has('is-dragging'));assert.ok(!f.classes.has('is-settling'));
+ assert.equal(f.pendingFrames,0,'old animation must be cancelled');
+ f.tick(16);f.page.groupPointerMove(f.pointer({clientX:520}));
+ assert.ok(f.track.scrollLeft>observed);
+ f.page.groupPointerEnd(f.pointer({type:'pointerup',clientX:520}));
+ f.tick(700);assert.equal(f.track.scrollLeft,1028);
+});
+test('reduced-motion mode snaps directly without scheduling the release animation',()=>{
+ const f=rig();f.page.reduced.matches=true;
+ f.page.groupPointerStart(f.pointer({type:'pointerdown'}));
+ f.page.groupPointerMove(f.pointer({clientX:720}));
+ f.page.groupPointerMove(f.pointer({clientX:10}));
+ f.page.groupPointerEnd(f.pointer({type:'pointerup',clientX:10}));
+ assert.equal(f.track.scrollLeft,1028);assert.equal(f.pendingFrames,0);
+ assert.ok(!f.classes.has('is-settling'));
 });
 test('vertical pointer intent, touch swipes and links are not captured by mouse drag',()=>{
  const f=rig();
@@ -84,5 +140,6 @@ test('group page advertises true navigation gestures and keeps native horizontal
  assert.match(html,/Normal vertical scrolling moves the page/);
  assert.match(css,/\.group-track\{[^}]*overflow-x:auto[^}]*scroll-snap-type:x mandatory/);
  assert.match(css,/\.group-track\.is-dragging\{[^}]*scroll-snap-type:none/);
+ assert.match(css,/\.group-track\.is-settling\{scroll-snap-type:none\}/);
  assert.doesNotMatch(css,/\.group-track[^\n]*touch-action:none/);
 });
