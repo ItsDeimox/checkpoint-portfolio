@@ -316,7 +316,9 @@ body[data-page="home"] .room-step.is-active span{background:rgb(var(--showroom-a
 .section-studios #section-title{max-width:none}
 .group-showcase-label{display:flex;justify-content:space-between;margin-bottom:19px;color:#9ea2af;font:500 10px var(--heading);letter-spacing:3px}
 .group-track{position:relative;display:flex;gap:28px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-snap-stop:always;scrollbar-width:none;border-radius:8px;perspective:1400px;outline-offset:8px;cursor:grab}
+/* Never reactivate native snap between mouse release and its eased landing. */
 .group-track.is-dragging{scroll-snap-type:none;cursor:grabbing;user-select:none}
+.group-track.is-settling{scroll-snap-type:none}
 .group-track.is-dragging *{cursor:grabbing}
 .group-track img{-webkit-user-drag:none}
 .group-track::-webkit-scrollbar{display:none}

@@ -17,7 +17,10 @@ export class DestinationExperience {
   on(root,'click',e=>this.click(e));
   on(root,'wheel',e=>this.wheel(e),{passive:false});
   on(root,'scroll',e=>{if(e.target.matches?.('[data-group-track]'))this.groupScroll(e.target);},{capture:true,passive:true});
-  on(this.document,'visibilitychange',()=>this.document.hidden?this.sleep():this.sync());
+  on(this.document,'visibilitychange',()=>{
+   if(this.document.hidden){this.sleep();this.cancelGroupSettling();}
+   else this.sync();
+  });
   on(this.reduced,'change',()=>{this.sleep();this.pendingPointer=null;this.network.clear();this.sync();});
   on(this.window,'resize',()=>{this.graphics?.resize();this.drawOnce();});
   if(typeof this.window.MutationObserver==='function'){
@@ -58,7 +61,7 @@ export class DestinationExperience {
   if(this.disposed)return;
   const surface=this.root.querySelector('[data-destination-surface]');
   const canShow=!this.root.hidden&&Boolean(surface);
-  if(!canShow){this.sleep();this.graphics?.detach();this.surface=null;this.pointer=null;this.pendingPointer=null;return;}
+  if(!canShow){this.sleep();this.cancelGroupSettling();this.graphics?.detach();this.surface=null;this.pointer=null;this.pendingPointer=null;return;}
   if(this.surface!==surface){
    this.intersection?.disconnect();this.surface=surface;this.pointer=null;this.pendingPointer=null;this.network.clear();this.visible=true;
    this.intersection?.observe(surface);
@@ -109,8 +112,9 @@ export class DestinationExperience {
   this.wheelAmount=(Math.sign(this.wheelAmount||delta)===Math.sign(delta)?(this.wheelAmount||0):0)+delta;
   if(Math.abs(this.wheelAmount)<36)return;
   this.wheelAmount=0;this.groupWheelUntil=now+450;
-  track.scrollTo({left:slides[next].offsetLeft-slides[0].offsetLeft,
-    behavior:this.reduced.matches?'instant':'smooth'});
+  const target=slides[next].offsetLeft-slides[0].offsetLeft;
+  if(this.groupSettling?.track===track)this.settleGroup(track,target);
+  else track.scrollTo({left:target,behavior:this.reduced.matches?'instant':'smooth'});
  }
  groupPointerStart(event){
   if(this.root.inert||event.pointerType!=='mouse'||event.button!==0)return;
@@ -118,7 +122,8 @@ export class DestinationExperience {
   // Real links and controls keep their native click/drag semantics.
   if(!track||event.target.closest?.('a,button,input,textarea,select,[contenteditable]'))return;
   this.groupDrag={track,pointerId:event.pointerId,x:event.clientX,y:event.clientY,
-   left:track.scrollLeft,dragging:false};
+   left:track.scrollLeft,lastLeft:track.scrollLeft,lastTime:this.window.performance.now(),
+   velocity:0,dragging:false};
  }
  groupPointerMove(event){
   const d=this.groupDrag;
@@ -130,26 +135,77 @@ export class DestinationExperience {
    if(Math.abs(dx)<9||Math.abs(dx)<=Math.abs(dy)*1.2)return;
    if(d.track.scrollWidth<=d.track.clientWidth){this.groupDrag=null;return;}
    d.dragging=true;d.track.classList.add('is-dragging');
+   if(this.groupSettling?.track===d.track){
+    // Take control of the actual current position rather than the position
+    // at pointerdown, when a previous release animation was still moving.
+    this.cancelGroupSettling();d.left=d.track.scrollLeft;d.x=event.clientX;
+   }
+   d.lastLeft=d.track.scrollLeft;d.lastTime=this.window.performance.now();
    d.track.setPointerCapture?.(event.pointerId);
   }
   if(event.cancelable)event.preventDefault();
   const max=d.track.scrollWidth-d.track.clientWidth;
-  d.track.scrollLeft=Math.max(0,Math.min(max,d.left-dx));
+  const left=Math.max(0,Math.min(max,d.left-(event.clientX-d.x)));
+  d.track.scrollLeft=left;
+  const now=this.window.performance.now(),dt=now-d.lastTime;
+  if(dt>=4&&dt<100){
+   // Pointer movement is an observation, never a permanent animation loop.
+   // Ignore abnormally short/long samples and clamp release momentum.
+   const speed=Math.max(-4,Math.min(4,(left-d.lastLeft)/dt));
+   d.velocity=d.velocity*.3+speed*.7;
+  }
+  d.lastLeft=left;d.lastTime=now;
  }
  groupPointerEnd(event){
   const d=this.groupDrag;
   if(!d||d.pointerId!==event.pointerId)return;
   this.groupDrag=null;
   if(!d.dragging)return;
+  // Keep native scroll snap OFF until the release animation reaches its
+  // exact snap point. Re-enabling it here used to teleport the slide.
+  d.track.classList.add('is-settling');
   d.track.classList.remove('is-dragging');
   if(d.track.hasPointerCapture?.(event.pointerId))d.track.releasePointerCapture(event.pointerId);
-  if(event.type==='pointercancel')return;
   const slides=[...d.track.querySelectorAll('[data-group-slide]')];
-  if(slides.length<2)return;
+  if(slides.length<2){d.track.classList.remove('is-settling');return;}
   const stride=slides[1].offsetLeft-slides[0].offsetLeft||d.track.clientWidth;
-  const index=Math.max(0,Math.min(slides.length-1,Math.round(d.track.scrollLeft/stride)));
-  d.track.scrollTo({left:slides[index].offsetLeft-slides[0].offsetLeft,
-   behavior:this.reduced.matches?'instant':'smooth'});
+  const now=this.window.performance.now();
+  const momentum=event.type==='pointercancel'||now-d.lastTime>90?0:d.velocity;
+  const projected=d.track.scrollLeft+Math.max(-stride*.32,Math.min(stride*.32,momentum*180));
+  const index=Math.max(0,Math.min(slides.length-1,Math.round(projected/stride)));
+  this.settleGroup(d.track,slides[index].offsetLeft-slides[0].offsetLeft);
+ }
+ /** One temporary compositor animation for mouse release only. Native touch
+  * and horizontal trackpad motion remain browser-owned; no persistent loop. */
+ settleGroup(track,target){
+  if(this.groupSettling?.track===track)this.cancelGroupSettling();
+  track.classList.add('is-settling');
+  const max=Math.max(0,track.scrollWidth-track.clientWidth);
+  const to=Math.max(0,Math.min(max,target)),from=track.scrollLeft;
+  const distance=Math.abs(to-from);
+  if(distance<.5||this.reduced.matches){
+   track.scrollLeft=to;track.classList.remove('is-settling');return;
+  }
+  const start=this.window.performance.now(),duration=Math.min(620,Math.max(230,260+distance*.53));
+  const state={track,raf:0};
+  this.groupSettling=state;
+  const step=now=>{
+   if(this.groupSettling!==state)return;
+   const t=Math.max(0,Math.min(1,(now-start)/duration));
+   // Continue from the released position; decelerate without a CSS-snap jump.
+   const ease=1-(1-t)*(1-t)*(1-t);
+   track.scrollLeft=from+(to-from)*ease;
+   if(t<1){state.raf=this.window.requestAnimationFrame(step);return;}
+   track.scrollLeft=to;
+   this.groupSettling=null;track.classList.remove('is-settling');
+  };
+  state.raf=this.window.requestAnimationFrame(step);
+ }
+ cancelGroupSettling(){
+  const state=this.groupSettling;if(!state)return;
+  this.groupSettling=null;
+  this.window.cancelAnimationFrame(state.raf);
+  state.track.classList.remove('is-settling');
  }
  groupScroll(track){
   const slides=[...track.querySelectorAll('[data-group-slide]')];if(!slides.length)return;
@@ -164,7 +220,11 @@ export class DestinationExperience {
   const selector=event.target.closest?.('[data-group-select]');
   if(selector){
    const track=this.root.querySelector('[data-group-track]'),slide=track?.querySelector(`[data-group-slide="${Number(selector.dataset.groupSelect)}"]`);
-   if(slide)track.scrollTo({left:slide.offsetLeft-track.querySelector('[data-group-slide]').offsetLeft,behavior:this.reduced.matches?'instant':'smooth'});
+   if(slide){
+    const target=slide.offsetLeft-track.querySelector('[data-group-slide]').offsetLeft;
+    if(this.groupSettling?.track===track)this.settleGroup(track,target);
+    else track.scrollTo({left:target,behavior:this.reduced.matches?'instant':'smooth'});
+   }
   }
   if(event.target.closest?.('[data-scroll-catalogue]')){event.preventDefault();this.root.querySelector('#future-catalogue')?.scrollIntoView({behavior:this.reduced.matches?'instant':'smooth',block:'start'});}
  }
@@ -196,6 +256,7 @@ export class DestinationExperience {
  sleep(){if(this.raf)this.window.cancelAnimationFrame(this.raf);this.raf=0;}
  dispose(){
   if(this.disposed)return;this.disposed=true;this.sleep();clearTimeout(this.scrollTimer);this.controller.abort();
+  this.cancelGroupSettling();
   if(this.groupDrag){this.groupDrag.track.classList.remove('is-dragging');this.groupDrag=null;}
   this.observer?.disconnect();this.stateObserver?.disconnect();this.intersection?.disconnect();
   Promise.resolve(this.preparation).catch(()=>{}).then(()=>this.graphics?.dispose());
