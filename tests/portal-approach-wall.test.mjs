@@ -10,9 +10,10 @@ import {arrivalTransform} from '../src/ui/portal-arrival.js';
 function journey(){
  const camera=new T.PerspectiveCamera(48,1.5,.08,100),cameraRig=new RoomCamera(camera,900);
  const panels=createFixedPanelLayout().map(p=>({...p,material:new T.ShaderMaterial({uniforms:{artwork:{value:null},projection:{value:new T.Matrix3()}},fragmentShader:'void main(){vec3 c=vec3(0.);gl_FragColor=vec4(c,1.);}'})}));
- const view={camera,cameraRig,panels,scene:new T.Scene(),ready:true,settings:{quality:'low'},reduced:{matches:false},optics:{resetHistory(){}},release(){},clearHover(){},hidePanelContent(){},wake(){}};
+ const optics={bloomPass:'bloom',composer:{passes:['bloom'],insertPass(p,i){this.passes.splice(i,0,p);}},resetHistory(){}};
+ const view={camera,cameraRig,panels,scene:new T.Scene(),ready:true,settings:{quality:'low'},reduced:{matches:false},optics,release(){},clearHover(){},hidePanelContent(){},wake(){}};
  const portal=new BannerPortal(view);
- return {view,portal,dispose(){portal.dispose();panels.forEach(p=>p.material.dispose());}};
+ return {view,portal,drawFrame(dt=1/60){cameraRig.update(dt);portal.prepareFrame(dt);},dispose(){if(portal.attached)portal.shutter.dispose();portal.dispose();panels.forEach(p=>p.material.dispose());}};
 }
 const area=f=>(f.clip[2]-f.clip[0])*(f.clip[3]-f.clip[1]);
 
@@ -20,7 +21,7 @@ test('each destination is already visible through the opening before tunnel flig
  for(let index=0;index<5;index++){
   const f=journey(),frames=[];
   f.portal.enter(index,()=>{},(progress,frame)=>frames.push({progress,frame,stage:f.portal.stage}));
-  for(let i=0;i<62;i++)f.view.cameraRig.update(1/60);
+  for(let i=0;i<62;i++)f.drawFrame();
   assert.ok(frames.some(({progress,frame,stage})=>stage==='approach'&&progress===0&&frame.opacity>.5&&area(frame)>0&&arrivalTransform(frame)),`destination ${index} stays blank during approach`);
   f.dispose();
  }
@@ -49,9 +50,9 @@ test('a partially opened entrance hides page pixels outside the physical apertur
 test('the page remains visible while reversing the same approach instead of fading at flight zero',()=>{
  const f=journey(),forward=new Map(),reverse=[];
  f.portal.enter(0,()=>{},(p,frame)=>{if(f.portal.stage==='approach')forward.set(Math.round(f.portal.age*60),frame);});
- for(let i=0;i<240&&f.portal.active;i++)f.view.cameraRig.update(1/60);
+ for(let i=0;i<240&&f.portal.active;i++)f.drawFrame();
  f.portal.returnToShowroom(0,()=>{},(p,frame)=>{if(f.portal.stage==='approach')reverse.push({age:f.portal.age,frame});});
- for(let i=0;i<240&&f.portal.active;i++)f.view.cameraRig.update(1/60);
+ for(let i=0;i<240&&f.portal.active;i++)f.drawFrame();
  const visible=reverse.filter(({age,frame})=>age>.6&&age<1&&frame.opacity>.5&&area(frame)>0);
  assert.ok(visible.length>10,'reverse approach loses the destination while the entrance is still open');
  for(const {age,frame} of visible){

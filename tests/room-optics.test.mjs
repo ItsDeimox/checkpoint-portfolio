@@ -5,6 +5,49 @@ import { RoomOptics } from '../src/scene/room-optics.js';
 import { renderBudget } from '../src/scene/room-core.js';
 import { RoomCamera } from '../src/scene/room-camera.js';
 import { createFixedPanelLayout } from '../src/scene/room-environment.js';
+import { PortalShutterPass } from '../src/scene/room-portal-optics.js';
+
+test('an inactive depth lens submits no full-screen copy and routes the captured scene to bloom and grading', () => {
+  const {optics, scene, draws} = fixture();
+  try {
+    for (const quality of ['low', 'auto', 'high']) {
+      optics.setQuality(quality);
+      optics.setVisualSettings({depthOfField:0, motionBlur:0});
+      draws.length=0; optics.render(1/60);
+      assert.equal(draws.filter(d=>d.object===scene).length,1);
+      assert.equal(draws.filter(d=>d.material===optics.lensPass.material).length,0,
+        'An identity lens must not read and write the entire framebuffer');
+      const bright=draws.find(d=>d.material===optics.bloomPass.brightMaterial);
+      assert.equal(bright.material.uniforms.tInput.value,optics.sceneTarget.texture);
+      assert.equal(draws.find(d=>d.material===optics.gradePass.material).input,optics.sceneTarget.texture);
+      assert.ok(draws.every(d=>!d.input||d.input!==d.target?.texture));
+    }
+  } finally {optics.dispose();}
+});
+
+test('bypassing the depth lens preserves portal, bloom, grade and output buffer order across transitions', () => {
+  const {optics,camera,draws}=fixture();
+  const portal=new PortalShutterPass();optics.portalPass=portal;
+  optics.composer.insertPass(portal,optics.composer.passes.indexOf(optics.bloomPass));
+  try {
+    for (const [portalEnabled,defocus] of [[true,0],[false,0],[true,1],[false,1],[true,0]]) {
+      optics.setVisualSettings({depthOfField:defocus,motionBlur:0});portal.enabled=portalEnabled;
+      draws.length=0;optics.render(1/60);
+      const lens=draws.find(d=>d.material===optics.lensPass.material);
+      assert.equal(Boolean(lens),defocus>0);
+      const shutter=draws.find(d=>d.material===portal.material);
+      const source=lens?.target??optics.sceneTarget;
+      if(portalEnabled)assert.equal(shutter.input,source.texture);
+      const color=shutter?.target??source;
+      assert.equal(optics.bloomPass.brightMaterial.uniforms.tInput.value,color.texture);
+      assert.equal(draws.find(d=>d.material===optics.gradePass.material).input,color.texture);
+      assert.ok(draws.every(d=>!d.input||d.input!==d.target?.texture));
+    }
+    portal.enabled=false;optics.setVisualSettings({depthOfField:0,motionBlur:1});
+    optics.render(1/60);camera.position.x+=.02;draws.length=0;optics.render(1/60);
+    assert.ok(draws.some(d=>d.material===optics.lensPass.material),'Camera motion still enables the full lens');
+  } finally {optics.dispose();}
+});
 
 // GPU transport is unavailable in Node. Keep the actual Three passes, targets,
 // camera math and uniforms, and record the calls that would reach WebGL.

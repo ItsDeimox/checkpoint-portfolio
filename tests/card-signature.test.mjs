@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {RoomPanelEnergy} from '../src/scene/room-panel-energy.js';
+import {PANEL_NETWORK_GLSL} from '../src/shaders/panel-network.js';
+import {CUBE_NETWORK_GLSL} from '../src/shaders/cube-network.js';
 import {createFixedPanelLayout} from '../src/scene/room-environment.js';
 import {roomVertex,displayFragment} from '../src/scene/room-shaders.js';
 import {configurePanelHologram} from '../src/scene/room-hologram.js';
@@ -16,14 +18,19 @@ function fixture(){
  return {view,hover,panels,dispose(){hover.dispose();for(const p of panels)p.material.dispose();}};
 }
 
-test('physical cards retain original nodes, wires and brightness instead of replacement trail shapes',()=>{
+test('physical cards render chevron wires and luminous junctions with the established tint and brightness',()=>{
  const f=fixture();try{
-  for(const {panel,texture}of f.hover.entries){
+  for(const {panel,field,texture}of f.hover.entries){
    const code=panel.material.fragmentShader;
-   assert.match(code,/network\(4,\(vUv-\.5\)\*uSurfaceSpan\+\.5\)/);
+   assert.ok(code.includes(PANEL_NETWORK_GLSL));assert.ok(!code.includes(CUBE_NETWORK_GLSL));
+   assert.match(code,/panelNetwork\(vUv\)/);
    assert.match(code,/float wires=max\(/);
+   assert.match(code,/junctionDistance/);
+   assert.match(code,/panelWave\.x\*\.42\+panelWave\.y\*\.46/);
+   assert.match(code,/mix\(vec3\(\.80,\.92,1\.\),cardAccent,\.60\)/);
    assert.doesNotMatch(code,/prismTrail|flowTrail|uWakeCount|uWakePoints/);
    assert.ok(panel.material.uniforms.uEnergyMap.value===texture);
+   assert.deepEqual(panel.material.uniforms.uPanelGrid.value.toArray(),field.grid);
    assert.equal(panel.material.uniforms.uEnergyActive.value,0);
   }
  }finally{f.dispose();}

@@ -64,7 +64,7 @@ function buildPanels(view){
   const screenCorners=bevel.inner.map(p=>p.clone().addScaledVector(normal,-.008));
   const mapping=homography(data.art),mat=new T.ShaderMaterial({uniforms:{...T.UniformsUtils.clone(T.UniformsLib.fog),artwork:{value:texture},contentMap:{value:texture},contentMix:{value:0},projection:{value:new T.Matrix3().set(...mapping)},hover:{value:0},hoverTime:{value:0},hoverUv:{value:new T.Vector2(.5,.5)},eraseForeground:{value:index===2||index===3?1:0}},vertexShader:roomVertex,fragmentShader:displayFragment,side:T.DoubleSide,fog:true});
   const screen=new T.Mesh(planeGeometry(screenCorners),mat);screen.name=data.title;screen.userData.panel=index;frame.add(screen);
-  const glass=new T.Mesh(planeGeometry(screenCorners.map(p=>p.clone().addScaledVector(normal,.004))),new T.MeshPhysicalMaterial({color:0xa8b5ce,metalness:.08,roughness:.21,clearcoat:1,clearcoatRoughness:.16,envMapIntensity:.85,transparent:true,opacity:.035,depthWrite:false,side:T.DoubleSide}));glass.name='Display cover glass';frame.add(glass);
+  const glass=new T.Mesh(planeGeometry(screenCorners.map(p=>p.clone().addScaledVector(normal,.004))),new T.MeshPhysicalMaterial({color:0xa8b5ce,metalness:.08,roughness:.21,clearcoat:1,clearcoatRoughness:.16,envMapIntensity:.85,transparent:true,opacity:.035,depthWrite:false,side:T.DoubleSide,forceSinglePass:true}));glass.name='Display cover glass';frame.add(glass);
   for(let k=0;k<4;k++){
    const a=screenCorners[k].clone().addScaledVector(normal,.012),b=screenCorners[(k+1)%4].clone().addScaledVector(normal,.012);lineBetween(a,b,.006,dimRed,frame);
   }

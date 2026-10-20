@@ -10,6 +10,21 @@ test('revealed area opens continuously and never contracts on approach',()=>{let
 test('apparent zoom per 60Hz frame is gentle, not concentrated in a final surge',()=>{let previous=null,max=0;for(let time=0;time<=PORTAL_FLIGHT_SECONDS;time+=1/60){const f=shot(Math.min(1,time/PORTAL_FLIGHT_SECONDS)),size=f.quad[1][0]-f.quad[0][0];if(previous)max=Math.max(max,Math.log(size/previous));previous=size;}assert.ok(max<.06,'relative jump '+max);assert.ok(PORTAL_FLIGHT_SECONDS>=1.8);});
 test('every aspect arrives at the exact native viewport without distortion',()=>{for(const [w,h]of[[1440,900],[390,844],[1920,600]]){const f=shot(1,w,h);f.quad.forEach((p,i)=>p.forEach((v,j)=>assert.ok(Math.abs(v-[[0,0],[1,0],[1,1],[0,1]][i][j])<1e-7)));}});
 test('corridor shader does not black out on reverse or sum hidden frame layers',()=>{const s=fs.readFileSync(new URL('../src/scene/room-portal-shader.js',import.meta.url),'utf8');assert.doesNotMatch(s,/return color\*\(1\.-portalReturn/);assert.doesNotMatch(s,/for\(int i=0;i<24/);assert.match(s,/portalTunnelEnd/);});
-test('return emits the same projected wall and clipping callbacks in reverse',()=>{const camera=new T.PerspectiveCamera(48,1.5,.08,100),rig=new RoomCamera(camera,900),panels=createFixedPanelLayout().map(p=>({...p,material:new T.ShaderMaterial({uniforms:{artwork:{value:null},projection:{value:new T.Matrix3()}},fragmentShader:'void main(){vec3 c=vec3(0.);gl_FragColor=vec4(c,1.);}'})}));const view={camera,cameraRig:rig,panels,scene:new T.Scene(),ready:true,settings:{quality:'low'},reduced:{matches:false},optics:{resetHistory(){}},release(){},clearHover(){},hidePanelContent(){},wake(){}};const p=new BannerPortal(view),forward=[],back=[];p.enter(0,()=>{},(t,f)=>forward.push({t,quad:f.quad,clip:f.clip}));for(let i=0;i<400&&p.active;i++)rig.update(1/60);p.returnToShowroom(0,()=>{},(t,f)=>back.push({t,quad:f.quad,clip:f.clip}));for(let i=0;i<400&&p.active;i++)rig.update(1/60);assert.ok(back.length>40);assert.equal(back[0].t,1);assert.ok(back.at(-1).t<.01);assert.ok(back.every((f,i)=>!i||f.t<=back[i-1].t+1e-9));assert.deepEqual(back[0].clip,[0,0,1,1]);p.dispose();panels.forEach(x=>x.material.dispose());});
+test('return emits the same projected wall and clipping callbacks in reverse',()=>{
+ const camera=new T.PerspectiveCamera(48,1.5,.08,100),rig=new RoomCamera(camera,900);
+ const panels=createFixedPanelLayout().map(p=>({...p,material:new T.ShaderMaterial({uniforms:{artwork:{value:null},projection:{value:new T.Matrix3()}},fragmentShader:'void main(){vec3 c=vec3(0.);gl_FragColor=vec4(c,1.);}'})}));
+ const optics={bloomPass:'bloom',composer:{passes:['bloom'],insertPass(p,i){this.passes.splice(i,0,p);}},resetHistory(){}};
+ const view={camera,cameraRig:rig,panels,scene:new T.Scene(),ready:true,settings:{quality:'low'},reduced:{matches:false},optics,release(){},clearHover(){},hidePanelContent(){},wake(){}};
+ const p=new BannerPortal(view),forward=[],back=[];
+ try{
+  p.enter(0,()=>{},(t,f)=>forward.push({t,quad:f.quad,clip:f.clip}));
+  for(let i=0;i<400&&p.active;i++){rig.update(1/60);p.prepareFrame(1/60);}
+  p.returnToShowroom(0,()=>{},(t,f)=>back.push({t,quad:f.quad,clip:f.clip}));
+  p.prepareFrame(1/60); // HeroScene.returnPortal synchronously draws the native-size wall.
+  for(let i=0;i<400&&p.active;i++){rig.update(1/60);p.prepareFrame(1/60);}
+  assert.ok(back.length>40);assert.equal(back[0].t,1);assert.ok(back.at(-1).t<.01);
+  assert.ok(back.every((f,i)=>!i||f.t<=back[i-1].t+1e-9));assert.deepEqual(back[0].clip,[0,0,1,1]);
+ }finally{if(p.attached)p.shutter.dispose();p.dispose();panels.forEach(x=>x.material.dispose());}
+});
 
 test('the tunnel continues occluding the wider page through mid-flight',()=>{const f=shot(.45);assert.ok(f.clip[0]>.08&&f.clip[2]<.92);assert.ok(f.exitDepth-f.tunnelEndDepth>0);});

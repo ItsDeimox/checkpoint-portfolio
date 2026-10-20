@@ -527,12 +527,19 @@ export class HeroScene {
   render(dt, motion) {
     this.renderer.info.reset();
     this.reflectionBudget?.advance(dt);
+    const angle=this.turntable?.angle;
+    const turntableDelta=Number.isFinite(angle)&&Number.isFinite(this.renderedTurntableAngle)
+      ?angle-this.renderedTurntableAngle:0;
     this.optics.render(dt, {
       time: this.time, motion, focusDistance: this.cameraRig.focusDistance,
-      turntableDelta:this.settings.quality==='low'?0:this.turntable?.frameDelta ?? 0,
+      // Simulation can advance while the draw queue is full. Match object
+      // velocity to the last rendered pose, exactly like camera reprojection.
+      turntableDelta:this.settings.quality==='low'?0:turntableDelta,
       paused: this.settings.paused || this.reduced.matches,
       projectionAnimated: this.cameraRig.mode === 'approaching' || this.cameraRig.mode === 'returning',
+      ...(this.cameraMotionOptions?.()??{}),
     });
+    this.renderedTurntableAngle=angle;
     this.frames++;
   }
 

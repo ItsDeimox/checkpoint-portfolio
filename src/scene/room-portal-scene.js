@@ -34,6 +34,16 @@ export class HeroScene extends ShowroomScene {
  updateAtmosphere(){if(!this.bannerPortal?.active||!this.bannerPortal.interior)super.updateAtmosphere();}
  updateLinkProjection(){if(!this.bannerPortal?.active)super.updateLinkProjection();}
  resize(){super.resize();this.bannerPortal?.attachOptics(this.optics);if(this.bannerPortal?.active)this.bannerPortal.update(0);}
+ cameraMotionOptions(){
+  const portal=Boolean(this.bannerPortal?.active);
+  // Portal travel animates the lens continuously. Its outer doorway paths
+  // peak below 2.76 rad/s; the longer mobile approach peaks at 47.47 units/s.
+  return {
+   projectionAnimated:portal||this.cameraRig.mode==='approaching'||this.cameraRig.mode==='returning',
+   rotationSpeedLimit:portal?3:2.5,
+   translationSpeedLimit:portal?48:45,
+  };
+ }
  render(dt,motion){
   if(this.pageActive)return;
   this.identity?.update(dt,this.reduced.matches||(!this.ready&&!this.bannerPortal?.active));

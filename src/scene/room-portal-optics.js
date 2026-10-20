@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {SceneSourcePass} from './room-source-pass.js';
 import {PORTAL_FX_PROFILES,portalImpactEnvelope} from './room-portal-effects.js';
 
 const FRAGMENT=/*glsl*/`
@@ -66,7 +66,7 @@ void main(){
 
 /** Conditional pre-bloom pass reusing the composer's existing ping-pong buffers.
  * Reprojection follows GPU Gems 3 ch.27, using analytic walls instead of depth. */
-export class PortalShutterPass extends ShaderPass {
+export class PortalShutterPass extends SceneSourcePass {
   constructor(){
     super(new T.ShaderMaterial({name:'DXT.PortalShutter',depthWrite:false,depthTest:false,toneMapped:false,blending:T.NoBlending,
       vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:FRAGMENT,
