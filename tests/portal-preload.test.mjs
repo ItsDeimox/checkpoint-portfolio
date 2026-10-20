@@ -177,7 +177,8 @@ test('first click waits for the mounted bitmap to paint before portal motion; ca
   const doc={body:new FakeElement('body'),defaultView:{
    innerWidth:1200,innerHeight:800,scrollTo(){},requestAnimationFrame(cb){callbacks.push(cb);}
   }};
-  const routes=new SectionRoutes({document:doc,host:new FakeElement(),root,canvas:new FakeElement(),footer:new FakeElement(),
+  const canvas=new FakeElement();canvas.focus=()=>{};
+  const routes=new SectionRoutes({document:doc,host:new FakeElement(),root,canvas,footer:new FakeElement(),
    getScene:()=>scene,getPhase:()=> 'ready',entered:()=>true,setLocation(){},onSelect(){}});
   const preview=new FakeElement('canvas');preview.width=1200;preview.height=800;
   routes.pageCache.set(1,{holder,preview,viewport:{width:1200,height:800,gutter:15}});

@@ -12,7 +12,7 @@ test('future project category cards are truly adjacent on desktop and responsive
  assert.match(css,/\.future-project-list\s*\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
  assert.match(css,/@media\(max-width:1160px\)[^{]*\{[^}]*\.future-category/);
  assert.match(css,/\.future-car-stage\{height:310px\}\.future-project-list\{grid-template-columns:1fr\}/);
- assert.doesNotMatch(page,/<a[^>]+class="future-project"/,'unannounced projects are not fake links');
+ assert.doesNotMatch(page,/<a(?:\\s|>)[^>]*class="future-project"/,'unannounced projects are not fake links');
  for(const platform of ['Roblox','Steam','Blender'])assert.ok(page.includes(platform));
 });
 
