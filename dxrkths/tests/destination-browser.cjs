@@ -35,11 +35,29 @@ const check=(name,condition,detail)=>{checks.push({name,pass:!!condition,detail}
    check('the button renderer stops after its energy has decayed',await page.evaluate(()=>__DEST_QA__.experience().raf===0));
   }
   if(index===1){
-   const track=page.locator('[data-group-track]');await track.scrollIntoViewIfNeeded();await track.hover();
-   const left=await track.evaluate(e=>e.scrollLeft);await page.mouse.wheel(0,220);await page.waitForTimeout(850);
-   check('scroll, not an autoplay timer, switches the group',await track.evaluate((e,left)=>e.scrollLeft>left+e.clientWidth*.7,left));
+   const track=page.locator('[data-group-track]');
+   await track.scrollIntoViewIfNeeded();await track.hover();
+   const initial=await page.evaluate(()=>({y:scrollY,x:document.querySelector('[data-group-track]').scrollLeft}));
+   await page.mouse.wheel(0,240);await page.waitForTimeout(450);
+   const afterVertical=await page.evaluate(()=>({y:scrollY,x:document.querySelector('[data-group-track]').scrollLeft}));
+   check('normal vertical wheel scrolls page without changing Groups & Games',afterVertical.y>initial.y+35&&Math.abs(afterVertical.x-initial.x)<2,{initial,afterVertical});
+   await track.hover();
+   // Synthetic Shift+wheel checks the explicit carousel shortcut even when
+   // the host OS remaps physical Shift+wheel to deltaX before dispatch.
+   await track.evaluate(e=>e.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,shiftKey:true,deltaY:220})));
+   await page.waitForTimeout(850);
+   check('explicit Shift + wheel changes group, rather than autoplay',await track.evaluate(e=>e.scrollLeft>e.clientWidth*.7));
    check('group game media never navigates to a game',await page.evaluate(()=>[...document.querySelectorAll('[data-group-game]')].every(e=>!e.closest('a')&&!e.querySelector('a'))));
-   const stable=await track.evaluate(e=>e.scrollLeft);await page.waitForTimeout(700);check('groups stay still after scrolling',Math.abs(await track.evaluate(e=>e.scrollLeft)-stable)<1);
+   const stable=await track.evaluate(e=>e.scrollLeft);await page.waitForTimeout(700);
+   check('groups stay still after scrolling',Math.abs(await track.evaluate((e,left)=>e.scrollLeft-left,stable))<1);
+   await page.locator('[data-group-select="0"]').click();await page.waitForTimeout(500);
+   check('native group selection buttons still work',await track.evaluate(e=>e.scrollLeft<5));
+   await track.hover();
+   const rect=await track.boundingBox();
+   const sx=rect.x+rect.width*.8,ex=rect.x+rect.width*.16,y=rect.y+Math.min(rect.height*.12,46);
+   await page.mouse.move(sx,y);await page.mouse.down();await page.mouse.move(ex,y,{steps:10});await page.mouse.up();
+   await page.waitForTimeout(600);
+   check('horizontal mouse drag switches the group',await track.evaluate(e=>e.scrollLeft>e.clientWidth*.7));
   }
   if(index===2){
    check('future car uses the live 3D surface and a complete catalogue',await page.evaluate(()=>{const e=__DEST_QA__.experience();return e.graphics.mode==='car'&&document.querySelector('[data-covered-car]').dataset.graphicsReady==='true'&&document.querySelectorAll('.future-project').length===7&&e.graphics.renderer.getContext().getError()===0;}));

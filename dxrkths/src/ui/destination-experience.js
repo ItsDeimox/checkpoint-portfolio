@@ -8,7 +8,10 @@ export class DestinationExperience {
   this.controller=new AbortController();this.network=new CubeSurface();this.pointer=null;this.pendingPointer=null;this.raf=0;this.time=0;this.visible=true;
   this.reduced=this.window.matchMedia('(prefers-reduced-motion: reduce)');
   const on=(el,event,handler,options={})=>el?.addEventListener(event,handler,{...options,signal:this.controller.signal});
-  on(root,'pointermove',e=>this.point(e));
+  on(root,'pointerdown',e=>this.groupPointerStart(e));
+  on(root,'pointermove',e=>{this.point(e);this.groupPointerMove(e);});
+  on(this.document,'pointerup',e=>this.groupPointerEnd(e));
+  on(this.document,'pointercancel',e=>this.groupPointerEnd(e));
   on(root,'pointerout',e=>{const button=e.target.closest?.('[data-energy-button]');if(button&&!button.contains(e.relatedTarget)){this.pointer=null;this.pendingPointer=null;this.network.release();this.wake();}});
   on(root,'focusin',e=>{if(e.target.closest?.('[data-energy-button]')){this.network.inject(.5,.5,.7);this.wake();}});
   on(root,'click',e=>this.click(e));
@@ -83,18 +86,70 @@ export class DestinationExperience {
   this.pendingPointer={x,y:1-y,time:event.timeStamp};this.wake();
  }
  wheel(event){
-  const track=event.target.closest?.('[data-group-track]');if(!track||event.ctrlKey||this.root.inert||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
-  const slides=[...track.querySelectorAll('[data-group-slide]')],stride=slides[1]?slides[1].offsetLeft-slides[0].offsetLeft:track.clientWidth;
-  const max=track.scrollWidth-track.clientWidth,delta=event.deltaY*(event.deltaMode===1?18:event.deltaMode===2?track.clientWidth:1);
-  const now=this.window.performance.now();
-  if(now<(this.groupWheelUntil||0)){event.preventDefault();return;}
-  if(max<1||delta<0&&track.scrollLeft<=1||delta>0&&track.scrollLeft>=max-1)return;
+  // Ordinary vertical wheel/trackpad gestures must scroll the document, even
+  // over this tall carousel and during a previous horizontal snap animation.
+  // Native horizontal trackpad gestures, touch swipes and keyboard scroll stay
+  // owned by the scrollable element. Shift+vertical wheel is an explicit
+  // desktop shortcut for switching groups, never an implicit axis hijack.
+  const track=event.target.closest?.('[data-group-track]');
+  if(!track||this.root.inert||event.ctrlKey||!event.shiftKey||
+    !event.deltaY||Math.abs(event.deltaX)>=Math.abs(event.deltaY)){
+   this.wheelAmount=0;return;
+  }
+  const slides=[...track.querySelectorAll('[data-group-slide]')];
+  if(slides.length<2||track.scrollWidth<=track.clientWidth)return;
+  const stride=slides[1].offsetLeft-slides[0].offsetLeft||track.clientWidth;
+  const direction=Math.sign(event.deltaY),at=Math.max(0,Math.min(slides.length-1,Math.round(track.scrollLeft/stride)));
+  const next=Math.max(0,Math.min(slides.length-1,at+direction));
+  if(next===at){this.wheelAmount=0;return;}
   event.preventDefault();
-  this.wheelAmount=(Math.sign(this.wheelAmount||delta)===Math.sign(delta)?this.wheelAmount||0:0)+delta;
+  const now=this.window.performance.now();
+  if(now<(this.groupWheelUntil||0))return;
+  const delta=event.deltaY*(event.deltaMode===1?18:event.deltaMode===2?track.clientWidth:1);
+  this.wheelAmount=(Math.sign(this.wheelAmount||delta)===Math.sign(delta)?(this.wheelAmount||0):0)+delta;
   if(Math.abs(this.wheelAmount)<36)return;
-  const next=Math.max(0,Math.min(slides.length-1,Math.round(track.scrollLeft/stride)+Math.sign(this.wheelAmount)));
   this.wheelAmount=0;this.groupWheelUntil=now+450;
-  track.scrollTo({left:next*stride,behavior:this.reduced.matches?'instant':'smooth'});
+  track.scrollTo({left:slides[next].offsetLeft-slides[0].offsetLeft,
+    behavior:this.reduced.matches?'instant':'smooth'});
+ }
+ groupPointerStart(event){
+  if(this.root.inert||event.pointerType!=='mouse'||event.button!==0)return;
+  const track=event.target.closest?.('[data-group-track]');
+  // Real links and controls keep their native click/drag semantics.
+  if(!track||event.target.closest?.('a,button,input,textarea,select,[contenteditable]'))return;
+  this.groupDrag={track,pointerId:event.pointerId,x:event.clientX,y:event.clientY,
+   left:track.scrollLeft,dragging:false};
+ }
+ groupPointerMove(event){
+  const d=this.groupDrag;
+  if(!d||d.pointerId!==event.pointerId)return;
+  const dx=event.clientX-d.x,dy=event.clientY-d.y;
+  if(!d.dragging){
+   // A predominantly vertical gesture never becomes a horizontal capture.
+   if(Math.abs(dy)>9&&Math.abs(dy)>Math.abs(dx)){this.groupDrag=null;return;}
+   if(Math.abs(dx)<9||Math.abs(dx)<=Math.abs(dy)*1.2)return;
+   if(d.track.scrollWidth<=d.track.clientWidth){this.groupDrag=null;return;}
+   d.dragging=true;d.track.classList.add('is-dragging');
+   d.track.setPointerCapture?.(event.pointerId);
+  }
+  if(event.cancelable)event.preventDefault();
+  const max=d.track.scrollWidth-d.track.clientWidth;
+  d.track.scrollLeft=Math.max(0,Math.min(max,d.left-dx));
+ }
+ groupPointerEnd(event){
+  const d=this.groupDrag;
+  if(!d||d.pointerId!==event.pointerId)return;
+  this.groupDrag=null;
+  if(!d.dragging)return;
+  d.track.classList.remove('is-dragging');
+  if(d.track.hasPointerCapture?.(event.pointerId))d.track.releasePointerCapture(event.pointerId);
+  if(event.type==='pointercancel')return;
+  const slides=[...d.track.querySelectorAll('[data-group-slide]')];
+  if(slides.length<2)return;
+  const stride=slides[1].offsetLeft-slides[0].offsetLeft||d.track.clientWidth;
+  const index=Math.max(0,Math.min(slides.length-1,Math.round(d.track.scrollLeft/stride)));
+  d.track.scrollTo({left:slides[index].offsetLeft-slides[0].offsetLeft,
+   behavior:this.reduced.matches?'instant':'smooth'});
  }
  groupScroll(track){
   const slides=[...track.querySelectorAll('[data-group-slide]')];if(!slides.length)return;
@@ -141,6 +196,7 @@ export class DestinationExperience {
  sleep(){if(this.raf)this.window.cancelAnimationFrame(this.raf);this.raf=0;}
  dispose(){
   if(this.disposed)return;this.disposed=true;this.sleep();clearTimeout(this.scrollTimer);this.controller.abort();
+  if(this.groupDrag){this.groupDrag.track.classList.remove('is-dragging');this.groupDrag=null;}
   this.observer?.disconnect();this.stateObserver?.disconnect();this.intersection?.disconnect();
   Promise.resolve(this.preparation).catch(()=>{}).then(()=>this.graphics?.dispose());
  }
