@@ -21,7 +21,7 @@ function fixture(){
 }
 test('card wave samples the same bottom-up mesh UV supplied by raycasting, never artwork coordinates',()=>{
  const f=fixture();try{for(const {panel,field}of f.v.panelEnergy.entries){
-  assert.match(panel.material.fragmentShader,/network\(4,\(vUv-\.5\)\*uSurfaceSpan\+\.5\)/,'image p flips Y and must not drive the hover wave');
+  assert.match(panel.material.fragmentShader,/panelNetwork\(vUv\)/,'image p flips Y and must not drive the hover wave');
   f.v.panelEnergy.point(panel.index,new T.Vector2(.25,.85),100);
   assert.ok(field.previous.p[1]>0,'a ray hit near the upper edge must inject above the center');
  }}finally{f.dispose();}

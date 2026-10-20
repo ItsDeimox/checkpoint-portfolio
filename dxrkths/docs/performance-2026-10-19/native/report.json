@@ -1,0 +1,267 @@
+{
+  "checkedAt": "2026-10-19T23:44:15.258351+00:00",
+  "baselineCommit": "23cc76ab88ca2bffd8a33525e18fb70225b69438",
+  "threeRevision": "180",
+  "camera": {
+    "width": 1280,
+    "height": 720,
+    "near": 0.08,
+    "far": 100,
+    "fov": 42,
+    "projection": [
+      1.4653625988902634,
+      0,
+      0,
+      0,
+      0,
+      2.6050890646938014,
+      0,
+      0,
+      0,
+      0,
+      -1.0016012810248198,
+      -1,
+      0,
+      0,
+      -0.16012810248198558,
+      0
+    ],
+    "focalLength": 0.02564384548057961,
+    "filmHeight": 0.0196875
+  },
+  "method": "Exact extracted fragments; installed native EGL/GLES3; identical textures and camera uniforms; RGBA32F readback.",
+  "fixture": "Synthetic sharp near silhouettes (0.65, 2, 4 m), focus detail (12 m), far HDR dots (36 m); RGBA16F linear color; nearest R32F depth quantized to 24 bits; RGBA16F object motion.",
+  "limitations": "Not a browser render, full scene screenshot, user GPU benchmark, or measurement of MSAA resolve. Preview PNGs use a display-only ACES approximation; raw HDR pixels determine errors.",
+  "checks": [
+    {
+      "shader": "lens-baseline",
+      "status": "compiled_and_linked",
+      "rawFragmentSha256": "f02976438d2898ab77f299710c677c95f2e00805ecc192e9fdd31bdd918bbee2",
+      "nativePairSha256": "f6ea828564de292414bc6e69ba2c48278f9ae63d162aa2ba41e4400257411681"
+    },
+    {
+      "shader": "lens-current",
+      "status": "compiled_and_linked",
+      "rawFragmentSha256": "67ada6906d30f377d411d7bfb688911d16c899d700bb221f1689e4168ab11657",
+      "nativePairSha256": "9dd921291e9e65a5a090dafdc54c38171bee8c162eb64cec1f8dcf6855c9ba4e"
+    },
+    {
+      "shader": "panel-0",
+      "status": "compiled_and_linked",
+      "rawFragmentSha256": "e2cc8fb1562915b333b49a39f4f96b38c9fce70c4372e0859da9d80c3ce6a90a",
+      "nativePairSha256": "15fde8e4a44a132f7cbbc44e55a7866742f9919734d5119bec8b037869efc95d"
+    },
+    {
+      "shader": "panel-1",
+      "status": "compiled_and_linked",
+      "rawFragmentSha256": "e2cc8fb1562915b333b49a39f4f96b38c9fce70c4372e0859da9d80c3ce6a90a",
+      "nativePairSha256": "15fde8e4a44a132f7cbbc44e55a7866742f9919734d5119bec8b037869efc95d"
+    },
+    {
+      "shader": "panel-2",
+      "status": "compiled_and_linked",
+      "rawFragmentSha256": "e2cc8fb1562915b333b49a39f4f96b38c9fce70c4372e0859da9d80c3ce6a90a",
+      "nativePairSha256": "15fde8e4a44a132f7cbbc44e55a7866742f9919734d5119bec8b037869efc95d"
+    },
+    {
+      "shader": "panel-3",
+      "status": "compiled_and_linked",
+      "rawFragmentSha256": "e2cc8fb1562915b333b49a39f4f96b38c9fce70c4372e0859da9d80c3ce6a90a",
+      "nativePairSha256": "15fde8e4a44a132f7cbbc44e55a7866742f9919734d5119bec8b037869efc95d"
+    },
+    {
+      "shader": "panel-4",
+      "status": "compiled_and_linked",
+      "rawFragmentSha256": "e2cc8fb1562915b333b49a39f4f96b38c9fce70c4372e0859da9d80c3ce6a90a",
+      "nativePairSha256": "15fde8e4a44a132f7cbbc44e55a7866742f9919734d5119bec8b037869efc95d"
+    }
+  ],
+  "cases": [
+    {
+      "name": "identity-high",
+      "quality": "high",
+      "samples": 32,
+      "motionSamples": 8,
+      "focus": 12,
+      "cocScale": 0,
+      "shutter": 0,
+      "maxAbsoluteHdrError": 0.0,
+      "rmsHdrError": 0.0,
+      "meanAbsoluteHdrError": 0.0,
+      "p99AbsoluteHdrError": 0.0,
+      "pixelsOver1e-3": 0,
+      "pixelsOver1e-2": 0,
+      "alphaMaxError": 0.0
+    },
+    {
+      "name": "dof-focus12-high",
+      "quality": "high",
+      "samples": 32,
+      "motionSamples": 8,
+      "focus": 12,
+      "cocScale": 0.9129213753805141,
+      "shutter": 0,
+      "maxAbsoluteHdrError": 1.0207295417785645e-06,
+      "rmsHdrError": 1.3549674018447604e-08,
+      "meanAbsoluteHdrError": 1.553732242124776e-09,
+      "p99AbsoluteHdrError": 5.587935447692871e-08,
+      "pixelsOver1e-3": 0,
+      "pixelsOver1e-2": 0,
+      "alphaMaxError": 0.0
+    },
+    {
+      "name": "dof-focus12-auto",
+      "quality": "auto",
+      "samples": 20,
+      "motionSamples": 6,
+      "focus": 12,
+      "cocScale": 0.9129213753805141,
+      "shutter": 0,
+      "maxAbsoluteHdrError": 6.4373016357421875e-06,
+      "rmsHdrError": 5.0476736278577646e-08,
+      "meanAbsoluteHdrError": 1.4090026659822023e-09,
+      "p99AbsoluteHdrError": 2.2351741790771484e-08,
+      "pixelsOver1e-3": 0,
+      "pixelsOver1e-2": 0,
+      "alphaMaxError": 0.0
+    },
+    {
+      "name": "dof-focus4-high",
+      "quality": "high",
+      "samples": 32,
+      "motionSamples": 8,
+      "focus": 4,
+      "cocScale": 2.75054506060035,
+      "shutter": 0,
+      "maxAbsoluteHdrError": 2.4318695068359375e-05,
+      "rmsHdrError": 1.0990115811293173e-07,
+      "meanAbsoluteHdrError": 1.2474401618992152e-08,
+      "p99AbsoluteHdrError": 5.513429641723633e-07,
+      "pixelsOver1e-3": 0,
+      "pixelsOver1e-2": 0,
+      "alphaMaxError": 0.0
+    },
+    {
+      "name": "dof-camera-motion-high",
+      "quality": "high",
+      "samples": 32,
+      "motionSamples": 8,
+      "focus": 12,
+      "cocScale": 0.9129213753805141,
+      "shutter": 0.55,
+      "maxAbsoluteHdrError": 6.183981895446777e-07,
+      "rmsHdrError": 1.2779251634863569e-08,
+      "meanAbsoluteHdrError": 1.6596823115833103e-09,
+      "p99AbsoluteHdrError": 5.960464477539063e-08,
+      "pixelsOver1e-3": 0,
+      "pixelsOver1e-2": 0,
+      "alphaMaxError": 0.0
+    },
+    {
+      "name": "motion-only-high",
+      "quality": "high",
+      "samples": 32,
+      "motionSamples": 8,
+      "focus": 12,
+      "cocScale": 0,
+      "shutter": 0.55,
+      "maxAbsoluteHdrError": 0.0,
+      "rmsHdrError": 0.0,
+      "meanAbsoluteHdrError": 0.0,
+      "p99AbsoluteHdrError": 0.0,
+      "pixelsOver1e-3": 0,
+      "pixelsOver1e-2": 0,
+      "alphaMaxError": 0.0
+    },
+    {
+      "name": "dof-object-motion-high",
+      "quality": "high",
+      "samples": 32,
+      "motionSamples": 8,
+      "focus": 12,
+      "cocScale": 0.9129213753805141,
+      "shutter": 0.55,
+      "maxAbsoluteHdrError": 1.0207295417785645e-06,
+      "rmsHdrError": 1.356182649867882e-08,
+      "meanAbsoluteHdrError": 1.5561616035281785e-09,
+      "p99AbsoluteHdrError": 5.587935447692871e-08,
+      "pixelsOver1e-3": 0,
+      "pixelsOver1e-2": 0,
+      "alphaMaxError": 0.0
+    }
+  ],
+  "renderer": {
+    "eglVersion": "1.5",
+    "shadingLanguage": "OpenGL ES GLSL ES 3.20",
+    "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)"
+  },
+  "panels": [
+    {
+      "name": "panel-0",
+      "status": "rendered_idle_and_active",
+      "finite": true,
+      "peakActiveHdr": 15.187200546264648,
+      "maxEnergyContribution": 3.3324685096740723,
+      "litPixels": 12956
+    },
+    {
+      "name": "panel-1",
+      "status": "rendered_idle_and_active",
+      "finite": true,
+      "peakActiveHdr": 15.187200546264648,
+      "maxEnergyContribution": 3.6533844470977783,
+      "litPixels": 13107
+    },
+    {
+      "name": "panel-2",
+      "status": "rendered_idle_and_active",
+      "finite": true,
+      "peakActiveHdr": 15.187200546264648,
+      "maxEnergyContribution": 3.6025235652923584,
+      "litPixels": 13363
+    },
+    {
+      "name": "panel-3",
+      "status": "rendered_idle_and_active",
+      "finite": true,
+      "peakActiveHdr": 15.187200546264648,
+      "maxEnergyContribution": 3.5018768310546875,
+      "litPixels": 13127
+    },
+    {
+      "name": "panel-4",
+      "status": "rendered_idle_and_active",
+      "finite": true,
+      "peakActiveHdr": 15.187200546264648,
+      "maxEnergyContribution": 3.579831838607788,
+      "litPixels": 12053
+    }
+  ],
+  "releasedPanelFrames": [
+    {
+      "name": "panel-0-released-200ms",
+      "seconds": 0.2,
+      "aspect": 0.9556467631301744,
+      "imageSize": [
+        688,
+        720
+      ],
+      "method": "Full active shader minus identical idle shader in raw HDR; dark background; display-only tone mapping; no brightness amplification.",
+      "maxEnergyContribution": 1.2585256099700928,
+      "litPixels": 23451
+    },
+    {
+      "name": "panel-0-released-600ms",
+      "seconds": 0.6,
+      "aspect": 0.9556467631301744,
+      "imageSize": [
+        688,
+        720
+      ],
+      "method": "Full active shader minus identical idle shader in raw HDR; dark background; display-only tone mapping; no brightness amplification.",
+      "maxEnergyContribution": 0.08577558398246765,
+      "litPixels": 55370
+    }
+  ],
+  "status": "completed"
+}

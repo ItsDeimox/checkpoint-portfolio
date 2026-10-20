@@ -21,13 +21,13 @@ y+=.015*clamp((x-.540)/.048,0.,1.);y+=.029*clamp((x-.588)/.035,0.,1.);
 y+=.030*clamp((x-.623)/.034,0.,1.);y+=.022*clamp((x-.657)/.033,0.,1.);return y;}
 void main(){vec2 p=vec2(vUv.x,1.-vUv.y);vec3 h=projection*vec3(p,1.);vec2 source=h.xy/h.z;vec3 c=texture2D(artwork,vec2(source.x,1.-source.y)).rgb;
 float hidden=eraseForeground*smoothstep(.399,.403,source.x)*(1.-smoothstep(.691,.695,source.x))*smoothstep(foregroundRoof(source.x)-.0015,foregroundRoof(source.x)+.0015,source.y);
-float wallGrain=noise2(source*1024.);vec3 clean=vec3(.009,.010,.013)*(.65+wallGrain*.35);
-clean+=vec3(.035,.001,.002)*exp(-pow((source.y-.56)*20.,2.))*(.5+.5*noise2(source*80.));c=mix(c,clean,hidden);
+if(hidden>0.){float wallGrain=noise2(source*1024.);vec3 clean=vec3(.009,.010,.013)*(.65+wallGrain*.35);
+clean+=vec3(.035,.001,.002)*exp(-pow((source.y-.56)*20.,2.))*(.5+.5*noise2(source*80.));c=mix(c,clean,hidden);}
 // The source is artwork printed on each physical display, never the scene backdrop.
 float edge=min(min(p.x,1.-p.x),min(p.y,1.-p.y));
 // Canvas content uses this same rigid mesh's UVs, including the reflection.
 // Only the emitted surface changes. No vertex or camera-facing transform.
-c=mix(c*1.13,texture2D(contentMap,vUv).rgb*1.1,contentMix);
+c*=1.13;if(contentMix>0.)c=mix(c,texture2D(contentMap,vUv).rgb*1.1,contentMix);
 float halo=exp(-dot(vUv-hoverUv,vUv-hoverUv)*27.);
 c*=1.+hover*.11*(1.-contentMix*.65);
 c+=vec3(.16,.004,.014)*hover*exp(-edge*85.);
@@ -98,7 +98,8 @@ void main(){
 }
 `;
 export const smokeFragment=`precision highp float;uniform float smokeDetail;uniform float time;uniform float seed;uniform float density;uniform vec3 tint;varying vec2 vUv;${noiseGLSL}
-void main(){vec2 p=vUv;vec2 q=p*vec2(3.5,2.5)+vec2(seed-time*.028,time*.035);float n;if(smokeDetail<3.){n=.625*noise2(q*2.1+noise2(q*1.6+time*.012)*2.8)+.3125*noise2(q*4.2);}else{n=fbm4(q*2.1+fbm4(q*1.6+time*.012)*2.8);}float edge=pow(max(0.,1.-length((p-.5)*2.)),1.55);float a=smoothstep(.27,.79,n)*edge*density;vec3 c=tint*(.5+n*.7)+vec3(.13,.016,.020)*(1.-smoothstep(.05,.5,p.y));gl_FragColor=vec4(c,a);}`;
+void main(){vec2 p=vUv;vec2 radial=(p-.5)*2.;if(dot(radial,radial)>=1.)discard;
+vec2 q=p*vec2(3.5,2.5)+vec2(seed-time*.028,time*.035);float n;if(smokeDetail<3.){n=.625*noise2(q*2.1+noise2(q*1.6+time*.012)*2.8)+.3125*noise2(q*4.2);}else{n=fbm4(q*2.1+fbm4(q*1.6+time*.012)*2.8);}float edge=pow(max(0.,1.-length(radial)),1.55);float a=smoothstep(.27,.79,n)*edge*density;vec3 c=tint*(.5+n*.7)+vec3(.13,.016,.020)*(1.-smoothstep(.05,.5,p.y));gl_FragColor=vec4(c,a);}`;
 export const beamFragment=`precision highp float;uniform float time;uniform vec3 apex;uniform float bottom;uniform float slope;uniform float beamSamples;uniform float beamStrength;varying vec3 vWorld;${noiseGLSL}
 void main(){
  vec3 origin=cameraPosition-apex,ray=normalize(vWorld-cameraPosition);

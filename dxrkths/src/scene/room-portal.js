@@ -59,7 +59,7 @@ export function configurePortal(panel){
 /** One journey owns only the camera while active. No second RAF or WebGL target. */
 export class BannerPortal {
  constructor(view){
-  this.view=view;this.active=false;this.returning=false;this.interior=false;this.elapsed=0;this.stage='idle';
+  this.view=view;this.active=false;this.returning=false;this.interior=false;this.elapsed=0;this.stage='idle';this.pendingProgress=null;
   view.panels.forEach(configurePortal);
   this.effects=new PortalEffects(view.scene);this.shutter=new PortalShutterPass();
   const first=view.panels[0];
@@ -143,7 +143,7 @@ export class BannerPortal {
    c.position.copy(saved.position);c.quaternion.copy(saved.rotation);v.cameraRig.setFov(saved.fov);v.cameraRig.focusTarget.copy(saved.focus);c.updateMatrixWorld(true);
    v.optics.resetHistory();v.renderer.shadowMap.needsUpdate=true;
    v.pageActive=saved.pageActive;
-   this.panel=null;this.basis=null;this.exitFrame=null;
+   this.panel=null;this.basis=null;this.exitFrame=null;this.pendingProgress=null;
    if(!signal?.aborted&&!v.pageActive)v.render(1/60,0);
   }
   await waitForGpu(v.renderer,signal);
@@ -159,13 +159,14 @@ export class BannerPortal {
   if(!this.active||!this.basis){this.shutter.reset();return;}
   this.shutter.update(this.view.camera,this.basis,{age:this.age,progress:this.panel.portalUniforms.portalProgress.value,
     active:true,interior:this.interior,quality:this.view.settings.quality,dt,reduced:this.view.reduced.matches});
+  this.presentProgress();
  }
 
  enter(index,onComplete,onProgress=null,getArrivalViewport=null){
   if(this.active||!this.view.ready)return false;
   const v=this.view,panel=v.panels[index];if(!panel)return false;
   this.panel=panel;this.basis=portalBasis(panel);this.saved={position:v.camera.position.clone(),rotation:v.camera.quaternion.clone(),focus:v.cameraRig.focusTarget.clone(),fov:v.camera.fov,width:v.cameraRig.width,aspect:v.camera.aspect,yaw:v.cameraRig.yaw,pitch:v.cameraRig.pitch};
-  this.active=true;this.returning=false;this.interior=false;this.stage='approach';this.elapsed=0;this.age=0;this.onComplete=onComplete;this.onProgress=onProgress;this.getArrivalViewport=getArrivalViewport;panel.portalUniforms.portalReturn.value=0;this.sampleExit();
+  this.active=true;this.returning=false;this.interior=false;this.stage='approach';this.elapsed=0;this.age=0;this.onComplete=onComplete;this.onProgress=onProgress;this.pendingProgress=null;this.getArrivalViewport=getArrivalViewport;panel.portalUniforms.portalReturn.value=0;this.sampleExit();
   this.effects.start(this.basis);this.shutter.reset();
   v.turntable?.end(false);v.release();v.clearHover();v.hidePanelContent();v.pendingPick=v.lastPointer=null;
   Object.assign(this.fullMaterial.uniforms,panel.portalUniforms,{artwork:panel.material.uniforms.artwork,projection:panel.material.uniforms.projection});
@@ -184,6 +185,16 @@ export class BannerPortal {
   if(frame.visible){const u=this.panel.portalUniforms;u.portalExitDepth.value=frame.exitDepth;u.portalExitHalf.value.fromArray(frame.exitHalf);u.portalExitOffset.value=frame.exitOffset;u.portalTunnelEnd.value=frame.tunnelEndDepth;}
   this.exitFrame=frame;return frame;
  }
+ sampleProgress(progress){
+  this.sampleExit();this.pendingProgress=progress;
+ }
+ presentProgress(){
+  if(this.pendingProgress===null)return;
+  const progress=this.pendingProgress;this.pendingProgress=null;
+  // CPU camera time keeps advancing when the GPU queue is full. Publish only
+  // its latest sample alongside the next tunnel draw, so CSS cannot run ahead.
+  this.onProgress?.(progress,this.exitFrame);
+ }
  /** Start behind the doorway and rewind the same camera path and shader clock. */
  returnToShowroom(index,onComplete,onProgress=null,getArrivalViewport=null){
   const v=this.view,panel=v.panels[index];
@@ -200,7 +211,7 @@ export class BannerPortal {
   const pose=portalTravelPose(this.basis,1);
   v.camera.position.copy(pose.position);v.camera.quaternion.copy(pose.rotation);v.cameraRig.setFov(pose.fov);
   panel.portalUniforms.portalProgress.value=1;v.camera.updateMatrixWorld(true);
-  this.syncReturnEffects();this.onProgress?.(1,this.sampleExit());v.optics.resetHistory();v.wake();return true;
+  this.syncReturnEffects();this.sampleProgress(1);v.optics.resetHistory();v.wake();return true;
  }
  prepareReturnCurve(){
   const v=this.view,camera=v.camera.clone(),rig=new RoomCamera(camera,v.cameraRig.width),saved=this.saved;
@@ -247,7 +258,7 @@ export class BannerPortal {
    v.cameraRig.setFov(this.reverseRig.camera.fov);v.cameraRig.focusTarget.copy(this.reverseRig.focusTarget);
    if(progress>=1-1e-9){this.finishReturn();return true;}
   }
-  v.camera.updateMatrixWorld(true);this.syncReturnEffects();this.onProgress?.(u.portalProgress.value,this.sampleExit());return true;
+  v.camera.updateMatrixWorld(true);this.syncReturnEffects();this.sampleProgress(u.portalProgress.value);return true;
  }
  syncReturnEffects(){
   const v=this.view,u=this.panel.portalUniforms;u.portalAge.value=this.age;u.portalMix.value=smooth(this.age/.75);
@@ -288,8 +299,8 @@ export class BannerPortal {
    this.interior=this.basis.toLocal(v.camera.position).z>=-v.camera.near*1.5;
   }
   v.camera.updateMatrixWorld(true);
-  this.onProgress?.(u.portalProgress.value,this.sampleExit());
   if(this.stage==='flight'&&u.portalProgress.value===1)this.finish();
+  else this.sampleProgress(u.portalProgress.value);
   const state=this.effects.update(this.age,u.portalProgress.value,v.settings.quality,this.active,this.interior,v.reduced.matches);
   u.portalSpeed.value=state.speed;u.portalOpening.value=state.opening;
   this.fullMaterial.uniforms.portalInverseProjection.value.copy(v.camera.projectionMatrixInverse);
@@ -298,17 +309,19 @@ export class BannerPortal {
  }
  finish(){
   if(!this.active)return;this.active=false;this.stage='arrived';this.effects.reset();this.shutter.reset();
-  this.onProgress?.(1,this.sampleExit());this.onProgress=null;
+  // The terminal page takes over on the authored clock even if a GPU frame is
+  // skipped. Finish its pose synchronously before the navigation callback.
+  this.sampleProgress(1);this.presentProgress();this.onProgress=null;
   const callback=this.onComplete;this.onComplete=null;callback?.();
  }
  cancel(){
-  const v=this.view;this.active=false;this.returning=false;this.interior=false;this.stage='idle';this.onComplete=null;this.onProgress=null;this.getArrivalViewport=null;this.exitFrame=null;
+  const v=this.view;this.active=false;this.returning=false;this.interior=false;this.stage='idle';this.onComplete=null;this.onProgress=null;this.pendingProgress=null;this.getArrivalViewport=null;this.exitFrame=null;
   this.effects.reset();this.shutter.reset();
   v.panels.forEach(p=>{p.portalUniforms.portalMix.value=0;p.portalUniforms.portalReturn.value=0;p.portalUniforms.portalProgress.value=0;p.portalUniforms.portalSpeed.value=0;p.portalUniforms.portalOpening.value=0;});
   v.cameraRig.transition=null;v.cameraRig.panel=null;v.cameraRig.mode='overview';
   if(this.saved){v.cameraRig.yaw=v.cameraRig.targetYaw=this.saved.yaw??0;v.cameraRig.pitch=v.cameraRig.targetPitch=this.saved.pitch??0;v.cameraRig.focusTarget.copy(this.saved.focus);v.camera.position.copy(this.saved.position);v.camera.quaternion.copy(this.saved.rotation);v.cameraRig.setFov(this.saved.fov);v.camera.updateMatrixWorld(true);}
   v.optics?.resetHistory();v.reflectionBudget?.invalidate();
  }
- dispose(){if(this.disposed)return;this.disposed=true;this.active=false;this.returning=false;this.view.cameraRig.transition=null;this.onComplete=null;this.onProgress=null;this.getArrivalViewport=null;this.effects.dispose();if(!this.attached)this.shutter.dispose();this.quad.geometry.dispose();this.fullMaterial.dispose();}
+ dispose(){if(this.disposed)return;this.disposed=true;this.active=false;this.returning=false;this.view.cameraRig.transition=null;this.onComplete=null;this.onProgress=null;this.pendingProgress=null;this.getArrivalViewport=null;this.effects.dispose();if(!this.attached)this.shutter.dispose();this.quad.geometry.dispose();this.fullMaterial.dispose();}
  inspect(){return {active:this.active,returning:this.returning,stage:this.stage,interior:this.interior,panel:this.panel?.index,depth:this.basis?this.basis.toLocal(this.view.camera.position).z:null,age:this.age??0,burstVisible:this.effects.group.visible,shutter:this.shutter.uniforms.uShutter.value,chromaticPixels:this.shutter.uniforms.uChromaticPixels.value};}
 }

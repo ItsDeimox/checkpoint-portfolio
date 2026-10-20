@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {ShaderMaterial,Vector2,Group} from 'three';
 import {CubeSurface} from '../src/ui/cube-surface.js';
 import {CUBE_NETWORK_GLSL} from '../src/shaders/cube-network.js';
+import {PanelEnergyField} from '../src/scene/panel-energy-field.js';
+import {PANEL_NETWORK_GLSL} from '../src/shaders/panel-network.js';
 import {RoomPanelEnergy} from '../src/scene/room-panel-energy.js';
 import {createFixedPanelLayout} from '../src/scene/room-environment.js';
 import {roomVertex,displayFragment} from '../src/scene/room-shaders.js';
@@ -18,36 +20,37 @@ function fixture(){
 }
 function spread(field){
  let total=0,second=0,outside=0;
- for(const id of field.faces[4]){
+ for(let id=0;id<field.count;id++){
   const [x,y]=field.vertices[id],g=field.glow[id],r2=x*x+y*y;
   total+=g;second+=r2*g;if(r2>.18)outside+=g;
  }
  return {radius:Math.sqrt(second/Math.max(total,1e-12)),outside};
 }
-test('cards restore the exact original network shading and emission, with no path-history mask',()=>{
+test('cards use their own chevron network with the established emission gain and no path-history mask',()=>{
  const f=fixture();try{for(const {panel,wake}of f.hover.entries){
-  assert.ok(panel.material.fragmentShader.includes(CUBE_NETWORK_GLSL),'the original node/connection shader must be restored');
-  assert.match(panel.material.fragmentShader,/network\(4,\(vUv-\.5\)\*uSurfaceSpan\+\.5\)/);
-  assert.match(panel.material.fragmentShader,/cubeWave\.x\*\.42\+cubeWave\.y\*\.46/);
+  assert.ok(panel.material.fragmentShader.includes(PANEL_NETWORK_GLSL),'the card must render its actual planar graph');
+  assert.ok(!panel.material.fragmentShader.includes(CUBE_NETWORK_GLSL),'the card must have its own geometry instead of the copied cube pattern');
+  assert.match(panel.material.fragmentShader,/panelNetwork\(vUv\)/);
+  assert.match(panel.material.fragmentShader,/panelWave\.x\*\.42\+panelWave\.y\*\.46/);
   assert.doesNotMatch(panel.material.fragmentShader,/flowTrail|prismTrail|uWakePoints|uWakeCount|uSignalSeed/);
   assert.equal(wake,undefined);assert.equal(panel.material.uniforms.uWakeCount,undefined);
  }}finally{f.dispose();}
 });
-test('only card transport weights change; vertices, links, solver, atlas and the CTA defaults are identical',()=>{
- const f=fixture(),original=new CubeSurface();try{
-  const field=f.hover.entries[0].field;let changed=0;
-  assert.deepEqual(field.vertices,original.vertices);assert.deepEqual(field.faces,original.faces);
-  assert.equal(field.edges.length,original.edges.length);assert.equal(field.fixedStep,original.fixedStep);
-  assert.equal(field.step,original.step);assert.equal(field.inject,original.inject);
-  for(let i=0;i<field.edges.length;i++){
-   const [a,b,w]=field.edges[i],before=original.edges[i];
-   assert.equal(a,before[0]);assert.equal(b,before[1]);assert.ok(Number.isFinite(w)&&w>0&&w<=before[2]);
-   if(field.vertices[a][2]===1&&field.vertices[b][2]===1){if(Math.abs(w-before[2])>1e-8)changed++;}
-   else assert.equal(w,before[2],'hidden face transport must remain unchanged');
+test('card simulation only contains its plane and leaves the separate cube/CTA graph untouched',()=>{
+ const original=new CubeSurface(),before=structuredClone({vertices:original.vertices,faces:original.faces,edges:original.edges,data:original.data,inspect:original.inspect()});
+ const step=original.step,inject=original.inject,f=fixture();try{
+  for(const {field}of f.hover.entries){
+   assert.ok(field instanceof PanelEnergyField);assert.equal(field instanceof CubeSurface,false);
+   assert.ok(field.vertices.every(p=>p[2]===1),'the card cannot simulate hidden cube faces');
+   assert.ok(field.count<original.count/3&&field.edges.length<original.edges.length/4,'the dedicated graph must remove the hidden-face work');
+   assert.ok(field.data.length<original.data.length/3,'uploads must be limited to the planar atlas');
   }
-  assert.ok(changed>1000,'the card propagation cannot stay identical to the cube');
-  assert.deepEqual(original.edges,new CubeSurface().edges,'the button must keep its original transport');
-  assert.equal(field.data.length,original.data.length);assert.equal(field.count,original.count);
+  f.hover.prime();f.hover.point(0,new Vector2(.3,.8),100);f.hover.update(1/60);
+  const after=new CubeSurface();
+  assert.deepEqual(original.inspect(),before.inspect);assert.deepEqual(original.data,before.data);
+  assert.deepEqual(after.vertices,before.vertices);assert.deepEqual(after.faces,before.faces);
+  assert.deepEqual(after.edges,before.edges);assert.deepEqual(after.data,before.data);
+  assert.equal(after.step,step);assert.equal(after.inject,inject);
  }finally{f.dispose();}
 });
 test('one stationary impulse travels beyond the cursor and keeps propagating after release',()=>{
@@ -61,15 +64,17 @@ test('one stationary impulse travels beyond the cursor and keeps propagating aft
   assert.equal(e.field.impulses,impulses);assert.equal(e.panel.material.uniforms.uEnergyActive.value,1);
  }finally{f.dispose();}
 });
-test('transport produces a different wave footprint without changing the cursor injection',()=>{
+test('chevron routes create a directional wave footprint while preserving the initial response strength',()=>{
  const f=fixture(),original=new CubeSurface();try{
   const field=f.hover.entries[0].field;original.setAspect(field.span[0]/field.span[1]);
   original.inject(.5,.5,.4);field.inject(.5,.5,.4);
-  assert.deepEqual(field.velocity,original.velocity,'input and strength are unchanged');
-  for(let i=0;i<36;i++){field.step(1/60);original.step(1/60);}
-  let error=0,total=0;
-  for(const id of field.faces[4]){error+=Math.abs(field.glow[id]-original.glow[id]);total+=original.glow[id];}
-  assert.ok(error/total>.15,'transport must visibly differ from the unchanged cube wave');
+  field.step(1/60);original.step(1/60);
+  assert.ok(field.peak>original.peak*.8&&field.peak<original.peak*1.3,'the new geometry must retain a vivid local response');
+  for(let i=0;i<35;i++){field.step(1/60);original.step(1/60);}
+  function directionality(graph,ids){let x=0,y=0;for(const id of ids){const p=graph.vertices[id],g=graph.glow[id];x+=g*p[0]*p[0];y+=g*p[1]*p[1];}return x/y;}
+  const planar=directionality(field,field.vertices.keys()),cube=directionality(original,original.faces[4]);
+  assert.ok(planar>cube*2,'waves must favour the long chevron rails and branch through shorter ribs');
+  assert.ok(cube>.6&&cube<1.4,'the separate cube must retain its original roughly radial transport');
  }finally{f.dispose();}
 });
 test('propagation preserves resources and reaches rest without a separate cursor-trail renderer',()=>{

@@ -11,6 +11,7 @@ import {
   UnsignedIntType,
   Vector2,
   Vector3,
+  Vector4,
   WebGLRenderTarget,
 } from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -20,6 +21,8 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { FXAAPass } from 'three/addons/postprocessing/FXAAPass.js';
 import { Pass, FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { TurntableMotionPass } from './room-turntable.js';
+import { SceneSourcePass } from './room-source-pass.js';
+import { createApertureBasis } from './room-lens-kernel.js';
 import { renderBudget } from './room-core.js';
 import { normalizeVisualSettings } from './room-visual-settings.js';
 export { DEFAULT_VISUAL_SETTINGS, VISUAL_CONTROLS, normalizeVisualSettings } from './room-visual-settings.js';
@@ -102,6 +105,10 @@ const LENS_FRAGMENT = /* glsl */`
   uniform vec2 uResolution;
   uniform vec2 uTexel;
   uniform mat4 uInverseProjection;
+  uniform vec4 uDepthCoefficients;
+  uniform float uSimpleDepth;
+  uniform vec2 uAperture[32];
+  uniform vec2 uApertureScale;
   uniform mat4 uInverseViewProjection;
   uniform mat4 uPreviousViewProjection;
   uniform float uZeroToOneDepth;
@@ -124,6 +131,11 @@ const LENS_FRAGMENT = /* glsl */`
   }
 
   float viewDistance(vec2 uv, float depth) {
+    if(uSimpleDepth>.5){
+      float z=clipDepth(depth);
+      return max((uDepthCoefficients.x*z+uDepthCoefficients.y)
+        /max(uDepthCoefficients.z*z+uDepthCoefficients.w,0.000001),0.001);
+    }
     vec4 view = uInverseProjection * vec4(uv * 2.0 - 1.0, clipDepth(depth), 1.0);
     return max(-view.z / max(view.w, 0.000001), 0.001);
   }
@@ -166,14 +178,17 @@ const LENS_FRAGMENT = /* glsl */`
     }
 
     float count = coc >= 0.45 ? uSamples : uMotionSamples;
+    float inverseCount=1.0/count;
+    vec2 diskScale=coc*uTexel*(coc>=0.45?uApertureScale.x:uApertureScale.y);
+    float inverseDistance=1.0/max(distanceToCamera,0.1);
+    float tolerance=0.025+min(coc*0.008,0.09);
     vec3 sum = center.rgb;
     float weightSum = 1.0;
     // Denser deterministic aperture gather reduces separated highlight dots.
     for (int i = 0; i < 32; i++) {
       if (float(i) >= count) break;
-      float t = (float(i) + 0.5) / count;
-      float angle = float(i) * 2.39996323;
-      vec2 disk = vec2(cos(angle), sin(angle)) * sqrt(t) * coc * uTexel;
+      float t = (float(i) + 0.5) * inverseCount;
+      vec2 disk = uAperture[i] * diskScale;
       vec2 sampleUv = boundedUv(vUv + disk + velocity * (t - 0.5));
       float sampleDepth = texture2D(tSceneDepth, sampleUv).x;
       float sampleDistance = viewDistance(sampleUv, sampleDepth);
@@ -181,8 +196,7 @@ const LENS_FRAGMENT = /* glsl */`
       // Reject foreground silhouettes and background leakage more strongly as
       // the gather grows, while retaining nearby samples on the same surface.
       // This is a single-layer optical approximation, not a layered bokeh solver.
-      float delta = (sampleDistance - distanceToCamera) / max(distanceToCamera, 0.1);
-      float tolerance = 0.025 + min(coc * 0.008, 0.09);
+      float delta = (sampleDistance - distanceToCamera) * inverseDistance;
       float rejection = signedCoc < 0.0
         ? smoothstep(tolerance, tolerance + 0.45, delta) * 0.72
         : smoothstep(tolerance, tolerance + 0.24, -delta) * 0.97;
@@ -206,6 +220,9 @@ class DepthLensPass extends ShaderPass {
       tObjectMotion: { value: null }, uObjectMotion: { value: 0 }, uFarPlane: { value: 100 },
       uResolution: { value: new Vector2(1, 1) }, uTexel: { value: new Vector2(1, 1) },
       uInverseProjection: { value: new Matrix4() },
+      uDepthCoefficients: { value: new Vector4() }, uSimpleDepth: { value: 0 },
+      uAperture: { value: createApertureBasis() },
+      uApertureScale: { value: new Vector2(1/Math.sqrt(20),1/Math.sqrt(6)) },
       uInverseViewProjection: { value: new Matrix4() },
       uPreviousViewProjection: { value: new Matrix4() },
       uZeroToOneDepth: { value: 0 }, uFocusDistance: { value: 12 },
@@ -329,6 +346,7 @@ class BoundedBloomPass extends Pass {
  draw(renderer,material,target){this.quad.material=material;renderer.setRenderTarget(target);this.quad.render(renderer);}
  blur(renderer,texture,target,x,y){this.blurMaterial.uniforms.tInput.value=texture;this.blurMaterial.uniforms.uStep.value.set(x,y);this.draw(renderer,this.blurMaterial,target);}
  render(renderer,writeBuffer,readBuffer){
+  readBuffer=this.sourceTarget??readBuffer;
   const oldAutoClear=renderer.autoClear;renderer.autoClear=false;
   try{
    this.brightMaterial.uniforms.tInput.value=readBuffer.texture;this.brightMaterial.uniforms.uTexel.value.set(1/readBuffer.width,1/readBuffer.height);
@@ -469,7 +487,7 @@ export class RoomOptics {
     this.renderPass = new SceneCapturePass(scene, camera, this.sceneTarget);
     this.lensPass = new DepthLensPass(this.sceneTarget);
     this.bloomPass = new BoundedBloomPass(type);
-    this.gradePass = new ShaderPass(screenMaterial('DXT.LensGrade', GRADE_FRAGMENT, {
+    this.gradePass = new SceneSourcePass(screenMaterial('DXT.LensGrade', GRADE_FRAGMENT, {
       tDiffuse: { value: null }, tBloom: { value: this.bloomPass.bloom.texture },
       tWideBloom: { value: this.bloomPass.wide.texture }, tStreak: { value: this.bloomPass.streak.texture },
       uTexel: { value: new Vector2(1, 1) }, uPixelRatio: { value: 1 }, uTime: { value: 0 },
@@ -530,6 +548,7 @@ export class RoomOptics {
     this.profile = PROFILES[this.quality];
     this.lensPass.uniforms.uSamples.value = this.profile.samples;
     this.lensPass.uniforms.uMotionSamples.value = this.profile.motionSamples;
+    this.lensPass.uniforms.uApertureScale.value.set(1/Math.sqrt(this.profile.samples),1/Math.sqrt(this.profile.motionSamples));
     this.lensPass.uniforms.uMaxBlur.value = this.profile.maxBlur * this.pixelRatio;
     this.lensPass.uniforms.uMotionLimit.value = (this.quality === 'low' ? 6 : 8) * this.pixelRatio;
     this.bloomPass.setProfile(this.profile);
@@ -564,7 +583,7 @@ export class RoomOptics {
     this.lensPass.uniforms.uShutter.value = 0;
   }
 
-  render(deltaTime, { time, motion = 0, focusDistance = 12, paused = false, projectionAnimated = false, turntableDelta = 0 } = {}) {
+  render(deltaTime, { time, motion = 0, focusDistance = 12, paused = false, projectionAnimated = false, rotationSpeedLimit = 2.5, translationSpeedLimit = 45, turntableDelta = 0 } = {}) {
     if (this.disposed) return;
     const validDelta = Number.isFinite(deltaTime) && deltaTime > 0;
     const dt = validDelta ? deltaTime : 1 / 60;
@@ -608,11 +627,13 @@ export class RoomOptics {
       }
     }
     // World-space speed guards are independent of aspect and focal length.
-    // They admit the actual panel paths (under 35 m/s and .84 rad/s), while
-    // retaining absolute per-frame limits for camera cuts or a stalled frame.
+    // Portal approaches authorize their measured turn rate separately. Keep
+    // the absolute cut guard even for those continuously animated paths.
+    const rotationLimit=Number.isFinite(rotationSpeedLimit)?Math.min(3,Math.max(0,rotationSpeedLimit)):2.5;
+    const translationLimit=Number.isFinite(translationSpeedLimit)?Math.min(48,Math.max(0,translationSpeedLimit)):45;
     const safeHistory = this.previousValid && !paused && validDelta && dt < 0.15
       && !(this.previousProjectionAnimated && !animatedProjection) && continuousProjection
-      && translation <= Math.min(3, 45 * dt) && rotation <= Math.min(0.25, 2.5 * dt);
+      && translation <= Math.min(3, translationLimit * dt) && rotation <= Math.min(0.25, rotationLimit * dt);
     const continuousMotion = safeHistory
       && (translation > 0.000001 || rotation > 0.000001 || lensChange > 0.0000001);
     const objectMoving=Boolean(this.quality!=='low' && this.visualSettings.motionBlur>0 && this.turntableMotion && this.hdr && safeHistory && Number.isFinite(turntableDelta) && Math.abs(turntableDelta)>1e-6 && Math.abs(turntableDelta)<.15);
@@ -620,6 +641,11 @@ export class RoomOptics {
     const uniforms = this.lensPass.uniforms;
     uniforms.uObjectMotion.value=objectMoving?1:0;uniforms.uFarPlane.value=this.camera.far;
     uniforms.uInverseProjection.value.copy(this.camera.projectionMatrixInverse);
+    const inverse=this.camera.projectionMatrixInverse.elements;
+    // Perspective, orthographic and off-axis lenses recover distance from Z
+    // alone. Retain full reconstruction for genuinely oblique projections.
+    uniforms.uSimpleDepth.value=inverse[2]===0&&inverse[6]===0&&inverse[3]===0&&inverse[7]===0?1:0;
+    uniforms.uDepthCoefficients.value.set(-inverse[10],-inverse[14],inverse[11],inverse[15]);
     uniforms.uInverseViewProjection.value.copy(this.currentViewProjection).invert();
     uniforms.uPreviousViewProjection.value.copy(
       continuousMotion || objectMoving ? this.previousViewProjection : this.currentViewProjection,
@@ -637,6 +663,15 @@ export class RoomOptics {
     uniforms.uFocusDistance.value = focus;
     uniforms.uCocScale.value = this.quality==='low'?0:this.visualSettings.depthOfField * 0.5 * this.renderHeight * focalLength * focalLength
       / (fNumber * filmHeight * Math.max(focus - focalLength, 0.01));
+    // An identity shader still costs a full-size read and write. Let the first
+    // active effect consume the resolved capture instead; never put the MSAA
+    // target into the composer's ping-pong pair or sample a target in place.
+    this.lensPass.enabled=uniforms.uCocScale.value>0||uniforms.uShutter.value>0;
+    const directScene=this.lensPass.enabled?null:this.sceneTarget;
+    if(this.portalPass)this.portalPass.sourceTarget=directScene;
+    const colorSource=this.portalPass?.enabled?null:directScene;
+    this.bloomPass.sourceTarget=colorSource;
+    this.gradePass.sourceTarget=colorSource;
     this.gradePass.uniforms.uTime.value = this.time;
     this.composer.render(Math.min(dt, 0.1));
     this.previousViewProjection.copy(this.currentViewProjection);

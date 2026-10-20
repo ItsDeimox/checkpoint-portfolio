@@ -1,16 +1,21 @@
-import {Vector2} from 'three';
 import {yieldToBrowser} from './room-startup.js';
 import {waitForGpu} from './room-gpu-gate.js';
 
-/** Allocate one attachment at a time only after submitted frames have finished.
- * This is not a second renderer and it does not recreate the scene or camera. */
+/** Prepare storage after submitted frames finish, yielding between bounded batches.
+ * Existing attachments are cheap no-ops; they do not each need a display frame. */
 export async function prepareQualityTargets(view,signal){
  const {renderer,optics}=view;
  if(!renderer?.initRenderTarget)return;
- const targets=new Set([optics?.sceneTarget,optics?.composer?.readBuffer,optics?.composer?.writeBuffer,
-  ...(optics?.bloomPass?.targets??[]),optics?.turntableMotion?.target,view.ground?.getRenderTarget?.()]);
- for(const target of targets){
-  if(!target)continue;signal?.throwIfAborted();renderer.initRenderTarget(target);await yieldToBrowser(signal);
+ const targets=[...new Set([optics?.sceneTarget,optics?.composer?.readBuffer,optics?.composer?.writeBuffer,
+  ...(optics?.bloomPass?.targets??[]),optics?.turntableMotion?.target,view.ground?.getRenderTarget?.()])].filter(Boolean);
+ let batchStart=performance.now(),batchCount=0;
+ for(let i=0;i<targets.length;i++){
+  signal?.throwIfAborted();renderer.initRenderTarget(targets[i]);batchCount++;
+  // An expensive allocation yields immediately. Small/no-op allocations share
+  // a short batch, with a count cap even when the driver defers their work.
+  if(i+1<targets.length&&(batchCount>=4||performance.now()-batchStart>=4)){
+   await yieldToBrowser(signal);batchStart=performance.now();batchCount=0;
+  }
  }
  await waitForGpu(renderer,signal);
 }
@@ -72,7 +77,6 @@ export class QualityTransition {
 export async function warmInteractivePaths(view,signal){
  const {renderer,optics}=view;
  if(!renderer?.getSize||!optics?.sceneTarget)return false;
- const size=renderer.getSize(new Vector2()),ratio=renderer.getPixelRatio();
  const shadows=renderer.shadowMap.enabled,pageActive=view.pageActive;
  const smokeState=(view.smokes??[]).map(s=>[s,s.visible]);
  const dustCount=view.dust?.geometry.drawRange.count;
@@ -93,8 +97,9 @@ export async function warmInteractivePaths(view,signal){
   for(const [s,visible]of smokeState)s.visible=visible;
   if(dustCount!==undefined)view.dust.geometry.setDrawRange(0,dustCount);
   view.panelEnergy?.clear();
-  renderer.setPixelRatio(ratio);renderer.setSize(size.x,size.y,false);
-  optics.resize(size.x,size.y,ratio);optics.resetHistory();
+  // Warmup never owns the viewport. A real resize received while yielding must
+  // keep its matching camera, raster and cached dimensions after restoration.
+  optics.resetHistory();
  }
  return true;
 }
