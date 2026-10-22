@@ -17,10 +17,10 @@ test('the authored biography appears with a frameless avatar',()=>{
  const html=renderSectionPage(3);assert.match(html,/tenho 22 anos/);assert.match(html,/único desenvolvedor/);
  assert.match(html,/data-portrait/);assert.doesNotMatch(html,/class="section-art-frame"/);
 });
-test('the future page contains a real render surface and the complete seven-item catalogue',()=>{
+test('the future page contains a real render surface and the complete six-item catalogue',()=>{
  const html=renderSectionPage(2);assert.match(html,/data-covered-car/);
- for(const label of ['BERSERK DRIFT: RALLY','Unnamed Drift Game','Right Cut!','Procedural Tiremark Generator','Procedural Vegetation Placer','Drift Judge Score System','FFB System'])assert.ok(html.includes(label),label);
- assert.equal((html.match(/class="future-project" role="listitem"/g)||[]).length,7);
+ for(const label of ['Unnamed Drift Game','Right Cut!','Procedural Tiremark Generator','Procedural Vegetation Placer','Drift Judge Score System','FFB System'])assert.ok(html.includes(label),label);
+ assert.equal((html.match(/class="future-project" role="listitem"/g)||[]).length,6);
  assert.equal((html.match(/class="future-project-list" role="list"/g)||[]).length,3);
  assert.doesNotMatch(html,/Back to showroom|class="section-return"/);
 });

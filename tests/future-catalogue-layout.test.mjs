@@ -8,7 +8,7 @@ const css=readFileSync(new URL('../src/styles-sections.css',import.meta.url),'ut
 test('future project category cards are truly adjacent on desktop and responsive without fake links',()=>{
  const page=renderSectionPage(2);
  assert.equal((page.match(/class="future-category"/g)||[]).length,3);
- assert.equal((page.match(/class="future-project" role="listitem"/g)||[]).length,7);
+ assert.equal((page.match(/class="future-project" role="listitem"/g)||[]).length,6);
  assert.match(css,/\.future-project-list\s*\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
  assert.match(css,/@media\(max-width:1160px\)[^{]*\{[^}]*\.future-category/);
  assert.match(css,/\.future-car-stage\{height:310px\}\.future-project-list\{grid-template-columns:1fr\}/);

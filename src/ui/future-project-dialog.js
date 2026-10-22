@@ -7,6 +7,7 @@ const mediaIcon = '<svg viewBox="0 0 80 64" aria-hidden="true"><rect x="8" y="8"
 
 export function projectDialogContent(project) {
  const media = projectMedia(project.media);
+ const collaborators = Array.isArray(project.collaborators) ? project.collaborators.filter(name => typeof name === 'string' && name.trim()) : [];
  const paragraphs = Array.isArray(project.description) ? project.description.filter(p => typeof p === 'string' && p.trim()) : [];
  return `<div class="fp-window">
   <header class="fp-topline"><span>DXT / PROJECT FILE</span><button type="button" class="fp-close" data-project-close aria-label="Close project details" autofocus>${closeIcon}</button></header>
@@ -19,7 +20,8 @@ export function projectDialogContent(project) {
    </section>
    <section class="fp-details"><p class="fp-eyebrow">${escape(project.category)} / FUTURE PROJECT</p><h2 id="future-project-title">${escape(project.name)}</h2><span class="fp-platform">${escape(project.platform)}</span>
     <div class="fp-description">${paragraphs.length ? paragraphs.map(p=>`<p>${escape(p)}</p>`).join('') : '<p>More details about this project will be shared here.</p>'}</div>
-    <dl class="fp-facts"><div><dt>Category</dt><dd>${escape(project.category)}</dd></div><div><dt>Platform</dt><dd>${escape(project.platform)}</dd></div></dl>
+    ${project.disclaimer ? `<p class="fp-development-note">${escape(project.disclaimer)}</p>` : ''}
+    <dl class="fp-facts"><div><dt>Category</dt><dd>${escape(project.category)}</dd></div><div><dt>Platform</dt><dd>${escape(project.platform)}</dd></div>${collaborators.length ? `<div><dt>Collaborators</dt><dd>${collaborators.map(escape).join(' &amp; ')}</dd></div>` : ''}</dl>
    </section>
   </div><footer class="fp-footer"><span>FUTURE PROJECTS / DXT</span><span>ESC TO CLOSE</span></footer>
  </div>`;

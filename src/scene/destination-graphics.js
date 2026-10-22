@@ -104,8 +104,8 @@ export class DestinationGraphics {
  draw(dt,time,reduced=false){
   if(this.disposed||!this.ready)return;
   if(this.mode==='car'){
-   const angle=reduced?0:Math.sin(time*.19)*.026;
-   this.carCamera.position.set(5.6+angle*5,3.4+(reduced?0:Math.sin(time*.14)*.04),6.8-angle*4);this.carCamera.lookAt(0,.7,0);
+   const angle=reduced?0:Math.sin(time*.19)*.075;
+   this.carCamera.position.set(5.6+angle*5,3.4+(reduced?0:Math.sin(time*.14)*.07),6.8-angle*4);this.carCamera.lookAt(0,.7,0);
    this.renderer.render(this.carScene,this.carCamera);
   }else if(this.mode==='energy')this.renderer.render(this.energyScene,this.energyCamera);
  }

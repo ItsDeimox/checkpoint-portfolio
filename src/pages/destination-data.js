@@ -12,7 +12,7 @@ export const DXT_BIO=Object.freeze([
  'O que vem a seguir é um mistério, mas espere sempre por coisas novas!',
 ]);
 export const FUTURE_PROJECTS=Object.freeze([
- {category:'Games',subtitle:'New roads to explore',items:[['BERSERK DRIFT: RALLY','Roblox'],['Unnamed Drift Game','Steam'],['Right Cut!','Roblox']]},
+ {category:'Games',subtitle:'New roads to explore',items:[['Unnamed Drift Game','Steam'],['Right Cut!','Roblox']]},
  {category:'Addons',subtitle:'Tools for the creative process',items:[['Procedural Tiremark Generator','Blender'],['Procedural Vegetation Placer','Blender']]},
  {category:'Systems',subtitle:'The mechanics behind the experience',items:[['Drift Judge Score System','Roblox'],['FFB System','Roblox']]},
 ].map(group=>Object.freeze({...group,items:Object.freeze(group.items.map(Object.freeze))})));

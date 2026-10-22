@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 const data=await import('../src/pages/future-project-details.js').catch(()=>({}));
 const ui=await import('../src/ui/future-project-dialog.js').catch(()=>({}));
 
-test('all seven existing projects have individual detail records without fabricated media',()=>{
+test('all six published projects have individual detail records without fabricated media',()=>{
  assert.equal(typeof data.getFutureProject,'function','project detail lookup must exist');
- const projects=['0-0','0-1','0-2','1-0','1-1','2-0','2-1'].map(data.getFutureProject);
- assert.deepEqual(projects.map(p=>p.name),['BERSERK DRIFT: RALLY','Unnamed Drift Game','Right Cut!','Procedural Tiremark Generator','Procedural Vegetation Placer','Drift Judge Score System','FFB System']);
- assert.deepEqual(projects.map(p=>p.platform),['Roblox','Steam','Roblox','Blender','Blender','Roblox','Roblox']);
+ const projects=['0-0','0-1','1-0','1-1','2-0','2-1'].map(data.getFutureProject);
+ assert.deepEqual(projects.map(p=>p.name),['Unnamed Drift Game','Right Cut!','Procedural Tiremark Generator','Procedural Vegetation Placer','Drift Judge Score System','FFB System']);
+ assert.deepEqual(projects.map(p=>p.platform),['Steam','Roblox','Blender','Blender','Roblox','Roblox']);
  assert.ok(projects.every(p=>!p.media.some(item=>/\/berserk\/game-|\/test-only\//.test(item.src))),'Unrelated or test-only media must never be presented as an upcoming project');
  assert.equal(data.getFutureProject('__proto__'),null);
  assert.equal(data.getFutureProject('0-99'),null);
