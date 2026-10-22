@@ -1,0 +1,47 @@
+name: Import owner-supplied DXRKTHS R32 images
+on:
+  push:
+    branches: [dxrkths-r32-media-import]
+permissions:
+  contents: write
+jobs:
+  import:
+    if: "!contains(github.event.head_commit.message, '[media imported]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: dxrkths-r32-media-import
+      - name: Import and verify only the six requested public project images
+        env:
+          MEDIA_URL: 'https://sdmntprbrazilsouth.oaiusercontent.com/files/00000000-e6ec-820e-add0-b3f5c91dbafb/raw?se=2026-10-22T21%3A03%3A52Z&sp=r&sv=2026-02-06&sr=b&scid=414e1bdf-756b-5498-ace1-80657882e63c&skoid=33096a49-a96b-4506-9fc4-04a7517f8175&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-22T09%3A11%3A24Z&ske=2026-10-23T09%3A11%3A24Z&sks=b&skv=2026-02-06&sig=JUVsvr3vItiqque0Uxk2Quo1MS50XtYKixyH3uuQ1jI%3D'
+        run: |
+          set -euo pipefail
+          echo "::add-mask::$MEDIA_URL"
+          curl --fail --silent --show-error --max-time 60 "$MEDIA_URL" -o /tmp/dxrkths-media.zip
+          echo '5f5f2a37c69b36f0f32dcfb59cbcec0a41d602f8eeb2e9e582808f1021c188ff  /tmp/dxrkths-media.zip' | sha256sum -c -
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile,hashlib
+          expected={
+            'dxrkths/assets/projects/right-cut/cover.webp':'cb530e90542a4a96ac643bf2ee2af5b5dcf91e0ab49b822fac73ae4e23ee3ee2',
+            'dxrkths/assets/projects/right-cut/precision-cut.webp':'e36e5aebc8648feee5bf6da88d95d5bb2dc63e75fc0f5147d11408f3df4a07c3',
+            'dxrkths/assets/projects/right-cut/fruit-mode.webp':'139e64d0f55d4b191df6b7d9d9e238eba05f35adac4f535c9b2ecb42e68e4165',
+            'dxrkths/assets/projects/unnamed-drift/car-selection.webp':'13e5d445172b747aa96a510d820f89d1ad4b931d3180185862e60b0175b56e7e',
+            'dxrkths/assets/projects/unnamed-drift/drift-gameplay.webp':'0eeb1b22868688818055da0b8f8ccfbe19e1e60a391072b8d1279b4696653163',
+            'dxrkths/assets/projects/unnamed-drift/drift-transition.webp':'2e3aba4574486149bae207f778d96394a4d0ed5c6560579ff942309e3d6493a9',
+          }
+          with zipfile.ZipFile('/tmp/dxrkths-media.zip') as z:
+            assert set(z.namelist())==set(expected),'Unexpected archive members'
+            for name,digest in expected.items():
+              data=z.read(name)
+              assert hashlib.sha256(data).hexdigest()==digest,name
+              path=Path(name);path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
+              print(name,len(data))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dxrkths/assets/projects/right-cut dxrkths/assets/projects/unnamed-drift
+          git commit -m 'assets(dxrkths): add six supplied project images [media imported]'
+          git push origin HEAD:dxrkths-r32-media-import
