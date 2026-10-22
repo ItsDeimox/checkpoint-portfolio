@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1178" height="659" viewBox="0 0 1178 659">
+  <defs>
+    <filter id="feather" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter>
+    <mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="1178" height="659">
+      <rect width="1178" height="659" fill="white"/>
+      <g fill="black" filter="url(#feather)">
+        <rect x="331" y="-30" width="837" height="99"/>
+        <rect x="30" y="0" width="108" height="72"/>
+        <path d="M510 104Q543 87 649 116Q795 143 985 105Q1088 94 1085 199L1071 331Q1102 551 1009 554L607 554Q468 551 483 426L508 263Q477 149 510 104Z"/>
+        <rect x="28" y="550" width="101" height="60"/>
+        <rect x="971" y="570" width="180" height="36"/>
+        <rect x="176" y="191" width="64" height="76"/>
+        <rect x="1067" y="119" width="70" height="81"/>
+      </g>
+    </mask>
+  </defs>
+  <rect width="1178" height="659" fill="white" mask="url(#cut)"/>
+</svg>

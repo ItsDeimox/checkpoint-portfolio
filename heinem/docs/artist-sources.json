@@ -1,0 +1,85 @@
+{
+  "verified_at": "2026-10-22",
+  "artist": "HEINEM",
+  "identity_confidence": "high; official Instagram/YouTube bio matches reference, official SoundCloud links same social accounts and has HEINEM x DEIMOX collaboration",
+  "socials": {
+    "youtube": "https://www.youtube.com/channel/UC3F4jPUnYqRmJB8DKh6NKQA",
+    "youtube_handle": "https://www.youtube.com/@heinemoficial",
+    "spotify": "https://open.spotify.com/artist/0mTOSymVhbGomZ40ckRkzM",
+    "instagram": "https://www.instagram.com/heinemoficial/",
+    "soundcloud": "https://soundcloud.com/heinemstrange",
+    "x": "https://x.com/heinemoficial",
+    "links": "https://sandwiche.me/heinem"
+  },
+  "tracks": [
+    {
+      "title": "Memories Of You",
+      "version": "HEINEM x Hyru Remix",
+      "original_artist": "Aye Bay",
+      "soundcloud_id": 2230667804,
+      "duration_ms": 228233,
+      "display_date": "2026-01-27T23:42:16Z",
+      "url": "https://soundcloud.com/heinemstrange/aye-bay-memories-of-you-heinem-x-hyru-remix",
+      "artwork": "https://i1.sndcdn.com/artworks-yBorbyE5d3eYia1O-2H8pvg-t500x500.jpg",
+      "asset": "memories-of-you.jpg",
+      "streamable": true,
+      "embeddable_by": "all"
+    },
+    {
+      "title": "Show Me Love",
+      "version": "HEINEM Remix",
+      "original_artist": "WizTheMc, bees & honey",
+      "soundcloud_id": 2085224397,
+      "duration_ms": 243533,
+      "display_date": "2025-09-22T00:10:28Z",
+      "url": "https://soundcloud.com/heinemstrange/wizthemc-bees-honey-show-me",
+      "artwork": "https://i1.sndcdn.com/artworks-DelSXz0jy2u9aYkv-8aJPdQ-t500x500.jpg",
+      "asset": "show-me-love.jpg",
+      "streamable": true,
+      "embeddable_by": "all"
+    },
+    {
+      "title": "MHA 50k DROP",
+      "version": "HEINEM X DEIMOX",
+      "original_artist": "HEINEM X DEIMOX",
+      "soundcloud_id": 1649117949,
+      "duration_ms": 135998,
+      "display_date": "2023-10-25T15:41:45Z",
+      "url": "https://soundcloud.com/heinemstrange/mha-50k-drop-heinem-x-deimox",
+      "artwork": "https://i1.sndcdn.com/artworks-mHoNa9fbouifNL5d-h5ZJqg-t500x500.jpg",
+      "asset": "mha-50k-drop.jpg",
+      "streamable": true,
+      "embeddable_by": "all"
+    }
+  ],
+  "spotify_tracks": [
+    {
+      "title": "Don't Let Me Fall",
+      "artist": "HEINEM, sadie elisabeth",
+      "id": "23IMLZ2MhTQwLmqypESPTH",
+      "artwork": "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02fdc96de541198a0c7e9a736f"
+    },
+    {
+      "title": "Dark Energy",
+      "artist": "Gabritiaz, HEINEM",
+      "id": "6FuW9kdXDvD85mzTgDuTed",
+      "artwork": "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0215519b480d6b818c37060bbf"
+    }
+  ],
+  "playback": {
+    "provider": "SoundCloud Widget API",
+    "script": "https://w.soundcloud.com/player/api.js",
+    "documentation": "https://developers.soundcloud.com/docs/api/html5-widget",
+    "notes": "Official stream embeds only. User gesture required. Wire CD animation to PLAY/PAUSE/FINISH/ERROR events; never fake playback if blocked. SoundCloud may show ads and regional or network restrictions."
+  },
+  "license_note": "Code MIT license does not relicense artist photo/logo/audio/cover art. Attribute provider and artist; original media rights remain with respective owners.",
+  "sources": [
+    "https://www.instagram.com/heinemoficial/",
+    "https://www.youtube.com/channel/UC3F4jPUnYqRmJB8DKh6NKQA",
+    "https://soundcloud.com/heinemstrange",
+    "https://open.spotify.com/artist/0mTOSymVhbGomZ40ckRkzM",
+    "https://x.com/heinemoficial",
+    "https://sandwiche.me/heinem",
+    "https://music.apple.com/us/artist/heinem/1706952514"
+  ]
+}
