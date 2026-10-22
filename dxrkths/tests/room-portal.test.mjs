@@ -53,7 +53,8 @@ test('each destination is a full accessible page with authored links, not an in-
   assert.doesNotMatch(html,/data-return-showroom|Back to showroom|data-room-panel-action|aria-modal|<canvas/);
   assert.match(html,/rel="noopener noreferrer"/);
  }
- assert.match(sections.renderSectionPage(2),/BERSERK DRIFT: RALLY/);
+ assert.match(sections.renderSectionPage(2),/Right Cut!/);
+ assert.doesNotMatch(sections.renderSectionPage(2),/BERSERK DRIFT: RALLY/);
  assert.doesNotMatch(sections.renderSectionPage(2),/No new projects have been announced/);
 });
 
