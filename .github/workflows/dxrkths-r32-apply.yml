@@ -1,0 +1,27 @@
+name: Apply and validate the requested DXRKTHS R32 content update
+on:
+  push:
+    branches: [dxrkths-r32-apply]
+permissions:
+  contents: write
+jobs:
+  verify:
+    if: "!contains(github.event.head_commit.message, '[r32 applied]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: dxrkths-r32-apply
+      - name: Apply only reviewed exact-match patches
+        run: python3 dxrkths-r32-patch.py
+      - name: Commit patched source on the isolated branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dxrkths/src/pages/destination-data.js dxrkths/src/ui/future-project-dialog.js dxrkths/src/styles-project-dialog.css dxrkths/src/styles-sections.css dxrkths/src/scene/destination-graphics.js dxrkths/tools/build.mjs dxrkths/tests/future-project-dialog.test.mjs dxrkths/tests/destination-contract.test.mjs dxrkths/tests/future-catalogue-layout.test.mjs dxrkths/tests/room-portal.test.mjs dxrkths/tests/destination-browser.cjs dxrkths/tests/stability-browser.cjs
+          git commit -m 'feat(dxrkths): apply supplied English project content and presentation changes [r32 applied]'
+          git push origin HEAD:dxrkths-r32-apply
+      - name: Build and run the complete suite
+        working-directory: dxrkths
+        run: npm ci && npm run build
