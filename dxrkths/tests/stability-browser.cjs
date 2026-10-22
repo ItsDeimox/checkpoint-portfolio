@@ -113,7 +113,7 @@ const check=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});c
    }
    if(index===2){
     await page.screenshot({path:path.join(out,'future-car.png')});
-    check('covered car is live only after arrival and all seven projects remain',await page.evaluate(()=>__STABILITY__.experience().graphics.mode==='car'&&document.querySelectorAll('.future-project').length===7));
+    check('covered car is live only after arrival and all six published projects remain',await page.evaluate(()=>__STABILITY__.experience().graphics.mode==='car'&&document.querySelectorAll('.future-project').length===6));
    }
    await phase('return-'+index);
    await page.screenshot({path:path.join(out,'before-return-'+index+'.png')});

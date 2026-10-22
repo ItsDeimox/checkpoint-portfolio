@@ -63,3 +63,7 @@
  .future-project-dialog[open],.future-project-dialog.is-closing,.future-project-dialog::backdrop,.future-project-dialog.is-closing::backdrop{animation:none}
  .future-project-trigger>span,.fp-close{transition:none}
 }
+
+/* Owner-provided WIP notice and credits do not change the established modal. */
+.fp-development-note{margin:0 0 24px;padding:12px 14px;border-left:2px solid #b88ee06b;background:#ad78de09;color:#c0accd;font:400 12px/1.7 var(--body,Arial,sans-serif)}
+.fp-facts dd{overflow-wrap:anywhere}

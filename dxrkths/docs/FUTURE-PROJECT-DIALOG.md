@@ -1,21 +1,28 @@
-# R30: Future Projects detail dialog
+# Future Projects detail dialogs
 
-## Author's correction, 2026-10-22
-Keep the current Games/Addons/Systems cards and turn each frame into a button. Clicking opens information in a centered modal over a darkened page, with room for photos and videos. Do not revert the approved layout or change Groups scrolling, the car, lighting, hover, portal camera or antialiasing.
+Updated 22 October 2026, R32. See [the supplied content and visual-change record](PROJECT-CONTENT-R32.md). R30 introduced the dialog; R31 preserved background scroll; R32 supplies the first real project galleries.
 
-## Implementation
-A full-card native button is added to each existing article, preserving the original layout/list semantics. One lazy HTML dialog lives outside the cached destination root. Its top-layer backdrop darkens and blocks the rest of the page. Opening rises gently; reduced-motion disables that animation. The close button, backdrop and Escape restore focus/scroll. Escape is intercepted only while the dialog owns it, including held-key repeats, so it cannot trigger the underlying showroom return. History navigation, root replacement and disposal release the dialog.
+## Interaction contract
+Keep the approved Games/Addons/Systems cards and showroom. A full-card native button opens one centered HTML dialog with a dark top-layer backdrop. The dialog lives outside the cached destination root and is created only when needed. Opening and closing use bounded CSS transitions; reduced-motion disables them. X, Escape or a genuine backdrop click closes it, restores focus and retains the page position. Held Escape must not trigger a showroom return after closing the dialog. History navigation, route replacement and disposal clean up the modal.
 
-The root is temporarily inert and the existing DestinationExperience sleeps while the dialog is open. No new WebGL context, renderer, library, perpetual animation loop or asset warmup is added. Media is mounted only when selected. Native videos use controls/playsinline/preload=none without autoplay and stop/release their source on selection change or close. Images have alt text, captions and a readable error state; gallery controls support keyboard navigation.
+The current R31 scroll contract remains: leave HTML overflow untouched, lock the body, preserve original inline styles and only call scrollTo on dismissal if genuine scroll drift occurred. Do not reintroduce unconditional scrolling or change the underlying route.
 
-## Content is intentionally not fabricated
-All seven names, categories and platforms come from `src/pages/destination-data.js`. No project-specific descriptions, photos or videos were supplied for these upcoming titles. Existing Berserk Drift X screenshots are NOT evidence for BERSERK DRIFT: RALLY, and are not reused. Production displays an honest preview-coming-soon state until the owner provides the actual material. Test media is not published.
+The destination root is temporarily inert and its existing renderer sleeps while covered. No new WebGL context, renderer or persistent frame loop is created. Gallery media is mounted only when selected. Videos use native controls, playsinline and preload=none, never autoplay, and release their source when switched or closed. Images preserve their aspect ratio with object-fit:contain, and have alt text, captions and an error state. Gallery controls support keyboard navigation.
 
-Edit `PROJECT_DETAILS` in `src/pages/future-project-details.js`. Keys follow the unchanged catalogue positions: `0-0` Rally, `0-1` Unnamed Drift Game, `0-2` Right Cut!, `1-0` Tiremark Generator, `1-1` Vegetation Placer, `2-0` Drift Judge, `2-1` FFB. Each record accepts `description: ['paragraph', ...]` and `media: [{type:'image',src:'/assets/projects/example.webp',alt:'Owner-provided description',caption:'Caption'}, {type:'video',src:'/assets/projects/demo.mp4',poster:'/assets/projects/poster.webp',alt:'Demo'}]`. These paths are examples, NOT shipped files. Add every supplied local asset to `RUNTIME_FILES` in `tools/build.mjs`; its explicit allowlist does not automatically publish new folders. HTTPS media is supported but should be reviewed for permissions/third-party requests. No arbitrary embeds, iframe trackers, release claims or invented features.
+## Current content and provenance
+There are six published entries after the owner requested temporary removal of BERSERK DRIFT: RALLY.
+- Unnamed Drift Game: three supplied development screenshots, an English description of planned scope/mod support, collaborators DXT and Xablow.
+- Right Cut!: three supplied cover/gameplay images, an English description, collaborators DXT and OhTaldoPedro, and the explicit notice that the systems and images are not final.
+- Procedural Tiremark Generator, Procedural Vegetation Placer, Drift Judge Score System and FFB System retain their existing empty detail/media state. Their videos have not been supplied.
 
-## Evidence and limits
-Four new Node tests first failed because the feature was missing, then passed. An isolated offline Chromium page loaded the actual controller/data/styles and passed 37 behavioral checks: all seven cards, top-layer modality, dark backdrop, focus, Tab/Enter/Escape, restored scroll/styles, 390/320px layout, image display, native video playback and release, missing-media fallback, gallery keys, reduced motion, history and lifecycle cleanup. No JavaScript exceptions. The fixture uses authentic catalogue metadata, not the whole WebGL showroom; it does not measure visitor hardware FPS. Full-project build/test results are separately enforced by the Vercel preview before production.
+Do not substitute Berserk Drift X screenshots for another title, invent videos or change plans into release promises. The original screenshots retain their embedded UI language; only website descriptions, captions, alt text, notices and credits are translated.
 
-Scope review: no new account/form/payment/cookie/tracking flow; no fabricated publicity or third-party imagery. Native media descriptions and focus controls are implemented. Modal text colors were checked against their dark backgrounds; small footer text was brightened. This is a technical feature review, not a claim of legal or whole-site WCAG certification.
+## Editing project details
+`PROJECT_DETAILS` in `src/pages/future-project-details.js` is keyed by the exact project name in `FUTURE_PROJECTS`, not by the current grid position. This avoids reassigning media when a catalogue item is removed or reordered. The dialog still receives `categoryIndex-itemIndex` and resolves the real project before reading details.
 
-Native dialog reference: https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement/showModal
+Each record accepts `description: ['paragraph', ...]`, `collaborators: ['name', ...]`, an optional `disclaimer`, and `media: [{type:'image',src:'/assets/projects/example.webp',alt:'Accurate description',caption:'Caption'}, {type:'video',src:'/assets/projects/demo.mp4',poster:'/assets/projects/poster.webp',alt:'Demo'}]`. These example paths are not supplied assets. Add every actual local file to `RUNTIME_FILES` in `tools/build.mjs`; merely adding a folder does not publish it. Only approved local/HTTPS images and videos are supported, not arbitrary embeds or tracking iframes.
+
+## Verification
+Run `npm run build` for the complete Node test suite and publication-graph checks. New R32 regressions verify six catalogue identities, translated content, collaborators, correct image associations and file hashes, bounded camera sway and removal of only the decorative line. `tests/project-content-r32-browser.cjs` tests the actual app, image decoding/dimensions, lazy loading, deep-scroll modal open/close, unchanged addon/system placeholders, desktop and 320/390px layouts. Wait for decode/presentation before screenshots; naturalWidth alone is not proof that an asynchronous image has painted.
+
+The browser fixture uses software WebGL and does not establish visitor-hardware FPS or whole-site accessibility/legal certification. Native dialog reference: https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement/showModal
