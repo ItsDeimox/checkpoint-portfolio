@@ -5,7 +5,7 @@ const {spawn}=require('node:child_process');
 const out=path.resolve(process.env.DXT_QA_OUT||'docs/r32-qa');
 fs.mkdirSync(out,{recursive:true});
 const report={checks:[],errors:[],screenshots:[],environment:'Chromium headless, software WebGL; functional and layout checks, not a hardware FPS benchmark'};
-function check(name,pass,detail){report.checks.push({name,pass:Boolean(pass),detail});if(!pass)throw Error(name+' '+JSON.stringify(detail));}
+function check(name,pass,detail){report.checks.push({name,pass:Boolean(pass),detail:detail===undefined?undefined:structuredClone(detail)});if(!pass)throw Error(name+' '+JSON.stringify(detail));}
 const server=spawn(process.execPath,['tools/server.mjs','--port','5186'],{stdio:'inherit'});
 let browser,page;
 (async()=>{
@@ -26,7 +26,16 @@ let browser,page;
  check('gallery images are lazy and not downloaded before opening a project',galleryRequests.length===0,galleryRequests);
  check('decorative line is gone while overhead light remains',await page.evaluate(()=>{const stage=document.querySelector('.future-car-stage'),pseudo=getComputedStyle(stage,'::before');return ['none','normal',''].includes(pseudo.content)&&getComputedStyle(document.querySelector('.future-car-light')).backgroundImage.includes('conic-gradient');}));
  async function shot(name){await page.screenshot({path:path.join(out,name),type:'jpeg',quality:82});report.screenshots.push(name);}
- async function readyImage(){await page.waitForFunction(()=>{const i=document.querySelector('[data-project-stage] img');return i&&i.complete&&i.naturalWidth>0;});return page.locator('[data-project-stage] img').evaluate(i=>({src:new URL(i.src).pathname,w:i.naturalWidth,h:i.naturalHeight,fit:getComputedStyle(i).objectFit}));}
+ async function readyImage(){
+  await page.waitForFunction(()=>{const i=document.querySelector('[data-project-stage] img');return i&&i.complete&&i.naturalWidth>0;});
+  return page.locator('[data-project-stage] img').evaluate(async i=>{
+   // Natural dimensions can be known before an async-decoding image has been
+   // painted. Visual evidence must wait for decode and presentation, not just load.
+   await i.decode();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+   const box=i.getBoundingClientRect();
+   return {src:new URL(i.src).pathname,w:i.naturalWidth,h:i.naturalHeight,fit:getComputedStyle(i).objectFit,paintWidth:box.width,paintHeight:box.height};
+  });
+ }
  const cases=[
   {name:'Right Cut!',credit:'OhTaldoPedro',paths:['right-cut/cover.webp','right-cut/precision-cut.webp','right-cut/fruit-mode.webp'],dimensions:[[1254,1254],[1781,786],[1672,785]],shot:'right-cut-desktop.jpg'},
   {name:'Unnamed Drift Game',credit:'Xablow',paths:['unnamed-drift/car-selection.webp','unnamed-drift/drift-gameplay.webp','unnamed-drift/drift-transition.webp'],dimensions:[[1915,1070],[1914,1071],[1880,1027]],shot:'unnamed-drift-desktop.jpg'}
@@ -45,7 +54,7 @@ let browser,page;
   for(let i=0;i<3;i++){
    await page.locator('[data-project-media="'+i+'"]').click();
    const media=await readyImage();
-   check(item.name+' photo '+(i+1)+' uses the supplied asset at its original resolution',media.src==='/assets/projects/'+item.paths[i]&&media.w===item.dimensions[i][0]&&media.h===item.dimensions[i][1]&&media.fit==='contain',media);
+   check(item.name+' photo '+(i+1)+' uses the supplied asset at its original resolution',media.src==='/assets/projects/'+item.paths[i]&&media.w===item.dimensions[i][0]&&media.h===item.dimensions[i][1]&&media.fit==='contain'&&media.paintWidth>100&&media.paintHeight>100,media);
   }
   await page.locator('[data-project-media="0"]').click();await readyImage();await shot(item.shot);
   await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('#future-project-dialog')?.open);
