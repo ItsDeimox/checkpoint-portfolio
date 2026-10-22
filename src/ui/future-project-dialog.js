@@ -122,7 +122,10 @@ export class FutureProjectDialog {
   };
   const gutter=Math.max(0,this.window.innerWidth-html.clientWidth);
   if(gutter) set(body,'padding-right',`${parseFloat(this.window.getComputedStyle(body).paddingRight||'0')+gutter}px`);
-  set(html,'overflow','hidden'); set(body,'overflow','hidden');
+  // The page already uses body.section-active for its viewport overflow.
+  // Changing HTML overflow as well can replace/reset the scrolling root and
+  // visibly jump the background to the top behind the dialog.
+  set(body,'overflow','hidden');
   this.root.inert=true; body.classList.add('project-dialog-open');
   dialog.classList.remove('is-closing'); dialog.innerHTML=projectDialogContent(this.active);
   try {dialog.showModal();} catch {this.finishClose(false);return false;}
@@ -186,7 +189,8 @@ export class FutureProjectDialog {
   }
   this.document.body.classList.remove('project-dialog-open');
   if(restoreFocus && this.opener?.isConnected && !this.root.hidden) {
-   if(saved) this.window.scrollTo(saved.x,saved.y);
+   if(saved && (Math.abs(this.window.scrollX-saved.x)>1 || Math.abs(this.window.scrollY-saved.y)>1))
+    this.window.scrollTo(saved.x,saved.y);
    this.opener.focus({preventScroll:true});
   }
   this.opener=null; this.onClose?.();
