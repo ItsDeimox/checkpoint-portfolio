@@ -6,7 +6,7 @@ import {createHash} from 'node:crypto';
 import {build} from 'esbuild';
 
 const PROJECT_ROOT = fileURLToPath(new URL('..', import.meta.url));
-export const BUILD_VERSION = 'dxt-showroom-r26-native-portal';
+export const BUILD_VERSION = 'dxt-showroom-r30-project-dialog';
 export const ROOM_ALIASES = Object.freeze(['groups', 'projects', 'about', 'contact', 'berserk']);
 
 // Keep archived source/assets in the repository. Only the persistent room's
@@ -17,6 +17,9 @@ export const RUNTIME_FILES = Object.freeze([
   'src/pages/section-pages.js',
   'src/pages/berserk-media.js',
   'src/ui/section-media.js',
+  'src/ui/future-project-dialog.js',
+  'src/pages/future-project-details.js',
+  'src/styles-project-dialog.css',
   'src/ui/destination-experience.js',
   'src/ui/energy-network.js',
   'src/ui/cube-energy.js',
