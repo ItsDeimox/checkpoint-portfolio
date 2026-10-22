@@ -1,0 +1,27 @@
+name: Validate DXRKTHS R32 in Chromium
+on:
+  push:
+    branches: [dxrkths-r32-qa]
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Build and test the complete site
+        working-directory: dxrkths
+        run: npm ci && npm run build
+      - name: Install isolated browser test dependency
+        working-directory: dxrkths
+        run: npm install --no-save --package-lock=false playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: Check actual project dialogs and supplied galleries
+        working-directory: dxrkths
+        run: node tests/project-content-r32-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dxrkths-r32-browser-evidence
+          path: dxrkths/docs/r32-qa/
+          retention-days: 7

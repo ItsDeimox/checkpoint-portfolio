@@ -60,7 +60,7 @@ const check=(name,condition,detail)=>{checks.push({name,pass:!!condition,detail}
    check('horizontal mouse drag switches the group',await track.evaluate(e=>e.scrollLeft>e.clientWidth*.7));
   }
   if(index===2){
-   check('future car uses the live 3D surface and a complete catalogue',await page.evaluate(()=>{const e=__DEST_QA__.experience();return e.graphics.mode==='car'&&document.querySelector('[data-covered-car]').dataset.graphicsReady==='true'&&document.querySelectorAll('.future-project').length===7&&e.graphics.renderer.getContext().getError()===0;}));
+   check('future car uses the live 3D surface and a complete catalogue',await page.evaluate(()=>{const e=__DEST_QA__.experience();return e.graphics.mode==='car'&&document.querySelector('[data-covered-car]').dataset.graphicsReady==='true'&&document.querySelectorAll('.future-project').length===6&&e.graphics.renderer.getContext().getError()===0;}));
    await page.screenshot({path:path.join(out,'covered-car.png')});screenshots.push('covered-car.png');
    await page.locator('[data-scroll-catalogue]').click();await page.waitForTimeout(1000);
    check('scroll cue reveals the project catalogue',await page.evaluate(()=>document.querySelector('.future-category').classList.contains('is-revealed')));

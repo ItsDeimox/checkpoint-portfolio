@@ -366,7 +366,6 @@ body[data-page="home"] .room-step.is-active span{background:rgb(var(--showroom-a
 .section-future #section-title{font-size:clamp(70px,8vw,120px);max-width:520px}
 .future-car-stage{position:relative;isolation:isolate;height:clamp(340px,39vw,560px);min-width:0;overflow:hidden;background:radial-gradient(ellipse at 50% 80%,#a66bff0b,transparent 62%)}
 .future-car-light{position:absolute;top:0;left:5%;right:5%;height:100%;pointer-events:none;background:conic-gradient(from 151deg at 50% 0%,transparent 0deg,#ded0ff06 15deg,#e6dcff0d 28deg,#d2baff05 39deg,transparent 57deg);mask-image:linear-gradient(#000b,transparent 86%)}
-.future-car-stage::before{content:'';position:absolute;top:12px;left:42%;width:16%;height:2px;background:#e2d9ee80;box-shadow:0 0 30px 5px #d6c8ff20}
 .future-car-render{position:absolute;inset:0;z-index:1}
 .covered-car-fallback{position:absolute;inset:6% -4% 0;width:108%;height:90%;opacity:1}
 .future-car-stage[data-graphics-ready="true"] .covered-car-fallback{visibility:hidden}
