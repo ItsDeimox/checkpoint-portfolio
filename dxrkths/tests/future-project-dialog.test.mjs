@@ -8,7 +8,7 @@ test('all seven existing projects have individual detail records without fabrica
  const projects=['0-0','0-1','0-2','1-0','1-1','2-0','2-1'].map(data.getFutureProject);
  assert.deepEqual(projects.map(p=>p.name),['BERSERK DRIFT: RALLY','Unnamed Drift Game','Right Cut!','Procedural Tiremark Generator','Procedural Vegetation Placer','Drift Judge Score System','FFB System']);
  assert.deepEqual(projects.map(p=>p.platform),['Roblox','Steam','Roblox','Blender','Blender','Roblox','Roblox']);
- assert.ok(projects.every(p=>p.media.length===0),'Berserk Drift X footage must never be presented as Rally');
+ assert.ok(projects.every(p=>!p.media.some(item=>/\/berserk\/game-|\/test-only\//.test(item.src))),'Unrelated or test-only media must never be presented as an upcoming project');
  assert.equal(data.getFutureProject('__proto__'),null);
  assert.equal(data.getFutureProject('0-99'),null);
 });

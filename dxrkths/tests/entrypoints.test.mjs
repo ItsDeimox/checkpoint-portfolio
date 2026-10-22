@@ -10,10 +10,10 @@ import {BUILD_VERSION, ROOM_ALIASES, RUNTIME_FILES, buildSite, validateRuntimeGr
 const root = fileURLToPath(new URL('..', import.meta.url));
 const read = filename => fs.readFile(path.join(root, filename), 'utf8');
 
-test('HTML starts the persistent room with its showroom and intro stylesheets and local fonts', async () => {
+test('HTML starts the persistent room with its showroom, intro, dialog stylesheets and local fonts', async () => {
   const html = await read('index.html');
   const sheets = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(sheets, ['/src/styles-base.css', '/src/styles-room.css', '/src/styles-experience.css', '/src/styles-sections.css']);
+  assert.deepEqual(sheets, ['/src/styles-base.css', '/src/styles-room.css', '/src/styles-experience.css', '/src/styles-sections.css', '/src/styles-project-dialog.css']);
   assert.deepEqual([...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map(match => match[1]), ['/src/main.js']);
   assert.match(html, /<body data-page="home" class="intro-pending">/);
   assert.match(html, /class="skip-link" href="#main"/);
@@ -63,7 +63,7 @@ test('published tree contains the complete room, exact aliases and no archived r
     const info = await buildSite({output});
     const expected = [...RUNTIME_FILES, ...ROOM_ALIASES.map(route => `${route}/index.html`), '404.html', 'robots.txt', 'sitemap.xml'].sort();
     assert.deepEqual(Object.keys(info.files).sort(), expected);
-    assert.equal(info.version, 'dxt-showroom-r26-native-portal');
+    assert.equal(info.version, 'dxt-showroom-r30-project-dialog');
     assert.equal(info.version, BUILD_VERSION);
     const entry = await fs.readFile(path.join(output, 'index.html'));
     for (const route of ROOM_ALIASES) {
@@ -71,6 +71,10 @@ test('published tree contains the complete room, exact aliases and no archived r
     }
     assert.deepEqual(await validateRuntimeGraph(output), info.runtimeImports);
     assert.ok(info.runtimeImports.includes('src/render/showroom.bundle.js'));
+    for (const filename of ['src/ui/future-project-dialog.js', 'src/pages/future-project-details.js']) {
+      assert.ok(info.runtimeImports.includes(filename), `Missing dialog module ${filename}`);
+    }
+    assert.equal(info.files['src/styles-project-dialog.css'], createHash('sha256').update(await fs.readFile(path.join(root, 'src/styles-project-dialog.css'))).digest('hex'));
     for (const filename of ['src/pages/templates.js', 'src/pages/home-reference.js', 'src/scene/showroom.js', 'src/render/logo.js', 'src/ui/profile.js', 'src/styles.css', 'src/styles-reference.css', 'assets/models/nissan-s15-lbwk.glb', 'assets/environment/sunset-forest.hdr']) {
       await assert.rejects(fs.access(path.join(output, filename)), {code: 'ENOENT'}, filename);
     }
