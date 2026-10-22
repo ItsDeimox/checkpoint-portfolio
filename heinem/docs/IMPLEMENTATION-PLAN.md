@@ -13,7 +13,7 @@
 - [x] Implement passive native-scroll depth transforms, graphics preference and lifecycle cleanup in `src/lib/quality.ts`, `src/lib/parallax.ts` and `src/main.ts`.
 - [x] Implement a real SoundCloud disc player in `src/lib/player.ts`; playback state must come from provider events and include a useful external fallback.
 - [x] Verify desktop/mobile layouts, persisted graphics, no-WebGL, reduced motion, first interaction, player failure and keyboard navigation; record limitations honestly.
-- [ ] Publish the site and source, MIT license, changelog, security and architecture notes. Add reusable lessons to Cortex (PT/EN) and Checkpoint Portfolio.
+- [x] Publish the site and source, MIT license, changelog, security and architecture notes. Add reusable lessons to Cortex (PT/EN) and Checkpoint Portfolio.
 
 ## Review focus
 

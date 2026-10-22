@@ -1,6 +1,6 @@
 # HEINEM
 
-A sunlit artist website with a layered meadow, an interactive iridescent soap-film surface, and a compact disc that controls real HEINEM releases.
+A sunlit artist website with a layered meadow, an interactive iridescent soap-film surface, and a compact-disc interface connected to verified HEINEM releases through the official SoundCloud player.
 
 **Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.0.0 · **Software:** MIT
 
@@ -17,11 +17,12 @@ npm run dev
 ```
 
 ```bash
-npm run typecheck
-npm test
+npm run check
 npm run build
 npm run preview
 ```
+
+`npm run build` includes the TypeScript check and all nine graphics-policy tests, so a failure stops the Vercel build before assets are generated.
 
 Browser checks use Playwright. Install its Chromium once with `npx playwright install chromium`, then run `npm run test:e2e`. A preinstalled compatible browser may be supplied through `CHROMIUM_PATH`. `PLAYWRIGHT_BASE_URL` can point the same tests at a deployment.
 
@@ -36,6 +37,8 @@ Browser checks use Playwright. Install its Chromium once with `npx playwright in
 - Mobile composition, accessible native controls, local fonts, SEO metadata and restrictive response headers.
 
 No audio is downloaded or re-hosted. The SoundCloud SDK and iframe load after a user gesture; the disc rotates only after the provider confirms playback. A provider restriction, ad, blocked network or additional browser gesture requirement cannot be bypassed by the site. The official player and track link remain available.
+
+**Playback verification limit:** the real provider initialized and returned track metadata, but paused at 0:00 in the test browser, including after a direct click in its official player. Continuous audio was not confirmed. The site handles that state explicitly; the passing automated media checks use simulated provider events. See [the full validation record](docs/VALIDATION.md#real-soundcloud-check-and-its-limit).
 
 ## Content editing
 
@@ -55,7 +58,7 @@ The artist's age is reproduced from the supplied design, not calculated from an 
 
 Vercel project: **heinem**, in the existing ItsDeimox team. Git repository: **ItsDeimox/checkpoint-portfolio**, production branch **main**, root directory **heinem**, Node **24.x**, framework **Vite**, install **npm ci**, build **npm run build**, output **dist**. The only intended public project alias is `heinem.vercel.app`.
 
-The production deployment must be verified before describing it as live. Detailed evidence belongs in [VALIDATION.md](docs/VALIDATION.md). Code changes use conventional commit messages and the version/changelog in this folder; a package version is not a claim that a GitHub Release or Git tag exists.
+Production was verified on **2026-10-22 UTC**: public HTTPS returned **200**, Vercel reported **READY**, and all **11 browser checks passed against the live URL**. The source commit, deployment ID, headers, bundle sizes and practical limits are recorded in [VALIDATION.md](docs/VALIDATION.md). Code changes use conventional commit messages and the version/changelog in this folder; a package version is not a claim that a GitHub Release or Git tag exists.
 
 ## Technical documentation
 
@@ -67,6 +70,7 @@ The production deployment must be verified before describing it as live. Detaile
 - [Artist source manifest](docs/artist-sources.json)
 - [Security](SECURITY.md)
 - [Changelog](CHANGELOG.md)
+- Reusable Cortex guidance: [Português](https://github.com/ItsDeimox/Deimox-Cortex/blob/main/Programming/Web3D/Layered-Artist-Sites.md) · [English](https://github.com/ItsDeimox/Deimox-Cortex/blob/main/EN/Programming/Web3D/Layered-Artist-Sites.md)
 
 ## License
 

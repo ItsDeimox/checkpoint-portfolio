@@ -11,6 +11,7 @@
 - Interactive CD with verified SoundCloud tracks, actual playback events, seeking, volume, retries and official player fallback.
 - Responsive music/about/contact sections, verified external profiles, local Poppins fonts and keyboard support.
 - MIT software license, source provenance, architecture/security documentation, quality tests and production configuration.
+- Build gate runs TypeScript and all graphics-policy tests before creating production assets.
 
 ### Validation fixes
 
@@ -18,7 +19,6 @@
 - Corrected `object-fit: cover` texture coordinates on mobile.
 - Matched the shader to separately moving sky and landscape layers.
 - Added optical softness and wider local highlights after inspecting real rendered output.
-
 - Fixed foreground overscan and removed duplicated butterflies from the preserved background.
 - Increased mobile bio readability, contrast and control hit areas.
 - Delegated `encrypted-media` to the official SoundCloud frame and added a useful message for playback that stops before audio starts.
