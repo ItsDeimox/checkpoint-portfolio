@@ -73,7 +73,14 @@ async function swipe(x,y,dx,dy){const cdp=await page.context().newCDPSession(pag
   if(index===2){
    const count=await page.locator('[data-project-open]').count();check('all six project buttons remain',count===6);
    for(let i=0;i<count;i++){
-    const l=page.locator('[data-project-open]').nth(i);await target(l,'project '+i);const y=await page.evaluate(()=>scrollY);await l.tap();await page.waitForTimeout(300);check('project '+i+' opens without page jump',await page.locator('#future-project-dialog').evaluate(e=>e.open)&&Math.abs(await page.evaluate(()=>scrollY)-y)<2);
+    const l=page.locator('[data-project-open]').nth(i);await target(l,'project '+i);const y=await page.evaluate(()=>scrollY),rect=await l.boundingBox();
+    // A real finger taps the already-validated visible target. Locator.tap's
+    // automatic scrollIntoView can itself reposition the document before the
+    // click handler, which would incorrectly blame the modal's scroll lock.
+    await page.touchscreen.tap(rect.x+rect.width/2,rect.y+rect.height/2);
+    await page.waitForTimeout(300);
+    const modalState=await page.locator('#future-project-dialog').evaluate(e=>({open:e.open,y:scrollY}));
+    check('project '+i+' opens without page jump',modalState.open&&Math.abs(modalState.y-y)<2,{before:y,after:modalState.y,open:modalState.open});
     await target(page.locator('[data-project-close]'),'project '+i+' close');
     if(i<2){for(const delta of ['1','-1']){const arrow=page.locator('[data-project-step="'+delta+'"]');await target(arrow,'project '+i+' image arrow '+delta);await arrow.tap();await imageReady();}}
     await page.locator('[data-project-close]').tap();await page.waitForFunction(()=>!document.querySelector('#future-project-dialog').open);check('project '+i+' restores scroll',Math.abs(await page.evaluate(()=>scrollY)-y)<2);
