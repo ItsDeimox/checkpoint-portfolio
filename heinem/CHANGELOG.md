@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.3 — 2026-10-23 (São Paulo)
+
+### Changed
+- Rebalanced scenic color against the supplied 1920×1080 Frutiger Aero image. The reference retains luminous sunlit grass and dark cool shadows: it is not uniformly grey or low-contrast.
+- Restored photographic contrast and some chroma after v1.4.2 overcorrected with ~0.56/0.63 saturation and contrast below 1. New profiles: sky (0.86 sat, 1.035 contrast), foliage (0.74 sat, 1.02 contrast), continuous foreground (0.79 sat, 1.025 contrast). Brightness is now near 1.
+- Preserved muted blue-green direction and a matching sky/foliage grade in existing single-pass WebGL refraction, no additional texture upload or post-processing.
+- Preserved portrait, CD carousel, bubble elasticity, field assets and social-links.
+
+### Verification
+- Updated browser regressions to reject overly flat contrast/desaturation, while retaining an unfiltered portrait and a single continuous foreground.
+
+
 ## 1.4.2 — 2026-10-23 (São Paulo)
 
 ### Changed

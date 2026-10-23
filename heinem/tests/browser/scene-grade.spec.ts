@@ -34,14 +34,18 @@ test('cooler grading touches scenery only and keeps the continuous foreground', 
   }
   const amount = (filter: string, name: string) =>
     Number(filter.split(name + '(')[1]?.split(')')[0]);
+  // The reference retains bright sunlit greens alongside deep cool shadows.
+  // Avoid the flat lower-contrast/lower-chroma look of v1.4.2.
   for (const key of ['distant', 'mid', 'tree', 'field'] as const) {
-    expect(amount(filters[key], 'saturate')).toBeLessThanOrEqual(.65);
-    expect(amount(filters[key], 'contrast')).toBeLessThan(1);
+    expect(amount(filters[key], 'saturate')).toBeGreaterThanOrEqual(.72);
+    expect(amount(filters[key], 'saturate')).toBeLessThanOrEqual(.82);
+    expect(amount(filters[key], 'contrast')).toBeGreaterThanOrEqual(1.0);
+    expect(amount(filters[key], 'contrast')).toBeLessThan(1.045);
   }
-  expect(amount(filters.sky, 'saturate')).toBeLessThanOrEqual(.65);
-  expect(amount(filters.sky, 'contrast')).toBeLessThan(1);
+  expect(amount(filters.sky, 'saturate')).toBeGreaterThanOrEqual(.80);
+  expect(amount(filters.sky, 'contrast')).toBeGreaterThanOrEqual(1.0);
   expect(filters.portrait).toBe('none');
   expect(filters.bubble).toBe('none');
   expect(filters.fields).toBe(1);
-  expect(filters.background).toBe('rgb(69, 90, 86)');
+  expect(filters.background).toBe('rgb(65, 93, 80)');
 });

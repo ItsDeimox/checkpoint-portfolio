@@ -108,18 +108,18 @@ vec3 gradeGarden(vec3 rgb, float chroma, float exposure, float contrastValue, ve
 
 vec3 sceneSample(vec2 uv, vec2 displacement, float lod) {
   vec4 base = layerSample(uBackdrop0, uBackdropMaps[0], uv, displacement, lod);
-  vec3 color = gradeGarden(base.rgb, 0.64, 0.94, 0.94, vec3(0.98, 1.0, 1.025));
+  vec3 color = gradeGarden(base.rgb, 0.86, 0.98, 1.035, vec3(0.995, 1.0, 1.008));
   if (uBackdropCount > 1) {
     vec4 next = layerSample(uBackdrop1, uBackdropMaps[1], uv, displacement, lod);
-    color = mix(color, gradeGarden(next.rgb, 0.56, 0.92, 0.92, vec3(0.96, 1.005, 1.04)), next.a);
+    color = mix(color, gradeGarden(next.rgb, 0.74, 0.99, 1.02, vec3(0.98, 1.002, 1.015)), next.a);
   }
   if (uBackdropCount > 2) {
     vec4 next = layerSample(uBackdrop2, uBackdropMaps[2], uv, displacement, lod);
-    color = mix(color, gradeGarden(next.rgb, 0.56, 0.92, 0.92, vec3(0.96, 1.005, 1.04)), next.a);
+    color = mix(color, gradeGarden(next.rgb, 0.74, 0.99, 1.02, vec3(0.98, 1.002, 1.015)), next.a);
   }
   if (uBackdropCount > 3) {
     vec4 next = layerSample(uBackdrop3, uBackdropMaps[3], uv, displacement, lod);
-    color = mix(color, gradeGarden(next.rgb, 0.56, 0.92, 0.92, vec3(0.96, 1.005, 1.04)), next.a);
+    color = mix(color, gradeGarden(next.rgb, 0.74, 0.99, 1.02, vec3(0.98, 1.002, 1.015)), next.a);
   }
   return color;
 }
