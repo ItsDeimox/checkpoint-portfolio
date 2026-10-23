@@ -68,7 +68,15 @@ The **seven-layer image payload is 1,581,358 bytes**. This figure excludes cover
 
 ## Published revision
 
-Production confirmation is recorded here after the verified source is deployed to the existing `heinem` project and `heinem.vercel.app` alias. Local evidence above does not claim that an as-yet-unverified remote deployment has passed.
+Application source [`502288c32a9b91c49f38e13cc9a537db955dc0bd`](https://github.com/ItsDeimox/checkpoint-portfolio/commit/502288c32a9b91c49f38e13cc9a537db955dc0bd) was deployed through the existing Git integration. Vercel deployment **`dpl_9CHrNBtfXToMPuDL8bbQh4dCTmNY`** reported **READY**, with that exact Git SHA and the production alias [heinem.vercel.app](https://heinem.vercel.app).
+
+The final **18/18 browser tests passed against the public alias in 57.4 s**. This includes the added 600 × 1600 continuous-field regression, GPU typography/underline work counts, context recovery, graphic preferences, CD insertion/exchange/ejection and pivot, responsive hit targets, reduced motion, and simulated provider failures and playback events.
+
+Independent `curl` requests with normal TLS verification returned **HTTP 200 for all 23 files in `dist`**. Every response matched its local build artifact byte for byte, including the HTML, bundled JavaScript/CSS, all seven layers, covers, CD, fonts and metadata assets. [Machine-readable artifact evidence](evidence/release-1.2.json) records their SHA-256 digests and the tested deployment.
+
+The disposable Playwright browser used `PLAYWRIGHT_IGNORE_TLS=1` for the environment's missing proxy CA, as documented in its configuration. The independent HTTP/artifact comparison used the system trust store and **no TLS bypass**. This test-only setting is not part of the site. The browser run proves behavior under Chromium/ANGLE/SwiftShader; it does not remove the physical-hardware and real-audio limits below.
+
+Publication preserved concurrent `dxrkths/` work in the shared repository. The remote `heinem` tree was verified identical to the locally tested Git tree before updating `main`. This evidence-only follow-up changes documentation, not the verified application resources.
 
 ## Visual evidence
 

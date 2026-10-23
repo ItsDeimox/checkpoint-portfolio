@@ -1,0 +1,237 @@
+{
+  "url": "https://heinem.vercel.app",
+  "tls_verification": "curl default verification; no bypass",
+  "checks": [
+    {
+      "path": "assets/index-BUeKTwlZ.js",
+      "status": "200",
+      "bytes": 42192,
+      "sha256": "6ec390cad6b5d9156451ac76c59edf7f7d7838b83220be02ac59c643b3174cd9",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/index-Dh_4q4nR.css",
+      "status": "200",
+      "bytes": 21788,
+      "sha256": "577297f478072ed705d92ecfd7455f541f922917384a13623b122e39c7f37ba4",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/layers/artist.webp",
+      "status": "200",
+      "bytes": 89976,
+      "sha256": "04dbcd3fb606176205ff584d5dc96d27c515a785ef1ba7dc69aef6c01b207e42",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/layers/butterfly.webp",
+      "status": "200",
+      "bytes": 18360,
+      "sha256": "3927950f452e00c2dd5cea890e40e2b99b2289de355138b88d5aa34e22395051",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/layers/field-continuous.webp",
+      "status": "200",
+      "bytes": 414856,
+      "sha256": "58a4260303147f11e4fe9b7b77be904bbc507254ea75235501a0af2550478055",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/layers/foliage-far.webp",
+      "status": "200",
+      "bytes": 268748,
+      "sha256": "f2ef05f8c6c3ac20761bcdcfa942b47552b036342814ac0707ca18d94c55e832",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/layers/foliage-mid.webp",
+      "status": "200",
+      "bytes": 442644,
+      "sha256": "cadb35e4be07c760f0d8ce95b064fb69ac6ac7667d5e70d9c496e83405f6b0d8",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/layers/sky.webp",
+      "status": "200",
+      "bytes": 103860,
+      "sha256": "ef8ba277f0d719f6b5f3a1751c27cf885c4570454f30bbf1721fdefd059dafb3",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/layers/tree-left.webp",
+      "status": "200",
+      "bytes": 242914,
+      "sha256": "ae6d32ea004114bc5cecf387af041195e14f3ba37c03fa8e317c1a73aa676dc4",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/memories-of-you.jpg",
+      "status": "200",
+      "bytes": 86587,
+      "sha256": "f5e73a5fd697322d0328d757864850a4f47fc4b55b2ff2246b0e8ef5f68d6c7b",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/mha-50k-drop.jpg",
+      "status": "200",
+      "bytes": 67426,
+      "sha256": "614651dcf9e105635cf548c9b8c1544083a8d41b19e44f940dc6ea909ef22af8",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/poppins-OFL.txt",
+      "status": "200",
+      "bytes": 4385,
+      "sha256": "6be04893d770899a015649c7aa3b582f871b272f8747a92b78b17c3e5c8b2573",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/poppins-bold.woff2",
+      "status": "200",
+      "bytes": 7816,
+      "sha256": "9338e65fc077355c7a87ae0d64cc101e23b9bf8ad78ae65f0f319c857311b526",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/poppins-light.woff2",
+      "status": "200",
+      "bytes": 7840,
+      "sha256": "78bc3aa78faec288bbb3bf26c9a0fa4eb67b1e69da94a17233c5cab60525efdb",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/poppins-medium.woff2",
+      "status": "200",
+      "bytes": 7748,
+      "sha256": "cd36de204aca2d5fa263a731f7c20009b5e3d754ba1f1e03c33e93a48f3e7446",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/poppins-regular.woff2",
+      "status": "200",
+      "bytes": 7884,
+      "sha256": "7d93459d86585bfcdbb7e0376056226adb25821ee54b96236fe2123e9560929f",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/show-me-love.jpg",
+      "status": "200",
+      "bytes": 198803,
+      "sha256": "73232a48f48aaf69bffe39fd726671f66dddf83a191114b90635dcc682d5d0a8",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/silver-disc.webp",
+      "status": "200",
+      "bytes": 152362,
+      "sha256": "132d8151b7382b11378d365064ea122dd1232c49639ceeab622991ac70cdc436",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "assets/social-preview.jpg",
+      "status": "200",
+      "bytes": 189802,
+      "sha256": "f7f25289ff7aacec872accc65740eef03eb906fe2b769b744cffbbff089b154b",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "favicon.svg",
+      "status": "200",
+      "bytes": 278,
+      "sha256": "f0a600ed27ff30971670ba080cda6b7b6f6ba8a716b8bdfb4ee59792fd0460d2",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "index.html",
+      "status": "200",
+      "bytes": 16997,
+      "sha256": "873bd731acb5791433685cfa1dacfeb157f454256fe0ff281cfffed8cda53fa9",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "robots.txt",
+      "status": "200",
+      "bytes": 71,
+      "sha256": "8527d8635e466c90bcd06667aa5ff62045abc2afc3ac1d3e6ad32d154b5c3782",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    },
+    {
+      "path": "sitemap.xml",
+      "status": "200",
+      "bytes": 186,
+      "sha256": "f025002a1e924e624d1b9222462a64eedd7b769577b4859006ca7d57cc2c12cf",
+      "identical": true,
+      "curl_exit": 0,
+      "error": null
+    }
+  ],
+  "all_passed": true,
+  "version": "1.2.0",
+  "verified_at_utc": "2026-10-23T01:22:02.983955+00:00",
+  "application_source_commit": "502288c32a9b91c49f38e13cc9a537db955dc0bd",
+  "application_git_tree": "f52ad3df3be0cc23ce6a3469b4929dbca322faf6",
+  "deployment_id": "dpl_9CHrNBtfXToMPuDL8bbQh4dCTmNY",
+  "deployment_state": "READY",
+  "browser_suite": {
+    "passed": 18,
+    "failed": 0,
+    "duration_seconds": 57.4,
+    "target": "https://heinem.vercel.app",
+    "engine": "Chromium 134 / ANGLE / SwiftShader",
+    "test_only_proxy_ca_exception": true,
+    "media_events": "simulated"
+  },
+  "local_build": {
+    "typecheck": "passed",
+    "unit_tests_passed": 30
+  },
+  "limits": [
+    "Continuous real SoundCloud audio is not confirmed.",
+    "Physical-device FPS and battery use were not measured."
+  ]
+}
