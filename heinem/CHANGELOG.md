@@ -8,7 +8,7 @@
 - Pure white local typography bloom replaces the previous cyan, keeping the existing six independent jelly impulses and quality settings.
 - Mildly cool-muted the portrait only. The approved landscape and CD artwork remain unfiltered.
 - Added viewport-specific browser regression tests. Production is deployed by GitHub integration only.
-- Render loop also respects the hero visibility state to avoid lingering frames when the bubble bounds intersect outside the hero.
+- The hero visibility signal now explicitly suspends AND resumes the shader loop, even if the individual canvas IntersectionObserver has not crossed its threshold. A software-rendering timing-sensitive CD test checks observed phase order and ending pose instead of requiring every brief RAF state to have been sampled.
 
 
 ## 1.5.0 — 2026-10-23 (São Paulo)

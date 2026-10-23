@@ -47,7 +47,10 @@ const life = new AbortController();
 let heroVisible = true;
 let musicVisible = false;
 const updateVisibility = () => {
-  document.body.dataset.sceneActive = String(heroVisible && !document.hidden);
+  const active = heroVisible && !document.hidden;
+  document.body.dataset.sceneActive = String(active);
+  // Resume as well as pause even when the bubble intersection has not changed.
+  bubble?.setSceneActive(active);
   document.body.dataset.musicActive = String(musicVisible && !document.hidden);
 };
 const heroObserver = new IntersectionObserver(entries => {

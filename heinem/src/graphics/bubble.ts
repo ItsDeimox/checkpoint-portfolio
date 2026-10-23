@@ -14,6 +14,7 @@ type BubbleOptions = {
 type BubbleController = {
   setQuality(quality: BubbleQuality): void;
   setReducedMotion(value: boolean): void;
+  setSceneActive(value: boolean): void;
   syncBackdrop(): void;
   destroy(): void;
 };
@@ -256,6 +257,7 @@ export function createBubble(canvas: HTMLCanvasElement, host: HTMLElement, optio
   let destroyed = false;
   let contextLost = false;
   let visible = true;
+  let sceneActive = true;
   let ready = false;
   let dirtySize = true;
   let frame = 0;
@@ -299,7 +301,7 @@ export function createBubble(canvas: HTMLCanvasElement, host: HTMLElement, optio
     frame = 0;
     lastDraw = 0;
   };
-  const canDraw = () => !destroyed && ready && !contextLost && visible && !document.hidden && document.body.dataset.sceneActive !== 'false';
+  const canDraw = () => !destroyed && ready && !contextLost && visible && sceneActive && !document.hidden;
   const wake = () => {
     if (!frame && canDraw()) frame = requestAnimationFrame(draw);
   };
@@ -607,6 +609,11 @@ export function createBubble(canvas: HTMLCanvasElement, host: HTMLElement, optio
       if (destroyed || value === reducedMotion) return;
       reducedMotion = value; hover = 0; targetHover = 0; waves.length = 0;
       sleep(); wake();
+    },
+    setSceneActive(value) {
+      if (destroyed || sceneActive === value) return;
+      sceneActive = value;
+      if (value) wake(); else { waves.length = 0; hover = targetHover = 0; sleep(); }
     },
     syncBackdrop,
     destroy() {
