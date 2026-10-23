@@ -406,7 +406,11 @@ export function initDiscInteraction(
     const direction = scrub.position < 0 ? -1 : 1;
     const recentVelocity = performance.now() - current.lastTime < 100 ? current.velocity : 0;
     const towardNext = -recentVelocity * direction;
-    const next = fraction >= .3 || fraction > .06 && towardNext > .4;
+    // Once a full sleeve has passed, require more travel before a kinetic
+    // flick may add ANOTHER album. Crossing a boundary by a few pixels must
+    // never skip the next cover on an immediate pointerup.
+    const flickThreshold = complete === 0 ? .06 : .18;
+    const next = fraction >= .3 || (fraction > flickThreshold && towardNext > .4);
     const goal = cancelled ? current.cancelGoal : direction * (complete + (next ? 1 : 0));
     requested = normalize(current.anchor + goal);
     releaseCapture();

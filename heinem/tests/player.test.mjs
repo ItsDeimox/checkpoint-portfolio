@@ -359,6 +359,19 @@ test('continuous carousel wraps beyond three steps and reverses during one hold'
   p.controller.destroy();
 });
 
+test('fast mouseup just past an integer sleeve does not overrun an extra album', () => {
+  const p = createPlayer({ reducedMotion: false });
+  pointer(p.stage, 'pointerdown', 720, 180);
+  pointer(p.stage, 'pointermove', 399, 180); // 321px = 1.07 sleeves.
+  p.advance(16);
+  assert.equal(p.room.dataset.activeTrack, '0');
+  pointer(p.stage, 'pointerup', 399, 180); // Immediate mouseup retains high velocity.
+  p.advance(650);
+  assert.equal(p.room.dataset.activeTrack, '1', 'near-boundary flick must not skip album 1');
+  assert.equal(p.timers.size, 0);
+  p.controller.destroy();
+});
+
 test('cancelling a multi-cover drag rewinds without intermediate track or network changes', () => {
   const p = createPlayer({ reducedMotion: false });
   const initial = p.rows.map(row => row.style.transform);
