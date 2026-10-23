@@ -6,14 +6,29 @@ const server=spawn(process.execPath,['tools/server.mjs','--port','5186'],{stdio:
 let browser,page;
 const names=['Berserk Drift X','Groups & Games','Future Projects','I’m DXT','Socials & Contact'];
 const paths=['/berserk','/groups','/projects','/about','/contact'];
-const viewports=[[320,568],[360,740],[390,844],[430,932],[768,1024],[844,390]];
+const viewports=[[320,568],[360,740],[390,844],[430,932],[768,1024],[844,390],[568,320]];
 function check(name,pass,detail){report.checks.push({name,pass:!!pass,detail});console.log((pass?'PASS ':'FAIL ')+name);if(!pass)throw Error(name+' '+JSON.stringify(detail));}
 async function shot(name){await page.screenshot({path:path.join(out,name+'.jpg'),type:'jpeg',quality:82});report.screenshots.push(name+'.jpg');}
 async function fits(label){const d=await page.evaluate(()=>({w:innerWidth,scroll:document.documentElement.scrollWidth}));check(label+' has no horizontal page overflow',d.scroll<=d.w+1,d);}
 async function target(locator,label,minimum=44){await locator.evaluate(e=>e.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));const d=await locator.evaluate(e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom,vw:innerWidth,vh:innerHeight,hit:hit===e||e.contains(hit),visible:s.visibility!=='hidden',disabled:!!e.disabled};});check(label+' is visible, finger-sized and unobstructed',d.w>=minimum-.5&&d.h>=minimum-.5&&d.x>=-1&&d.right<=d.vw+1&&d.y>=-1&&d.bottom<=d.vh+1&&d.hit&&!d.disabled,d);}
 async function routeReady(index){await page.waitForFunction(i=>window.__DXT__?.inspect().selectedPanel===i&&window.__DXT__.inspect().section.active&&!window.__DXT__.inspect().section.travelling,index,{timeout:60000});await page.waitForTimeout(300);}
 async function roomReady(){await page.waitForFunction(()=>window.__DXT__?.inspect().phase==='ready'&&!window.__DXT__.inspect().section.active&&!window.__DXT__.inspect().section.travelling&&!document.body.classList.contains('intro-pending'),null,{timeout:90000});await page.waitForTimeout(200);}
-async function imageReady(selector='[data-project-stage] img'){await page.locator(selector).evaluate(async i=>{await i.decode();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});}
+async function imageReady(selector='[data-project-stage] img'){
+ // Selection changes before its async preloader replaces the main image.
+ // Wait for the selected source, then decode and presentation frames.
+ await page.waitForFunction(selector=>{
+  const i=document.querySelector(selector);
+  if(!i||!i.complete||i.naturalWidth===0)return false;
+  if(selector==='[data-gallery-main]'){
+   const selected=document.querySelector('[data-gallery-select][aria-pressed="true"] img');
+   if(selected&&i.src!==selected.src)return false;
+  }
+  return true;
+ },selector);
+ await page.locator(selector).evaluate(async i=>{
+  await i.decode();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+ });
+}
 async function swipe(x,y,dx,dy){const cdp=await page.context().newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});for(let i=1;i<=12;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx*i/12,y:y+dy*i/12}]});await page.waitForTimeout(16);}await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();await page.waitForTimeout(650);}
 (async()=>{
  for(let i=0;i<100;i++){try{if((await fetch('http://127.0.0.1:5186/')).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}

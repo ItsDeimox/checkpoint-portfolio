@@ -8,6 +8,7 @@
     right: max(12px, env(safe-area-inset-right));
     bottom: max(38px, calc(env(safe-area-inset-bottom) + 16px));
     display: grid;
+    align-items: stretch;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
     max-width: 560px;
