@@ -165,6 +165,69 @@ test('pointer position tilts the case surface while its hit target and the CD pi
   await expect.poll(() => shell.evaluate(el => Number.parseFloat((el as HTMLElement).style.getPropertyValue('--shine-opacity')))).toBe(0);
 });
 
+
+test('one mouse hold travels through several releases in either viewport without stopping at index one', async ({ page }) => {
+  const soundcloud: string[] = [];
+  page.on('request', request => {
+    if (/soundcloud\.com/.test(request.url())) soundcloud.push(request.url());
+  });
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    const stage = page.locator('.jewel-stage');
+    await stage.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(180);
+    const area = (await stage.boundingBox())!;
+    const distance = Math.min(400, Math.max(92, area.width * .3));
+    const x = area.x + area.width * .9;
+    const y = area.y + area.height * .25;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x - distance * .82, y, { steps: 6 });
+    await expect(stage).toHaveAttribute('data-dragging', 'true');
+    await page.mouse.move(x - distance * 1.12, y, { steps: 6 });
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '0');
+    await page.mouse.move(x - distance * 2.13, y, { steps: 10 });
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '0');
+    await page.waitForTimeout(110); // No flick into the third sleeve.
+    await page.mouse.up();
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '2');
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
+    await expect(stage).toHaveAttribute('data-dragging', 'false');
+    await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
+  }
+  expect(soundcloud).toEqual([]);
+});
+
+test('real touch moves continuously past a second sleeve while vertical gestures still scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const client = await page.context().newCDPSession(page);
+  await client.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+  await page.goto('/');
+  const stage = page.locator('.jewel-stage');
+  await stage.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(160);
+  const area = (await stage.boundingBox())!;
+  const distance = Math.min(400, Math.max(92, area.width * .3));
+  const start = { x: area.x + area.width * .92, y: area.y + area.height * .28 };
+  await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ ...start, id: 8 }] });
+  for (let i = 1; i <= 18; i++) {
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: start.x - distance * 2.13 * i / 18, y: start.y, id: 8 }],
+    });
+    await page.waitForTimeout(12);
+  }
+  await expect(stage).toHaveAttribute('data-dragging', 'true');
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '0');
+  await page.waitForTimeout(110);
+  await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '2');
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
+  await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
+  await client.detach();
+});
+
 test('touch drags reserve horizontal intent and leave vertical scrolling to the browser', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const client = await page.context().newCDPSession(page);

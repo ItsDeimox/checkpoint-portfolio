@@ -3,7 +3,7 @@ type Phase = 'idle' | 'inserting' | 'swapping' | 'ejecting';
 type Exchange = { from: number; to: number; direction: number; committed: boolean };
 type Drag = {
   id: number; startX: number; startY: number; lastX: number; lastTime: number;
-  velocity: number; locked: boolean; origin: number; distance: number;
+  velocity: number; locked: boolean; origin: number; anchor: number; cancelGoal: number; distance: number;
 };
 type Hover = {
   button: HTMLElement; surface: HTMLElement; bounds?: DOMRect;
@@ -54,6 +54,8 @@ export function initDiscInteraction(
   let progress = 0;
   let exchange: Exchange | undefined;
   let animation: { from: number; goal: number; started: number; duration: number } | undefined;
+  let scrub: { anchor: number; position: number } | undefined;
+  let glide: { from: number; goal: number; started: number; duration: number } | undefined;
   let drag: Drag | undefined;
   let frame = 0;
   let lastTime = 0;
@@ -170,11 +172,72 @@ export function initDiscInteraction(
     requestFrame();
   }
 
+  // Preserve the exact same three sleeve poses at every integer boundary.
+  // A gesture can orbit the whole carousel repeatedly without accumulating
+  // transitions, changing tracks, or resetting the pointer origin.
+  function setScrubPosition(position: number) {
+    if (!scrub) return;
+    const direction = position < 0 ? -1 : position > 0 ? 1 : exchange?.direction ?? 1;
+    const turns = Math.abs(position);
+    const completed = Math.floor(turns);
+    const from = normalize(scrub.anchor + direction * completed);
+    const to = normalize(from + direction);
+    if (!exchange || exchange.from !== from || exchange.to !== to || exchange.direction !== direction) {
+      exchange = { from, to, direction, committed: false };
+      resetHovers();
+    }
+    scrub.position = position;
+    progress = turns - completed;
+    dirty = true;
+    // Never trigger a new provider load while scrubbing, even after many laps.
+    // Only a confirmed release makes the new selection audible.
+    if (drag?.locked) {
+      const previewSteps = completed + (progress >= .5 ? 1 : 0);
+      requested = normalize(scrub.anchor + direction * previewSteps);
+    }
+    if (!motion.matches) requestFrame();
+  }
+
+  function completeScrub(steps: number) {
+    if (!scrub) return;
+    const index = normalize(scrub.anchor + steps);
+    glide = undefined;
+    scrub = undefined;
+    exchange = undefined;
+    animation = undefined;
+    progress = 0;
+    requested = index;
+    commit(index);
+    dirty = true;
+    render();
+  }
+
+  function glideTo(steps: number) {
+    if (!scrub) return;
+    if (motion.matches || Math.abs(steps - scrub.position) < .0001) {
+      completeScrub(steps);
+      return;
+    }
+    const travel = Math.abs(steps - scrub.position);
+    glide = {
+      from: scrub.position, goal: steps, started: performance.now(),
+      duration: Math.min(680, Math.max(145, 330 * travel)),
+    };
+    requestFrame();
+  }
+
   function tick(now: number) {
     frame = 0;
     if (destroyed) return;
     const dt = lastTime ? Math.min(50, now - lastTime) : 16;
     lastTime = now;
+    if (glide && scrub) {
+      const current = glide;
+      const t = clamp((now - current.started) / current.duration);
+      const eased = 1 - (1 - t) ** 3;
+      setScrubPosition(mix(current.from, current.goal, eased));
+      if (t === 1) completeScrub(current.goal);
+    }
     if (animation && exchange) {
       const current = animation;
       const t = clamp((now - current.started) / current.duration);
@@ -210,7 +273,7 @@ export function initDiscInteraction(
       hover.surface.style.setProperty('--shine-y', `${(50 + hover.y * 38).toFixed(1)}%`);
       hover.surface.style.setProperty('--shine-opacity', (hover.strength * .22).toFixed(3));
     }
-    if (animation || hoverMoving || dirty && !motion.matches) requestFrame();
+    if (animation || glide || hoverMoving || dirty && !motion.matches) requestFrame();
     else lastTime = 0;
   }
 
@@ -227,6 +290,8 @@ export function initDiscInteraction(
 
   function finish() {
     animation = undefined;
+    glide = undefined;
+    scrub = undefined;
     exchange = undefined;
     progress = 0;
     releaseCapture();
@@ -240,6 +305,8 @@ export function initDiscInteraction(
 
   function select(index: number) {
     if (destroyed) return;
+    // A keyboard/button choice supersedes a pending kinetic release.
+    if (scrub) finish();
     const next = normalize(index);
     if (next === requested) return;
     requested = next;
@@ -294,7 +361,7 @@ export function initDiscInteraction(
     suppressClick = false;
     drag = { id: event.pointerId, startX: event.clientX, startY: event.clientY,
       lastX: event.clientX, lastTime: performance.now(), velocity: 0, locked: false,
-      origin: progress, distance: clamp(width * .46, 120, 520) };
+      origin: 0, anchor: active, cancelGoal: 0, distance: clamp(width * .3, 92, 400) };
   }, options);
   stage.addEventListener('pointermove', (event) => {
     if (!drag || drag.id !== event.pointerId) return;
@@ -304,41 +371,48 @@ export function initDiscInteraction(
       if (Math.abs(dy) > 7 && Math.abs(dy) > Math.abs(dx) * 1.1) { releaseCapture(); return; }
       if (Math.abs(dx) < 7 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
       drag.locked = true;
-      drag.origin = exchange ? progress : 0;
+      // Take over any in-flight arrow animation at its current visual pose.
+      // Cancelling later returns to the selection that was audible at pickup.
+      drag.anchor = exchange?.from ?? active;
+      drag.origin = exchange ? exchange.direction * progress : 0;
+      drag.cancelGoal = exchange && active === exchange.to ? exchange.direction : 0;
       animation = undefined;
-      if (!exchange) begin(active, normalize(active + (dx < 0 ? 1 : -1)));
+      glide = undefined;
+      scrub = { anchor: drag.anchor, position: drag.origin };
+      if (exchange) exchange.committed = false;
       stage.setPointerCapture(event.pointerId);
       stage.dataset.dragging = 'true';
       resetHovers();
     }
     event.preventDefault();
-    if (!exchange) return;
     const now = performance.now();
     const elapsed = Math.max(1, now - drag.lastTime);
     drag.velocity = (event.clientX - drag.lastX) / elapsed;
     drag.lastX = event.clientX;
     drag.lastTime = now;
-    const raw = drag.origin - dx / drag.distance * exchange.direction;
-    if (raw < 0 && drag.origin === 0 && !exchange.committed) {
-      begin(active, normalize(active - exchange.direction));
-      progress = clamp(-raw);
-    } else progress = clamp(raw);
-    dirty = true;
-    if (!motion.matches) requestFrame();
+    // Signed, UNBOUNDED travel: -2.4 means 2.4 sleeves to the previous side.
+    // Reversing across zero or across a lap reuses the same continuous poses.
+    setScrubPosition(drag.origin - dx / drag.distance);
   }, options);
 
   function endDrag(event: PointerEvent, cancelled: boolean) {
     if (!drag || drag.id !== event.pointerId) return;
     const current = drag;
-    if (!current.locked || !exchange) { releaseCapture(); return; }
+    if (!current.locked || !scrub) { releaseCapture(); return; }
     suppressClick = true;
+    const traveled = Math.abs(scrub.position);
+    const complete = Math.floor(traveled);
+    const fraction = traveled - complete;
+    const direction = scrub.position < 0 ? -1 : 1;
     const recentVelocity = performance.now() - current.lastTime < 100 ? current.velocity : 0;
-    const towardNext = -recentVelocity * exchange.direction;
-    const commitStep = !cancelled && (progress >= .3 || progress > .06 && towardNext > .4);
-    requested = commitStep ? exchange.to : exchange.from;
+    const towardNext = -recentVelocity * direction;
+    const next = fraction >= .3 || fraction > .06 && towardNext > .4;
+    const goal = cancelled ? current.cancelGoal : direction * (complete + (next ? 1 : 0));
+    requested = normalize(current.anchor + goal);
     releaseCapture();
-    if (motion.matches) finish();
-    else animate(commitStep ? 1 : 0);
+    // A release only eases the fractional remainder; it never caps travel to
+    // one album. Cancellation rewinds smoothly, with no intermediate audio loads.
+    glideTo(goal);
   }
   stage.addEventListener('pointerup', event => endDrag(event, false), options);
   stage.addEventListener('pointercancel', event => endDrag(event, true), options);
@@ -373,6 +447,9 @@ export function initDiscInteraction(
     destroy() {
       if (destroyed) return;
       destroyed = true;
+      glide = undefined;
+      scrub = undefined;
+      animation = undefined;
       events.abort();
       observer?.disconnect();
       releaseCapture();

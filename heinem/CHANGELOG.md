@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.4.0 — 2026-10-23 (São Paulo)
+
+### Changed
+
+- Let one mouse/touch hold move through any number of albums, including repeated circular laps and reversals, instead of clamping drag progress to the next index.
+- Preserve the original case/rotor transforms and disc-concealment choreography at each integer boundary, with no visual position jump.
+- Apply a small, bounded kinetic finish to the partial sleeve after release; cancellation follows the signed path back to the original audible choice.
+- Defer actual track/provider changes until the completed gesture settles. Scrubbing across several songs does not repeatedly pause, request, or reinitialize SoundCloud.
+- Tune the distance of one sleeve to 30% of the stage (bounded 92–400 CSS pixels), so multiple covers can be crossed in a single desktop or mobile gesture.
+- Preserve click/arrow navigation, the approved 3D hover and bubble, native vertical touch scrolling, reduced-motion behavior, player controls and graphics settings.
+
+### Tests
+
+- Add controller regressions for uninterrupted multi-sleeve scrubbing, pose continuity across integer boundaries, multiple laps, directional reversal, cancellation and single provider commit.
+- Add real-browser mouse (desktop/mobile) and touch regressions for multi-album drags. Full results and deployment verification are recorded separately once the release gates complete.
+
+
 ## 1.3.0 — 2026-10-22 (São Paulo; 2026-10-23 UTC)
 
 ### Changed

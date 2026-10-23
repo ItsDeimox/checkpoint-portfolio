@@ -254,13 +254,13 @@ test('horizontal drag scrubs cases and CD before committing and suppresses its s
   Object.assign(transfer, { pointerId: 1 });
   p.stage.dispatchEvent(transfer);
   assert.equal(p.stage.dataset.dragging, 'true', 'implicit touch capture transfers from child to stage');
-  pointer(p.stage, 'pointermove', 350, 180);
+  pointer(p.stage, 'pointermove', 400, 180);
   p.advance(16);
   assert.notEqual(p.rows[1].style.transform, first);
   assert.equal(p.elements['disc-button'].style.visibility, 'hidden');
   assert.equal(p.room.dataset.activeTrack, '0');
   assert.equal(p.stage.hasPointerCapture(1), true);
-  pointer(p.stage, 'pointerup', 350, 180);
+  pointer(p.stage, 'pointerup', 400, 180);
   assert.equal(p.stage.hasPointerCapture(1), false);
   const click = new Event('click', { cancelable: true });
   Object.assign(click, { detail: 1 });
@@ -291,6 +291,85 @@ test('short or cancelled drags return to the original pose without loading audio
   p.advance(500);
   assert.equal(p.rows[0].style.transform, initial);
   assert.equal(p.room.dataset.discPhase, 'idle');
+  assert.equal(p.widgets.length, 0);
+  assert.equal(p.timers.size, 0);
+  p.controller.destroy();
+});
+
+
+// A single hold is allowed to orbit multiple times. Neither the selected
+// player track nor the active SoundCloud transport changes until release.
+test('long drag crosses multiple sleeves seamlessly and selects its final stop once', async () => {
+  const p = createPlayer({ reducedMotion: false });
+  const old = await start(p);
+  const coordinates = element => element.style.transform.slice('translate3d('.length)
+    .split(')')[0].split(',').map(Number.parseFloat);
+  const startX = 840;
+  pointer(p.stage, 'pointerdown', startX, 180);
+  pointer(p.stage, 'pointermove', startX - 300 * .995, 180);
+  p.advance(16);
+  const before = [...p.rows, p.elements['disc-button']].map(coordinates);
+  pointer(p.stage, 'pointermove', startX - 300 * 1.005, 180);
+  p.advance(16);
+  const after = [...p.rows, p.elements['disc-button']].map(coordinates);
+  for (let i = 0; i < before.length; i++) {
+    const delta = Math.hypot(...before[i].map((value, axis) => value - after[i][axis]));
+    assert.ok(delta < 8, `carousel boundary cannot teleport item ${i}: ${delta}px`);
+  }
+  pointer(p.stage, 'pointermove', startX - 300 * 2.18, 180);
+  p.advance(160); // The released gesture is no longer a flick.
+  assert.equal(p.stage.dataset.dragging, 'true');
+  assert.equal(p.room.dataset.activeTrack, '0', 'sweeping multiple covers must not reload music');
+  assert.equal(p.widgets.length, 1);
+  assert.equal(old.pauses, 0);
+  pointer(p.stage, 'pointerup', startX - 300 * 2.18, 180);
+  p.advance(650);
+  await flush();
+  assert.equal(p.room.dataset.activeTrack, '2');
+  assert.equal(p.elements['track-title'].textContent, 'Show Me Love');
+  assert.equal(p.widgets.length, 2, 'only the final release starts a new provider');
+  assert.equal(old.pauses, 1);
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  assert.equal(p.stage.dataset.dragging, 'false');
+  p.controller.destroy();
+});
+
+test('continuous carousel wraps beyond three steps and reverses during one hold', () => {
+  const p = createPlayer({ reducedMotion: false });
+  pointer(p.stage, 'pointerdown', 900, 180);
+  pointer(p.stage, 'pointermove', -330, 180); // 4.1 steps, crossing a whole lap.
+  p.advance(160);
+  assert.equal(p.room.dataset.activeTrack, '0');
+  pointer(p.stage, 'pointerup', -330, 180);
+  p.advance(650);
+  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  // One hold reverses direction through the origin and keeps moving.
+  pointer(p.stage, 'pointerdown', 550, 180);
+  pointer(p.stage, 'pointermove', -160, 180);
+  p.advance(16);
+  pointer(p.stage, 'pointermove', 880, 180);
+  p.advance(180);
+  assert.equal(p.room.dataset.activeTrack, '1');
+  pointer(p.stage, 'pointerup', 880, 180);
+  p.advance(650);
+  assert.equal(p.room.dataset.activeTrack, '0', 'a backward full step from 1 wraps to 0');
+  assert.equal(p.timers.size, 0);
+  assert.equal(p.widgets.length, 0);
+  p.controller.destroy();
+});
+
+test('cancelling a multi-cover drag rewinds without intermediate track or network changes', () => {
+  const p = createPlayer({ reducedMotion: false });
+  const initial = p.rows.map(row => row.style.transform);
+  pointer(p.stage, 'pointerdown', 900, 180);
+  pointer(p.stage, 'pointermove', 120, 180); // 2.6 sleeves.
+  p.advance(16);
+  assert.equal(p.room.dataset.activeTrack, '0');
+  pointer(p.stage, 'pointercancel', 120, 180);
+  p.advance(900);
+  assert.deepEqual(p.rows.map(row => row.style.transform), initial);
+  assert.equal(p.room.dataset.activeTrack, '0');
   assert.equal(p.widgets.length, 0);
   assert.equal(p.timers.size, 0);
   p.controller.destroy();
