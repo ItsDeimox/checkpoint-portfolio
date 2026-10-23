@@ -1,6 +1,7 @@
+import { initDiscInteraction } from './disc-interaction';
+
 /** Official SoundCloud embeds; no audio is downloaded or re-hosted. */
 type PlayerState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
-type DiscPhase = 'idle' | 'inserting' | 'swapping' | 'ejecting';
 
 interface Track {
   title: string;
@@ -74,9 +75,6 @@ interface SoundCloudAPI {
 }
 
 const TIMEOUT_MS = 12_000;
-// Keep these in step with the transform/carousel durations in music.css.
-const DISC_SLIDE_MS = 180;
-const CASE_EXCHANGE_MS = 220;
 const soundCloud = () => (window as Window & { SC?: SoundCloudAPI }).SC;
 const timeLabel = (milliseconds: number) => {
   const seconds = Math.max(0, Math.floor(milliseconds / 1000));
@@ -118,9 +116,6 @@ export function initPlayer(): { destroy(): void } {
 
   let state: PlayerState = 'idle';
   let selected = 0;
-  let requested = 0;
-  let discPhase: DiscPhase = 'idle';
-  let transitionTimer: ReturnType<typeof setTimeout> | undefined;
   let duration = TRACKS[0].duration;
   let position = 0;
   let ready = false;
@@ -409,68 +404,17 @@ export function initPlayer(): { destroy(): void } {
     }
   }
 
-  function clearTransitionTimer() {
-    if (transitionTimer !== undefined) clearTimeout(transitionTimer);
-    transitionTimer = undefined;
-  }
-
-  function setDiscPhase(value: DiscPhase) {
-    discPhase = value;
-    room!.dataset.discPhase = value;
-  }
-
-  function scheduleTransition(callback: () => void, delay: number) {
-    clearTransitionTimer();
-    transitionTimer = setTimeout(() => {
-      transitionTimer = undefined;
-      if (!destroyed) callback();
-    }, delay);
-  }
-
-  function finishTransition() {
-    clearTransitionTimer();
-    applySelection(requested);
-    setDiscPhase('idle');
-  }
-
-  function ejectDisc() {
-    setDiscPhase('ejecting');
-    scheduleTransition(() => setDiscPhase('idle'), DISC_SLIDE_MS);
-  }
-
-  function exchangeCases() {
-    if (requested === selected) {
-      // Reversing navigation while the disc enters cancels the cover change.
-      ejectDisc();
-      return;
-    }
-    setDiscPhase('swapping');
-    applySelection(requested);
-    scheduleTransition(ejectDisc, CASE_EXCHANGE_MS);
-  }
+  const carousel = initDiscInteraction(room, rows, disc, motion, applySelection);
 
   function selectTrack(index: number) {
-    if (destroyed) return;
-    const nextIndex = (index + TRACKS.length) % TRACKS.length;
-    if (nextIndex === requested) return;
-    requested = nextIndex;
-    if (motion.matches) {
-      finishTransition();
-    } else if (discPhase === 'swapping') {
-      // Latest input wins while the disc is concealed; never accumulate a
-      // backlog of visual swaps or leave the selected cover and audio apart.
-      exchangeCases();
-    } else if (discPhase !== 'inserting') {
-      setDiscPhase('inserting');
-      scheduleTransition(exchangeCases, DISC_SLIDE_MS);
-    }
+    if (!destroyed) carousel.select(index);
   }
 
   function toggle() {
     if (destroyed) return;
     // A keyboard activation can arrive while the CD is inside its sleeve.
     // Apply the latest explicit selection before interpreting play/pause.
-    if (discPhase !== 'idle') finishTransition();
+    if (room!.dataset.discPhase !== 'idle' || carousel.requested !== selected) carousel.finish();
     if (state === 'playing') {
       wantsPlay = false;
       widget?.pause();
@@ -497,11 +441,8 @@ export function initPlayer(): { destroy(): void } {
   const listenerOptions = { signal: events.signal };
   disc.addEventListener('click', toggle, listenerOptions);
   miniPlay?.addEventListener('click', toggle, listenerOptions);
-  next.addEventListener('click', () => selectTrack(requested + 1), listenerOptions);
-  previous.addEventListener('click', () => selectTrack(requested - 1), listenerOptions);
-  motion.addEventListener('change', () => {
-    if (motion.matches && discPhase !== 'idle') finishTransition();
-  }, listenerOptions);
+  next.addEventListener('click', () => selectTrack(carousel.requested + 1), listenerOptions);
+  previous.addEventListener('click', () => selectTrack(carousel.requested - 1), listenerOptions);
   for (const row of rows) {
     row.addEventListener('click', () => {
       const index = Number(row.dataset.track);
@@ -522,7 +463,6 @@ export function initPlayer(): { destroy(): void } {
   }, listenerOptions);
 
   updateTrack();
-  setDiscPhase('idle');
   setState('idle');
   return {
     destroy() {
@@ -530,8 +470,7 @@ export function initPlayer(): { destroy(): void } {
       destroyed = true;
       generation++;
       events.abort();
-      clearTransitionTimer();
-      setDiscPhase('idle');
+      carousel.destroy();
       clearWatchdog();
       cancelSDK?.();
       releaseWidget();

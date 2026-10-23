@@ -1,0 +1,204 @@
+{
+  "version": "1.3.0",
+  "source_sha": null,
+  "deployment": null,
+  "build": {
+    "typecheck": "passed",
+    "unit_tests": {
+      "passed": 34,
+      "failed": 0
+    },
+    "runtime_dependencies_added": 0
+  },
+  "local_browser": {
+    "passed": 26,
+    "failed": 0,
+    "workers": 1,
+    "reported_duration": "1.9m",
+    "renderer": "Chromium/ANGLE/SwiftShader"
+  },
+  "visual_review": {
+    "viewports": [
+      [
+        2560,
+        1440
+      ],
+      [
+        1672,
+        941
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        320,
+        780
+      ]
+    ],
+    "scroll_fractions": [
+      0,
+      0.25,
+      0.5,
+      0.75,
+      1
+    ],
+    "states": 20,
+    "document_horizontal_overflow": 0,
+    "page_errors": 0,
+    "failed_requests": 0,
+    "report": "refinement-visual-report.json"
+  },
+  "production": {
+    "state": "pending",
+    "artifact_equality": null,
+    "browser": null
+  },
+  "artifacts": [
+    {
+      "path": "assets/index-BwjZ7loz.css",
+      "bytes": 24325,
+      "sha256": "513d7a118fec128fa8e28e0e2fec8c823b1ce2fc45b90aa91059f7be7330b8b0"
+    },
+    {
+      "path": "assets/index-CQroceTz.js",
+      "bytes": 49822,
+      "sha256": "40214e99ff2bfdd6d67bd1ff73861f9d36d3b8c2f8cb873f7c1422ee961878f9"
+    },
+    {
+      "path": "assets/layers/artist-light.webp",
+      "bytes": 291154,
+      "sha256": "73ea1e4b69fffd5d31d611dfa7168812a6ddce307e3725025985e36f00b74780"
+    },
+    {
+      "path": "assets/layers/butterfly.webp",
+      "bytes": 18360,
+      "sha256": "3927950f452e00c2dd5cea890e40e2b99b2289de355138b88d5aa34e22395051"
+    },
+    {
+      "path": "assets/layers/field-continuous.webp",
+      "bytes": 414856,
+      "sha256": "58a4260303147f11e4fe9b7b77be904bbc507254ea75235501a0af2550478055"
+    },
+    {
+      "path": "assets/layers/field-detail-bl.webp",
+      "bytes": 653264,
+      "sha256": "b05b6901e65d3b5ce289fe02843fcc8df0e1e6928949ed1a81acdd65f1055bc7"
+    },
+    {
+      "path": "assets/layers/field-detail-br.webp",
+      "bytes": 769442,
+      "sha256": "b3e9683a0a9f920f55534b3bbd200dbd67af4b7e71cc8b860188fc5ba3090d7f"
+    },
+    {
+      "path": "assets/layers/field-detail-tl.webp",
+      "bytes": 382328,
+      "sha256": "c785f03141ad8ec869f8105be38b43c26b888c8c4938c8486be77bd37939c4cb"
+    },
+    {
+      "path": "assets/layers/field-detail-tr.webp",
+      "bytes": 252824,
+      "sha256": "c9a5bb72e7df4f19b3aa3719ab335cc0c6915672e133e7fe24809a5eaa61da45"
+    },
+    {
+      "path": "assets/layers/foliage-far.webp",
+      "bytes": 268748,
+      "sha256": "f2ef05f8c6c3ac20761bcdcfa942b47552b036342814ac0707ca18d94c55e832"
+    },
+    {
+      "path": "assets/layers/foliage-mid.webp",
+      "bytes": 442644,
+      "sha256": "cadb35e4be07c760f0d8ce95b064fb69ac6ac7667d5e70d9c496e83405f6b0d8"
+    },
+    {
+      "path": "assets/layers/sky.webp",
+      "bytes": 103860,
+      "sha256": "ef8ba277f0d719f6b5f3a1751c27cf885c4570454f30bbf1721fdefd059dafb3"
+    },
+    {
+      "path": "assets/layers/tree-left.webp",
+      "bytes": 242914,
+      "sha256": "ae6d32ea004114bc5cecf387af041195e14f3ba37c03fa8e317c1a73aa676dc4"
+    },
+    {
+      "path": "assets/memories-of-you.jpg",
+      "bytes": 86587,
+      "sha256": "f5e73a5fd697322d0328d757864850a4f47fc4b55b2ff2246b0e8ef5f68d6c7b"
+    },
+    {
+      "path": "assets/mha-50k-drop.jpg",
+      "bytes": 67426,
+      "sha256": "614651dcf9e105635cf548c9b8c1544083a8d41b19e44f940dc6ea909ef22af8"
+    },
+    {
+      "path": "assets/poppins-OFL.txt",
+      "bytes": 4385,
+      "sha256": "6be04893d770899a015649c7aa3b582f871b272f8747a92b78b17c3e5c8b2573"
+    },
+    {
+      "path": "assets/poppins-bold.woff2",
+      "bytes": 7816,
+      "sha256": "9338e65fc077355c7a87ae0d64cc101e23b9bf8ad78ae65f0f319c857311b526"
+    },
+    {
+      "path": "assets/poppins-light.woff2",
+      "bytes": 7840,
+      "sha256": "78bc3aa78faec288bbb3bf26c9a0fa4eb67b1e69da94a17233c5cab60525efdb"
+    },
+    {
+      "path": "assets/poppins-medium.woff2",
+      "bytes": 7748,
+      "sha256": "cd36de204aca2d5fa263a731f7c20009b5e3d754ba1f1e03c33e93a48f3e7446"
+    },
+    {
+      "path": "assets/poppins-regular.woff2",
+      "bytes": 7884,
+      "sha256": "7d93459d86585bfcdbb7e0376056226adb25821ee54b96236fe2123e9560929f"
+    },
+    {
+      "path": "assets/show-me-love.jpg",
+      "bytes": 198803,
+      "sha256": "73232a48f48aaf69bffe39fd726671f66dddf83a191114b90635dcc682d5d0a8"
+    },
+    {
+      "path": "assets/silver-disc.webp",
+      "bytes": 152362,
+      "sha256": "132d8151b7382b11378d365064ea122dd1232c49639ceeab622991ac70cdc436"
+    },
+    {
+      "path": "assets/social-preview-v1.3.jpg",
+      "bytes": 227642,
+      "sha256": "7acd8845f16118b0ee51781d6402c66cba50a70e2afe02e96e3f0ec4c3e88a7e"
+    },
+    {
+      "path": "assets/social-preview.jpg",
+      "bytes": 189802,
+      "sha256": "f7f25289ff7aacec872accc65740eef03eb906fe2b769b744cffbbff089b154b"
+    },
+    {
+      "path": "favicon.svg",
+      "bytes": 278,
+      "sha256": "f0a600ed27ff30971670ba080cda6b7b6f6ba8a716b8bdfb4ee59792fd0460d2"
+    },
+    {
+      "path": "index.html",
+      "bytes": 17930,
+      "sha256": "ee219a589ea6fd13f0ceec067332a7b90b1def2dee0bf59f0184e9311c5b32e8"
+    },
+    {
+      "path": "robots.txt",
+      "bytes": 71,
+      "sha256": "8527d8635e466c90bcd06667aa5ff62045abc2afc3ac1d3e6ad32d154b5c3782"
+    },
+    {
+      "path": "sitemap.xml",
+      "bytes": 186,
+      "sha256": "f025002a1e924e624d1b9222462a64eedd7b769577b4859006ca7d57cc2c12cf"
+    }
+  ],
+  "limits": [
+    "Chromium software-GPU checks do not establish physical device FPS or battery usage.",
+    "Real continuous SoundCloud playback remains unconfirmed; media-state tests use simulated provider events.",
+    "Foreground detail is generated reconstruction; effective density is approximately1964x2648 across overlapping native patches."
+  ]
+}

@@ -10,7 +10,13 @@ A narrow, unusually tall viewport needs extra terrain beyond 240% because the he
 
 Environment foreground images have genuine alpha. The field's natural upper silhouette becomes fully covered lower than the prompt requested; measured placement compensates for that geometry. Its dense interior is approximately 251/255 alpha, so a solid green scene underlay remains. See [LAYER-ASSETS.md](LAYER-ASSETS.md) for exact prompts, source images, alpha bounds, dimensions and compression.
 
-The artist uses the new original photograph's RGB. A generated alpha matte preserves the original framing; only that alpha is resampled to 506 × 1024 and combined with the original RGB. Empty margins are cropped to 414 × 920. No generated facial pixels are displayed. A static brightness/saturation adjustment supplies a modest daylight correction; the original grain and mirror imperfections remain.
+The current artist uses the brighter generated candidate selected in the 1.3 request. `artist-light.webp` crops that source at 47,10,802,1774 and exports 802 × 1774 at WebP quality 94/alpha 100, 291,154 bytes. It contains reconstructed RGB, including the face; it is not described as pixel-identical to the original photograph. The 1.2 original-RGB-plus-matte cutout remains archived at `docs/reference/artist-photo-v1.2.webp`. This selection changes provenance, not the portrait's scenic depth role.
+
+### Conditional detail within the same foreground
+
+Four 1080 × 1457 native tiles add 2,057,858 bytes when enabled. Their static overlaps produce approximately 1964 × 2648 effective field density over the same area: about 3.31 times the base image's effective pixel count, or about 1.82 times the samples per axis. This is an assembled density estimate, not a claim that a single generated image has those dimensions. The original field remains the complete underlay and supplies the outer alpha mask. Static tile-edge masks blend the intersections; scroll does not animate their opacity.
+
+`createFieldDetail()` assigns the tile URLs only when the viewport is at least 1000 px wide, quality is Medium/High, and `navigator.connection.saveData` is not true. Mobile and Low therefore avoid the initial detail requests, rather than downloading hidden images. All four tiles must decode and have nonzero natural dimensions before the detail plane is revealed. A failure leaves the complete base visible. Switching to Low hides already loaded detail; it cannot undo bytes previously downloaded. Loading checks document visibility and observes viewport, connection and quality changes. Disposal aborts listeners and prevents a late reveal.
 
 A centered dorsal butterfly sprite supplies two independently hinged wings and a central body. Its flight parent drifts separately from the parallax transform. CSS motion pauses offscreen, on Low and with reduced motion.
 
@@ -29,9 +35,11 @@ A centered dorsal butterfly sprite supplies two independently hinged wings and a
 | Bubble, mobile | 0 | 1.00 |
 | Continuous near field | −0.14 | 1.14 |
 
-High/Medium settle with a 95 ms exponential response; Low applies final transforms directly. The loop runs only during scroll/settling, and geometry is measured on resize. There are no scroll-dependent opacity writes. Mobile depth zero keeps the bubble fully inside its outgoing hero at the music stop. A real residual rim was corrected geometrically rather than ignoring its continued rendering.
+All quality profiles derive transforms directly from the same actual document position. The former High/Medium 95 ms secondary response was removed: it let sky compensation keep changing after the document stopped. Geometry is measured on resize; unchanged positions skip transform writes. There are no scroll-dependent opacity writes. Mobile depth zero keeps the bubble fully inside its outgoing hero at the music stop. A real residual rim was corrected geometrically rather than ignoring its continued rendering.
 
 `createSmoothScroll()` eases vertical wheel input over real `window.scrollY`, using a 125 ms response and bounded settling. No translated virtual page wrapper exists. Native controls, nested scrolling, embeds, horizontal input, zoom and modifiers keep ownership. Pointer/touch, navigation keys including Tab/Shift+Tab, anchors, history and external scrolling cancel pending motion. Reduced motion removes interception.
+
+After a wheel write actually changes `window.scrollY`, an optional callback invokes `parallax.syncScroll()` in the same animation callback. It cancels the queued native-scroll RAF and applies the new depth before paint. This closes the first-frame gap that existed even after removing the second easing filter. Rounded-identical writes do not notify. Native input still uses the passive scroll listener; stationary transforms do not create a settling loop.
 
 After actual scenery movement, `syncBackdrop()` maps each image's rectangle, object-fit and object-position into the shader. These reads happen during scroll/resize; idle and stationary hover frames do not measure image or text layout.
 
@@ -67,13 +75,17 @@ Auto uses optional CPU/memory hints, data saving and pointer type; these are not
 
 Visibility requires intersection ratio above 0.001 with a matching threshold, excluding zero-area edge contact. The bubble, hero decorations and disc use appropriate separate visibility gates. Hidden/offscreen rendering clears old impulses and sleeps. Controllers release observers, listeners, timers, programs and textures on disposal. Final unload and back-forward-cache preservation remain distinct.
 
-Chromium/SwiftShader checks establish behavior and work counts, not physical-device FPS. The new hover path measured zero copy mutations, geometry reads and additional texture uploads. Independent positions recoiled and settled. Exact evidence and practical limits are in [VALIDATION-1.2.md](VALIDATION-1.2.md).
+Chromium/SwiftShader checks establish behavior and work counts, not physical-device FPS. The approved bubble path measured zero copy mutations, geometry reads and additional texture uploads in the [v1.2 record](VALIDATION-1.2.md); that shader is preserved. Current scroll, field and CD evidence is kept separately in [VALIDATION-1.3.md](VALIDATION-1.3.md).
 
 ## CD exchange and music transport
 
-Three native case buttons display verified artwork. Circular order is Memories → MHA → Show. A visual state machine performs 180 ms insertion, 220 ms exchange while the CD is hidden, then 180 ms ejection. CSS supplies motion; no per-frame JavaScript exchange loop exists. The disc button translates while its inner face rotates, preserving the centered hub and rotor.
+Three native case buttons display verified artwork. Circular order is Memories → MHA → Show. `initDiscInteraction()` owns one reversible progress value for case poses, disc insertion and ejection. A full automatic exchange uses 520 ms; a partial gesture resumes or returns from its current progress. The incoming case starts moving with the timeline. The disc is concealed across the central transfer interval so its holder changes while hidden; a slow automatic frame still presents that transfer once.
 
-A separate requested-track index captures rapid input without queuing many animations. Reversing to the current track cancels exchange. Keyboard activation settles the selected release before interpreting play/pause. Reduced motion settles immediately, even mid-transition. Disposal clears the single timer.
+Horizontal pointer movement locks after an axis threshold and directly updates progress. Vertical intent retains native touch scrolling. Pointer capture belongs to the stage once locked; `lostpointercapture` bubbling from an inner cover's implicit touch capture must not cancel that transfer. Release chooses completion or return from progress and recent velocity, then suppresses the generated mouse click. Real mouse/touch checks supplement synthetic controller events.
+
+Placement transforms belong to the outer case/disc buttons. Hover tilt and local shine belong to inner `.jewel-shell`/`.disc-tilt` surfaces, while the rotor remains independent. The hover loop runs only while its bounded response settles, caches bounds on interaction and avoids per-frame layout reads. The stage exposes native arrow-key navigation. Keyboard play activation settles the selected release before interpreting play/pause; reduced motion and hidden-tab transitions settle immediately.
+
+A requested-track index replaces pending intentions without accumulating an animation queue. The visual timeline commits the selected release through the player callback. Cancellation before a commit keeps the previous track. Disposal releases capture, observers, listeners and RAF, and restores inline visual state. The discrete 180/220/180 ms timers of 1.2 remain historical behavior.
 
 Idle browsing loads no provider; paused browsing does not autoplay. Active/pending intent continues, and the provider changes only after the outgoing disc is concealed. Generation guards reject stale callbacks. Rotation requires actual provider PLAY, not a click or pending request.
 
@@ -81,7 +93,8 @@ The official SoundCloud widget remains the transport behind native controls. Its
 
 ## References and history
 
-- [Exact asset prompts and provenance](LAYER-ASSETS.md), [v1.2 decisions](LAYERED-REVISION.md), [validation](VALIDATION-1.2.md)
+- [Current interaction/asset decisions](INTERACTION-REFINEMENT-1.3.md), [current validation](VALIDATION-1.3.md)
+- [Exact asset prompts and provenance](LAYER-ASSETS.md), [v1.2 decisions](LAYERED-REVISION.md), [v1.2 validation](VALIDATION-1.2.md)
 - [v1.1 music concept](MEADOW-REVISION.md), retained as history; its dissolve and DOM glyph path are superseded
 - Cortex: `Programming/Web3D/Performance.md`, `Rendering.md`, `Validation.md`, `Interactions.md`, `Layered-Artist-Sites.md`, and `Programming/WebQuality/README.md`
 - Checkpoint Portfolio: `deimoxportfolios/src/ui/modal-material.js`, `dxrkths/src/scene/room-quality.js`, `dxrkths/docs/STABILITY-R23.md`, `braaza/src/render/quality.js`

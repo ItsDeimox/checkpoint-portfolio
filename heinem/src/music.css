@@ -31,7 +31,11 @@ main {
   width: 79.7%;
   height: 49.5%;
   perspective: 1600px;
+  touch-action: pan-y;
+  cursor: grab;
 }
+.jewel-stage[data-dragging="true"],
+.jewel-stage[data-dragging="true"] button { cursor: grabbing; }
 .jewel-case {
   position: absolute;
   display: block;
@@ -73,6 +77,15 @@ main {
 .jewel-case:focus-visible {
   filter: brightness(1.07);
 }
+.jewel-stage[data-carousel="ready"] .jewel-case,
+.jewel-stage[data-carousel="ready"] .disc-button {
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  transition: filter 220ms ease;
+}
+.jewel-stage[data-carousel="ready"] .jewel-case { cursor: grab; }
+.jewel-stage[data-dragging="true"] .jewel-case { cursor: grabbing; }
 .jewel-shell {
   position: absolute;
   inset: 0;
@@ -84,6 +97,8 @@ main {
     1px 0 0 rgba(255,255,255,.85),
     inset 0 0 0 3px rgba(255,255,255,.24),
     inset 0 0 0 5px rgba(49,67,57,.22);
+  transform-origin: 50% 50%;
+  will-change: auto;
 }
 .jewel-artwork {
   position: absolute;
@@ -143,6 +158,17 @@ main {
   background: linear-gradient(126deg,rgba(255,255,255,.18),transparent 34%,transparent 60%,rgba(236,252,250,.08) 71%,transparent 87%);
   pointer-events: none;
 }
+.jewel-shell::after,
+.disc-tilt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--shine-opacity,0);
+  background: radial-gradient(ellipse at var(--shine-x,50%) var(--shine-y,50%),rgba(255,255,255,.95),rgba(230,246,255,.28) 27%,transparent 65%);
+  mix-blend-mode: screen;
+}
 .disc-button {
   --disc-inset: -64%;
   position: absolute;
@@ -175,6 +201,29 @@ main {
 .disc-button:hover { filter: brightness(1.07); }
 .disc-button:active { filter: brightness(1.12); }
 .disc-button:focus-visible { outline-offset: 5px; }
+.disc-tilt {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+}
+.disc-tilt::before {
+  content: "";
+  position: absolute;
+  inset: 1.1%;
+  z-index: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.57);
+  box-shadow: inset 0 0 0 2px rgba(70,91,96,.18),0 0 0 1px rgba(65,80,66,.28);
+  background: conic-gradient(from -25deg,transparent 18%,rgba(167,248,255,.1),transparent 35%,rgba(255,215,247,.11) 55%,transparent 69%);
+  mask-image: radial-gradient(circle,transparent 0 11%,#000 12% 70%,transparent 71%);
+  pointer-events: none;
+}
+.disc-tilt::after {
+  z-index: 2;
+  mask-image: radial-gradient(circle,transparent 0 10%,#000 11% 69.8%,transparent 70.6%);
+}
 .disc-face {
   position: absolute;
   inset: 0;
@@ -188,6 +237,7 @@ main {
   animation: disc-spin 9s linear infinite;
   animation-play-state: paused;
   mask-image: radial-gradient(circle, transparent 0 9.8%,#000 10.2% 69.8%,transparent 70.6%);
+  filter: contrast(1.035) saturate(1.055);
 }
 .disc-hub {
   position: absolute;
@@ -426,4 +476,6 @@ body[data-reduced-motion="true"] .disc-face { animation: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .disc-face { animation: none !important; }
   .jewel-case, .disc-button { transition: none; }
+  .jewel-shell, .disc-tilt { transform: none !important; }
+  .jewel-shell::after, .disc-tilt::after { opacity: 0; }
 }

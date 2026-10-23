@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.3.0 — 2026-10-22 (São Paulo; 2026-10-23 UTC)
+
+### Changed
+
+- Selected the previously generated brighter portrait requested by the user. `artist-light.webp` is 802 × 1774, 291,154 bytes, WebP quality 94/alpha 100. Its RGB is reconstructed; the original-RGB 1.2 cutout is archived at `docs/reference/artist-photo-v1.2.webp`.
+- Added four 1080 × 1457 native detail tiles inside the existing foreground, with static overlaps and the base field's silhouette/underlay. Their combined effective density is about 1964 × 2648, or 3.31 times the base field's effective pixel count, with a 2,057,858-byte optional payload.
+- Load field detail only at desktop widths of at least 1000 px on Medium/High without data saving. Reveal it only after all tiles decode; mobile, Low and failure paths retain the complete base field.
+- Removed the second 95 ms parallax filter and synchronized depth immediately after actual wheel scroll writes. The sky now follows the same document position before paint, including the first wheel frame and direction changes.
+- Replaced the discrete CD exchange timers with one reversible timeline. Mouse/touch dragging controls progress; click navigation uses the same motion, with a full automatic exchange of 520 ms.
+- Added bounded pointer-following 3D tilt and local shine on inner case/disc surfaces while keeping outer placement, rotor and play target separate.
+- Preserve native vertical touch scrolling and ignore bubbled loss of an inner element's implicit pointer capture when capture moves to the carousel stage.
+- Refresh the versioned social preview from the implemented brighter portrait and detailed field, and retain desktop/mobile/transfer screenshots with the validation record.
+
+### Preserved
+
+- The approved bubble shader, typography, local glow and depth factors.
+- One continuous foreground through the music section, without scroll-dependent fading or a separate patch beneath the CDs.
+- Manual graphics preferences, reduced motion, silent cover browsing, official media transport and MIT application licensing.
+
+### Verification
+
+- Added regressions for stopped/reversed sky motion and depth alignment within each completed wheel frame.
+- Added field-detail request gating, shared-plane movement and all-or-fallback decoding checks.
+- Expanded CD controller and real browser pointer coverage for gradual motion, cancellation, tilt, capture and native touch ownership.
+- Focused and integrated outcomes are distinguished in [VALIDATION-1.3.md](docs/VALIDATION-1.3.md). Earlier production passes are not treated as verification of this revision.
+
 ## 1.2.0 — 2026-10-22 (São Paulo; 2026-10-23 UTC)
 
 ### Changed

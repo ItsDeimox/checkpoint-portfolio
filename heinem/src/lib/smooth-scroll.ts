@@ -20,7 +20,7 @@ const SCROLL_KEYS = new Set([
 ]);
 
 /** Smooth vertical wheel input while keeping the document's real scrollY. */
-export function createSmoothScroll(reducedMotion: boolean): SmoothScrollController {
+export function createSmoothScroll(reducedMotion: boolean, onScroll?: () => void): SmoothScrollController {
   const listeners = new AbortController();
   let reduced = reducedMotion;
   let destroyed = false;
@@ -96,7 +96,12 @@ export function createSmoothScroll(reducedMotion: boolean): SmoothScrollControll
     lastWritten = current;
     // Explicit instant overrides the page's CSS scroll-behavior:smooth.
     // There are no geometry/computed-style reads in this animation loop.
+    const previousScroll = window.scrollY;
     window.scrollTo({ top: current, behavior: 'instant' });
+    // Publish an actual document movement before this frame paints. The
+    // parallax layers consume the same position without waiting for the next
+    // asynchronous scroll event. Rounded/zero movement needs no depth work.
+    if (window.scrollY !== previousScroll) onScroll?.();
     if (!finish) frame = window.requestAnimationFrame(animate);
     else lastFrameTime = settlingTime = 0;
   }

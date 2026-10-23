@@ -2,6 +2,7 @@ import type { QualityTier } from './quality';
 
 /** Native scrolling moves one continuous world; relative transforms supply depth. */
 export function createParallax(world: HTMLElement, onFrame?: () => void): {
+  syncScroll(): void;
   setReducedMotion(value: boolean): void;
   setQuality(quality: QualityTier): void;
   destroy(): void;
@@ -14,18 +15,14 @@ export function createParallax(world: HTMLElement, onFrame?: () => void): {
   });
   const events = new AbortController();
   const { signal } = events;
-  let quality: QualityTier = 'high';
   let reducedMotion = false;
   let visible = false;
   let destroyed = false;
   let frame = 0;
   let worldTop = 0;
   let worldHeight = 0;
-  let current = 0;
   let lastApplied = NaN;
-  let previousTime = 0;
   let geometryDirty = true;
-  let snapNext = true;
 
   function measure() {
     const bounds = world.getBoundingClientRect();
@@ -52,74 +49,72 @@ export function createParallax(world: HTMLElement, onFrame?: () => void): {
   function stop() {
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
-    previousTime = 0;
   }
 
-  function tick(time: number) {
+  function tick() {
     frame = 0;
     if (destroyed || document.hidden || reducedMotion) return;
     if (geometryDirty) measure();
-    if (!visible) { previousTime = 0; return; }
-    const target = Math.max(0, Math.min(worldHeight, window.scrollY - worldTop));
-    const delta = previousTime ? Math.min(64, time - previousTime) : 16.7;
-    previousTime = time;
-    // Low keeps compositor transforms but avoids additional easing frames.
-    current = snapNext || quality === 'low' ? target : current + (target - current) * (1 - Math.exp(-delta / 95));
-    snapNext = false;
-    if (Math.abs(current - target) < 0.08) current = target;
-    apply(current);
-    if (current !== target) frame = requestAnimationFrame(tick);
-    else previousTime = 0;
+    if (!visible) return;
+    // Wheel input already eases the real document scroll position. Depth must
+    // use that same position, not a second delayed copy: otherwise the sky
+    // keeps drifting downward after an upward document movement has stopped.
+    // Native touch, scrollbar and keyboard input also keep the same geometry.
+    apply(Math.max(0, Math.min(worldHeight, window.scrollY - worldTop)));
   }
 
-  function request(snap = false) {
+  function request() {
     if (destroyed || reducedMotion || document.hidden) return;
-    snapNext ||= snap;
     if (!frame && (visible || geometryDirty)) frame = requestAnimationFrame(tick);
   }
 
   function resize() {
     geometryDirty = true;
-    request(true);
+    request();
   }
 
   window.addEventListener('scroll', () => request(), { passive: true, signal });
   window.addEventListener('resize', resize, { passive: true, signal });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) stop();
-    else { geometryDirty = true; request(true); }
+    else { geometryDirty = true; request(); }
   }, { signal });
 
   const intersection = new IntersectionObserver(entries => {
     const entry = entries[0];
     if (!entry) return;
     visible = entry.isIntersecting && entry.intersectionRatio > 0.001;
-    if (visible) request(true);
+    if (visible) request();
     else stop();
   }, { threshold: 0.001 });
   intersection.observe(world);
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(world);
   measure();
-  request(true);
+  request();
 
   return {
+    syncScroll() {
+      // The wheel controller has just written scrollY in this same frame.
+      // Cancel its queued native-scroll update and use the new value before
+      // paint, rather than exposing one frame of uncompensated sky movement.
+      stop();
+      tick();
+    },
     setReducedMotion(value) {
       if (value === reducedMotion) return;
       reducedMotion = value;
       if (value) {
         stop();
-        current = 0;
         apply(0);
       } else {
         geometryDirty = true;
-        request(true);
+        request();
       }
     },
-    setQuality(value) {
-      if (value === quality) return;
-      quality = value;
-      request(true);
+    setQuality(_value) {
+      // Quality budgets affect rendering, not the physical depth of scenery.
+      request();
     },
     destroy() {
       destroyed = true;

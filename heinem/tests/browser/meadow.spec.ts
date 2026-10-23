@@ -52,7 +52,7 @@ test('album sleeves select real tracks without loading media before play', async
   await expect(page.locator('#about, #contact')).toHaveCount(0);
 });
 
-test('disc conceals before the cover exchange and returns to the same pivot', async ({ page }) => {
+test('disc follows the moving sleeve, conceals through the midpoint and returns to the same pivot', async ({ page }) => {
   await page.goto('/');
   await page.locator('#next-track').scrollIntoViewIfNeeded();
   await page.waitForTimeout(300);
@@ -78,7 +78,8 @@ test('disc conceals before the cover exchange and returns to the same pivot', as
     (window as Window & { discHistory?: { phase?: string; selected?: string; visibility: string }[] }).discHistory!);
   expect(history.map(entry => entry.phase)).toEqual(['inserting', 'swapping', 'ejecting', 'idle']);
   expect(history[0].selected).toBe('0');
-  expect(history[1]).toEqual({ phase: 'swapping', selected: '1', visibility: 'hidden' });
+  expect(history[1]).toMatchObject({ phase: 'swapping', visibility: 'hidden' });
+  expect(history[2].selected).toBe('1');
   // A timer phase may finish just before the compositor presents its last
   // transition frame (especially under a software GPU). Wait on geometry.
   await expect.poll(async () => {
@@ -103,4 +104,102 @@ test('reduced motion selects the release without a disc animation', async ({ pag
   // The global accessibility reset uses 0.001 ms so transitionend users elsewhere
   // can still observe completion. Either that value or literal zero is inert.
   expect(transition.split(',').every(value => Number.parseFloat(value) <= 0.000001)).toBe(true);
+});
+
+test('drag scrubs the exchange on desktop and mobile, then commits without an accidental play', async ({ page }) => {
+  const provider: string[] = [];
+  page.on('request', request => { if (/soundcloud\.com/.test(request.url())) provider.push(request.url()); });
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    const stage = page.locator('.jewel-stage');
+    await expect(stage).toHaveAttribute('data-carousel', 'ready');
+    await stage.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+    const area = (await stage.boundingBox())!;
+    const card = (await page.locator('[data-track="0"]').boundingBox())!;
+    const initial = (await page.locator('[data-track="1"]').boundingBox())!.x;
+    const start = { x: card.x + card.width * .55, y: card.y + card.height * .4 };
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x - area.width * .16, start.y, { steps: 8 });
+    await expect(stage).toHaveAttribute('data-dragging', 'true');
+    await expect.poll(async () => (await page.locator('[data-track="1"]').boundingBox())!.x).toBeLessThan(initial - 20);
+    const intermediate = (await page.locator('[data-track="1"]').boundingBox())!.x;
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '0');
+    await page.mouse.move(start.x - area.width * .32, start.y, { steps: 8 });
+    await expect.poll(async () => (await page.locator('[data-track="1"]').boundingBox())!.x).toBeLessThan(intermediate - 20);
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '0');
+    await page.mouse.up();
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '1');
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
+    await expect(stage).toHaveAttribute('data-dragging', 'false');
+    await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
+    await expect(page.locator('#disc-button')).toHaveAttribute('aria-label', 'Play MHA 50k DROP');
+    // A new intentional click after the drag must still work normally.
+    await page.locator('#previous-track').click();
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '0');
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
+  }
+  expect(provider).toEqual([]);
+});
+
+test('pointer position tilts the case surface while its hit target and the CD pivot stay stable', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const card = page.locator('[data-track="0"]');
+  await card.scrollIntoViewIfNeeded();
+  const bounds = (await card.boundingBox())!;
+  const shell = card.locator('.jewel-shell');
+  await page.mouse.move(bounds.x + bounds.width * .2, bounds.y + bounds.height * .25);
+  await expect.poll(() => shell.evaluate(el => Number.parseFloat((el as HTMLElement).style.getPropertyValue('--shine-x')))).toBeLessThan(40);
+  const left = await shell.evaluate(el => getComputedStyle(el).transform);
+  await page.mouse.move(bounds.x + bounds.width * .8, bounds.y + bounds.height * .7);
+  await expect.poll(() => shell.evaluate(el => Number.parseFloat((el as HTMLElement).style.getPropertyValue('--shine-x')))).toBeGreaterThan(60);
+  const right = await shell.evaluate(el => getComputedStyle(el).transform);
+  expect(left).not.toBe(right);
+  expect(right).toContain('matrix3d');
+  const final = (await card.boundingBox())!;
+  expect(Math.abs(final.x - bounds.x) + Math.abs(final.y - bounds.y)).toBeLessThan(.2);
+  await page.mouse.move(1, 1);
+  await expect.poll(() => shell.evaluate(el => Number.parseFloat((el as HTMLElement).style.getPropertyValue('--shine-opacity')))).toBe(0);
+});
+
+test('touch drags reserve horizontal intent and leave vertical scrolling to the browser', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const client = await page.context().newCDPSession(page);
+  await client.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+  await page.goto('/');
+  const stage = page.locator('.jewel-stage');
+  await stage.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(200);
+  const box = (await page.locator('[data-track="0"]').boundingBox())!;
+  const start = { x: box.x + box.width * .5, y: box.y + box.height * .3 };
+  const before = await page.evaluate(() => scrollY);
+  await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ ...start, id: 1 }] });
+  for (let i = 1; i <= 6; i++) {
+    await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: start.x + 2, y: start.y + i * 15, id: 1 }] });
+    await page.waitForTimeout(16);
+  }
+  await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeLessThan(before - 30);
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '0');
+  await expect(stage).toHaveAttribute('data-dragging', 'false');
+  expect(await stage.evaluate(el => getComputedStyle(el).touchAction)).toBe('pan-y');
+
+  await stage.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(250);
+  const card = (await page.locator('[data-track="0"]').boundingBox())!;
+  const touch = { x: card.x + card.width * .7, y: card.y + card.height * .4 };
+  await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ ...touch, id: 2 }] });
+  for (let i = 1; i <= 8; i++) {
+    await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: touch.x - i * 15, y: touch.y, id: 2 }] });
+    await page.waitForTimeout(16);
+  }
+  await expect(stage).toHaveAttribute('data-dragging', 'true');
+  await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '1');
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
+  await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
+  await client.detach();
 });

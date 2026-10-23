@@ -24,7 +24,7 @@ class Element extends EventTarget {
   get clientWidth() { this.geometryReads++; return 800; }
 }
 
-function setup({ reduced = false, position = 0, height = 3000, viewport = 800 } = {}) {
+function setup({ reduced = false, position = 0, height = 3000, viewport = 800, quantize = false } = {}) {
   const root = new Element({ height, viewport });
   const body = new Element({ height, viewport });
   const document = Object.assign(new EventTarget(), {
@@ -32,6 +32,7 @@ function setup({ reduced = false, position = 0, height = 3000, viewport = 800 } 
   });
   const frames = new Map();
   const writes = [];
+  const notifications = [];
   const wheelListeners = new Set();
   const observers = [];
   let now = 0;
@@ -57,7 +58,7 @@ function setup({ reduced = false, position = 0, height = 3000, viewport = 800 } 
     cancelAnimationFrame: (id) => frames.delete(id),
     scrollTo(options) {
       writes.push(options);
-      window.scrollY = options.top;
+      window.scrollY = quantize ? Math.round(options.top) : options.top;
       window.dispatchEvent(new Event('scroll'));
     },
     getComputedStyle(element) {
@@ -73,9 +74,10 @@ function setup({ reduced = false, position = 0, height = 3000, viewport = 800 } 
   const context = vm.createContext({
     window, document, Element, AbortController, ResizeObserver,
     performance: { now: () => now },
+    onScroll: () => notifications.push(window.scrollY),
   });
   vm.runInContext(source, context);
-  const controller = vm.runInContext(`createSmoothScroll(${reduced})`, context);
+  const controller = vm.runInContext(`createSmoothScroll(${reduced}, onScroll)`, context);
 
   function event(type, properties = {}, target = body) {
     const result = new Event(type, { cancelable: true });
@@ -102,7 +104,7 @@ function setup({ reduced = false, position = 0, height = 3000, viewport = 800 } 
     assert.equal(frames.size, 0, 'animation must stop after reaching its target');
   }
   return {
-    controller, window, document, root, body, frames, writes, wheelListeners, observers,
+    controller, window, document, root, body, frames, writes, notifications, wheelListeners, observers,
     event, tick, settle,
     wheel: (deltaY, properties, target) => event('wheel', { deltaY, ...properties }, target),
     get geometryReads() { return root.geometryReads + body.geometryReads + styleReads; },
@@ -126,6 +128,31 @@ test('wheel uses actual scrollY, animates only on demand and performs no frame l
   const writes = view.writes.length;
   view.tick();
   assert.equal(view.writes.length, writes, 'no work should remain while idle');
+  view.controller.destroy();
+});
+
+test('depth synchronization observes each actual wheel scroll in its write frame, without idle or rounded duplicates', () => {
+  const view = setup({ quantize: true });
+  view.wheel(120);
+  const measured = view.geometryReads;
+  view.tick(0);
+  assert.equal(view.notifications.length, 0, 'a zero-distance presentation must not notify depth');
+  view.tick();
+  assert.ok(view.window.scrollY > 0);
+  assert.equal(view.notifications.at(-1), view.window.scrollY, 'depth updates before the animation frame returns');
+  view.settle();
+  const positions = [];
+  let previous = 0;
+  for (const write of view.writes) {
+    const actual = Math.round(write.top);
+    if (actual !== previous) positions.push(actual);
+    previous = actual;
+  }
+  assert.deepEqual(view.notifications, positions, 'only actual document movement requests depth work');
+  assert.equal(view.geometryReads, measured, 'stable animation does not measure layout');
+  const count = view.notifications.length;
+  view.tick();
+  assert.equal(view.notifications.length, count);
   view.controller.destroy();
 });
 

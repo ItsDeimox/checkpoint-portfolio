@@ -1,8 +1,34 @@
 # HEINEM visual asset provenance
 
-## Current revision — v1.2
+## Current revision — v1.3
 
-The current runtime uses seven separate layers documented with full prompts, alpha measurements, image-generation IDs, crop coordinates, compression and rights in [LAYER-ASSETS.md](LAYER-ASSETS.md). Their combined payload is **1,581,358 bytes**. The portrait displays the newly supplied original photograph RGB through a generated matte; generated portrait RGB was discarded. The bubble no longer samples a photograph at runtime.
+The current scene uses seven base assets plus four optional detail tiles inside the same physical foreground. The seven base files total **1,782,536 bytes**; optional detail adds **2,057,858 bytes**, for **3,840,394 bytes** when all scene images are loaded. This excludes covers, CD, fonts and social metadata. [LAYER-ASSETS.md](LAYER-ASSETS.md) contains the current file inventory and preserves the earlier release history.
+
+### Portrait choice
+
+The user requested the brighter portrait instead of the yellow-toned version. The selected source, `exec-bbc57ac2-ed6d-4111-9d4b-1d0d7080e545.png`, is **882 × 1784**, generated from the supplied original selfie during the previous asset exploration. Its RGB includes reconstructed facial and clothing detail. It was discarded for v1.2, then explicitly selected as the brighter presentation for v1.3. The current site must therefore **not** be described as displaying unchanged original-photo RGB or an alpha-only portrait edit.
+
+The source was cropped at **left 47, top 10, width 802, height 1774** and encoded without enlargement to `public/assets/layers/artist-light.webp` (**802 × 1774**, **291,154 bytes**, WebP quality 94 / alpha 100 / effort 6). The previous original-RGB cutout is preserved at [reference/artist-photo-v1.2.webp](reference/artist-photo-v1.2.webp) (**414 × 920**, **89,976 bytes**) and is no longer a public runtime image. The selected candidate's exact generation prompt remains in the decision history in [LAYER-ASSETS.md](LAYER-ASSETS.md).
+
+### Foreground detail
+
+The native continuous field remained **1080 × 1456** even after a complete-field edit requested 2160 × 2912. That unsuccessful larger-frame attempt was not shipped or described as a resolution increase. Four exact, overlapping **594 × 801** crops were instead reconstructed independently, each yielding **1080 × 1457** native pixels. Their registered composition provides approximately **1964 × 2648 effective field density**, or **3.31×** the original unique pixel density. Additional blades and petal details are generated reconstruction, not literal recovery of previously photographed detail.
+
+The four files, `field-detail-tl.webp`, `field-detail-tr.webp`, `field-detail-bl.webp` and `field-detail-br.webp`, are encoded at WebP quality 89 / alpha 100 / effort 6. They retain the original complete field underneath and use static overlap/alpha masks inside its single parallax transform. Only viewports ≥1000 px with resolved Medium/High graphics and no advertised data-saving preference request them. Every tile must decode before the detail group is displayed; errors retain the complete base image. Mobile and Low use the base field.
+
+The full crop/source manifest, output sizes, measured alpha, memory cost, all exact prompts, rejected attempt and **3/3 focused browser checks** are in [FOREGROUND-DETAIL-1.3.md](FOREGROUND-DETAIL-1.3.md). The built-in image tool was used; no external generation service, CLI/API fallback or source enlargement supplied the new detail. The existing CD bitmap, official covers, fonts, sky, other vegetation, butterfly and approved bubble material retain their prior asset origins.
+
+### Current social preview and visual evidence
+
+`public/assets/social-preview-v1.3.jpg` is a capture of the implemented 1.3 hero at 1672 × 941, exported at 1200 × 630 with a centered cover crop, JPEG quality 87 and MozJPEG encoding: **227,642 bytes**. It shows the selected brighter portrait and the assembled field. The versioned Open Graph URL avoids serving the old preview from a previously cached asset URL; the previous preview file remains available for existing links.
+
+The five `docs/evidence/refinement-*.webp` images are browser screenshots encoded at WebP quality 86 without changing their capture dimensions. They record the desktop/mobile hero and music views, plus the concealed CD transfer. The corresponding `refinement-visual-report.json` records four viewport sizes and five scroll positions each. These are implementation evidence, not generated concept art.
+
+The code's MIT license does not transfer rights to the artist's likeness, supplied photography, music, branding or third-party artwork. Historical claims below describe their stated releases and do not override the current portrait and field provenance.
+
+## Historical revision — v1.2
+
+The v1.2 runtime used seven separate layers documented with full prompts, alpha measurements, image-generation IDs, crop coordinates, compression and rights in [LAYER-ASSETS.md](LAYER-ASSETS.md). Their combined payload was **1,581,358 bytes**. That portrait displayed the supplied original photograph RGB through a generated matte; generated portrait RGB was discarded for that release. The bubble stopped sampling a photograph at runtime.
 
 The flattened original hero reference now lives at `docs/reference/hero-original.webp` for design history and is excluded from the deployed public assets. The six superseded scene/mask files, including both old music meadow treatments described below, are no longer used in v1.2. Their actual previous files remain available in Git history at application commit `58cb7512d81b48e68a3a022f23155a40d7bd23ae`. The silver CD, official cover artwork and local fonts remain current.
 

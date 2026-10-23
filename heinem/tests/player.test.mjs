@@ -6,9 +6,13 @@ import vm from 'node:vm';
 
 // Exercise the actual controller against deterministic DOM/provider boundaries.
 // Network audio and visual placement are covered separately in browser QA.
-const source = stripTypeScriptTypes(
+const interactionSource = stripTypeScriptTypes(
+  readFileSync(new URL('../src/lib/disc-interaction.ts', import.meta.url), 'utf8'),
+).replace('export function initDiscInteraction', 'function initDiscInteraction');
+const source = interactionSource + '\n' + stripTypeScriptTypes(
   readFileSync(new URL('../src/lib/player.ts', import.meta.url), 'utf8'),
-).replace('export function initPlayer', 'function initPlayer');
+).replace(/import \{ initDiscInteraction \} from '.\/disc-interaction';/, '')
+  .replace('export function initPlayer', 'function initPlayer');
 
 class Element extends EventTarget {
   constructor(id = '') {
@@ -16,7 +20,10 @@ class Element extends EventTarget {
     this.id = id;
     this.dataset = {};
     this.attributes = {};
-    this.style = { setProperty: (key, value) => { this.style[key] = value; } };
+    this.style = {
+      setProperty: (key, value) => { this.style[key] = value; },
+      removeProperty: (key) => { delete this.style[key]; },
+    };
     this.classes = new Set();
     this.classList = {
       toggle: (name, active) => active ? this.classes.add(name) : this.classes.delete(name),
@@ -25,7 +32,15 @@ class Element extends EventTarget {
     this.children = [];
     this.hidden = false;
     this.disabled = false;
+    this.clientWidth = 1000;
+    this.clientHeight = 400;
+    this.captured = new Set();
   }
+  querySelector() { return null; }
+  getBoundingClientRect() { return { left: 0, top: 0, width: this.clientWidth, height: this.clientHeight }; }
+  setPointerCapture(id) { this.captured.add(id); }
+  hasPointerCapture(id) { return this.captured.has(id); }
+  releasePointerCapture(id) { this.captured.delete(id); }
   setAttribute(name, value) { this.attributes[name] = value; }
   append(child) { this.children.push(child); child.parent = this; }
   replaceChildren(...children) {
@@ -53,7 +68,8 @@ function createPlayer({ withAPI = true, withMiniPlay = false, reducedMotion = tr
     return row;
   });
   const artwork = new Element();
-  elements['listening-room'].querySelector = () => artwork;
+  const stage = new Element('stage');
+  elements['listening-room'].querySelector = (selector) => selector === '.jewel-stage' ? stage : artwork;
   elements['listening-room'].querySelectorAll = () => rows;
   const head = new Element();
   const widgets = [];
@@ -83,14 +99,25 @@ function createPlayer({ withAPI = true, withMiniPlay = false, reducedMotion = tr
     READY: 'ready', PLAY: 'play', PAUSE: 'pause', FINISH: 'finish',
     PLAY_PROGRESS: 'progress', SEEK: 'seek', ERROR: 'error',
   };
-  const context = vm.createContext({
-    document: {
+  const document = Object.assign(new EventTarget(), {
       getElementById: (id) => elements[id] ?? null,
       createElement: () => new Element(),
-      head,
-    },
-    window: { ...(withAPI ? { SC: { Widget: factory } } : {}), matchMedia: () => motion },
+      head, hidden: false,
+  });
+  const window = Object.assign(new EventTarget(), {
+    ...(withAPI ? { SC: { Widget: factory } } : {}),
+    matchMedia: (query) => query.includes('reduced-motion') ? motion : { matches: false },
+  });
+  const context = vm.createContext({
+    document, window,
     URLSearchParams, AbortController,
+    performance: { now: () => clock },
+    requestAnimationFrame(callback) {
+      const id = ++nextTimer;
+      timers.set(id, { callback: () => callback(clock), delay: 16, at: clock + 16 });
+      return id;
+    },
+    cancelAnimationFrame: (id) => timers.delete(id),
     setTimeout(callback, delay) {
       const id = ++nextTimer;
       timers.set(id, { callback, delay, at: clock + delay });
@@ -101,7 +128,7 @@ function createPlayer({ withAPI = true, withMiniPlay = false, reducedMotion = tr
   vm.runInContext(source, context);
   const controller = vm.runInContext('initPlayer()', context);
   return {
-    controller, elements, rows, widgets, timers, head, motion,
+    controller, elements, rows, widgets, timers, head, motion, stage,
     room: elements['listening-room'],
     advance(milliseconds) {
       const until = clock + milliseconds;
@@ -125,6 +152,14 @@ function createPlayer({ withAPI = true, withMiniPlay = false, reducedMotion = tr
 }
 
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); };
+
+const pointer = (stage, type, x, y, extra = {}) => {
+  const event = new Event(type, { cancelable: true });
+  Object.assign(event, { pointerId: 1, isPrimary: true, pointerType: 'mouse', button: 0,
+    clientX: x, clientY: y, ...extra });
+  stage.dispatchEvent(event);
+  return event;
+};
 
 async function start(player) {
   player.elements['disc-button'].click();
@@ -159,43 +194,121 @@ test('carousel initializes without mini-play and browsing covers does not reques
   p.controller.destroy();
 });
 
-test('disc enters its sleeve before covers exchange and exits after the exchange', () => {
+test('covers begin moving together with insertion and audio selection changes while concealed', () => {
   const p = createPlayer({ reducedMotion: false });
+  const incoming = p.rows[1].style.transform;
   p.elements['next-track'].click();
   assert.equal(p.room.dataset.discPhase, 'inserting');
-  assert.equal(p.room.dataset.activeTrack, '0', 'the outgoing cover stays until the disc is concealed');
-  p.advance(179);
+  p.advance(64);
+  assert.notEqual(p.rows[1].style.transform, incoming, 'incoming case starts before concealment');
   assert.equal(p.room.dataset.activeTrack, '0');
-  p.advance(1);
+  p.advance(64);
   assert.equal(p.room.dataset.discPhase, 'swapping');
+  assert.equal(p.elements['disc-button'].style.visibility, 'hidden');
+  p.advance(32);
   assert.equal(p.room.dataset.activeTrack, '1');
-  p.advance(219);
   assert.equal(p.room.dataset.discPhase, 'swapping');
-  p.advance(1);
+  p.advance(64);
   assert.equal(p.room.dataset.discPhase, 'ejecting');
-  p.advance(180);
+  p.advance(400);
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  assert.equal(p.widgets.length, 0);
+  assert.equal(p.head.children.length, 0);
+  assert.equal(p.timers.size, 0);
+  p.controller.destroy();
+});
+
+test('rapid arrows retain one latest destination and reversing before concealment springs back', () => {
+  const p = createPlayer({ reducedMotion: false });
+  p.elements['next-track'].click();
+  p.elements['next-track'].click();
+  p.advance(160);
+  assert.equal(p.room.dataset.activeTrack, '2');
+  p.elements['previous-track'].click();
+  p.elements['next-track'].click();
+  p.elements['previous-track'].click();
+  p.advance(1100);
+  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  p.elements['next-track'].click();
+  p.advance(64);
+  p.elements['previous-track'].click();
+  p.advance(600);
+  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  assert.equal(p.timers.size, 0);
+  p.controller.destroy();
+});
+
+test('horizontal drag scrubs cases and CD before committing and suppresses its synthetic click', () => {
+  const p = createPlayer({ reducedMotion: false });
+  const initial = p.rows[1].style.transform;
+  pointer(p.stage, 'pointerdown', 600, 180);
+  pointer(p.stage, 'pointermove', 530, 180);
+  p.advance(16);
+  const first = p.rows[1].style.transform;
+  assert.notEqual(first, initial);
+  assert.equal(p.room.dataset.activeTrack, '0', 'drag previews do not load or select audio');
+  const transfer = new Event('lostpointercapture');
+  Object.defineProperty(transfer, 'target', { value: p.rows[0] });
+  Object.assign(transfer, { pointerId: 1 });
+  p.stage.dispatchEvent(transfer);
+  assert.equal(p.stage.dataset.dragging, 'true', 'implicit touch capture transfers from child to stage');
+  pointer(p.stage, 'pointermove', 350, 180);
+  p.advance(16);
+  assert.notEqual(p.rows[1].style.transform, first);
+  assert.equal(p.elements['disc-button'].style.visibility, 'hidden');
+  assert.equal(p.room.dataset.activeTrack, '0');
+  assert.equal(p.stage.hasPointerCapture(1), true);
+  pointer(p.stage, 'pointerup', 350, 180);
+  assert.equal(p.stage.hasPointerCapture(1), false);
+  const click = new Event('click', { cancelable: true });
+  Object.assign(click, { detail: 1 });
+  p.stage.dispatchEvent(click);
+  assert.equal(click.defaultPrevented, true, 'release cannot accidentally play/select the cover under it');
+  p.advance(400);
+  assert.equal(p.room.dataset.activeTrack, '1');
   assert.equal(p.room.dataset.discPhase, 'idle');
   assert.equal(p.widgets.length, 0);
   assert.equal(p.head.children.length, 0);
   p.controller.destroy();
 });
 
-test('rapid arrows accumulate on the requested release and reversing before concealment cancels the swap', () => {
+test('short or cancelled drags return to the original pose without loading audio', () => {
   const p = createPlayer({ reducedMotion: false });
-  p.elements['next-track'].click();
-  p.elements['next-track'].click();
-  p.advance(180);
-  assert.equal(p.room.dataset.activeTrack, '2');
-  p.elements['previous-track'].click();
-  assert.equal(p.room.dataset.activeTrack, '1', 'hidden disc may safely retarget without displaying mismatched artwork');
+  const initial = p.rows[0].style.transform;
+  pointer(p.stage, 'pointerdown', 500, 180);
+  pointer(p.stage, 'pointermove', 450, 180);
+  p.advance(160); // A held short drag is not a velocity flick.
+  pointer(p.stage, 'pointerup', 450, 180);
   p.advance(400);
+  assert.equal(p.rows[0].style.transform, initial);
+  assert.equal(p.room.dataset.activeTrack, '0');
+  pointer(p.stage, 'pointerdown', 300, 180);
+  pointer(p.stage, 'pointermove', 650, 180);
+  p.advance(16);
+  pointer(p.stage, 'pointercancel', 650, 180);
+  p.advance(500);
+  assert.equal(p.rows[0].style.transform, initial);
   assert.equal(p.room.dataset.discPhase, 'idle');
-  p.elements['next-track'].click();
-  p.elements['previous-track'].click();
-  p.advance(180);
+  assert.equal(p.widgets.length, 0);
+  assert.equal(p.timers.size, 0);
+  p.controller.destroy();
+});
+
+test('vertical touch intent stays native and reduced motion commits swipes without animation', () => {
+  const p = createPlayer();
+  const initial = p.rows[0].style.transform;
+  pointer(p.stage, 'pointerdown', 200, 100, { pointerType: 'touch' });
+  const vertical = pointer(p.stage, 'pointermove', 204, 140, { pointerType: 'touch' });
+  assert.equal(vertical.defaultPrevented, false);
+  assert.equal(p.stage.hasPointerCapture(1), false);
+  assert.equal(p.rows[0].style.transform, initial);
+  pointer(p.stage, 'pointerdown', 500, 100, { pointerType: 'touch' });
+  pointer(p.stage, 'pointermove', 250, 100, { pointerType: 'touch' });
+  assert.equal(p.rows[0].style.transform, initial, 'reduced motion avoids the moving preview');
+  pointer(p.stage, 'pointerup', 250, 100, { pointerType: 'touch' });
   assert.equal(p.room.dataset.activeTrack, '1');
-  assert.equal(p.room.dataset.discPhase, 'ejecting');
-  p.advance(180);
   assert.equal(p.room.dataset.discPhase, 'idle');
   assert.equal(p.timers.size, 0);
   p.controller.destroy();
@@ -237,15 +350,16 @@ test('playing swaps retire the old provider only when the disc is concealed and 
   const old = await start(p);
   const stalePlay = old.callbacks.get('play');
   p.elements['next-track'].click();
-  p.advance(179);
+  p.advance(112);
   assert.equal(old.pauses, 0, 'audio does not stop just because the slide begins');
   assert.equal(p.widgets.length, 1);
-  p.advance(1);
+  p.advance(48);
   await flush();
   assert.equal(old.pauses, 1);
   const intermediate = p.widgets.at(-1);
   const staleReady = intermediate.callbacks.get('ready');
   p.elements['next-track'].click();
+  p.advance(600);
   await flush();
   const current = p.widgets.at(-1);
   stalePlay();

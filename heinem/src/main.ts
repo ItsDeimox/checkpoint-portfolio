@@ -3,6 +3,7 @@ import { createQualityController } from './lib/quality';
 import { createParallax } from './lib/parallax';
 import { initPlayer } from './lib/player';
 import { createSmoothScroll } from './lib/smooth-scroll';
+import { createFieldDetail } from './lib/field-detail';
 
 const hero = document.querySelector<HTMLElement>('#home')!;
 const world = document.querySelector<HTMLElement>('#scene-world')!;
@@ -14,6 +15,7 @@ const backdrops = ['.sky', '.distant-foliage', '.mid-foliage', '.left-tree']
 let bubble: ReturnType<typeof createBubble> | undefined;
 let parallax: ReturnType<typeof createParallax> | undefined;
 let smoothScroll: ReturnType<typeof createSmoothScroll> | undefined;
+let fieldDetail: ReturnType<typeof createFieldDetail> | undefined;
 
 const quality = createQualityController((tier, reducedMotion) => {
   document.body.dataset.quality = tier;
@@ -23,6 +25,7 @@ const quality = createQualityController((tier, reducedMotion) => {
   parallax?.setQuality(tier);
   parallax?.setReducedMotion(reducedMotion);
   smoothScroll?.setReducedMotion(reducedMotion);
+  fieldDetail?.setQuality(tier);
 });
 
 bubble = createBubble(canvas, host, {
@@ -35,11 +38,12 @@ bubble = createBubble(canvas, host, {
 parallax = createParallax(world, () => bubble?.syncBackdrop());
 parallax.setQuality(quality.quality);
 parallax.setReducedMotion(quality.reducedMotion);
-smoothScroll = createSmoothScroll(quality.reducedMotion);
+smoothScroll = createSmoothScroll(quality.reducedMotion, () => parallax?.syncScroll());
 const player = initPlayer();
+fieldDetail = createFieldDetail(document.querySelector<HTMLElement>('.foreground')!, quality.quality);
 
 // Decode local layers early; the page never waits behind a decorative loader.
-for (const image of document.querySelectorAll<HTMLImageElement>('.hero img')) {
+for (const image of document.querySelectorAll<HTMLImageElement>('.hero img[src]:not([data-field-detail])')) {
   image.decode?.().catch(() => { /* Native image fallback remains in the page. */ });
 }
 
@@ -87,6 +91,7 @@ function dispose() {
   smoothScroll?.destroy();
   bubble?.destroy();
   player.destroy();
+  fieldDetail?.destroy();
 }
 function onPageHide(event: PageTransitionEvent) {
   if (event.persisted) return;

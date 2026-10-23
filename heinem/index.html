@@ -14,7 +14,7 @@
       content="A little escape. A deeper feeling. Discover the music of Brazilian producer HEINEM."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://heinem.vercel.app/assets/social-preview.jpg" />
+    <meta property="og:image" content="https://heinem.vercel.app/assets/social-preview-v1.3.jpg" />
     <meta property="og:url" content="https://heinem.vercel.app/" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="canonical" href="https://heinem.vercel.app/" />
@@ -27,7 +27,7 @@
     />
     <link
       rel="preload"
-      href="/assets/layers/artist.webp"
+      href="/assets/layers/artist-light.webp"
       as="image"
       fetchpriority="high"
     />
@@ -206,7 +206,7 @@
           <img class="scene-layer mid-foliage" src="/assets/layers/foliage-mid.webp" width="1672" height="941" alt="" decoding="async" data-depth="0.22" />
           <img class="scene-layer left-tree" src="/assets/layers/tree-left.webp" width="1672" height="941" alt="" decoding="async" data-depth="0.34" />
           <div class="scene-layer portrait" data-depth="0.08">
-            <img class="artist-cutout" src="/assets/layers/artist.webp" width="414" height="920" alt="HEINEM wearing headphones, glasses and a light hoodie." fetchpriority="high" decoding="async" />
+            <img class="artist-cutout" src="/assets/layers/artist-light.webp" width="802" height="1774" alt="HEINEM wearing headphones, glasses and a light hoodie." fetchpriority="high" decoding="async" />
           </div>
           <div class="butterfly butterfly-left" data-depth="0.24" aria-hidden="true">
             <span class="butterfly-flight"><i class="wing wing-left"></i><i class="wing wing-right"></i><i class="butterfly-body"></i></span>
@@ -257,6 +257,14 @@
           </div>
           <div class="scene-layer foreground" aria-hidden="true" data-depth="-0.14">
             <img src="/assets/layers/field-continuous.webp" width="1080" height="1456" alt="" decoding="async" />
+            <div class="field-detail" data-state="idle" hidden>
+              <div class="field-detail-plane">
+                <span class="field-tile field-tile-tl"><img data-field-detail="/assets/layers/field-detail-tl.webp" alt="" decoding="async" fetchpriority="low" /></span>
+                <span class="field-tile field-tile-tr"><img data-field-detail="/assets/layers/field-detail-tr.webp" alt="" decoding="async" fetchpriority="low" /></span>
+                <span class="field-tile field-tile-bl"><img data-field-detail="/assets/layers/field-detail-bl.webp" alt="" decoding="async" fetchpriority="low" /></span>
+                <span class="field-tile field-tile-br"><img data-field-detail="/assets/layers/field-detail-br.webp" alt="" decoding="async" fetchpriority="low" /></span>
+              </div>
+            </div>
           </div>
         </div>
         <a class="scroll-cue" href="#music"
@@ -294,9 +302,11 @@
                 </span>
               </button>
               <button class="disc-button" id="disc-button" type="button" aria-label="Play Memories Of You" aria-pressed="false">
+                <span class="disc-tilt" aria-hidden="true">
                 <span class="disc-face" aria-hidden="true"></span>
                 <span class="disc-hub" aria-hidden="true"></span>
                 <span class="disc-action" aria-hidden="true"><svg class="play-icon"><use href="#icon-play" /></svg><svg class="pause-icon"><use href="#icon-pause" /></svg><span class="loading-icon"></span></span>
+                </span>
               </button>
             </div>
             <div class="music-caption">

@@ -1,6 +1,6 @@
 # Validation — HEINEM
 
-The current **v1.2 separated-assets/GPU-typography revision** has its own [validation record](VALIDATION-1.2.md), [implementation decisions](LAYERED-REVISION.md) and [asset provenance with exact prompts](LAYER-ASSETS.md). The [v1.1 meadow/CD record](VALIDATION-1.1.md) remains historical evidence. The following text preserves the **v1.0.0 baseline**; its deployment IDs and resource counts are not current results.
+The current **v1.3 synchronized-scroll, detailed-field and CD-interaction revision** has its own [validation record](VALIDATION-1.3.md) and [implementation decisions](INTERACTION-REFINEMENT-1.3.md). [Asset provenance with exact prompts](LAYER-ASSETS.md) records the image sources. The [v1.2 separated-assets/GPU-typography record](VALIDATION-1.2.md) and [v1.1 meadow/CD record](VALIDATION-1.1.md) remain historical evidence. The following text preserves the **v1.0.0 baseline**; its deployment IDs and resource counts are not current results.
 
 ## Historical baseline — 1.0.0
 
