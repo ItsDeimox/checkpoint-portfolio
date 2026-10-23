@@ -1,0 +1,40 @@
+name: Finish DXRKTHS mobile regression validation
+on:
+  push:
+    branches: [dxrkths-r35-mobile-final]
+permissions:
+  contents: write
+jobs:
+  mobile:
+    if: "!contains(github.event.head_commit.message, '[r35 applied]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          sparse-checkout: dxrkths
+      - name: Apply reviewed alignment and async image-test correction
+        run: |
+          python dxrkths/tools/r35-refine.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dxrkths/src/styles-mobile.css dxrkths/tests/mobile-r35-browser.cjs
+          git commit -m 'fix(dxrkths): align mobile cards and await selected gallery image in QA [r35 applied]'
+          git push origin HEAD:dxrkths-r35-mobile-final
+      - name: Run full build and Node regression suite
+        working-directory: dxrkths
+        run: npm ci && npm run build
+      - name: Prepare system Chrome automation
+        working-directory: dxrkths
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          if ! command -v google-chrome && ! command -v chromium; then npx playwright install --with-deps chromium; fi
+      - name: Run all mobile interaction and orientation checks
+        working-directory: dxrkths
+        run: node tests/mobile-r35-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dxrkths-r35-mobile-final
+          path: dxrkths/docs/r35-mobile-qa/
+          retention-days: 7
