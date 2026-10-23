@@ -1,9 +1,16 @@
-/* One physical garden spans both sections; every plane has its own alpha. */
+/* One physical garden spans both sections; every plane has its own alpha.
+   Restrained emerald/blue grading is applied only to scenery.
+   Artist RGB, bubble light, album covers and UI are deliberately untouched. */
+:root {
+  --garden-sky-grade: saturate(.83) hue-rotate(-3deg) brightness(.985) contrast(1.015);
+  --garden-foliage-grade: saturate(.78) hue-rotate(9deg) brightness(.98) contrast(1.045);
+  --garden-foreground-grade: saturate(.80) hue-rotate(8deg) brightness(.985) contrast(1.04);
+}
 #scene-world {
   position: relative;
   isolation: isolate;
   overflow: clip;
-  background: #41662c;
+  background: #41604d;
 }
 .hero {
   position: relative;
@@ -33,10 +40,10 @@
   pointer-events: none;
   user-select: none;
 }
-.sky { z-index: 0; }
-.distant-foliage { z-index: 1; }
-.mid-foliage { z-index: 2; }
-.left-tree { z-index: 3; }
+.sky { z-index: 0; filter: var(--garden-sky-grade); }
+.distant-foliage { z-index: 1; filter: var(--garden-foliage-grade); }
+.mid-foliage { z-index: 2; filter: var(--garden-foliage-grade); }
+.left-tree { z-index: 3; filter: var(--garden-foliage-grade); }
 .scene-layer.portrait {
   z-index: 4;
   top: 9.5%;
@@ -58,6 +65,8 @@
   top: -10%;
   height: 240%;
   bottom: auto;
+  /* A single compositor filter covers both base grass and optional detail. */
+  filter: var(--garden-foreground-grade);
 }
 .foreground > img {
   width: 100%;

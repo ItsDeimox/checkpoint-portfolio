@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.1 — 2026-10-23 (São Paulo)
+
+### Changed
+- Removed HEINEM's X/Twitter profile from the site header and removed its unused SVG symbol. Other socials are preserved.
+- Cooler, less saturated green/blue-green atmosphere based on the supplied meadow reference. Sky, distant/mid vegetation, tree and the **single continuous foreground** are graded independently without tinting the artist, artwork, controls or text.
+- Retained the original approved bubble motion and geometry; its already-existing WebGL background sampler applies a restrained matching scenery tint in the same pass (no added texture upload, GPU pass or full-screen filter).
+- Tuned fallback backgrounds to cooler muted evergreen so the scroll stays visually connected.
+- Preserved continuous CD swipe/hover and GitHub-driven Vercel deployment.
+
+### Deployment
+- Publish only via GitHub main → Vercel Git integration, then verify source SHA and public alias, following [Webuilder rules](../docs/WEBUILDER-RULES.md).
+
+
 ## 1.4.0 — 2026-10-23 (São Paulo)
 
 ### Changed

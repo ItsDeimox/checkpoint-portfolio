@@ -113,7 +113,12 @@ vec3 sceneSample(vec2 uv, vec2 displacement, float lod) {
     vec4 next = layerSample(uBackdrop3, uBackdropMaps[3], uv, displacement, lod);
     color = mix(color, next.rgb, next.a);
   }
-  return color;
+  // Same gentle cool/low-chroma grade as the CSS landscape layers.
+  // Kept in the existing shader pass (no texture reuploads or bloom pass).
+  float luminance = dot(color, vec3(.2126, .7152, .0722));
+  color = mix(vec3(luminance), color, .81);
+  color = color * vec3(.977, .998, 1.034);
+  return clamp(color, 0.0, 1.0);
 }
 
 void main() {
