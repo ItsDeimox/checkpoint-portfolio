@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-23",
+  "source_revision": "75a59807346cc1e685ae6d6d1ce7c15d7691dbc8",
+  "baseline_revision": "a4b7d9e1c82ec37b4cd5e3792b9a09e15444fa37",
+  "node_tests": {"passed": 421, "failed": 0},
+  "browser": "155.0.8059.39",
+  "browser_checks": {"passed": 275, "failed": 0, "uncaught_js_errors": 0},
+  "viewport_matrix": [[320,568],[360,740],[390,844],[430,932],[768,1024],[844,390],[568,320]],
+  "desktop_check": [1440,900],
+  "touch_emulation": true,
+  "device_scale_factor": 2,
+  "renderer": "software WebGL",
+  "physical_devices_tested": false,
+  "workflow_run": 40032914234,
+  "artifact_id": 12535673600,
+  "artifact_name": "dxrkths-r35-mobile-confirmed",
+  "scope": "Five showroom destinations, header/audio controls, five page/return routes, footer links, galleries, group touch gestures, six project modals, scroll preservation, quality cycling, reduced motion and desktop exclusion. Not an external-service uptime or hardware FPS test."
+}

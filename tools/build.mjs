@@ -26,6 +26,7 @@ export const RUNTIME_FILES = Object.freeze([
   'assets/projects/unnamed-drift/drift-gameplay.webp',
   'assets/projects/unnamed-drift/drift-transition.webp',
   'src/styles-project-dialog.css',
+  'src/styles-mobile.css',
   'src/ui/destination-experience.js',
   'src/ui/energy-network.js',
   'src/ui/cube-energy.js',
