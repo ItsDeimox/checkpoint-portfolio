@@ -22,6 +22,6 @@ test('new artwork pair retains native detail under a 2 MiB combined download bud
 test('background and field have only one texture/sample path, no old runtime filter',()=>{
  const source=read('src/main.ts'),shader=read('src/graphics/bubble.ts'),style=read('src/scenery.css');
  assert.ok(!source.includes('createSceneFinish')); assert.ok(!source.includes('createFieldDetail'));
- assert.ok(!shader.includes('gradeGarden')); assert.ok(shader.includes('return layerSample(uBackdrop0'));
+ assert.ok(!shader.includes('gradeGarden')); assert.ok(shader.includes('layerSample(uBackdrop0')); assert.ok(shader.includes('layerSample(uBackdrop1')); assert.ok(shader.includes('mix(sky.rgb, meadow.rgb, meadow.a)'));
  assert.ok(style.includes('filter: none')); assert.ok(!style.includes('saturate(.86)'));
 });

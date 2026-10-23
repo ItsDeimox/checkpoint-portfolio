@@ -98,10 +98,14 @@ vec4 layerSample(sampler2D source, vec4 map, vec2 uv, vec2 displacement, float l
   return color;
 }
 
-// New art is already graded offline: sample the exact visible scenery pixels.
-// One backdrop texture, no duplicated CSS / WebGL tint stack.
+// Refract the same composed sky AND transparent continuous meadow visible
+// behind the film. The foreground keeps its native alpha and its parallax map.
+// Both are uploaded once; no texture copy or filter pass runs during hover.
 vec3 sceneSample(vec2 uv, vec2 displacement, float lod) {
-  return layerSample(uBackdrop0, uBackdropMaps[0], uv, displacement, lod).rgb;
+  vec4 sky = layerSample(uBackdrop0, uBackdropMaps[0], uv, displacement, lod);
+  if (uBackdropCount < 2) return sky.rgb;
+  vec4 meadow = layerSample(uBackdrop1, uBackdropMaps[1], uv, displacement, lod);
+  return mix(sky.rgb, meadow.rgb, meadow.a);
 }
 
 void main() {
@@ -235,7 +239,7 @@ void main() {
     // A subtle dark keyline keeps white body copy readable against the sky.
     float keyline = ink.g * (1.0 - ink.r) * 0.65 * inside;
     premultiplied = mix(premultiplied, vec3(0.08, 0.19, 0.21), keyline);
-    premultiplied = mix(premultiplied, vec3(0.78, 0.96, 1.0), inkGlow);
+    premultiplied = mix(premultiplied, vec3(1.0), inkGlow);
     alpha = inkGlow + alpha * (1.0 - inkGlow);
     premultiplied = vec3(0.99, 1.0, 1.0) * inkAlpha + premultiplied * (1.0 - inkAlpha);
     alpha = inkAlpha + alpha * (1.0 - inkAlpha);

@@ -27,3 +27,7 @@
 }
 @media (max-width: 370px) { .hero { min-height: 900px; }
 }
+
+/* Blend the naturally warm artist into the rainy blue/green reference,
+   not a global tint over the approved sky, meadow or music covers. */
+.artist-cutout { filter: saturate(.93) brightness(.975) hue-rotate(1deg); }

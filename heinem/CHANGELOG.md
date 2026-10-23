@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.1 — 2026-10-23
+
+- Replaced the old signature artwork with the artist-supplied geometric H, redrawn as scalable SVG and matching favicon.
+- Anchored bubble aspect ratio to a stable viewport-adaptive geometry on desktops and landscape tablets, retaining responsive cached shader typography while the browser height changes.
+- Added the generated transparent meadow to the background sampled by the bubble. Foreground pixels are alpha-composited with the sky/tree layer inside the existing shader, with no new passes.
+- Pure white local typography bloom replaces the previous cyan, keeping the existing six independent jelly impulses and quality settings.
+- Mildly cool-muted the portrait only. The approved landscape and CD artwork remain unfiltered.
+- Added viewport-specific browser regression tests. Production is deployed by GitHub integration only.
+
+
 ## 1.5.0 — 2026-10-23 (São Paulo)
 
 ### Changed

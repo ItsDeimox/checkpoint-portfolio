@@ -14,9 +14,10 @@ test('HEINEM social links omit X while preserving the remaining official profile
 test('reference artwork is pregraded and never tinted twice at runtime', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#scene-world')).toHaveAttribute('data-scene','reference-2026-10-23');
-  for (const selector of ['.reference-background', '.foreground', '.artist-cutout', '#bubble-canvas']) {
+  for (const selector of ['.reference-background', '.foreground', '#bubble-canvas']) {
     expect(await page.locator(selector).evaluate(el => getComputedStyle(el).filter)).toBe('none');
   }
+  expect(await page.locator('.artist-cutout').evaluate(el => getComputedStyle(el).filter)).toContain('saturate(');
   await expect(page.locator('#garden-cool-finish')).toHaveCount(0);
   await expect(page.locator('.foreground')).toHaveCount(1);
 });

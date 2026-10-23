@@ -9,7 +9,7 @@ const world = document.querySelector<HTMLElement>('#scene-world')!;
 const scene = document.querySelector<HTMLElement>('#scene')!;
 const host = document.querySelector<HTMLElement>('#bubble')!;
 const canvas = document.querySelector<HTMLCanvasElement>('#bubble-canvas')!;
-const backdrops = ['.reference-background']
+const backdrops = ['.reference-background', '.reference-foreground > img']
   .map(selector => document.querySelector<HTMLImageElement>(selector)!);
 let bubble: ReturnType<typeof createBubble> | undefined;
 let parallax: ReturnType<typeof createParallax> | undefined;
