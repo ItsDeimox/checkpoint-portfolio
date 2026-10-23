@@ -1,10 +1,10 @@
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
-p=root/'src/styles-mobile.css';s=p.read_text();a='    display: grid;\n    grid-template-columns: repeat(2, minmax(0, 1fr));';b='    display: grid;\n    align-items: stretch;\n    grid-template-columns: repeat(2, minmax(0, 1fr));';assert s.count(a)==1;s=s.replace(a,b);p.write_text(s)
+p=root/'src/styles-mobile.css';s=p.read_text();a='    display: grid;\n    grid-template-columns: repeat(2, minmax(0, 1fr));';b='    display: grid;\n    align-items: stretch;\n    grid-template-columns: repeat(2, minmax(0, 1fr));';assert s.count(a)==2;s=s.replace(a,b,1);p.write_text(s)
 p=root/'tests/mobile-r35-browser.cjs';s=p.read_text();a="async function imageReady(selector='[data-project-stage] img'){await page.locator(selector).evaluate(async i=>{await i.decode();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});}"
 b="""async function imageReady(selector='[data-project-stage] img'){
- // The Berserk gallery announces selection before its async preloader replaces
- // the main image. Wait for THAT source before decode, not the previous slide.
+ // Selection changes before its async preloader replaces the main image.
+ // Wait for the selected source, then decode and presentation frames.
  await page.waitForFunction(selector=>{
   const i=document.querySelector(selector);
   if(!i||!i.complete||i.naturalWidth===0)return false;
