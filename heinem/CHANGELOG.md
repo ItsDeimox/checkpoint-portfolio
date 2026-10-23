@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.1.0 — 2026-10-22
+
+### Changed
+
+- Replaced the separate music dashboard, About and Contact/CTA sections with the user-approved meadow composition: three transparent jewel cases, a silver disc and compact controls over grass.
+- Added a shared scenic background, a focused foreground grass overlay and a soft hero transition. Removed mirrored foreground overscan that exposed an inverted image edge during scroll.
+- Separated the disc rotor from its stationary hub and play button; hover changes light without translating or tilting its pivot.
+- Aligned visual case order with Previous/Next. Browsing without an active play intent does not start audio or load the SoundCloud SDK.
+- Shared one CSS-pixel deformation field between the shader and HTML glyphs, including a local affine response and localized glow. Geometry is cached after font readiness and resize.
+- Sharpened refraction, reduced haze and replaced the photographed rim RGB with a faint extracted optical highlight residual. Kept one localized shader pass.
+- Added short, cancellable wheel interpolation. Touch, keyboard, native controls, nested scrollers and reduced motion keep native ownership; Tab and Shift+Tab cancel pending motion.
+- Added focused player/scroll tests and browser regressions for the disc pivot, silent cover selection, glyph motion, texture uploads and offscreen/reduced-motion suspension.
+
+### Preserved
+
+- Original artist portrait pixels, manual graphics settings, reduced-motion independence, CSS fallback, context recovery and provider error/fallback behavior.
+- MIT application license and the separate rights of photography, identity, covers, fonts and music.
+
 ## 1.0.0 — 2026-10-22
 
 ### Added

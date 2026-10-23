@@ -1,4 +1,8 @@
-# Validation — HEINEM 1.0.0
+# Validation — HEINEM
+
+The current **v1.1 meadow/CD revision** has a separate [validation record](VALIDATION-1.1.md), [approved concept and decisions](MEADOW-REVISION.md), and desktop/mobile evidence. The following record preserves the **v1.0.0 historical baseline**; its deployment IDs and bundle sizes are not presented as v1.1 results.
+
+## Historical baseline — 1.0.0
 
 Verification date: **2026-10-22 UTC**. Evidence distinguishes the actual application, simulated provider events and an external service's behavior. It is not a claim of universal device performance.
 

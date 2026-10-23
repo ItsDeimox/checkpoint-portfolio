@@ -27,8 +27,13 @@ for (const [width, height] of [[1178, 659], [1440, 900], [390, 844], [320, 780]]
     expect(bounds.overflow).toBeLessThanOrEqual(1);
     expect(bounds.copyBottom).toBeLessThan(bounds.bubbleBottom);
     if (width <= 700) expect(bounds.fontSize).toBeGreaterThanOrEqual(12);
-    await page.locator('#contact').scrollIntoViewIfNeeded();
-    await expect(page.getByRole('link', { name: 'Get in touch' })).toBeVisible();
+    await page.locator('#music').scrollIntoViewIfNeeded();
+    await expect(page.locator('#disc-button')).toBeVisible();
+    const centerTarget = await page.locator('#disc-button').evaluate(el => {
+      const b = el.getBoundingClientRect();
+      return document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2)?.closest('button')?.id;
+    });
+    expect(centerTarget).toBe('disc-button');
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
     // Fonts, artwork and graphics are local. Music only connects after intent.
@@ -65,12 +70,9 @@ test('native scroll gives foreground, portrait and sky distinct depths', async (
   });
   expect(planes.foreground).toBeLessThan(planes.portrait);
   expect(planes.portrait).toBeLessThan(planes.sky);
-  // Overscan must reach the hero's lower boundary after the fast plane moves.
-  const coverage = await page.evaluate(() => ({
-    extensionBottom: document.querySelector('.foreground-extension')!.getBoundingClientRect().bottom,
-    heroBottom: document.querySelector('#home')!.getBoundingClientRect().bottom,
-  }));
-  expect(coverage.extensionBottom).toBeGreaterThan(coverage.heroBottom);
+  // A persistent meadow is visible beneath the fast plane; no mirrored grass strip.
+  await expect(page.locator('.meadow-world img')).toBeVisible();
+  await expect(page.locator('.foreground-extension')).toHaveCount(0);
 });
 
 test('reduced motion stops depth motion without changing the user quality', async ({ page }) => {
@@ -111,7 +113,7 @@ test('GPU rendering sleeps when the hero is offscreen', async ({ page }) => {
   });
   await page.goto('/');
   await expect.poll(() => page.evaluate(() => (window as any).__drawCount)).toBeGreaterThan(2);
-  await page.locator('#contact').scrollIntoViewIfNeeded();
+  await page.locator('#music').scrollIntoViewIfNeeded();
   await expect(page.locator('body')).toHaveAttribute('data-scene-active', 'false');
   const before = await page.evaluate(() => (window as any).__drawCount);
   await page.waitForTimeout(350);
@@ -167,8 +169,8 @@ test('CD waits for playback confirmation, then supports progress, pause and trac
   await page.locator('#disc-button').click();
   await expect(page.locator('#listening-room')).toHaveAttribute('data-state', 'paused');
   await page.locator('#next-track').click();
-  await expect(page.locator('#track-title')).toHaveText('Show Me Love');
-  await expect(page.locator('#track-external')).toHaveAttribute('href', /wizthemc-bees-honey-show-me/);
+  await expect(page.locator('#track-title')).toHaveText('MHA 50k DROP');
+  await expect(page.locator('#track-external')).toHaveAttribute('href', /mha-50k-drop-heinem-x-deimox/);
   await expect(page.locator('#embed-mount iframe')).toHaveCount(1);
   await expect(page.locator('#disc-button')).toHaveAttribute('aria-pressed', 'false');
 });

@@ -2,6 +2,7 @@ import { createBubble } from './graphics/bubble';
 import { createQualityController } from './lib/quality';
 import { createParallax } from './lib/parallax';
 import { initPlayer } from './lib/player';
+import { createSmoothScroll } from './lib/smooth-scroll';
 
 const hero = document.querySelector<HTMLElement>('#home')!;
 const scene = document.querySelector<HTMLElement>('#scene')!;
@@ -10,6 +11,7 @@ const canvas = document.querySelector<HTMLCanvasElement>('#bubble-canvas')!;
 const background = document.querySelector<HTMLImageElement>('.landscape')!;
 let bubble: ReturnType<typeof createBubble> | undefined;
 let parallax: ReturnType<typeof createParallax> | undefined;
+let smoothScroll: ReturnType<typeof createSmoothScroll> | undefined;
 
 const quality = createQualityController((tier, reducedMotion) => {
   document.body.dataset.quality = tier;
@@ -18,6 +20,7 @@ const quality = createQualityController((tier, reducedMotion) => {
   bubble?.setReducedMotion(reducedMotion);
   parallax?.setQuality(tier);
   parallax?.setReducedMotion(reducedMotion);
+  smoothScroll?.setReducedMotion(reducedMotion);
 });
 
 bubble = createBubble(canvas, host, {
@@ -32,6 +35,7 @@ bubble = createBubble(canvas, host, {
 parallax = createParallax(hero, () => bubble?.syncBackdrop());
 parallax.setQuality(quality.quality);
 parallax.setReducedMotion(quality.reducedMotion);
+smoothScroll = createSmoothScroll(quality.reducedMotion);
 const player = initPlayer();
 
 // Decode local layers early; the page never waits behind a decorative loader.
@@ -41,26 +45,23 @@ for (const image of document.querySelectorAll<HTMLImageElement>('.hero img')) {
 
 const life = new AbortController();
 let heroVisible = true;
+let musicVisible = false;
 const updateVisibility = () => {
   document.body.dataset.sceneActive = String(heroVisible && !document.hidden);
+  document.body.dataset.musicActive = String(musicVisible && !document.hidden);
 };
 const heroObserver = new IntersectionObserver(entries => {
-  heroVisible = entries[0]?.isIntersecting ?? false;
+  heroVisible = !!entries[0]?.isIntersecting && entries[0].intersectionRatio > 0.001;
   updateVisibility();
-}, { threshold: 0 });
+}, { threshold: 0.001 });
 heroObserver.observe(hero);
+const musicObserver = new IntersectionObserver(entries => {
+  musicVisible = !!entries[0]?.isIntersecting && entries[0].intersectionRatio > 0.001;
+  updateVisibility();
+}, { threshold: 0.001 });
+musicObserver.observe(document.querySelector('#music')!);
 document.addEventListener('visibilitychange', updateVisibility, { signal: life.signal });
 updateVisibility();
-
-const revealObserver = new IntersectionObserver(entries => {
-  for (const entry of entries) {
-    if (!entry.isIntersecting) continue;
-    entry.target.classList.add('visible');
-    revealObserver.unobserve(entry.target);
-  }
-}, { rootMargin: '0px 0px -25px 0px', threshold: 0.08 });
-if (!quality.reducedMotion) document.body.classList.add('js-motion');
-for (const section of document.querySelectorAll('.reveal')) revealObserver.observe(section);
 
 const links = [...document.querySelectorAll<HTMLAnchorElement>('.primary-nav a')];
 const sectionObserver = new IntersectionObserver(entries => {
@@ -79,10 +80,11 @@ for (const section of document.querySelectorAll<HTMLElement>('main > section')) 
 function dispose() {
   life.abort();
   heroObserver.disconnect();
-  revealObserver.disconnect();
+  musicObserver.disconnect();
   sectionObserver.disconnect();
   quality.destroy();
   parallax?.destroy();
+  smoothScroll?.destroy();
   bubble?.destroy();
   player.destroy();
 }

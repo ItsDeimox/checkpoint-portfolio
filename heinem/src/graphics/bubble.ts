@@ -2,6 +2,8 @@
  * A small, decorative soap-film surface. HTML owns the content and interactions.
  * The GPU draws one triangle, with two optional static images and no render targets.
  */
+import { createBubbleText } from '../lib/bubble-text';
+
 export type BubbleQuality = 'low' | 'medium' | 'high';
 
 type BubbleOptions = {
@@ -63,6 +65,17 @@ vec3 spectrum(float phase) {
   return mix(vec3(0.74, 0.9, 1.0), interference, 0.58);
 }
 
+// The DOM letters use this exact forward field and its analytic Jacobian.
+// All distances are CSS pixels, independent of the chosen quality profile.
+vec2 membraneDisplacement(vec2 position) {
+  float unit = min(uSize.x, uSize.y) / 442.0;
+  float radius = max(52.0, min(uSize.x, uSize.y) * 0.24);
+  vec2 r = (position - uPointer * uSize) / radius;
+  float weight = uHover * uMotion * 11.0 * unit * exp(-dot(r, r));
+  vec2 push = (vec2(0.5) - uPointer) * 1.6;
+  return weight * (push - 0.55 * r);
+}
+
 vec3 sceneSample(vec2 uv, vec2 displacement, float lod) {
   vec2 imageUv = uBackdropMap.xy + uv * uBackdropMap.zw;
   imageUv += displacement * uBackdropMap.zw / max(uSize, vec2(1.0));
@@ -85,7 +98,13 @@ vec3 sceneSample(vec2 uv, vec2 displacement, float lod) {
 void main() {
   // CSS-pixel space makes the optical rim independent of framebuffer DPR.
   vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
-  vec2 p = uv * 2.0 - 1.0;
+  vec2 pixel = uv * uSize;
+  // Invert the smooth, bounded field rather than deforming a clipped photograph.
+  // Two fixed iterations keep the contour and source microfolds on one surface.
+  vec2 rest = pixel - membraneDisplacement(pixel);
+  rest = pixel - membraneDisplacement(rest);
+  vec2 restUv = rest / max(uSize, vec2(1.0));
+  vec2 p = restUv * 2.0 - 1.0;
   vec2 halfSize = uSize * 0.5;
   float unit = min(uSize.x, uSize.y) / 442.0;
   float t = uTime * 0.42;
@@ -98,29 +117,19 @@ void main() {
   vec2 q = p / pinch;
   q.x += 0.012 * sin(p.y * 3.0) + 0.008 * p.y;
   q.y += 0.018 * (p.y + 1.0) - 0.012 * p.x;
-  vec2 motionOffset = uMotion * vec2(
-    0.005 * sin(t + p.y * 4.4) + 0.0028 * sin(t * 0.77 - p.y * 6.2),
-    0.005 * sin(t * 0.83 + p.x * 4.8) + 0.0025 * cos(t * 0.61 - p.x * 7.0)
-  );
-  q += motionOffset;
-
   float d = roundBox(q * halfSize, halfSize * vec2(0.915, 0.880), min(uSize.x, uSize.y) * 0.215);
-  vec2 cursor = (uv - uPointer) * uSize;
-  float radius = max(48.0, min(uSize.x, uSize.y) * 0.23);
+  vec2 cursor = rest - uPointer * uSize;
+  float radius = max(52.0, min(uSize.x, uSize.y) * 0.24);
   float cursorDistance = length(cursor);
   float influence = exp(-dot(cursor, cursor) / (radius * radius));
-  // A local indentation, with a soft shoulder. It never moves or rasterizes text.
-  d += uHover * uMotion * unit * (12.0 * influence - 3.8 * exp(-dot(cursor, cursor) / (radius * radius * 2.5)));
 
   float aa = max(fwidth(d), 0.55 * unit);
   vec2 gradient = vec2(dFdx(d), -dFdy(d));
   vec2 normal = gradient * inversesqrt(max(dot(gradient, gradient), 0.000001));
   float inside = 1.0 - smoothstep(-aa, aa, d);
-  // The source texture has transparent content holes. Only the original optical
-  // perimeter survives its CPU mask; neither type nor the signature is sampled.
-  vec2 rimUv = uv + motionOffset * 0.5;
-  rimUv += normal * uHover * uMotion * influence * 7.0 * unit / max(uSize, vec2(1.0));
-  vec4 referenceRim = uHasRim > 0.5 ? texture(uRim, clamp(rimUv, 0.0, 1.0)) : vec4(0.0);
+  // Only optical highlight detail survives the upload; no meadow/photo RGB is
+  // composited here. The detail uses the same inverse field as the contour.
+  vec4 referenceRim = uHasRim > 0.5 ? texture(uRim, clamp(restUv, 0.0, 1.0)) : vec4(0.0);
   if (d > max(15.0 * unit, aa * 3.0) && referenceRim.a < 0.002) discard;
 
   float angle = atan(p.y, p.x);
@@ -169,31 +178,35 @@ void main() {
     + vec3(0.13, 0.31, 0.34) * darkRibbon;
   edgeColor /= max(line + rimSpread * 0.06 + whiteFold * 1.25 + outerRibbon * 0.65 + nearRibbon * 0.8 + farRibbon * 0.66 + fineRibbon * 0.42 + darkRibbon, 0.001);
   edgeColor = clamp(edgeColor + directional * innerSpread * 0.05, 0.0, 1.0);
-  // Preserve the supplied microfolds when available; the procedural material
-  // still supplies refraction, pointer response, and a complete no-image path.
-  edgeAlpha *= mix(1.0, 0.16, uHasRim * smoothstep(0.0, 0.25, referenceRim.a));
+  // The tiny reference residual adds irregular microfolds to the procedural film;
+  // it never replaces its underlying scene with pixels from another photograph.
+  float microfold = referenceRim.a * 0.34;
+  edgeColor = mix(edgeColor, referenceRim.rgb, microfold);
+  edgeAlpha = 1.0 - (1.0 - edgeAlpha) * (1.0 - microfold);
 
   float reflection = exp(-pow((p.y + p.x * 0.23 + 0.66) / 0.14, 2.0));
   float softSheen = exp(-pow((p.y - p.x * 0.36 - 0.6) / 0.36, 2.0));
-  float cursorFold = uHover * uMotion * gaussian(cursorDistance - radius * 0.48, radius * 0.3) * 0.022;
-  float filmAlpha = inside * (0.021 + reflection * 0.028 + softSheen * 0.013 + cursorFold);
+  float cursorFold = uHover * uMotion * gaussian(cursorDistance - radius * 0.48, radius * 0.3) * 0.012;
+  float filmAlpha = inside * (0.012 + reflection * 0.017 + softSheen * 0.009 + cursorFold);
   vec3 filmColor = mix(vec3(0.62, 0.83, 0.9), vec3(0.9, 0.97, 1.0), reflection);
   vec3 filmPremultiplied = filmColor * filmAlpha;
   if (uHasBackdrop > 0.5) {
     float edgeLens = exp(-abs(d) / max(13.0 * unit, 0.1));
-    vec2 pointerLens = cursor / max(cursorDistance, 1.0) * influence * uHover * uMotion * 5.0 * unit;
+    // The Gaussian surface's slope bends the backdrop while its in-plane field
+    // moves the contour and type. A sharp scene makes the optical bend legible.
+    vec2 pointerLens = cursor / radius * influence * uHover * uMotion * 25.0 * unit;
     vec2 bend = normal * (7.2 * edgeLens + 0.55 * inside) * unit + pointerLens;
     // Mipmaps are prepared once per image upload: no blur pass or per-frame copy.
-    float lod = mix(3.15, 1.1, edgeLens);
+    float lod = mix(0.35, 0.8, edgeLens);
     vec3 sceneColor = sceneSample(uv, bend, lod);
     if (uDetail > 0.99) {
-      vec2 dispersion = normal * 1.35 * unit * edgeLens;
+      vec2 dispersion = normal * 1.15 * unit * edgeLens + pointerLens * 0.035;
       sceneColor.r = sceneSample(uv, bend + dispersion, lod).r;
       sceneColor.b = sceneSample(uv, bend - dispersion, lod).b;
     }
     float mist = 0.5 + 0.25 * sin(p.x * 4.5 + p.y * 3.3) + 0.25 * cos(p.y * 5.0 - p.x * 2.0);
-    sceneColor = mix(sceneColor, vec3(0.59, 0.69, 0.73), 0.075);
-    sceneColor = mix(sceneColor, vec3(0.82, 0.88, 0.89), 0.035 + mist * 0.105 + reflection * 0.025);
+    sceneColor = mix(sceneColor, vec3(0.65, 0.75, 0.8), 0.018);
+    sceneColor = mix(sceneColor, vec3(0.85, 0.91, 0.94), 0.008 + mist * 0.022 + reflection * 0.012);
     // The sampled layer is the actual backdrop. An opaque interior lets its
     // displaced pixels replace the undistorted scene, without a screen capture.
     filmPremultiplied = mix(sceneColor * inside, filmColor * inside, min(filmAlpha, 0.15));
@@ -201,8 +214,17 @@ void main() {
   }
   float alpha = edgeAlpha + filmAlpha * (1.0 - edgeAlpha);
   vec3 premultiplied = edgeColor * edgeAlpha + filmPremultiplied * (1.0 - edgeAlpha);
-  premultiplied = referenceRim.rgb * referenceRim.a + premultiplied * (1.0 - referenceRim.a);
-  alpha = referenceRim.a + alpha * (1.0 - referenceRim.a);
+  // Analytic local bloom: two smooth lobes, in this same pass. It requires no
+  // frame capture, blur target, or extra texture and fades with the shared hover.
+  vec2 lightCursor = cursor + vec2(10.0, 13.0) * unit;
+  float lightDistance2 = dot(lightCursor, lightCursor);
+  float contact = exp(-lightDistance2 / max(340.0 * unit * unit, 1.0));
+  float halo = exp(-lightDistance2 / max(3800.0 * unit * unit, 1.0));
+  float bloom = uHover * uMotion * (contact * 0.1 + halo * 0.055)
+    * max(inside * 0.7, exp(-abs(d) / max(5.0 * unit, 0.1)));
+  vec3 lightColor = vec3(0.9, 0.98, 1.0);
+  premultiplied = lightColor * bloom + premultiplied * (1.0 - bloom);
+  alpha = bloom + alpha * (1.0 - bloom);
   outColor = vec4(premultiplied, alpha);
 }`;
 
@@ -229,6 +251,8 @@ export function createBubble(
   const targetPointer = [0.5, 0.5];
   let cssWidth = 1;
   let cssHeight = 1;
+  let canvasLeft = 0;
+  let canvasTop = 0;
   let gl: WebGL2RenderingContext | null = null;
   let program: WebGLProgram | null = null;
   let vao: WebGLVertexArrayObject | null = null;
@@ -237,6 +261,8 @@ export function createBubble(
   let rimSource: HTMLCanvasElement | null = null;
   let backdropReady = false;
   let rimReady = false;
+  let backdropSourceKey = '';
+  let rimSourceKey = '';
   const backdropMap = new Float32Array([0, 0, 1, 1]);
   const skyMap = new Float32Array([0, 0, 1, 1]);
   const skyElementMap = new Float32Array([0, 0, 1, 1]);
@@ -244,6 +270,8 @@ export function createBubble(
   const imageStyles = new Map<HTMLImageElement, { fit: string; position: string[] }>();
   let uniforms: Record<string, WebGLUniformLocation | null> = {};
   const events = new AbortController();
+  const bubbleText = createBubbleText(host, canvas);
+  const textFrame = { width: 1, height: 1, pointerX: 0.5, pointerY: 0.5, hover: 0, time: 0, reducedMotion };
   host.dataset.webgl = 'fallback';
   canvas.setAttribute('aria-hidden', 'true');
 
@@ -265,6 +293,8 @@ export function createBubble(
     const rect = canvas.getBoundingClientRect();
     cssWidth = Math.max(1, rect.width || host.clientWidth);
     cssHeight = Math.max(1, rect.height || host.clientHeight);
+    canvasLeft = rect.left;
+    canvasTop = rect.top;
     const profile = PROFILES[quality];
     const scale = Math.min(
       Math.max(0.5, window.devicePixelRatio || 1),
@@ -279,12 +309,16 @@ export function createBubble(
       canvas.height = height;
     }
     dirtySize = false;
+    bubbleText.resize();
     syncBackdrop();
   }
 
   function syncBackdrop() {
-    if (destroyed || !options.backdrop) return;
+    if (destroyed) return;
     const bubbleRect = canvas.getBoundingClientRect();
+    canvasLeft = bubbleRect.left;
+    canvasTop = bubbleRect.top;
+    if (!options.backdrop) return;
     const mapBounds = (bounds: { left: number; top: number; width: number; height: number }, target: Float32Array) => {
       target[0] = (bubbleRect.left - bounds.left) / Math.max(1, bounds.width);
       target[1] = (bubbleRect.top - bounds.top) / Math.max(1, bounds.height);
@@ -338,6 +372,8 @@ export function createBubble(
   function uploadBackdrop() {
     const image = options.backdrop;
     if (destroyed || contextLost || !ready || !gl || !image?.complete || !image.naturalWidth) return;
+    const sourceKey = image.currentSrc || image.src;
+    if (backdropReady && backdropSourceKey === sourceKey) return;
     try {
       backdropTexture ??= gl.createTexture();
       if (!backdropTexture) throw new Error('Backdrop texture allocation failed');
@@ -352,6 +388,7 @@ export function createBubble(
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
       gl.generateMipmap(gl.TEXTURE_2D);
       backdropReady = true;
+      backdropSourceKey = sourceKey;
       syncBackdrop();
       wake();
     } catch (error) {
@@ -362,7 +399,10 @@ export function createBubble(
   function uploadRim() {
     const image = options.rim;
     if (destroyed || contextLost || !ready || !gl || !rimTexture || !image?.complete || !image.naturalWidth) return;
+    const sourceKey = image.currentSrc || image.src;
+    if (rimReady && rimSourceKey === sourceKey) return;
     try {
+      if (rimSourceKey !== sourceKey) rimSource = null;
       if (!rimSource) {
         // A fixed optical contour traced from the supplied 1178 × 659 artwork.
         // Keep the crop local to the bubble, feather only its peripheral band,
@@ -376,6 +416,7 @@ export function createBubble(
         if (!paint || !alpha) return;
         paint.drawImage(image, image.naturalWidth * 495 / 1178, image.naturalHeight * 112 / 659,
           image.naturalWidth * 580 / 1178, image.naturalHeight * 442 / 659, 0, 0, 580, 442);
+        const original = paint.getImageData(0, 0, 580, 442).data;
         alpha.translate(-495, -112);
         alpha.lineCap = 'round';
         alpha.lineJoin = 'round';
@@ -404,6 +445,34 @@ export function createBubble(
         alpha.fill(new Path2D('M 490 342 L 508 342 C 520 390 546 472 570 523 L 560 555 L 490 555 Z'));
         paint.globalCompositeOperation = 'destination-in';
         paint.drawImage(mask, 0, 0);
+        // Remove the photographed scene entirely. Keep only a faint, pearl-tinted
+        // high-frequency highlight residual; original clouds/grass never become
+        // an opaque second backdrop when the membrane bends. This runs once.
+        const optical = paint.getImageData(0, 0, 580, 442);
+        for (let y = 0; y < 442; y++) {
+          for (let x = 0; x < 580; x++) {
+            const i = (y * 580 + x) * 4;
+            if (!optical.data[i + 3]) continue;
+            let localR = 0; let localG = 0; let localB = 0;
+            for (let oy = -4; oy <= 4; oy += 4) {
+              for (let ox = -4; ox <= 4; ox += 4) {
+                const j = (Math.min(441, Math.max(0, y + oy)) * 580 + Math.min(579, Math.max(0, x + ox))) * 4;
+                localR += original[j]; localG += original[j + 1]; localB += original[j + 2];
+              }
+            }
+            localR /= 9 * 255; localG /= 9 * 255; localB /= 9 * 255;
+            const r = original[i] / 255; const g = original[i + 1] / 255; const b = original[i + 2] / 255;
+            const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
+            const mean = localR * 0.2126 + localG * 0.7152 + localB * 0.0722;
+            const detail = Math.max(0, luminance - mean - 0.006) * 6.5;
+            const white = Math.max(0, (luminance - 0.83) / 0.17) * 0.3;
+            optical.data[i] = Math.round(clamp01(0.91 + (r - localR) * 1.5) * 255);
+            optical.data[i + 1] = Math.round(clamp01(0.96 + (g - localG) * 1.5) * 255);
+            optical.data[i + 2] = Math.round(clamp01(0.99 + (b - localB) * 1.5) * 255);
+            optical.data[i + 3] = Math.round(optical.data[i + 3] * Math.min(0.9, detail + white));
+          }
+        }
+        paint.putImageData(optical, 0, 0);
         rimSource = source;
       }
       gl.activeTexture(gl.TEXTURE1);
@@ -412,6 +481,7 @@ export function createBubble(
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, rimSource);
       rimReady = true;
+      rimSourceKey = sourceKey;
       wake();
     } catch (error) {
       rimReady = false;
@@ -428,12 +498,15 @@ export function createBubble(
       return;
     }
     try {
-      const dt = lastDraw ? Math.min(0.05, Math.max(0, (now - lastDraw) / 1000)) : 1 / 60;
+      const elapsed = lastDraw ? Math.min(0.25, Math.max(0, (now - lastDraw) / 1000)) : 1 / 60;
+      const dt = Math.min(0.05, elapsed);
       lastDraw = now;
       if (dirtySize) resize();
       if (!reducedMotion) time += dt;
-      const follow = 1 - Math.exp(-dt / 0.075);
-      const release = 1 - Math.exp(-dt / (targetHover > hover ? 0.14 : 0.36));
+      // Pointer easing follows wall time even if a constrained renderer skips
+      // frames; only decorative optical time is capped to prevent a phase jump.
+      const follow = 1 - Math.exp(-elapsed / 0.075);
+      const release = 1 - Math.exp(-elapsed / (targetHover > hover ? 0.14 : 0.36));
       pointer[0] += (targetPointer[0] - pointer[0]) * follow;
       pointer[1] += (targetPointer[1] - pointer[1]) * follow;
       hover += (targetHover - hover) * release;
@@ -466,6 +539,14 @@ export function createBubble(
       gl.bindTexture(gl.TEXTURE_2D, rimTexture);
       gl.uniform1i(uniforms.uRim, 1);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
+      textFrame.width = cssWidth;
+      textFrame.height = cssHeight;
+      textFrame.pointerX = pointer[0];
+      textFrame.pointerY = pointer[1];
+      textFrame.hover = hover;
+      textFrame.time = time;
+      textFrame.reducedMotion = reducedMotion;
+      bubbleText.render(textFrame);
       host.dataset.webgl = 'ready';
       if (!reducedMotion) wake();
     } catch (error) {
@@ -493,6 +574,7 @@ export function createBubble(
     ready = false;
     sleep();
     host.dataset.webgl = 'fallback';
+    bubbleText.reset();
     releaseResources();
     if (error) console.warn('[HEINEM] Bubble uses its CSS fallback.', error instanceof Error ? error.message : String(error));
   }
@@ -574,15 +656,17 @@ export function createBubble(
 
   const updatePointer = (event: PointerEvent) => {
     if (reducedMotion) return;
-    const rect = canvas.getBoundingClientRect();
-    if (rect.width < 1 || rect.height < 1) return;
-    targetPointer[0] = clamp01((event.clientX - rect.left) / rect.width);
-    targetPointer[1] = clamp01((event.clientY - rect.top) / rect.height);
+    targetPointer[0] = clamp01((event.clientX - canvasLeft) / cssWidth);
+    targetPointer[1] = clamp01((event.clientY - canvasTop) / cssHeight);
     targetHover = 1;
     wake();
   };
   const pointerMove = (event: PointerEvent) => { if (event.pointerType !== 'touch') updatePointer(event); };
-  const pointerLeave = () => { targetHover = 0; wake(); };
+  const pointerLeave = () => {
+    if (reducedMotion || targetHover === 0) return;
+    targetHover = 0;
+    wake();
+  };
   const passive = { passive: true, signal: events.signal };
   host.addEventListener('pointermove', pointerMove, passive);
   host.addEventListener('pointerenter', pointerMove, passive);
@@ -591,7 +675,7 @@ export function createBubble(
   host.addEventListener('pointerup', (event) => { if (event.pointerType === 'touch') pointerLeave(); }, passive);
   host.addEventListener('pointercancel', pointerLeave, passive);
   options.backdrop?.addEventListener('load', uploadBackdrop, { signal: events.signal });
-  options.rim?.addEventListener('load', () => { rimSource = null; uploadRim(); }, { signal: events.signal });
+  options.rim?.addEventListener('load', uploadRim, { signal: events.signal });
   document.addEventListener('visibilitychange', () => { if (document.hidden) sleep(); else wake(); }, passive);
   window.addEventListener('resize', () => { dirtySize = true; wake(); }, passive);
   window.addEventListener('pageshow', () => { dirtySize = true; wake(); }, passive);
@@ -602,6 +686,7 @@ export function createBubble(
     ready = false;
     sleep();
     host.dataset.webgl = 'fallback';
+    bubbleText.reset();
     program = null;
     vao = null;
     backdropTexture = null;
@@ -620,9 +705,10 @@ export function createBubble(
   });
   resizeObserver?.observe(canvas);
   const intersectionObserver = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
+    // Edge contact can remain isIntersecting at the exact mobile scroll limit.
+    visible = entry.isIntersecting && entry.intersectionRatio > 0.001;
     if (visible) wake(); else sleep();
-  }, { rootMargin: '40px' });
+  }, { rootMargin: '0px', threshold: 0.001 });
   intersectionObserver?.observe(host);
   initialize();
 
@@ -638,6 +724,7 @@ export function createBubble(
       reducedMotion = value;
       hover = 0;
       targetHover = 0;
+      bubbleText.reset();
       sleep();
       wake();
     },
@@ -650,6 +737,7 @@ export function createBubble(
       events.abort();
       resizeObserver?.disconnect();
       intersectionObserver?.disconnect();
+      bubbleText.destroy();
       releaseResources();
       rimSource = null;
       host.dataset.webgl = 'fallback';

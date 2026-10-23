@@ -2,7 +2,7 @@
 
 A sunlit artist website with a layered meadow, an interactive iridescent soap-film surface, and a compact-disc interface connected to verified HEINEM releases through the official SoundCloud player.
 
-**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.0.0 · **Software:** MIT
+**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.1.0 · **Software:** MIT
 
 The site lives independently in [`checkpoint-portfolio/heinem`](https://github.com/ItsDeimox/checkpoint-portfolio/tree/main/heinem). It has its own package, lockfile, license and Vercel project. It does not depend on the other portfolio applications in this repository.
 
@@ -22,18 +22,21 @@ npm run build
 npm run preview
 ```
 
-`npm run build` includes the TypeScript check and all nine graphics-policy tests, so a failure stops the Vercel build before assets are generated.
+`npm run build` includes TypeScript and the graphics-policy, player-state and scroll-input tests, so a failure stops the Vercel build before assets are generated.
 
 Browser checks use Playwright. Install its Chromium once with `npx playwright install chromium`, then run `npm run test:e2e`. A preinstalled compatible browser may be supplied through `CHROMIUM_PATH`. `PLAYWRIGHT_BASE_URL` can point the same tests at a deployment.
 
 ## What is implemented
 
 - Semantic navigation and biography based on the supplied 1178 × 659 reference.
-- Original portrait pixels, separate depth planes, native scroll and foreground grass.
-- One small WebGL2 soap-film surface with refraction, soft cloud/grass sampling, color dispersion, animated folds and pointer indentation.
+- Original portrait pixels, separate depth planes and a meadow that continues into the approved music composition.
+- One small WebGL2 soap-film surface with clear refraction, color dispersion, flowing highlights and pointer deformation shared with the HTML letters.
+- Local luminous hover highlights in the existing shader pass and DOM text; no full-screen bloom chain or extra render targets.
+- Gentle wheel interpolation on the real document scroll position, with native touch/keyboard/control behavior and immediate cancellation on focus navigation.
 - Auto, Low, Medium and High graphics, with persistent manual choices and independent reduced-motion support.
 - Shader and CSS decorative animation pause when the hero leaves the viewport or the tab is hidden.
-- A real CD interface, three verified releases, play/pause, track switching, seek, volume and provider fallback.
+- Three physical jewel-case buttons, the approved silver CD, a fixed rotation pivot, play/pause, Previous/Next, seek, volume and provider fallback.
+- Browsing releases is silent and does not initialize the media provider; playback begins only after an explicit play request.
 - Mobile composition, accessible native controls, local fonts, SEO metadata and restrictive response headers.
 
 No audio is downloaded or re-hosted. The SoundCloud SDK and iframe load after a user gesture; the disc rotates only after the provider confirms playback. A provider restriction, ad, blocked network or additional browser gesture requirement cannot be bypassed by the site. The official player and track link remain available.
@@ -44,10 +47,13 @@ No audio is downloaded or re-hosted. The SoundCloud SDK and iframe load after a 
 
 | Content | File |
 | --- | --- |
-| Biography, navigation, social URLs, about/contact copy | `index.html` |
-| Track IDs, metadata and covers | `src/lib/player.ts` and the track rows in `index.html` |
-| Palette, layout, responsive composition and CD material | `src/style.css` |
-| Bubble optics and frame budgets | `src/graphics/bubble.ts` |
+| Biography, navigation and social URLs | `index.html` |
+| Track IDs, metadata and covers | `src/lib/player.ts` and the jewel-case buttons in `index.html` |
+| Hero palette and responsive composition | `src/style.css` |
+| Music composition, jewel-case materials and disc pivot | `src/music.css` |
+| Bubble optics, frame budgets and optical field | `src/graphics/bubble.ts` |
+| HTML glyph geometry and matching deformation | `src/lib/bubble-text.ts` |
+| Wheel interpolation and input ownership | `src/lib/smooth-scroll.ts` |
 | Device default, preference persistence and menu | `src/lib/quality.ts` |
 | Native scroll depth factors | `data-depth` values in `index.html` |
 | Asset origin and rights | `docs/asset-provenance.md`, `docs/artist-sources.json` |
@@ -58,11 +64,12 @@ The artist's age is reproduced from the supplied design, not calculated from an 
 
 Vercel project: **heinem**, in the existing ItsDeimox team. Git repository: **ItsDeimox/checkpoint-portfolio**, production branch **main**, root directory **heinem**, Node **24.x**, framework **Vite**, install **npm ci**, build **npm run build**, output **dist**. The only intended public project alias is `heinem.vercel.app`.
 
-Production was verified on **2026-10-22 UTC**: public HTTPS returned **200**, Vercel reported **READY**, and all **11 browser checks passed against the live URL**. The source commit, deployment ID, headers, bundle sizes and practical limits are recorded in [VALIDATION.md](docs/VALIDATION.md). Code changes use conventional commit messages and the version/changelog in this folder; a package version is not a claim that a GitHub Release or Git tag exists.
+The version-specific source commit, deployment, browser results, bundle sizes and practical limits are recorded in [VALIDATION.md](docs/VALIDATION.md). The v1.0 production baseline is retained separately from the v1.1 meadow revision. Code changes use conventional commit messages and the version/changelog in this folder; a package version is not a claim that a GitHub Release or Git tag exists.
 
 ## Technical documentation
 
 - [Approved brief](docs/DESIGN.md)
+- [Approved meadow concept and v1.1 decisions](docs/MEADOW-REVISION.md)
 - [Implementation plan](docs/IMPLEMENTATION-PLAN.md)
 - [Architecture and performance](docs/ARCHITECTURE.md)
 - [Validation](docs/VALIDATION.md)

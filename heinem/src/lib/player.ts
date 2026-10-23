@@ -4,6 +4,7 @@ type PlayerState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 interface Track {
   title: string;
   credit: string;
+  displayCredit?: string;
   id: number;
   duration: number;
   url: string;
@@ -14,18 +15,11 @@ const TRACKS: readonly Track[] = [
   {
     title: 'Memories Of You',
     credit: 'Aye Bay · HEINEM x Hyru Remix',
+    displayCredit: 'HEINEM x Hyru Remix',
     id: 2230667804,
     duration: 228233,
     url: 'https://soundcloud.com/heinemstrange/aye-bay-memories-of-you-heinem-x-hyru-remix',
     artwork: '/assets/memories-of-you.jpg',
-  },
-  {
-    title: 'Show Me Love',
-    credit: 'WizTheMc, bees & honey · HEINEM Remix',
-    id: 2085224397,
-    duration: 243533,
-    url: 'https://soundcloud.com/heinemstrange/wizthemc-bees-honey-show-me',
-    artwork: '/assets/show-me-love.jpg',
   },
   {
     title: 'MHA 50k DROP',
@@ -34,6 +28,14 @@ const TRACKS: readonly Track[] = [
     duration: 135998,
     url: 'https://soundcloud.com/heinemstrange/mha-50k-drop-heinem-x-deimox',
     artwork: '/assets/mha-50k-drop.jpg',
+  },
+  {
+    title: 'Show Me Love',
+    credit: 'WizTheMc, bees & honey · HEINEM Remix',
+    id: 2085224397,
+    duration: 243533,
+    url: 'https://soundcloud.com/heinemstrange/wizthemc-bees-honey-show-me',
+    artwork: '/assets/show-me-love.jpg',
   },
 ];
 
@@ -89,7 +91,8 @@ export function initPlayer(): { destroy(): void } {
   };
 
   const disc = required<HTMLButtonElement>('disc-button');
-  const miniPlay = required<HTMLButtonElement>('mini-play');
+  const miniPlay = document.getElementById('mini-play') as HTMLButtonElement | null;
+  const playButtons = miniPlay ? [disc, miniPlay] : [disc];
   const next = required<HTMLButtonElement>('next-track');
   const previous = required<HTMLButtonElement>('previous-track');
   const seek = required<HTMLInputElement>('seek');
@@ -114,6 +117,7 @@ export function initPlayer(): { destroy(): void } {
   let position = 0;
   let ready = false;
   let wantsPlay = false;
+  let hasOpenedPlayer = false;
   let destroyed = false;
   let generation = 0;
   let widget: SoundCloudWidget | undefined;
@@ -133,9 +137,12 @@ export function initPlayer(): { destroy(): void } {
     room!.dataset.state = value;
     room!.setAttribute('aria-busy', String(value === 'loading'));
     const playing = value === 'playing';
-    for (const button of [disc, miniPlay]) {
+    const action = playing ? 'Pause'
+      : value === 'loading' && wantsPlay ? 'Cancel loading'
+        : value === 'error' ? 'Retry' : 'Play';
+    for (const button of playButtons) {
       button.setAttribute('aria-pressed', String(playing));
-      button.setAttribute('aria-label', `${playing ? 'Pause' : value === 'error' ? 'Retry' : 'Play'} ${TRACKS[selected].title}`);
+      button.setAttribute('aria-label', `${action} ${TRACKS[selected].title}`);
     }
     seek.disabled = !ready;
     const labels: Record<PlayerState, [string, string]> = {
@@ -159,18 +166,28 @@ export function initPlayer(): { destroy(): void } {
 
   function updateTrack() {
     const track = TRACKS[selected];
+    room!.dataset.activeTrack = String(selected);
     title.textContent = track.title;
-    credit.textContent = track.credit;
+    credit.textContent = track.displayCredit ?? track.credit;
+    credit.setAttribute('title', track.credit);
     counter.textContent = `${String(selected + 1).padStart(2, '0')} / ${String(TRACKS.length).padStart(2, '0')}`;
     external.href = track.url;
-    external.setAttribute('aria-label', `Open ${track.title} on SoundCloud`);
+    external.setAttribute('aria-label', `Open ${track.title}, ${track.credit} on SoundCloud`);
     duration = track.duration;
     durationLabel.textContent = timeLabel(duration);
     if (artwork) artwork.style.backgroundImage = `url("${track.artwork}")`;
     for (const row of rows) {
-      const active = Number(row.dataset.track) === selected;
+      const index = Number(row.dataset.track);
+      const release = TRACKS[index];
+      if (release) row.setAttribute('aria-label', `Select ${release.title}, ${release.credit}`);
+      const active = index === selected;
       row.classList.toggle('selected', active);
       row.setAttribute('aria-pressed', String(active));
+      row.dataset.position = active
+        ? 'active'
+        : index === (selected + TRACKS.length - 1) % TRACKS.length
+          ? 'previous'
+          : 'next';
     }
     updateProgress(0);
   }
@@ -254,12 +271,13 @@ export function initPlayer(): { destroy(): void } {
     widget.play();
   }
 
-  async function loadTrack(index: number) {
+  async function loadTrack(index: number, playOnReady = true) {
     const current = ++generation;
     clearWatchdog();
     releaseWidget();
     selected = (index + TRACKS.length) % TRACKS.length;
-    wantsPlay = true;
+    wantsPlay = playOnReady;
+    hasOpenedPlayer = true;
     updateTrack();
     message.textContent = '';
     setState('loading');
@@ -278,7 +296,7 @@ export function initPlayer(): { destroy(): void } {
       download: 'false',
       color: '#8b8fba',
     });
-    iframe.title = `${TRACKS[selected].title} — official SoundCloud player`;
+    iframe.title = `${TRACKS[selected].title}, ${TRACKS[selected].credit} — official SoundCloud player`;
     iframe.src = `https://w.soundcloud.com/player/?${params.toString()}`;
     iframe.width = '100%';
     iframe.height = '106';
@@ -364,16 +382,41 @@ export function initPlayer(): { destroy(): void } {
     }
   }
 
+  function selectTrack(index: number) {
+    if (destroyed) return;
+    const nextIndex = (index + TRACKS.length) % TRACKS.length;
+    if (nextIndex === selected) return;
+    // Respect both confirmed playback and an explicit play request still
+    // loading. A pending pause must never turn into playback on navigation.
+    const wasPlaying = wantsPlay && (state === 'playing' || state === 'loading');
+    if (hasOpenedPlayer) {
+      void loadTrack(nextIndex, wasPlaying);
+    } else {
+      // Browsing cover art before pressing the CD needs no third-party player.
+      selected = nextIndex;
+      updateTrack();
+      setState('idle');
+    }
+  }
+
   function toggle() {
     if (destroyed) return;
     if (state === 'playing') {
       wantsPlay = false;
       widget?.pause();
     } else if (state === 'loading') {
-      wantsPlay = false;
-      clearWatchdog();
-      widget?.pause();
-      setState('paused');
+      if (wantsPlay) {
+        wantsPlay = false;
+        clearWatchdog();
+        widget?.pause();
+        setState('paused');
+      } else {
+        // A paused track can be loading after carousel navigation. Pressing
+        // the CD now requests playback instead of cancelling that silent load.
+        wantsPlay = true;
+        if (ready) requestPlay();
+        else setState('loading');
+      }
     } else if (state === 'error' || !widget || !ready) {
       void loadTrack(selected);
     } else {
@@ -383,15 +426,14 @@ export function initPlayer(): { destroy(): void } {
 
   const listenerOptions = { signal: events.signal };
   disc.addEventListener('click', toggle, listenerOptions);
-  miniPlay.addEventListener('click', toggle, listenerOptions);
-  next.addEventListener('click', () => void loadTrack(selected + 1), listenerOptions);
-  previous.addEventListener('click', () => void loadTrack(selected - 1), listenerOptions);
+  miniPlay?.addEventListener('click', toggle, listenerOptions);
+  next.addEventListener('click', () => selectTrack(selected + 1), listenerOptions);
+  previous.addEventListener('click', () => selectTrack(selected - 1), listenerOptions);
   for (const row of rows) {
     row.addEventListener('click', () => {
       const index = Number(row.dataset.track);
       if (!Number.isInteger(index) || index < 0 || index >= TRACKS.length) return;
-      if (index === selected) toggle();
-      else void loadTrack(index);
+      selectTrack(index);
     }, listenerOptions);
   }
   seek.addEventListener('input', () => {

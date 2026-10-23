@@ -12,6 +12,9 @@ The user supplied `image(20261022-215633).png` (1178 × 659) as the visual refer
 | `portrait-layer.webp` | 1677 × 938, alpha | 124,824 | Alpha mask only; generated RGB is never displayed |
 | `foreground-grass.webp` | 1677 × 938, alpha | 160,756 | Transparent foreground grass plane |
 | `reference-original.webp` | 1178 × 659 | 822,578 | Lossless conversion of the supplied reference, for exact original-pixel masks |
+| `music-meadow.webp` | 1672 × 941 | 400,046 | Clean field reconstructed from the approved music concept |
+| `music-foreground.webp` | 1672 × 941, alpha | 224,940 | Focused grass crossing the jewel-case bases, with near bokeh below |
+| `silver-disc.webp` | 768 × 768, alpha | 152,362 | Photographic iridescent CD material, separated from the live controls |
 
 The three layer images retain a full landscape canvas and near-original placement. Align them to one shared canvas, rather than independently using `object-fit: cover` with different positions. WebP conversions were produced with Sharp (quality 88 background/grass, 94 portrait, alpha quality 100, effort 6). The reference conversion is lossless. Compression does not change semantic image content.
 
@@ -41,8 +44,18 @@ The reference is a flattened screenshot, not the source layered artwork. Regions
 
 Desktop also retains masked original landscape and sky plates. `landscape-preserve-mask.svg` removes the flattened navigation, logo, old bubble, original butterflies and footer labels. Separate HTML/SVG elements and butterfly crops replace them. The portrait mask removes the duplicated person from the background planes. This keeps the original tree and field details while allowing independent depth motion. The logo is a hand-drawn SVG interpretation; the source did not contain an editable vector asset.
 
-The foreground contains a mirrored overscan image below its initial visible bounds. It extends the last image row when the fast plane scrolls upward, preventing a horizontal uncovered edge without increasing the initial image download. This reconstructed continuation is not part of the original photograph.
+V1.1 removes the mirrored foreground overscan used in the initial release. A soft lower alpha mask and a shared meadow background now maintain coverage while the fast plane moves. The scene transition is a crossfade of registered layers; it is not an infinitely extended photograph.
 
 The three track covers are artist/provider artwork documented in `artist-sources.json`. They are locally cached thumbnails; no music is re-hosted. Poppins Latin fonts are self-hosted under the included SIL Open Font License. A social preview is captured from the running site rather than exposing the reference screenshot's editing tooltip.
 
 Original generated PNGs remain in the task workspace's `generated_images` directory. Only compressed runtime assets belong in the web bundle.
+
+## Approved music scene — v1.1
+
+The user approved the generated [1672 × 941 concept](reference/music-approved.webp) with the explicit instruction to replicate it 1:1. The background was edited to remove the cases, disc and UI, then a separate focused-grass alpha layer was generated to cross the case bases. The disc was isolated and its occluded half reconstructed into a full circular material. Case geometry, artwork, labels and all controls are independent live HTML/CSS elements. The actual provider cover images are retained rather than replacing the artist artwork with the concept's generated lettering.
+
+The new three-image runtime payload is 777,348 bytes. The CD's transparent outer margin is compensated in CSS. Its measured visible center at (381.5, 381.5) within the 768-pixel canvas is aligned to the rotor center using background positioning; a circular mask regularizes the exterior and center aperture. Fine alpha fringes in the grass remain a limitation of generated segmentation, mitigated by matching the field and inspecting its real-size overlay.
+
+Full prompts, source generation identifiers, dimensions, compression settings, the discarded first foreground and remaining limits are preserved in [MUSIC-ASSETS.md](MUSIC-ASSETS.md). The stored concept is documentation and is not requested by the public page.
+
+Poppins Bold Latin was added as a local 7,816-byte WOFF2 for the approved music title, from the [official Google Fonts stylesheet](https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap) and its [font file](https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2). The same included SIL Open Font License applies. No Google Fonts request is made at runtime.
