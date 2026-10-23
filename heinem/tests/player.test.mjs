@@ -254,13 +254,13 @@ test('horizontal drag scrubs cases and CD before committing and suppresses its s
   Object.assign(transfer, { pointerId: 1 });
   p.stage.dispatchEvent(transfer);
   assert.equal(p.stage.dataset.dragging, 'true', 'implicit touch capture transfers from child to stage');
-  pointer(p.stage, 'pointermove', 400, 180);
+  pointer(p.stage, 'pointermove', 440, 180);
   p.advance(16);
   assert.notEqual(p.rows[1].style.transform, first);
   assert.equal(p.elements['disc-button'].style.visibility, 'hidden');
   assert.equal(p.room.dataset.activeTrack, '0');
   assert.equal(p.stage.hasPointerCapture(1), true);
-  pointer(p.stage, 'pointerup', 400, 180);
+  pointer(p.stage, 'pointerup', 440, 180);
   assert.equal(p.stage.hasPointerCapture(1), false);
   const click = new Event('click', { cancelable: true });
   Object.assign(click, { detail: 1 });

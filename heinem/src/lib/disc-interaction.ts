@@ -412,7 +412,8 @@ export function initDiscInteraction(
     releaseCapture();
     // A release only eases the fractional remainder; it never caps travel to
     // one album. Cancellation rewinds smoothly, with no intermediate audio loads.
-    glideTo(goal);
+    if (motion.matches) finish();
+    else glideTo(goal);
   }
   stage.addEventListener('pointerup', event => endDrag(event, false), options);
   stage.addEventListener('pointercancel', event => endDrag(event, true), options);
