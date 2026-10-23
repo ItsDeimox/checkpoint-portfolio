@@ -38,7 +38,7 @@ class Element extends EventTarget {
   click() { this.dispatchEvent(new Event('click')); }
 }
 
-function createPlayer({ withAPI = true, withMiniPlay = false } = {}) {
+function createPlayer({ withAPI = true, withMiniPlay = false, reducedMotion = true } = {}) {
   const ids = [
     'listening-room', 'disc-button', 'next-track', 'previous-track', 'seek', 'volume',
     'elapsed', 'duration', 'track-title', 'track-credit', 'track-counter',
@@ -59,6 +59,9 @@ function createPlayer({ withAPI = true, withMiniPlay = false } = {}) {
   const widgets = [];
   const timers = new Map();
   let nextTimer = 0;
+  let clock = 0;
+  const motion = new EventTarget();
+  motion.matches = reducedMotion;
 
   const factory = (iframe) => {
     const callbacks = new Map();
@@ -86,11 +89,11 @@ function createPlayer({ withAPI = true, withMiniPlay = false } = {}) {
       createElement: () => new Element(),
       head,
     },
-    window: withAPI ? { SC: { Widget: factory } } : {},
+    window: { ...(withAPI ? { SC: { Widget: factory } } : {}), matchMedia: () => motion },
     URLSearchParams, AbortController,
     setTimeout(callback, delay) {
       const id = ++nextTimer;
-      timers.set(id, { callback, delay });
+      timers.set(id, { callback, delay, at: clock + delay });
       return id;
     },
     clearTimeout: (id) => timers.delete(id),
@@ -98,8 +101,20 @@ function createPlayer({ withAPI = true, withMiniPlay = false } = {}) {
   vm.runInContext(source, context);
   const controller = vm.runInContext('initPlayer()', context);
   return {
-    controller, elements, rows, widgets, timers, head,
+    controller, elements, rows, widgets, timers, head, motion,
     room: elements['listening-room'],
+    advance(milliseconds) {
+      const until = clock + milliseconds;
+      let pending;
+      while ((pending = [...timers].filter(([, timer]) => timer.at <= until)
+        .sort((a, b) => a[1].at - b[1].at)[0])) {
+        const [id, { callback, at }] = pending;
+        clock = at;
+        timers.delete(id);
+        callback();
+      }
+      clock = until;
+    },
     fireTimeouts() {
       for (const [id, { callback }] of [...timers]) {
         timers.delete(id);
@@ -141,6 +156,109 @@ test('carousel initializes without mini-play and browsing covers does not reques
   assert.equal(p.widgets.length, 0);
   assert.equal(p.head.children.length, 0);
   assert.equal(p.elements['embed-mount'].children.length, 0);
+  p.controller.destroy();
+});
+
+test('disc enters its sleeve before covers exchange and exits after the exchange', () => {
+  const p = createPlayer({ reducedMotion: false });
+  p.elements['next-track'].click();
+  assert.equal(p.room.dataset.discPhase, 'inserting');
+  assert.equal(p.room.dataset.activeTrack, '0', 'the outgoing cover stays until the disc is concealed');
+  p.advance(179);
+  assert.equal(p.room.dataset.activeTrack, '0');
+  p.advance(1);
+  assert.equal(p.room.dataset.discPhase, 'swapping');
+  assert.equal(p.room.dataset.activeTrack, '1');
+  p.advance(219);
+  assert.equal(p.room.dataset.discPhase, 'swapping');
+  p.advance(1);
+  assert.equal(p.room.dataset.discPhase, 'ejecting');
+  p.advance(180);
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  assert.equal(p.widgets.length, 0);
+  assert.equal(p.head.children.length, 0);
+  p.controller.destroy();
+});
+
+test('rapid arrows accumulate on the requested release and reversing before concealment cancels the swap', () => {
+  const p = createPlayer({ reducedMotion: false });
+  p.elements['next-track'].click();
+  p.elements['next-track'].click();
+  p.advance(180);
+  assert.equal(p.room.dataset.activeTrack, '2');
+  p.elements['previous-track'].click();
+  assert.equal(p.room.dataset.activeTrack, '1', 'hidden disc may safely retarget without displaying mismatched artwork');
+  p.advance(400);
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  p.elements['next-track'].click();
+  p.elements['previous-track'].click();
+  p.advance(180);
+  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.room.dataset.discPhase, 'ejecting');
+  p.advance(180);
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  assert.equal(p.timers.size, 0);
+  p.controller.destroy();
+});
+
+test('reduced-motion changes settle a pending exchange immediately and destroy cancels timers', () => {
+  const p = createPlayer({ reducedMotion: false });
+  p.elements['next-track'].click();
+  p.motion.matches = true;
+  p.motion.dispatchEvent(new Event('change'));
+  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  assert.equal(p.timers.size, 0);
+  p.motion.matches = false;
+  p.motion.dispatchEvent(new Event('change'));
+  p.elements['next-track'].click();
+  p.controller.destroy();
+  p.advance(1000);
+  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.timers.size, 0);
+});
+
+test('keyboard play during a cover transition applies the latest selected release', async () => {
+  const p = createPlayer({ reducedMotion: false });
+  p.elements['next-track'].click();
+  p.elements['disc-button'].click();
+  await flush();
+  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  assert.match(p.widgets.at(-1).iframe.src, /1649117949/);
+  p.widgets.at(-1).emit('ready');
+  assert.equal(p.widgets.at(-1).plays, 1);
+  assert.equal(p.room.dataset.state, 'loading');
+  p.controller.destroy();
+});
+
+test('playing swaps retire the old provider only when the disc is concealed and ignore superseded frames', async () => {
+  const p = createPlayer({ reducedMotion: false });
+  const old = await start(p);
+  const stalePlay = old.callbacks.get('play');
+  p.elements['next-track'].click();
+  p.advance(179);
+  assert.equal(old.pauses, 0, 'audio does not stop just because the slide begins');
+  assert.equal(p.widgets.length, 1);
+  p.advance(1);
+  await flush();
+  assert.equal(old.pauses, 1);
+  const intermediate = p.widgets.at(-1);
+  const staleReady = intermediate.callbacks.get('ready');
+  p.elements['next-track'].click();
+  await flush();
+  const current = p.widgets.at(-1);
+  stalePlay();
+  staleReady();
+  assert.equal(intermediate.plays, 0);
+  assert.equal(p.room.dataset.state, 'loading');
+  current.emit('ready');
+  assert.equal(current.plays, 1);
+  p.advance(400);
+  current.emit('play');
+  assert.equal(p.room.dataset.activeTrack, '2');
+  assert.equal(p.room.dataset.discPhase, 'idle');
+  assert.equal(p.room.dataset.state, 'playing');
   p.controller.destroy();
 });
 

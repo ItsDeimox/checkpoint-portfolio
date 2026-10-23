@@ -1,6 +1,6 @@
 # Validation — HEINEM
 
-The current **v1.1 meadow/CD revision** has a separate [validation record](VALIDATION-1.1.md), [approved concept and decisions](MEADOW-REVISION.md), and desktop/mobile evidence. The following record preserves the **v1.0.0 historical baseline**; its deployment IDs and bundle sizes are not presented as v1.1 results.
+The current **v1.2 separated-assets/GPU-typography revision** has its own [validation record](VALIDATION-1.2.md), [implementation decisions](LAYERED-REVISION.md) and [asset provenance with exact prompts](LAYER-ASSETS.md). The [v1.1 meadow/CD record](VALIDATION-1.1.md) remains historical evidence. The following text preserves the **v1.0.0 baseline**; its deployment IDs and resource counts are not current results.
 
 ## Historical baseline — 1.0.0
 

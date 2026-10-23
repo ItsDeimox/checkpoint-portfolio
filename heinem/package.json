@@ -1,10 +1,10 @@
 {
   "name": "heinem",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "license": "MIT",
-  "description": "HEINEM artist website \u2014 layered meadow, responsive soap-film shader and interactive CD player.",
+  "description": "HEINEM artist website — layered meadow, responsive soap-film shader and interactive CD player.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "typecheck": "tsc --noEmit",

@@ -63,15 +63,25 @@ test('manual graphics override persists even on constrained device hints', async
 test('native scroll gives foreground, portrait and sky distinct depths', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 220); });
-  await expect.poll(() => page.locator('.foreground').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42)).toBeLessThan(-65);
+  await expect.poll(() => page.locator('.foreground').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42)).toBeLessThan(-30);
   const planes = await page.evaluate(() => {
     const offset = (selector: string) => new DOMMatrix(getComputedStyle(document.querySelector(selector)!).transform).m42;
     return { foreground: offset('.foreground'), portrait: offset('.portrait'), sky: offset('.sky') };
   });
   expect(planes.foreground).toBeLessThan(planes.portrait);
   expect(planes.portrait).toBeLessThan(planes.sky);
-  // A persistent meadow is visible beneath the fast plane; no mirrored grass strip.
-  await expect(page.locator('.meadow-world img')).toBeVisible();
+  // The same tall alpha plane covers both sections; no dissolving replacement.
+  await expect(page.locator('.foreground img')).toHaveAttribute('src', '/assets/layers/field-continuous.webp');
+  const continuity = await page.evaluate(() => {
+    const hero = document.querySelector('#home')!;
+    const field = document.querySelector('.foreground')!;
+    return { opacity: getComputedStyle(hero).opacity, mask: getComputedStyle(hero).maskImage,
+      fieldHeight: field.getBoundingClientRect().height, heroHeight: hero.getBoundingClientRect().height };
+  });
+  expect(continuity.opacity).toBe('1');
+  expect(continuity.mask).toBe('none');
+  expect(continuity.fieldHeight).toBeGreaterThan(continuity.heroHeight * 2);
+  await expect(page.locator('.music-foreground, .meadow-world, .original-landscape, .original-sky')).toHaveCount(0);
   await expect(page.locator('.foreground-extension')).toHaveCount(0);
 });
 
@@ -84,6 +94,24 @@ test('reduced motion stops depth motion without changing the user quality', asyn
   await page.evaluate(() => window.scrollTo(0, 220));
   expect(await page.locator('.foreground').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m42)).toBe(0);
   await expect(page.locator('body')).toHaveAttribute('data-quality', 'high');
+});
+
+test('continuous field covers the music page on unusually tall portrait viewports', async ({ page }) => {
+  await page.setViewportSize({ width: 600, height: 1600 });
+  await page.goto('/');
+  await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+  await expect.poll(() => page.locator('.foreground').evaluate(el =>
+    Math.abs(new DOMMatrix(getComputedStyle(el).transform).m42 + scrollY * 0.14),
+  )).toBeLessThan(0.2);
+  const geometry = await page.evaluate(() => ({
+    fieldBottom: document.querySelector('.foreground')!.getBoundingClientRect().bottom,
+    pageBottom: document.querySelector('#music')!.getBoundingClientRect().bottom,
+    viewport: innerHeight,
+    opacity: getComputedStyle(document.querySelector('.foreground')!).opacity,
+  }));
+  expect(geometry.fieldBottom).toBeGreaterThanOrEqual(geometry.pageBottom);
+  expect(geometry.fieldBottom).toBeGreaterThanOrEqual(geometry.viewport);
+  expect(geometry.opacity).toBe('1');
 });
 
 test('biography and navigation survive unavailable WebGL', async ({ page }) => {

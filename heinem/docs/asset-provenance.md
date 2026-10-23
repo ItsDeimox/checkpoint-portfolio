@@ -1,5 +1,14 @@
 # HEINEM visual asset provenance
 
+## Current revision — v1.2
+
+The current runtime uses seven separate layers documented with full prompts, alpha measurements, image-generation IDs, crop coordinates, compression and rights in [LAYER-ASSETS.md](LAYER-ASSETS.md). Their combined payload is **1,581,358 bytes**. The portrait displays the newly supplied original photograph RGB through a generated matte; generated portrait RGB was discarded. The bubble no longer samples a photograph at runtime.
+
+The flattened original hero reference now lives at `docs/reference/hero-original.webp` for design history and is excluded from the deployed public assets. The six superseded scene/mask files, including both old music meadow treatments described below, are no longer used in v1.2. Their actual previous files remain available in Git history at application commit `58cb7512d81b48e68a3a022f23155a40d7bd23ae`. The silver CD, official cover artwork and local fonts remain current.
+
+## Historical source record — v1.0/v1.1
+
+
 ## Source and license boundary
 
 The user supplied `image(20261022-215633).png` (1178 × 659) as the visual reference and asked for a faithful implementation with independent parallax layers. The website code's MIT license does **not** grant rights to the artist's likeness, artwork, music, branding or the supplied reference. Those assets remain with their respective rights holders.

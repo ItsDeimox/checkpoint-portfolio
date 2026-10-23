@@ -1,5 +1,6 @@
 /** Official SoundCloud embeds; no audio is downloaded or re-hosted. */
 type PlayerState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
+type DiscPhase = 'idle' | 'inserting' | 'swapping' | 'ejecting';
 
 interface Track {
   title: string;
@@ -73,6 +74,9 @@ interface SoundCloudAPI {
 }
 
 const TIMEOUT_MS = 12_000;
+// Keep these in step with the transform/carousel durations in music.css.
+const DISC_SLIDE_MS = 180;
+const CASE_EXCHANGE_MS = 220;
 const soundCloud = () => (window as Window & { SC?: SoundCloudAPI }).SC;
 const timeLabel = (milliseconds: number) => {
   const seconds = Math.max(0, Math.floor(milliseconds / 1000));
@@ -110,9 +114,13 @@ export function initPlayer(): { destroy(): void } {
   const artwork = room.querySelector<HTMLElement>('.disc-artwork');
   const rows = [...room.querySelectorAll<HTMLButtonElement>('[data-track]')];
   const events = new AbortController();
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   let state: PlayerState = 'idle';
   let selected = 0;
+  let requested = 0;
+  let discPhase: DiscPhase = 'idle';
+  let transitionTimer: ReturnType<typeof setTimeout> | undefined;
   let duration = TRACKS[0].duration;
   let position = 0;
   let ready = false;
@@ -262,7 +270,7 @@ export function initPlayer(): { destroy(): void } {
     wantsPlay = true;
     message.textContent = '';
     setState('loading');
-    startWatchdog(generation, 'SoundCloud has not started playing. Tap play in the SoundCloud player below, try the disc again, or open the track directly.');
+    startWatchdog(generation, 'Playback has not started. Press the disc to retry or use the SoundCloud link beside the volume control.');
     if (position >= duration - 250) {
       widget.seekTo(0);
       updateProgress(0);
@@ -303,12 +311,16 @@ export function initPlayer(): { destroy(): void } {
     // SoundCloud's current widget can request encrypted media even for an
     // otherwise public track. Delegate it only to this provider frame.
     iframe.allow = 'autoplay; encrypted-media';
+    // The native disc, seek and volume controls expose the same actions. Keep
+    // the transport iframe out of the keyboard/screen-reader control sequence.
+    iframe.tabIndex = -1;
+    iframe.setAttribute('aria-hidden', 'true');
     iframe.setAttribute('scrolling', 'no');
     iframe.style.border = '0';
     iframe.style.display = 'block';
     mount.hidden = false;
     mount.replaceChildren(iframe);
-    startWatchdog(current, 'SoundCloud is taking longer than expected. Try the disc again, use its player below, or open the track directly.');
+    startWatchdog(current, 'The track is taking longer than expected. Press the disc to retry or open the SoundCloud link beside the volume control.');
 
     try {
       const api = await loadSDK();
@@ -351,7 +363,7 @@ export function initPlayer(): { destroy(): void } {
         clearWatchdog();
         setState('paused');
         if (stoppedBeforeAudio) {
-          message.textContent = 'SoundCloud paused before audio started. Try its player below or open the track directly.';
+          message.textContent = 'Playback paused before audio started. Press the disc to retry or open the SoundCloud link beside the volume control.';
         }
       });
       bind(api.Widget.Events.FINISH, () => {
@@ -368,7 +380,7 @@ export function initPlayer(): { destroy(): void } {
       };
       bind(api.Widget.Events.PLAY_PROGRESS, progress);
       bind(api.Widget.Events.SEEK, progress);
-      bind(api.Widget.Events.ERROR, () => fail('This track could not be played here. Try the disc again, use SoundCloud below, or open the track directly.'));
+      bind(api.Widget.Events.ERROR, () => fail('This track could not be played here. Press the disc to retry or open the SoundCloud link beside the volume control.'));
 
       // The iframe may have loaded while the SDK was downloading. A real
       // duration response also confirms readiness if its initial event passed.
@@ -377,14 +389,12 @@ export function initPlayer(): { destroy(): void } {
       });
     } catch {
       if (!destroyed && current === generation) {
-        fail('The custom controls could not connect to SoundCloud. Its player below still works when available; press the disc to retry or open the track directly.');
+        fail('The player could not connect. Press the disc to retry or open the SoundCloud link beside the volume control.');
       }
     }
   }
 
-  function selectTrack(index: number) {
-    if (destroyed) return;
-    const nextIndex = (index + TRACKS.length) % TRACKS.length;
+  function applySelection(nextIndex: number) {
     if (nextIndex === selected) return;
     // Respect both confirmed playback and an explicit play request still
     // loading. A pending pause must never turn into playback on navigation.
@@ -399,8 +409,68 @@ export function initPlayer(): { destroy(): void } {
     }
   }
 
+  function clearTransitionTimer() {
+    if (transitionTimer !== undefined) clearTimeout(transitionTimer);
+    transitionTimer = undefined;
+  }
+
+  function setDiscPhase(value: DiscPhase) {
+    discPhase = value;
+    room!.dataset.discPhase = value;
+  }
+
+  function scheduleTransition(callback: () => void, delay: number) {
+    clearTransitionTimer();
+    transitionTimer = setTimeout(() => {
+      transitionTimer = undefined;
+      if (!destroyed) callback();
+    }, delay);
+  }
+
+  function finishTransition() {
+    clearTransitionTimer();
+    applySelection(requested);
+    setDiscPhase('idle');
+  }
+
+  function ejectDisc() {
+    setDiscPhase('ejecting');
+    scheduleTransition(() => setDiscPhase('idle'), DISC_SLIDE_MS);
+  }
+
+  function exchangeCases() {
+    if (requested === selected) {
+      // Reversing navigation while the disc enters cancels the cover change.
+      ejectDisc();
+      return;
+    }
+    setDiscPhase('swapping');
+    applySelection(requested);
+    scheduleTransition(ejectDisc, CASE_EXCHANGE_MS);
+  }
+
+  function selectTrack(index: number) {
+    if (destroyed) return;
+    const nextIndex = (index + TRACKS.length) % TRACKS.length;
+    if (nextIndex === requested) return;
+    requested = nextIndex;
+    if (motion.matches) {
+      finishTransition();
+    } else if (discPhase === 'swapping') {
+      // Latest input wins while the disc is concealed; never accumulate a
+      // backlog of visual swaps or leave the selected cover and audio apart.
+      exchangeCases();
+    } else if (discPhase !== 'inserting') {
+      setDiscPhase('inserting');
+      scheduleTransition(exchangeCases, DISC_SLIDE_MS);
+    }
+  }
+
   function toggle() {
     if (destroyed) return;
+    // A keyboard activation can arrive while the CD is inside its sleeve.
+    // Apply the latest explicit selection before interpreting play/pause.
+    if (discPhase !== 'idle') finishTransition();
     if (state === 'playing') {
       wantsPlay = false;
       widget?.pause();
@@ -427,8 +497,11 @@ export function initPlayer(): { destroy(): void } {
   const listenerOptions = { signal: events.signal };
   disc.addEventListener('click', toggle, listenerOptions);
   miniPlay?.addEventListener('click', toggle, listenerOptions);
-  next.addEventListener('click', () => selectTrack(selected + 1), listenerOptions);
-  previous.addEventListener('click', () => selectTrack(selected - 1), listenerOptions);
+  next.addEventListener('click', () => selectTrack(requested + 1), listenerOptions);
+  previous.addEventListener('click', () => selectTrack(requested - 1), listenerOptions);
+  motion.addEventListener('change', () => {
+    if (motion.matches && discPhase !== 'idle') finishTransition();
+  }, listenerOptions);
   for (const row of rows) {
     row.addEventListener('click', () => {
       const index = Number(row.dataset.track);
@@ -449,6 +522,7 @@ export function initPlayer(): { destroy(): void } {
   }, listenerOptions);
 
   updateTrack();
+  setDiscPhase('idle');
   setState('idle');
   return {
     destroy() {
@@ -456,6 +530,8 @@ export function initPlayer(): { destroy(): void } {
       destroyed = true;
       generation++;
       events.abort();
+      clearTransitionTimer();
+      setDiscPhase('idle');
       clearWatchdog();
       cancelSDK?.();
       releaseWidget();

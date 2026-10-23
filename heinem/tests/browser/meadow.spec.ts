@@ -51,3 +51,56 @@ test('album sleeves select real tracks without loading media before play', async
   expect(remote).toEqual([]);
   await expect(page.locator('#about, #contact')).toHaveCount(0);
 });
+
+test('disc conceals before the cover exchange and returns to the same pivot', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#next-track').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const initial = await page.locator('#disc-button').boundingBox();
+  expect(initial).not.toBeNull();
+  await page.evaluate(() => {
+    const room = document.getElementById('listening-room')!;
+    const disc = document.getElementById('disc-button')!;
+    const history: { phase?: string; selected?: string; visibility: string }[] = [];
+    (window as Window & { discHistory?: typeof history }).discHistory = history;
+    new MutationObserver(() => {
+      history.push({
+        phase: room.dataset.discPhase,
+        selected: room.dataset.activeTrack,
+        visibility: getComputedStyle(disc).visibility,
+      });
+    }).observe(room, { attributes: true, attributeFilter: ['data-disc-phase'] });
+  });
+  await page.locator('#next-track').click();
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '1');
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
+  const history = await page.evaluate(() =>
+    (window as Window & { discHistory?: { phase?: string; selected?: string; visibility: string }[] }).discHistory!);
+  expect(history.map(entry => entry.phase)).toEqual(['inserting', 'swapping', 'ejecting', 'idle']);
+  expect(history[0].selected).toBe('0');
+  expect(history[1]).toEqual({ phase: 'swapping', selected: '1', visibility: 'hidden' });
+  // A timer phase may finish just before the compositor presents its last
+  // transition frame (especially under a software GPU). Wait on geometry.
+  await expect.poll(async () => {
+    const bounds = (await page.locator('#disc-button').boundingBox())!;
+    return Math.abs(bounds.x - initial!.x);
+  }).toBeLessThan(0.6);
+  const final = (await page.locator('#disc-button').boundingBox())!;
+  expect(Math.abs(final.x - initial!.x)).toBeLessThan(0.6);
+  expect(Math.abs(final.y - initial!.y)).toBeLessThan(0.6);
+  expect(Math.abs(final.width - initial!.width)).toBeLessThan(0.6);
+  await expect(page.locator('.player-footer')).toHaveCount(0);
+  await expect(page.locator('#track-external')).toHaveAttribute('href', /mha-50k/);
+});
+
+test('reduced motion selects the release without a disc animation', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.locator('#next-track').click();
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '1');
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
+  const transition = await page.locator('#disc-button').evaluate(element => getComputedStyle(element).transitionDuration);
+  // The global accessibility reset uses 0.001 ms so transitionend users elsewhere
+  // can still observe completion. Either that value or literal zero is inert.
+  expect(transition.split(',').every(value => Number.parseFloat(value) <= 0.000001)).toBe(true);
+});

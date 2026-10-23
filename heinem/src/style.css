@@ -1,4 +1,5 @@
 @import "./music.css";
+@import "./scenery.css";
 
 @font-face {
   font-family: Poppins;
@@ -210,88 +211,6 @@ button[hidden],
   width: 14px;
   height: 14px;
 }
-.hero {
-  height: 100svh;
-  min-height: 560px;
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  background: transparent;
-  color: #fff;
-  opacity: var(--scene-presence, 1);
-  mask-image: linear-gradient(#000 0%, #000 80%, transparent 100%);
-}
-.scene-board {
-  position: absolute;
-  width: max(100vw, 178.756svh);
-  height: max(55.941vw, 100svh);
-  min-width: 100%;
-  min-height: 560px;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  container-type: inline-size;
-}
-.scene-layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: fill;
-  pointer-events: none;
-  user-select: none;
-}
-.landscape {
-  z-index: 0;
-}
-.sky {
-  z-index: 1;
-  mask-image: linear-gradient(#000 0%, #000 42%, transparent 63%);
-}
-.original-landscape {
-  z-index: 2;
-  mask-image:
-    url("/assets/landscape-preserve-mask.svg"),
-    url("/assets/portrait-layer.webp");
-  mask-size: 100% 100%;
-  mask-composite: subtract;
-}
-.original-sky {
-  z-index: 2;
-  mask-image:
-    linear-gradient(#000 0%, #000 42%, transparent 63%),
-    url("/assets/landscape-preserve-mask.svg"),
-    url("/assets/portrait-layer.webp");
-  mask-size: 100% 100%;
-  mask-composite: intersect, subtract;
-}
-.portrait {
-  z-index: 4;
-}
-.original-portrait {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: fill;
-  mask-image: url("/assets/portrait-layer.webp");
-  mask-size: 100% 100%;
-  mask-repeat: no-repeat;
-}
-.foreground {
-  z-index: 8;
-  filter: blur(0.35px);
-  transform-origin: bottom center;
-  mask-image: linear-gradient(#000 0%, #000 74%, transparent 100%);
-}
-.foreground > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: fill;
-}
 .bubble {
   position: absolute;
   left: 42%;
@@ -316,6 +235,9 @@ button[hidden],
   width: 56%;
   z-index: 3;
   text-shadow: 0 1px 3px rgba(20,45,45,.35), 0 0 12px rgba(21,66,91,.12);
+}
+.bubble[data-gpu-copy="ready"] .bubble-copy {
+  opacity: 0;
 }
 .bubble-copy h1 {
   display: flex;
@@ -386,54 +308,6 @@ button[hidden],
 }
 .bubble[data-webgl="ready"] .bubble-fallback {
   visibility: hidden;
-}
-.butterfly {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none;
-  user-select: none;
-}
-.butterfly img {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: fill;
-}
-.butterfly-left img {
-  clip-path: polygon(
-    15.7% 35.8%,
-    16.8% 35.3%,
-    17.8% 31.7%,
-    18.4% 31.1%,
-    18.8% 33.1%,
-    18.4% 35.5%,
-    18.9% 37.3%,
-    18.4% 38.6%,
-    17.2% 38.4%,
-    16.5% 37.3%,
-    15.7% 37%
-  );
-  transform-origin: 17.7% 36%;
-  animation: butterfly-drift 7s ease-in-out infinite;
-}
-.butterfly-right img {
-  clip-path: polygon(
-    92% 25.4%,
-    92.6% 23%,
-    93.6% 20.5%,
-    94.2% 20.3%,
-    94% 22.5%,
-    93.6% 24.2%,
-    94.7% 25.7%,
-    94.4% 27.3%,
-    93.6% 28.1%,
-    92.5% 27.5%,
-    91.6% 26.2%
-  );
-  transform-origin: 93.2% 25%;
-  animation: butterfly-drift 9s -3s ease-in-out infinite;
 }
 .scroll-cue {
   position: absolute;
@@ -594,18 +468,6 @@ button[hidden],
   font-size: 11px;
   z-index: 100;
 }
-@keyframes butterfly-drift {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0);
-  }
-  45% {
-    transform: translate(3px, -5px) rotate(4deg);
-  }
-  72% {
-    transform: translate(-2px, -2px) rotate(-3deg);
-  }
-}
 @keyframes mouse-scroll {
   0%,
   100% {
@@ -654,14 +516,6 @@ button[hidden],
   .social-links {
     gap: 3px;
   }
-  .hero {
-    min-height: 510px;
-  }
-  .scene-board {
-    width: max(100vw, 160svh);
-    height: max(62.5vw, 100svh);
-    min-height: 510px;
-  }
 }
 @media (max-width: 700px) {
   :root {
@@ -688,55 +542,6 @@ button[hidden],
   }
   .social-links {
     display: none;
-  }
-  .hero {
-    height: 100svh;
-    min-height: 880px;
-    max-height: 1050px;
-  }
-  .scene-board {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    transform: none;
-    left: 0;
-    top: 0;
-    container-type: inline-size;
-  }
-  .landscape,
-  .sky {
-    width: calc(100% + 430px);
-    height: 100%;
-    left: -160px;
-    object-fit: cover;
-    object-position: center;
-  }
-  .sky {
-    mask-image: linear-gradient(#000 0%, #000 42%, transparent 63%);
-  }
-  .original-landscape,
-  .original-sky {
-    display: none;
-  }
-  .portrait {
-    top: 28px;
-    height: 125.867vw;
-    width: calc(100% * 2.25);
-    left: -38%;
-    inset-block-end: auto;
-    mask-image: linear-gradient(#000 70%, transparent 100%);
-  }
-  .original-portrait {
-    object-fit: fill;
-  }
-  .foreground {
-    width: 190%;
-    height: 62%;
-    top: 0;
-    left: -20%;
-    inset-block-end: auto;
-    object-fit: fill;
-    mask-image: linear-gradient(#000 0%, #000 80%, transparent 100%);
   }
   .bubble {
     left: 0;
@@ -779,9 +584,6 @@ button[hidden],
     inset: 5% 5%;
     background: rgba(58, 106, 93, 0.45);
     backdrop-filter: blur(5px);
-  }
-  .butterfly {
-    display: none;
   }
   .scroll-cue {
     bottom: 3%;
@@ -835,9 +637,6 @@ button[hidden],
   .primary-nav a {
     font-size: 9px;
   }
-  .hero {
-    min-height: 900px;
-  }
   .bubble {
     top: 40%;
     height: 56%;
@@ -862,18 +661,8 @@ button[hidden],
     transition-duration: 0.001ms !important;
   }
 }
-body[data-scene-active="false"] .butterfly img,
 body[data-scene-active="false"] .scroll-cue i:after {
   animation-play-state: paused;
-}
-body[data-quality="low"] .butterfly img {
-  animation: none;
-}
-body[data-quality="low"] .foreground {
-  filter: none;
-}
-body[data-reduced-motion="true"] .butterfly img {
-  animation: none;
 }
 
 @media (max-width: 700px) {
@@ -893,8 +682,4 @@ body[data-scene-active="false"] .quality-control > button {
   .quality-menu {
     bottom: 46px;
   }
-}
-
-@media (max-width: 700px) {
-  .hero { mask-image: linear-gradient(#000 0%,#000 95%,transparent 100%); }
 }

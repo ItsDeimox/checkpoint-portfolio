@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.2.0 — 2026-10-22 (São Paulo; 2026-10-23 UTC)
+
+### Changed
+
+- Generated separate sky, tree, far/middle foliage, continuous field and butterfly assets. The portrait uses the supplied original photograph RGB through an aligned generated alpha matte, with no generated facial pixels in the runtime asset.
+- Removed the hero opacity dissolve, section masks, reused flattened landscape crops and the local grass overlay beneath the CDs. One tall field physically travels upward across the entire page.
+- Replaced 307 animated HTML glyphs with a cached GPU typography texture including the underline and sparkle. Text and film share one elastic mesh; hover no longer writes letter styles or uploads textures.
+- Added up to six independently located, damped jelly impulses and packed local glow masks without extra bloom render targets. The bubble rim is now fully procedural.
+- Added articulated butterfly wings with compositor transforms and offscreen/low/reduced-motion suspension.
+- Animated CD insertion, concealed case exchange and ejection in 580 ms, with interruptible navigation and a centered independent rotor.
+- Removed the visible SoundCloud embed/footer panel. Retained official transport, native controls, real provider event gating and a compact track-source link.
+- Kept the mobile bubble within its outgoing hero so no residual rim continues rendering above the music section.
+
+### Verification
+
+- Expanded player regression coverage for transition ordering, repeated input, cancellation, reduced motion, keyboard activation and obsolete provider events.
+- Replaced glyph tests with GPU-copy, spatial recoil, zero-hover-DOM-work, no-upload, context recovery and offscreen/reduced-motion assertions.
+- Recorded actual alpha geometry, source prompts, discarded candidates, continuous-scroll visual inspection and remaining streaming/hardware limits.
+
 ## 1.1.0 — 2026-10-23
 
 ### Changed

@@ -1,5 +1,8 @@
 # HEINEM music scene asset provenance
 
+> Historical v1.1 generation record. In v1.2 the separate music meadow and local grass overlay below are retired; one continuous foreground field replaces them. The silver disc remains in use. See [LAYER-ASSETS.md](LAYER-ASSETS.md) for current files. Historical source paths describe the generation inputs at that time and remain in Git history.
+
+
 Created 2026-10-22 using the built-in image generation editor only. No Higgsfield, stock download, or rehosted third-party asset was used.
 
 ## Approved reference

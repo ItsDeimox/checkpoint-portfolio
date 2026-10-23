@@ -1,76 +1,93 @@
 # Architecture and performance
 
-## The composition is the starting point
+## One physical garden
 
-The user's flattened 1178 × 659 reference defines layout, color and identity. Desktop uses a shared scene coordinate system with an aspect ratio of 1178/659 and cover framing. Text and navigation remain HTML. Mobile intentionally recomposes the portrait above the biography, preserving legibility instead of horizontally cropping away the artist or text.
+The supplied 1178 × 659 reference defines the hero, and the approved 1672 × 941 concept defines the jewel cases and CD controls. Version 1.2 replaces flattened scenery masks and the section dissolve with independent image planes. Mobile repositions the portrait above the biography while preserving semantic sections and native scrolling.
 
-The original source is losslessly encoded as `reference-original.webp`. `portrait-layer.webp` is **only a CSS alpha mask**: its generated facial pixels are never displayed. The displayed face and hoodie come from the original source. Original landscape and sky plates use a static SVG mask to remove embedded interface text, the old bubble and duplicated butterflies; the same portrait alpha removes a duplicate person from those background plates. Reconstructed scenery fills the now-visible holes. Foreground grass is a separately reconstructed transparent image. Its lower mask fades into the shared meadow; v1.1 removes the former mirrored overscan because an inverted strip became visible in the transition.
+The overall `#scene-world` clips the page boundary. Its hero artboard contains sky, distant foliage, middle foliage, left tree, artist, butterflies, bubble and near field. The hero does not clip or fade its contents. The continuous field starts at −10% and extends to 240% of the artboard height. Music paints above the same terrain, with no fixed replacement meadow or separate grass patch under the CDs.
 
-This cannot recover the exact unseen scenery from a flattened image. The project preserves original visible pixels where possible and records reconstruction honestly; visual resemblance is not a claim of pixel-identical hidden material.
+A narrow, unusually tall viewport needs extra terrain beyond 240% because the hero caps at 1050 px while music can remain a full viewport tall. Mobile uses `max(240%, calc(124% + 100svh + 2px))`: the extra 24% covers the initial 10% offset and 14% parallax travel. The 600 × 1600 regression originally exposed a 382 px gap; this rule covers it without changing normal phone composition.
 
-## Depth and native scrolling
+Environment foreground images have genuine alpha. The field's natural upper silhouette becomes fully covered lower than the prompt requested; measured placement compensates for that geometry. Its dense interior is approximately 251/255 alpha, so a solid green scene underlay remains. See [LAYER-ASSETS.md](LAYER-ASSETS.md) for exact prompts, source images, alpha bounds, dimensions and compression.
 
-`createParallax()` listens passively to scroll and applies transform offsets within the hero. A separate `createSmoothScroll()` controller eases vertical wheel input over the actual document scroll position; there is no translated page wrapper or virtual scrollbar. These depth offsets remain relative to the normally scrolling document:
+The artist uses the new original photograph's RGB. A generated alpha matte preserves the original framing; only that alpha is resampled to 506 × 1024 and combined with the original RGB. Empty margins are cropped to 414 × 920. No generated facial pixels are displayed. A static brightness/saturation adjustment supplies a modest daylight correction; the original grain and mirror imperfections remain.
 
-| Plane | Relative offset per scroll pixel | Apparent travel upward |
+A centered dorsal butterfly sprite supplies two independently hinged wings and a central body. Its flight parent drifts separately from the parallax transform. CSS motion pauses offscreen, on Low and with reduced motion.
+
+## Native scroll and depth
+
+`createParallax()` operates across the whole scene. Native scrolling moves objects upward; these relative offsets create depth:
+
+| Plane | Relative offset per scroll pixel | Apparent upward speed |
 | --- | ---: | ---: |
 | Sky | +0.64 | 0.36 |
-| Distant landscape | +0.36 | 0.64 |
-| Portrait | +0.12 | 0.88 |
-| Bubble | +0.10 | 0.90 |
-| Foreground grass | −0.32 | 1.32 |
+| Distant foliage | +0.42 | 0.58 |
+| Left tree | +0.34 | 0.66 |
+| Middle foliage | +0.22 | 0.78 |
+| Artist | +0.08 | 0.92 |
+| Bubble, desktop | +0.10 | 0.90 |
+| Bubble, mobile | 0 | 1.00 |
+| Continuous near field | −0.14 | 1.14 |
 
-High/Medium settle using exponential time-based smoothing. Low preserves the same final composition and skips extra settling frames. Geometry is measured on resize; there is no permanent parallax animation loop at rest. After transform writes, `syncBackdrop()` updates the bubble's UV mapping. Reading those rectangles can cause a layout flush, so it happens during actual movement rather than on every idle shader frame.
+High/Medium settle with a 95 ms exponential response; Low applies final transforms directly. The loop runs only during scroll/settling, and geometry is measured on resize. There are no scroll-dependent opacity writes. Mobile depth zero keeps the bubble fully inside its outgoing hero at the music stop. A real residual rim was corrected geometrically rather than ignoring its continued rendering.
 
-Wheel interpolation has a 125 ms response constant and a bounded settling window. It attaches a non-passive wheel listener only while motion is enabled and the document is visible. It declines zoom/modifier gestures, horizontal input, native controls, embeds and nested scroll containers. Pointer/touch input, navigation keys (including Tab), anchors, history navigation or external scroll take ownership immediately. Reduced motion removes wheel interception. Input-time geometry checks protect native scrolling; the interpolation frame itself does not measure layout.
+`createSmoothScroll()` eases vertical wheel input over real `window.scrollY`, using a 125 ms response and bounded settling. No translated virtual page wrapper exists. Native controls, nested scrolling, embeds, horizontal input, zoom and modifiers keep ownership. Pointer/touch, navigation keys including Tab/Shift+Tab, anchors, history and external scrolling cancel pending motion. Reduced motion removes interception.
 
-The meadow is one fixed decorative layer beneath both semantic sections. A mask and scroll-dependent opacity reveal it through the outgoing hero. This avoids a hard color panel and prevents an exposed source-image edge. The music section uses a 1672 × 941 composition artboard, reflowed for narrow screens. A separate alpha grass image crosses the bases of the cases. This is a scenic continuity treatment, not a reconstruction of an infinitely tall original photograph.
+After actual scenery movement, `syncBackdrop()` maps each image's rectangle, object-fit and object-position into the shader. These reads happen during scroll/resize; idle and stationary hover frames do not measure image or text layout.
 
-## Soap-film rendering
+## GPU typography and jelly film
 
-`createBubble(canvas, host, options)` owns one WebGL2 context, one shader program, one triangle and two static textures: the shared scene image and a small original-rim strip. No general-purpose 3D engine, simulation render targets, full-screen bloom or depth-of-field pipeline is used.
+### Root cause addressed
 
-The fragment shader starts with a rounded rectangular signed-distance field and bends its sides inward. Temporal optical bands keep the film alive. A local Gaussian pointer field uses CSS pixels, independent of framebuffer DPR; two fixed inverse-mapping iterations deform the contour and source coordinates continuously. Frame-rate-independent smoothing controls entry and relaxation. Thin-film colors and spatially varying reflection bands provide the complete procedural fallback. `fwidth` supplies antialiasing without an expensive full-scene MSAA chain.
+V1.1 cached glyph geometry but still wrote transforms and shadows to 307 letters. A baseline observed 4,214 copy style mutations during ten shader draws. Avoiding layout reads had not removed style/paint work, and the underline never joined the field.
 
-For fidelity to the supplied artwork, the optional `rim` source contributes a faint residual of its white microfolds and iridescent threads. A fixed contour mask extracts the peripheral band into a 580 × 442 transparent canvas once; biography, heading, signature and overlapping portrait are excluded. A local luminance/high-frequency extraction then replaces the photographed RGB with a pearl-tinted optical residual. Clouds and grass are no longer composited as a second cutout over the refracted scene. The residual uses the same inverse field as the contour. This remains a hybrid material; it is not a claim that every optical crease is procedural. The processed source is retained for context restoration, and duplicate `complete`/`load` readiness does not upload it twice.
+V1.2 retains the original heading and paragraph HTML but rasterizes their ink after fonts/layout settle. Native text ranges supply actual wrapping, spacing and heading transforms. The underline and SVG sparkle are included. Sharp ink occupies texture R; two prefiltered glow masks occupy G/B. A single GPU sample provides all three. Prefiltering happens on rasterization, not on hover.
 
-`createBubbleText()` preserves real HTML and an unchanged accessible sentence. Native invisible words retain typography, kerning and wrapping; positioned grapheme spans provide the visible letters. Font readiness and resize measure their rest positions once. The same Gaussian field displaces each glyph, and its analytic Jacobian supplies a small local affine transform. Ancestor skew/scale are accounted for. A render frame only writes changed matrices and quantized local text glow; it never reads glyph layout. Leaving the surface resets styles after relaxation. Reduced motion and fallback reset the text. The glow is an inexpensive bloom-like treatment in the existing LDR shader/DOM, not a multi-pass HDR bloom implementation.
+The native visual copy becomes transparent only after its GPU equivalent has drawn; semantic HTML remains present. No-WebGL, context loss and renderer errors show the native copy. The atlas is capped at 1.5 million RGBA pixels, a 2048 px edge and scale 2. Resize/font changes rebuild it. The copy subtree shrank from 459 to 15 descendants.
 
-Background and sky share one uploaded image. Their distinct transforms, `object-fit` and crop are mapped separately. The sky's 42%–63% mask is recombined in texture space before refraction. Static mipmaps are built only on upload. V1.1 uses LOD 0.35–0.8 instead of the old heavily softened interior, reduces haze and keeps modest continuous refraction. High adds subtle RGB dispersion; lower profiles use fewer optical samples. Safe denominators, nonnegative power bases and normalized/clamped input avoid NaNs.
+### Shared elastic mesh
 
-### Raster budgets
+One WebGL2 context, program and draw call render a bounded vertex grid. The fragment material supplies an asymmetric pillow contour, interference ribbons, clear refracted scenery and typography. No simulation render targets, screenshots or full-screen bloom chain are used. The rim is procedural; the original reference photograph is no longer sampled.
 
-| Mode | Maximum DPR | Maximum canvas pixels | Maximum edge |
-| --- | ---: | ---: | ---: |
-| Low | 0.90 | 260,000 | 1,000 |
-| Medium | 1.25 | 620,000 | 1,440 |
-| High | 1.75 | 1,200,000 | 2,048 |
+Up to six impulses retain their own touch locations. Each follows `sin(age × 13.5) × exp(−age × 3.2)` and expires after 1.8 seconds. This signed response recoils after the cursor has moved away. Speed affects capped amplitude; total displacement is bounded. The CPU supplies six uniform records, and the GPU evaluates the spatial field per vertex, avoiding six impulse evaluations at every framebuffer pixel. Contour, refraction, letters, underline and sparkle share interpolated material coordinates.
 
-The local canvas is limited to the bubble bounds, not the whole viewport. The two image uploads occur on initial readiness and context restoration, not per frame or quality change. WebGL telemetry also counts two tiny 1 × 1 initialization placeholders; those are distinct from the scene and rim images. Only the scene image needs mipmaps. A static CSS glass surface remains if WebGL is unavailable or lost. Context restoration rebuilds only this surface.
+Four actual alpha scenery textures are sampled back to front with separate parallax mappings. Small lens displacement and mip levels 0.35–0.8 retain detail. High adds color dispersion. A 0.94 scene tint and prefiltered ink keyline improve white-copy contrast over clouds and flowers without blurring the scenery. Packed halos supply local LDR glow; this is not a true HDR multipass bloom implementation.
+
+| Graphics | DPR cap | Framebuffer pixel cap | Grid cells | Backdrop max edge |
+| --- | ---: | ---: | ---: | ---: |
+| Low | 1.00 | 280,000 | 24 × 18 | 1,024 |
+| Medium | 1.25 | 620,000 | 36 × 28 | 1,536 |
+| High | 1.75 | 1,200,000 | 48 × 36 | 2,048 |
+
+The canvas covers only the bubble. Backdrops upload at initialization, quality changes requiring new texture dimensions, or context restoration; text uploads on rasterization/restoration. Hover uploads neither. Five tiny initialization textures are distinct from the four scenery images and text atlas. Mipmaps are generated only on backdrop upload.
 
 ## Quality and lifecycle
 
-Auto chooses an initial budget from data-saving mode, optional memory/CPU hints and coarse pointer. These hints are not a GPU benchmark. No FPS claim or adaptive hardware ranking is inferred from them. Missing optional values are treated as unknown. Manual Low/Medium/High is authoritative and persists under `heinem.graphics.v1`; storage exceptions cannot prevent startup.
+Auto uses optional CPU/memory hints, data saving and pointer type; these are not GPU benchmarks. Manual Low/Medium/High is authoritative and persists under `heinem.graphics.v1`. Storage errors cannot block startup. Reduced motion retains a static shader while stopping impulses, parallax, wheel interpolation and decorative CSS movement.
 
-Reduced motion is independent of fidelity: the page keeps a static shader render, stops parallax, glyph deformation and smooth-wheel interception, and disables decorative CSS motion. `IntersectionObserver`, `visibilitychange` and page lifecycle events pause hidden/offscreen work. Visibility requires an intersection ratio above 0.001, with a matching observer threshold and zero bubble root margin. This excludes zero-area edge contact at the exact mobile scroll limit, where `isIntersecting` alone can remain true. Separate scene/music visibility gates pause CSS decoration and the disc. Renderer, parallax, scroll, quality and player controllers each expose `destroy()` and release observers, listeners, timers and graphics resources. Back-forward cache preservation is treated separately from a final unload.
+Visibility requires intersection ratio above 0.001 with a matching threshold, excluding zero-area edge contact. The bubble, hero decorations and disc use appropriate separate visibility gates. Hidden/offscreen rendering clears old impulses and sleeps. Controllers release observers, listeners, timers, programs and textures on disposal. Final unload and back-forward-cache preservation remain distinct.
 
-## SoundCloud CD
+Chromium/SwiftShader checks establish behavior and work counts, not physical-device FPS. The new hover path measured zero copy mutations, geometry reads and additional texture uploads. Independent positions recoiled and settled. Exact evidence and practical limits are in [VALIDATION-1.2.md](VALIDATION-1.2.md).
 
-The only external runtime dependency is the official SoundCloud Widget API, injected after the first playback gesture. The visible official iframe is retained for browser policies and provider errors. The disc state follows provider `PLAY`, `PAUSE`, `FINISH` and progress events. A generation counter ignores stale callbacks when switching tracks. Timeouts and explicit error states expose a retry and external track link; the UI does not invent playback.
+## CD exchange and music transport
 
-The three cases are native buttons with the real release artwork. Their circular order is Memories → MHA → Show, placing Show to the left of the initial Memories selection. A cover or Previous/Next selection does not initialize the SDK while idle and does not autoplay while paused. Confirmed or pending play intent continues to the next selection; canceling a pending request is remembered before provider readiness. The accessible name announces that cancellation correctly.
+Three native case buttons display verified artwork. Circular order is Memories → MHA → Show. A visual state machine performs 180 ms insertion, 220 ms exchange while the CD is hidden, then 180 ms ejection. CSS supplies motion; no per-frame JavaScript exchange loop exists. The disc button translates while its inner face rotates, preserving the centered hub and rotor.
 
-The generated silver-disc texture rotates on a separate square rotor with `transform-origin: 50% 50%`. The hub and play/pause glyph remain stationary at exactly the same center. Hover changes brightness only; it cannot move the pivot. The rotor runs only in confirmed playback while the music scene is visible and motion is allowed. The approved concept is stored in `docs/reference/music-approved.webp`; it is not a flattened screenshot used as the functional UI.
+A separate requested-track index captures rapid input without queuing many animations. Reversing to the current track cancels exchange. Keyboard activation settles the selected release before interpreting play/pause. Reduced motion settles immediately, even mid-transition. Disposal clears the single timer.
 
-No audio file, scraped stream URL or provider token is stored. The additional About/Contact/CTA sections were removed at the user's request; the verified social links remain in the hero navigation.
+Idle browsing loads no provider; paused browsing does not autoplay. Active/pending intent continues, and the provider changes only after the outgoing disc is concealed. Generation guards reject stale callbacks. Rotation requires actual provider PLAY, not a click or pending request.
 
-## Reference work
+The official SoundCloud widget remains the transport behind native controls. Its visible panel/footer are removed. A compact source link retains attribution and opens the verified track. Errors show a short status over the grass and retry on the CD. No audio, scraped stream URL or credential is hosted. Continuous real audio was not confirmed in this environment; deterministic media tests use mocked events.
 
-- Cortex, reviewed at `abf2a5fcc02f46ad68659cd3dc30b82555cd1788`: `Programming/Web3D/Performance.md`, `Rendering.md`, `Validation.md`, `Interactions.md`, `DXRKTHS-2026-10-19.md`, and `Programming/WebQuality/README.md`.
-- Checkpoint Portfolio, reviewed at `1324faa04a145beb2e76729d16988eb9cc58bb71`: `deimoxportfolios/src/ui/modal-material.js`, `dxrkths/src/scene/room-quality.js`, `dxrkths/src/scene/panel-energy-field.js`, `dxrkths/docs/STABILITY-R23.md`, and `braaza/src/render/quality.js`.
-- Figma first-party **Moving blobs**, ID `2e7f7880-a499-458f-8739-62f3ae9e4a01`, version `a9ca4f6c349e5eb414cb73995b201876304acf36`, inspected as an optical/distortion reference. Its WebGPU source is not bundled; this site uses an original WebGL2 shader.
-- [WebGL best practices — MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices)
-- [Page Visibility API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API)
-- [SoundCloud Widget API](https://developers.soundcloud.com/docs/api/html5-widget)
+## References and history
 
-Avoid importing the portfolio's frozen-source unpack/build workflow into a new project: that workflow can overwrite expanded source. Also avoid historical DXRKTHS fixed desktop FPS caps and rejected Prism Trails. Preserve the approved visual identity and remove inactive work first.
+- [Exact asset prompts and provenance](LAYER-ASSETS.md), [v1.2 decisions](LAYERED-REVISION.md), [validation](VALIDATION-1.2.md)
+- [v1.1 music concept](MEADOW-REVISION.md), retained as history; its dissolve and DOM glyph path are superseded
+- Cortex: `Programming/Web3D/Performance.md`, `Rendering.md`, `Validation.md`, `Interactions.md`, `Layered-Artist-Sites.md`, and `Programming/WebQuality/README.md`
+- Checkpoint Portfolio: `deimoxportfolios/src/ui/modal-material.js`, `dxrkths/src/scene/room-quality.js`, `dxrkths/docs/STABILITY-R23.md`, `braaza/src/render/quality.js`
+- [WebGL best practices](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices)
+- [Canvas specification](https://html.spec.whatwg.org/multipage/canvas.html)
+- [Page Visibility API](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API)
+- [SoundCloud Widget API](https://developers.soundcloud.com/docs/api/html5-widget) and [API guide](https://developers.soundcloud.com/docs/api/guide)
+
+The original work also inspected Figma's first-party Moving blobs shader as an optical reference; its WebGPU source is not bundled. This app owns its WebGL2 renderer. Do not import older portfolio unpack/build flows that overwrite expanded source, historical desktop FPS caps or rejected effects into this project.

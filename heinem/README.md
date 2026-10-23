@@ -2,7 +2,7 @@
 
 A sunlit artist website with a layered meadow, an interactive iridescent soap-film surface, and a compact-disc interface connected to verified HEINEM releases through the official SoundCloud player.
 
-**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.1.0 · **Software:** MIT
+**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.2.0 · **Software:** MIT
 
 The site lives independently in [`checkpoint-portfolio/heinem`](https://github.com/ItsDeimox/checkpoint-portfolio/tree/main/heinem). It has its own package, lockfile, license and Vercel project. It does not depend on the other portfolio applications in this repository.
 
@@ -29,17 +29,17 @@ Browser checks use Playwright. Install its Chromium once with `npx playwright in
 ## What is implemented
 
 - Semantic navigation and biography based on the supplied 1178 × 659 reference.
-- Original portrait pixels, separate depth planes and a meadow that continues into the approved music composition.
-- One small WebGL2 soap-film surface with clear refraction, color dispersion, flowing highlights and pointer deformation shared with the HTML letters.
-- Local luminous hover highlights in the existing shader pass and DOM text; no full-screen bloom chain or extra render targets.
+- Seven separate runtime assets: sky, left tree, distant foliage, middle foliage, the supplied original portrait through a generated alpha matte, one tall continuous foreground field, and a butterfly sprite.
+- One bounded WebGL2 mesh renders the soap film, clear refraction, title, biography, underline and sparkle. Up to six independent spring impulses give each touched region a lingering jelly response.
+- Typography and two glow masks are rasterized once on font/layout changes and packed into one GPU texture. Hover produces no glyph DOM writes, geometry reads or texture uploads; there is no full-screen bloom chain.
 - Gentle wheel interpolation on the real document scroll position, with native touch/keyboard/control behavior and immediate cancellation on focus navigation.
 - Auto, Low, Medium and High graphics, with persistent manual choices and independent reduced-motion support.
 - Shader and CSS decorative animation pause when the hero leaves the viewport or the tab is hidden.
-- Three physical jewel-case buttons, the approved silver CD, a fixed rotation pivot, play/pause, Previous/Next, seek, volume and provider fallback.
-- Browsing releases is silent and does not initialize the media provider; playback begins only after an explicit play request.
+- Three physical jewel-case buttons and a CD that retracts into its sleeve, changes cases while concealed, then emerges. The rotation pivot remains centered; repeated clicks and reduced motion are handled.
+- Browsing releases is silent and does not initialize the media provider; playback begins only after an explicit play request. The external player panel is removed; a compact source link accompanies the native CD, seek and volume controls.
 - Mobile composition, accessible native controls, local fonts, SEO metadata and restrictive response headers.
 
-No audio is downloaded or re-hosted. The SoundCloud SDK and iframe load after a user gesture; the disc rotates only after the provider confirms playback. A provider restriction, ad, blocked network or additional browser gesture requirement cannot be bypassed by the site. The official player and track link remain available.
+No audio is downloaded or re-hosted. The SoundCloud SDK and iframe load after a user gesture; the disc rotates only after the provider confirms playback. A provider restriction, ad, blocked network or additional browser gesture requirement cannot be bypassed by the site. The official widget remains the playback transport behind the custom controls; the verified source link opens the track when needed.
 
 **Playback verification limit:** the real provider initialized and returned track metadata, but paused at 0:00 in the test browser, including after a direct click in its official player. Continuous audio was not confirmed. The site handles that state explicitly; the passing automated media checks use simulated provider events. See [the full validation record](docs/VALIDATION.md#real-soundcloud-check-and-its-limit).
 
@@ -49,14 +49,15 @@ No audio is downloaded or re-hosted. The SoundCloud SDK and iframe load after a 
 | --- | --- |
 | Biography, navigation and social URLs | `index.html` |
 | Track IDs, metadata and covers | `src/lib/player.ts` and the jewel-case buttons in `index.html` |
-| Hero palette and responsive composition | `src/style.css` |
+| Hero type and controls | `src/style.css` |
+| Layer geometry, continuous field and butterfly wings | `src/scenery.css` |
 | Music composition, jewel-case materials and disc pivot | `src/music.css` |
 | Bubble optics, frame budgets and optical field | `src/graphics/bubble.ts` |
-| HTML glyph geometry and matching deformation | `src/lib/bubble-text.ts` |
+| Cached GPU typography, underline and packed glow masks | `src/lib/bubble-text.ts` |
 | Wheel interpolation and input ownership | `src/lib/smooth-scroll.ts` |
 | Device default, preference persistence and menu | `src/lib/quality.ts` |
 | Native scroll depth factors | `data-depth` values in `index.html` |
-| Asset origin and rights | `docs/asset-provenance.md`, `docs/artist-sources.json` |
+| Asset origin, exact prompts and rights | `docs/LAYER-ASSETS.md`, `docs/asset-provenance.md`, `docs/artist-sources.json` |
 
 The artist's age is reproduced from the supplied design, not calculated from an unverified birth date. Recheck that copy with the artist before future releases.
 
@@ -64,11 +65,13 @@ The artist's age is reproduced from the supplied design, not calculated from an 
 
 Vercel project: **heinem**, in the existing ItsDeimox team. Git repository: **ItsDeimox/checkpoint-portfolio**, production branch **main**, root directory **heinem**, Node **24.x**, framework **Vite**, install **npm ci**, build **npm run build**, output **dist**. The only intended public project alias is `heinem.vercel.app`.
 
-The **v1.1 production revision was verified on 2026-10-23 UTC**: Vercel READY, public HTTPS 200, published HTML/JS/CSS identical to the tested build, and **15/15 live browser checks passed**. Source commit, deployment, bundle sizes and practical limits are recorded in [VALIDATION-1.1.md](docs/VALIDATION-1.1.md); the v1.0 baseline remains in [VALIDATION.md](docs/VALIDATION.md). Code changes use conventional commit messages and the version/changelog in this folder; a package version is not a claim that a GitHub Release or Git tag exists.
+The **v1.2 assets and GPU-typography revision** is documented in [VALIDATION-1.2.md](docs/VALIDATION-1.2.md), including the measured removal of per-glyph DOM work, local and deployed checks, bundle sizes, and playback/hardware limits. The [v1.1 record](docs/VALIDATION-1.1.md) and [v1.0 baseline](docs/VALIDATION.md) remain historical evidence. Code uses conventional commits and the version/changelog in this folder; a package version does not imply a GitHub Release or tag.
 
 ## Technical documentation
 
 - [Approved brief](docs/DESIGN.md)
+- [Layered assets and v1.2 decisions](docs/LAYERED-REVISION.md)
+- [Asset files and complete generation prompts](docs/LAYER-ASSETS.md)
 - [Approved meadow concept and v1.1 decisions](docs/MEADOW-REVISION.md)
 - [Implementation plan](docs/IMPLEMENTATION-PLAN.md)
 - [Architecture and performance](docs/ARCHITECTURE.md)

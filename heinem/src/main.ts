@@ -5,10 +5,12 @@ import { initPlayer } from './lib/player';
 import { createSmoothScroll } from './lib/smooth-scroll';
 
 const hero = document.querySelector<HTMLElement>('#home')!;
+const world = document.querySelector<HTMLElement>('#scene-world')!;
 const scene = document.querySelector<HTMLElement>('#scene')!;
 const host = document.querySelector<HTMLElement>('#bubble')!;
 const canvas = document.querySelector<HTMLCanvasElement>('#bubble-canvas')!;
-const background = document.querySelector<HTMLImageElement>('.landscape')!;
+const backdrops = ['.sky', '.distant-foliage', '.mid-foliage', '.left-tree']
+  .map(selector => document.querySelector<HTMLImageElement>(selector)!);
 let bubble: ReturnType<typeof createBubble> | undefined;
 let parallax: ReturnType<typeof createParallax> | undefined;
 let smoothScroll: ReturnType<typeof createSmoothScroll> | undefined;
@@ -26,13 +28,11 @@ const quality = createQualityController((tier, reducedMotion) => {
 bubble = createBubble(canvas, host, {
   quality: quality.quality,
   reducedMotion: quality.reducedMotion,
-  backdrop: background,
-  rim: document.querySelector<HTMLImageElement>('.original-portrait')!,
-  sky: document.querySelector<HTMLImageElement>('.sky')!,
-  skyMaskStops: [0.42, 0.63],
+  backdrop: backdrops[0],
+  backdrops,
   scene,
 });
-parallax = createParallax(hero, () => bubble?.syncBackdrop());
+parallax = createParallax(world, () => bubble?.syncBackdrop());
 parallax.setQuality(quality.quality);
 parallax.setReducedMotion(quality.reducedMotion);
 smoothScroll = createSmoothScroll(quality.reducedMotion);
