@@ -299,7 +299,7 @@ export function createBubble(canvas: HTMLCanvasElement, host: HTMLElement, optio
     frame = 0;
     lastDraw = 0;
   };
-  const canDraw = () => !destroyed && ready && !contextLost && visible && !document.hidden;
+  const canDraw = () => !destroyed && ready && !contextLost && visible && !document.hidden && document.body.dataset.sceneActive !== 'false';
   const wake = () => {
     if (!frame && canDraw()) frame = requestAnimationFrame(draw);
   };

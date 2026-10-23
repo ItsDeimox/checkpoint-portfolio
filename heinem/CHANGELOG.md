@@ -8,6 +8,7 @@
 - Pure white local typography bloom replaces the previous cyan, keeping the existing six independent jelly impulses and quality settings.
 - Mildly cool-muted the portrait only. The approved landscape and CD artwork remain unfiltered.
 - Added viewport-specific browser regression tests. Production is deployed by GitHub integration only.
+- Render loop also respects the hero visibility state to avoid lingering frames when the bubble bounds intersect outside the hero.
 
 
 ## 1.5.0 — 2026-10-23 (São Paulo)
