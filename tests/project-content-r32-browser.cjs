@@ -48,22 +48,33 @@ let browser,page;
   check(item.name+' opens the matching project',await page.locator('#future-project-title').innerText()===item.name);
   check(item.name+' has the supplied collaborators',await page.locator('.fp-facts').innerText().then(s=>s.includes('DXT')&&s.includes(item.credit)));
   check(item.name+' does not jump the page behind the modal',await page.evaluate(p=>Math.abs(scrollY-p.y)<=1&&Math.abs(scrollX-p.x)<=1,before));
-  check(item.name+' has three photo choices',await page.locator('[data-project-media]').count()===3);
+  const arrows=await page.locator('#future-project-dialog [data-project-step]').evaluateAll(elements=>{
+   const stage=document.querySelector('#future-project-dialog [data-project-stage]').getBoundingClientRect();
+   return elements.map(element=>{const r=element.getBoundingClientRect();return {
+    x:r.x,width:r.width,centerY:r.top+r.height/2,inside:r.left>=stage.left&&r.right<=stage.right&&r.top>=stage.top&&r.bottom<=stage.bottom
+   };});
+  });
+  check(item.name+' shows two accessible arrows within the image, not the PHOTO choice strip',arrows.length===2&&arrows.every(a=>a.inside)&&await page.locator('[data-project-media]').count()===0,arrows);
   check(item.name+' description is English and nonempty',await page.locator('.fp-description').innerText().then(s=>s.length>100&&!/Será|possui|jogador|Colaboradores/.test(s)));
   if(item.name==='Right Cut!')check('Right Cut includes the final-game disclaimer',await page.locator('.fp-development-note').innerText().then(s=>s.includes('do not represent the final game')));
   for(let i=0;i<3;i++){
-   await page.locator('[data-project-media="'+i+'"]').click();
+   if(i>0)await page.locator('[data-project-step="1"]').click();
    const media=await readyImage();
    check(item.name+' photo '+(i+1)+' uses the supplied asset at its original resolution',media.src==='/assets/projects/'+item.paths[i]&&media.w===item.dimensions[i][0]&&media.h===item.dimensions[i][1]&&media.fit==='contain'&&media.paintWidth>100&&media.paintHeight>100,media);
   }
-  await page.locator('[data-project-media="0"]').click();await readyImage();await shot(item.shot);
+  // Last slide wraps to the first, then Previous wraps back to last.
+  await page.locator('[data-project-step="1"]').click();await readyImage();
+  check(item.name+' next arrow wraps the gallery',await page.locator('[data-project-stage] img').evaluate((img,name)=>new URL(img.src).pathname.endsWith(name),item.paths[0]));
+  await page.locator('[data-project-step="-1"]').click();await readyImage();
+  check(item.name+' previous arrow wraps in the other direction',await page.locator('[data-project-stage] img').evaluate((img,name)=>new URL(img.src).pathname.endsWith(name),item.paths[2]));
+  await page.locator('[data-project-step="1"]').click();await readyImage();await shot(item.shot);
   await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('#future-project-dialog')?.open);
   check(item.name+' restores the same scroll position on close',await page.evaluate(p=>Math.abs(scrollY-p.y)<=1&&Math.abs(scrollX-p.x)<=1,before));
   check(item.name+' closing does not leave Future Projects',new URL(page.url()).pathname==='/projects');
  }
  for(const label of ['Procedural Tiremark Generator','Procedural Vegetation Placer','Drift Judge Score System','FFB System']){
   await page.getByRole('button',{name:'View '+label+' details',exact:true}).click();
-  check(label+' retains its original empty-media state',await page.locator('#future-project-title').innerText()===label&&await page.locator('.fp-empty').isVisible());
+  check(label+' retains its original empty-media state without slideshow controls',await page.locator('#future-project-title').innerText()===label&&await page.locator('.fp-empty').isVisible()&&await page.locator('[data-project-step]').count()===0);
   await page.locator('[data-project-close]').click();await page.waitForFunction(()=>!document.querySelector('#future-project-dialog')?.open);
  }
  for(const width of [390,320]){

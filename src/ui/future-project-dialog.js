@@ -9,14 +9,19 @@ export function projectDialogContent(project) {
  const media = projectMedia(project.media);
  const collaborators = Array.isArray(project.collaborators) ? project.collaborators.filter(name => typeof name === 'string' && name.trim()) : [];
  const paragraphs = Array.isArray(project.description) ? project.description.filter(p => typeof p === 'string' && p.trim()) : [];
+ // The image is the gallery. Only the two arrows overlay its sides;
+ // screen readers receive the position without a separate PHOTO button strip.
+ const nav = media.length > 1 ? `<button type="button" class="fp-arrow fp-arrow-prev" data-project-step="-1" aria-label="Previous project media">${arrowIcon}</button>
+     <button type="button" class="fp-arrow fp-arrow-next" data-project-step="1" aria-label="Next project media">${arrowIcon}</button>
+     <span class="sr-only" data-project-count aria-live="polite" aria-atomic="true"></span>` : '';
  return `<div class="fp-window">
   <header class="fp-topline"><span>DXT / PROJECT FILE</span><button type="button" class="fp-close" data-project-close aria-label="Close project details" autofocus>${closeIcon}</button></header>
   <div class="fp-layout">
    <section class="fp-media" aria-label="Project photos and videos">
-    <div class="fp-stage" data-project-stage><div class="fp-empty">${mediaIcon}<span class="fp-eyebrow">BEHIND THE SCENES</span><strong>Preview coming soon</strong><p>Photos and videos will appear here when shared.</p></div></div>
-    <div class="fp-media-tools" ${media.length ? '' : 'hidden'}><span data-project-count aria-live="polite" aria-atomic="true"></span><div><button type="button" data-project-step="-1" aria-label="Previous project media">${arrowIcon}</button><button type="button" data-project-step="1" aria-label="Next project media">${arrowIcon}</button></div></div>
-    <div class="fp-media-choices" role="group" aria-label="Choose project media" ${media.length ? '' : 'hidden'}>${media.map((item,i)=>`<button type="button" data-project-media="${i}" aria-label="Show ${item.type} ${i+1}" aria-pressed="${i===0}"><span>${String(i+1).padStart(2,'0')}</span>${item.type==='video'?'VIDEO':'PHOTO'}</button>`).join('')}</div>
-    <p class="fp-caption" data-project-caption></p>
+    <div class="fp-viewer">
+     <div class="fp-stage" data-project-stage><div class="fp-empty">${mediaIcon}<span class="fp-eyebrow">BEHIND THE SCENES</span><strong>Preview coming soon</strong><p>Photos and videos will appear here when shared.</p></div></div>
+     ${nav}
+    </div>
    </section>
    <section class="fp-details"><p class="fp-eyebrow">${escape(project.category)} / FUTURE PROJECT</p><h2 id="future-project-title">${escape(project.name)}</h2><span class="fp-platform">${escape(project.platform)}</span>
     <div class="fp-description">${paragraphs.length ? paragraphs.map(p=>`<p>${escape(p)}</p>`).join('') : '<p>More details about this project will be shared here.</p>'}</div>
@@ -87,17 +92,17 @@ export class FutureProjectDialog {
    event.stopPropagation();
    if(event.target.closest?.('[data-project-close]') || (this.backdropDown && event.target===dialog && this.outside(event))) this.close();
    else {
-    const choice=event.target.closest?.('[data-project-media]'), step=event.target.closest?.('[data-project-step]');
-    if(choice) this.select(Number(choice.dataset.projectMedia));
-    else if(step) this.select(this.mediaIndex+Number(step.dataset.projectStep));
+    const step=event.target.closest?.('[data-project-step]');
+    if(step) this.select(this.mediaIndex+Number(step.dataset.projectStep));
    }
    this.backdropDown=false;
   }, {signal});
   dialog.addEventListener('keydown', event => {
-   if(!event.target.closest?.('.fp-media-choices') || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+   if(!event.target.closest?.('.fp-viewer') || !this.active?.media?.length || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
    event.preventDefault();
    const index=event.key==='Home'?0:event.key==='End'?this.active.media.length-1:this.mediaIndex+(event.key==='ArrowRight'?1:-1);
-   this.select(index); dialog.querySelector(`[data-project-media="${this.mediaIndex}"]`)?.focus({preventScroll:true});
+   // The arrow button retains keyboard focus while the image changes.
+   this.select(index);
   }, {signal});
   this.document.body.append(dialog); this.dialog=dialog; return dialog;
  }
@@ -162,9 +167,8 @@ export class FutureProjectDialog {
    note.textContent='This preview is temporarily unavailable.'; stage.replaceChildren(note);
   },{once:true,signal:this.mediaController.signal});
   media.src=item.src; stage.append(media);
-  this.dialog.querySelector('[data-project-count]').textContent=`${String(this.mediaIndex+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}`;
-  this.dialog.querySelector('[data-project-caption]').textContent=item.caption;
-  this.dialog.querySelectorAll('[data-project-media]').forEach((button,i)=>button.setAttribute('aria-pressed',String(i===this.mediaIndex)));
+  const countText=this.dialog.querySelector('[data-project-count]');
+  if(countText) countText.textContent=`Image ${this.mediaIndex+1} of ${count}`;
  }
 
  close({immediate=false,restoreFocus=true}={}) {
