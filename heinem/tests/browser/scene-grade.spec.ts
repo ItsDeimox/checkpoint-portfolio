@@ -32,8 +32,16 @@ test('cooler grading touches scenery only and keeps the continuous foreground', 
     expect(filters[key]).toContain('saturate(');
     expect(filters[key]).toContain('hue-rotate(');
   }
+  const amount = (filter: string, name: string) =>
+    Number(filter.split(name + '(')[1]?.split(')')[0]);
+  for (const key of ['distant', 'mid', 'tree', 'field'] as const) {
+    expect(amount(filters[key], 'saturate')).toBeLessThanOrEqual(.65);
+    expect(amount(filters[key], 'contrast')).toBeLessThan(1);
+  }
+  expect(amount(filters.sky, 'saturate')).toBeLessThanOrEqual(.65);
+  expect(amount(filters.sky, 'contrast')).toBeLessThan(1);
   expect(filters.portrait).toBe('none');
   expect(filters.bubble).toBe('none');
   expect(filters.fields).toBe(1);
-  expect(filters.background).toBe('rgb(65, 96, 77)');
+  expect(filters.background).toBe('rgb(69, 90, 86)');
 });

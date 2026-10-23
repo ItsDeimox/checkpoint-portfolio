@@ -1,16 +1,17 @@
-/* One physical garden spans both sections; every plane has its own alpha.
-   Restrained emerald/blue grading is applied only to scenery.
-   Artist RGB, bubble light, album covers and UI are deliberately untouched. */
+/* Frutiger Aero meadow: soft, muted blue/teal greens.
+   1.4.1 unintentionally increased local contrast; that made greens seem
+   even more vivid despite a modest reduction in saturation.
+   Limit filters to photographic scenery; never grade the artist or music UI. */
 :root {
-  --garden-sky-grade: saturate(.83) hue-rotate(-3deg) brightness(.985) contrast(1.015);
-  --garden-foliage-grade: saturate(.78) hue-rotate(9deg) brightness(.98) contrast(1.045);
-  --garden-foreground-grade: saturate(.80) hue-rotate(8deg) brightness(.985) contrast(1.04);
+  --garden-sky-grade: saturate(.64) hue-rotate(-5deg) brightness(.94) contrast(.94);
+  --garden-foliage-grade: saturate(.56) hue-rotate(14deg) brightness(.92) contrast(.92);
+  --garden-foreground-grade: saturate(.63) hue-rotate(11deg) brightness(.92) contrast(.94);
 }
 #scene-world {
   position: relative;
   isolation: isolate;
   overflow: clip;
-  background: #41604d;
+  background: #455a56;
 }
 .hero {
   position: relative;

@@ -98,27 +98,30 @@ vec4 layerSample(sampler2D source, vec4 map, vec2 uv, vec2 displacement, float l
   return color;
 }
 
+// Grade the *actual* scenery sampled inside the refracting film.
+// Per-layer chroma/contrast matches the softer CSS scene without a second pass.
+vec3 gradeGarden(vec3 rgb, float chroma, float exposure, float contrastValue, vec3 tint) {
+  float luma = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
+  vec3 muted = mix(vec3(luma), rgb, chroma);
+  return clamp((muted * exposure * tint - vec3(0.5)) * contrastValue + vec3(0.5), 0.0, 1.0);
+}
+
 vec3 sceneSample(vec2 uv, vec2 displacement, float lod) {
   vec4 base = layerSample(uBackdrop0, uBackdropMaps[0], uv, displacement, lod);
-  vec3 color = base.rgb;
+  vec3 color = gradeGarden(base.rgb, 0.64, 0.94, 0.94, vec3(0.98, 1.0, 1.025));
   if (uBackdropCount > 1) {
     vec4 next = layerSample(uBackdrop1, uBackdropMaps[1], uv, displacement, lod);
-    color = mix(color, next.rgb, next.a);
+    color = mix(color, gradeGarden(next.rgb, 0.56, 0.92, 0.92, vec3(0.96, 1.005, 1.04)), next.a);
   }
   if (uBackdropCount > 2) {
     vec4 next = layerSample(uBackdrop2, uBackdropMaps[2], uv, displacement, lod);
-    color = mix(color, next.rgb, next.a);
+    color = mix(color, gradeGarden(next.rgb, 0.56, 0.92, 0.92, vec3(0.96, 1.005, 1.04)), next.a);
   }
   if (uBackdropCount > 3) {
     vec4 next = layerSample(uBackdrop3, uBackdropMaps[3], uv, displacement, lod);
-    color = mix(color, next.rgb, next.a);
+    color = mix(color, gradeGarden(next.rgb, 0.56, 0.92, 0.92, vec3(0.96, 1.005, 1.04)), next.a);
   }
-  // Same gentle cool/low-chroma grade as the CSS landscape layers.
-  // Kept in the existing shader pass (no texture reuploads or bloom pass).
-  float luminance = dot(color, vec3(.2126, .7152, .0722));
-  color = mix(vec3(luminance), color, .81);
-  color = color * vec3(.977, .998, 1.034);
-  return clamp(color, 0.0, 1.0);
+  return color;
 }
 
 void main() {

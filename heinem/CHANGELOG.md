@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.2 — 2026-10-23 (São Paulo)
+
+### Changed
+- Rebalanced the meadow using the user's Frutiger Aero reference: muted, cooler sage/teal greens and a gray-blue sky rather than vivid foliage.
+- Fixed the 1.4.1 grading error: green plane contrast above 1 exaggerated bright edges despite a small saturation reduction. Contrast is now below 1, saturation is substantially reduced, and exposure slightly restrained.
+- Graded each scene layer in the existing bubble refraction pass to avoid a bright unfiltered interior.
+- Preserved the artist portrait, continuous grass, CD carousel, bubble jelly motion and all controls.
+
+
 ## 1.4.1 — 2026-10-23 (São Paulo)
 
 ### Changed

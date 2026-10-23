@@ -2,7 +2,7 @@
 
 A sunlit artist website with a layered meadow, an interactive iridescent soap-film surface, and a compact-disc interface connected to verified HEINEM releases through the official SoundCloud player.
 
-**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.4.1 · **Software:** MIT
+**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.4.2 · **Software:** MIT
 
 The site lives independently in [`checkpoint-portfolio/heinem`](https://github.com/ItsDeimox/checkpoint-portfolio/tree/main/heinem). It has its own package, lockfile, license and Vercel project. It does not depend on the other portfolio applications in this repository.
 
@@ -38,7 +38,7 @@ Browser checks use Playwright. Install its Chromium once with `npx playwright in
 - Shader and CSS decorative animation pause when the hero leaves the viewport or the tab is hidden.
 - Three physical jewel-case buttons and a reversible CD timeline. **One horizontal mouse/touch drag can pass through multiple covers and wrap around endlessly without lifting**; the cases and CD move continuously through every index. Releasing eases into the nearest release, while reversing or cancelling remains smooth. The real player track updates only once at release, not at every artwork crossed. Click navigation and bounded 3D hover keep their approved behavior. Bounded 3D hover tilt lives inside the position wrappers, preserving the rotor pivot and native play target. Vertical touch scrolling and reduced motion remain supported.
 - Browsing releases is silent and does not initialize the media provider; playback begins only after an explicit play request. The external player panel is removed; a compact source link accompanies the native CD, seek and volume controls.
-- Cool-muted emerald/blue-green color grading over scenery layers only, with a matching low-cost grade inside the bubble material. Portrait, album covers, UI and media are not globally filtered.
+- Soft Frutiger Aero color grading: low saturation and lower contrast across sky and greenery, cooler blue-gray sky and subdued sage/teal grass. The bubble material samples a matching low-cost grade. Portrait, album covers, UI and media are not globally filtered.
 - Four official social profiles (YouTube, Spotify, Instagram and SoundCloud); X/Twitter is intentionally excluded.
 - Mobile composition, accessible native controls, local fonts, SEO metadata and restrictive response headers.
 
