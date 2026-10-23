@@ -35,8 +35,8 @@ Browser evidence uses Chromium 134 with ANGLE/SwiftShader in the task environmen
 | CD browser regressions | **7/7 passed in 40.8 s**: coordinated case/disc transfer, centered pivot, silent browsing, reduced motion, gradual drag/click suppression, inner-surface tilt and real touch input ownership |
 | Real touch regression | **1/1 passed in 7.5 s** after the fix, then passed again in the seven-case run. Inner-element implicit capture loss bubbles during transfer to the stage; stage-only loss handling prevents premature cancellation |
 | Approved bubble | Shader and approved optical behavior preserved; historical 1.2 measurements are not automatically relabeled as a new full-suite pass |
-| Final integrated build/browser suite | Recorded below after completion |
-| Public deployment and artifact equality | Recorded below after the new source is actually deployed |
+| Final integrated build/browser suite | TypeScript and 34/34 unit tests passed; 26/26 browser tests passed locally, then 26/26 on the public alias |
+| Public deployment and artifact equality | READY for the exact source SHA; all 28 deployed files returned 200 and matched the tested bytes |
 
 ## Why the sky correction is supported
 
@@ -77,15 +77,21 @@ Evidence retained with the source:
 - [Concealed CD transfer](evidence/refinement-disc-transfer.webp).
 - [20-state visual report](evidence/refinement-visual-report.json) and [release record](evidence/release-1.3.json).
 
-Public artifact equality and deployed browser results will be appended after the source deployment is READY; local passes alone do not establish publication.
+### Production verification
+
+The same complete suite passed **26/26 tests on https://heinem.vercel.app in 1.8 minutes**. The public tests include the new field gating/failure cases, same-frame sky synchronization and actual touch gesture sequence, together with the approved bubble and existing media-state regressions.
+
+All **28 files in `dist`** returned **HTTP 200** and matched the tested local build byte for byte by SHA-256. This independent check used `curl` with normal TLS certificate verification and no bypass. The disposable Playwright browser used `PLAYWRIGHT_IGNORE_TLS=1` for the environment proxy CA; that exception is limited to the browser test session. No production TLS setting was changed. Vercel build logs also confirm **34 passed / 0 failed** unit tests and the same generated JS/CSS filenames.
+
+The [release record](evidence/release-1.3.json) retains each resource hash, byte count, HTTP status and verification result. Follow-up documentation commits do not change these build inputs; any final alias check must still confirm the served artifacts rather than infer publication from an earlier READY state.
 
 ## Published revision
 
-Application source: `PENDING_V13_SOURCE_SHA`.
+Application source: [`90ec8f6eab62c09d7f453cf2442c009d93ba9d5c`](https://github.com/ItsDeimox/checkpoint-portfolio/commit/90ec8f6eab62c09d7f453cf2442c009d93ba9d5c).
 
-Vercel deployment: `PENDING_V13_DEPLOYMENT`.
+Vercel deployment: `dpl_47ycuswP7gdGRo6skiWrA8ULjeG8` (**READY**, production target).
 
-The existing public project remains [heinem.vercel.app](https://heinem.vercel.app). Confirm READY state, the exact source SHA and production alias, then verify the served resources against the tested build. A previous revision's READY state is not evidence for this revision.
+Vercel confirmed the exact source SHA above and the production alias **heinem.vercel.app** on this READY deployment. The address [heinem.vercel.app](https://heinem.vercel.app) serves the source verified by the public suite and the 28-file equality check. Earlier releases remain separate historical evidence.
 
 ## Practical limits
 

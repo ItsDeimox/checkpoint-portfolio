@@ -24,7 +24,7 @@
 - Added regressions for stopped/reversed sky motion and depth alignment within each completed wheel frame.
 - Added field-detail request gating, shared-plane movement and all-or-fallback decoding checks.
 - Expanded CD controller and real browser pointer coverage for gradual motion, cancellation, tilt, capture and native touch ownership.
-- Focused and integrated outcomes are distinguished in [VALIDATION-1.3.md](docs/VALIDATION-1.3.md). Earlier production passes are not treated as verification of this revision.
+- TypeScript and 34/34 unit tests passed; 26/26 browser cases passed locally and on the public alias. All 28 deployed files returned 200 and matched the tested build. Focused, integrated and published evidence is recorded separately in [VALIDATION-1.3.md](docs/VALIDATION-1.3.md).
 
 ## 1.2.0 — 2026-10-22 (São Paulo; 2026-10-23 UTC)
 
