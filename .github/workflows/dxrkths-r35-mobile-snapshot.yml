@@ -1,0 +1,25 @@
+name: Prepare isolated DXRKTHS mobile audit
+on:
+  push:
+    branches: [dxrkths-r35-mobile-audit]
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          sparse-checkout: dxrkths
+      - name: Install locked dependencies and build baseline
+        working-directory: dxrkths
+        run: npm ci && npm run build
+      - name: Package reproducible local audit input without credentials
+        run: tar --exclude='.env*' --exclude='.vercel' --exclude='.git' -czf dxrkths-mobile-baseline.tar.gz dxrkths
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dxrkths-r35-mobile-baseline
+          path: dxrkths-mobile-baseline.tar.gz
+          retention-days: 1
