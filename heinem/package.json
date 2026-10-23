@@ -11,7 +11,7 @@
     "check": "npm run typecheck && npm test",
     "build": "npm run check && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --test --test-isolation=none tests/quality.test.ts tests/player.test.mjs tests/smooth-scroll.test.mjs",
+    "test": "node --test --test-isolation=none tests/quality.test.ts tests/player.test.mjs tests/smooth-scroll.test.mjs tests/scene-finish.test.mjs",
     "test:e2e": "playwright test"
   },
   "engines": {

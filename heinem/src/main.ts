@@ -4,12 +4,15 @@ import { createParallax } from './lib/parallax';
 import { initPlayer } from './lib/player';
 import { createSmoothScroll } from './lib/smooth-scroll';
 import { createFieldDetail } from './lib/field-detail';
+import { createSceneFinish } from './lib/scene-finish';
+import './scene-finish.css';
 
 const hero = document.querySelector<HTMLElement>('#home')!;
 const world = document.querySelector<HTMLElement>('#scene-world')!;
 const scene = document.querySelector<HTMLElement>('#scene')!;
 const host = document.querySelector<HTMLElement>('#bubble')!;
 const canvas = document.querySelector<HTMLCanvasElement>('#bubble-canvas')!;
+const sceneFinish = createSceneFinish();
 const backdrops = ['.sky', '.distant-foliage', '.mid-foliage', '.left-tree']
   .map(selector => document.querySelector<HTMLImageElement>(selector)!);
 let bubble: ReturnType<typeof createBubble> | undefined;
@@ -92,6 +95,7 @@ function dispose() {
   bubble?.destroy();
   player.destroy();
   fieldDetail?.destroy();
+  sceneFinish.destroy();
 }
 function onPageHide(event: PageTransitionEvent) {
   if (event.persisted) return;
