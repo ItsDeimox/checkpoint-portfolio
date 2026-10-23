@@ -47,6 +47,20 @@ let browser,page;
   await button.click();await page.waitForTimeout(300);
   check(item.name+' opens the matching project',await page.locator('#future-project-title').innerText()===item.name);
   check(item.name+' has the supplied collaborators',await page.locator('.fp-facts').innerText().then(s=>s.includes('DXT')&&s.includes(item.credit)));
+  const placement=await page.locator('#future-project-dialog').evaluate(dialog=>{
+   const viewer=dialog.querySelector('.fp-viewer').getBoundingClientRect();
+   const facts=dialog.querySelector('.fp-facts').getBoundingClientRect();
+   const details=dialog.querySelector('.fp-details').getBoundingClientRect();
+   return {viewer:{x:viewer.x,bottom:viewer.bottom,width:viewer.width},facts:{x:facts.x,top:facts.top,width:facts.width},
+    details:{x:details.x,top:details.top},
+    repeats:(dialog.textContent.match(/FUTURE PROJECTS|FUTURE PROJECT/gi)||[]).length,
+    rows:dialog.querySelectorAll('.fp-facts dt').length,
+    badge:dialog.querySelectorAll('.fp-platform').length};
+  });
+  check(item.name+' places its only three facts directly below the image (not under the heading)',
+   placement.facts.top>=placement.viewer.bottom-1&&Math.abs(placement.facts.x-placement.viewer.x)<2
+   &&Math.abs(placement.facts.width-placement.viewer.width)<3&&placement.details.x>placement.facts.x
+   &&placement.rows===3&&placement.badge===0&&placement.repeats===0,placement);
   check(item.name+' does not jump the page behind the modal',await page.evaluate(p=>Math.abs(scrollY-p.y)<=1&&Math.abs(scrollX-p.x)<=1,before));
   const arrows=await page.locator('#future-project-dialog [data-project-step]').evaluateAll(elements=>{
    const stage=document.querySelector('#future-project-dialog [data-project-stage]').getBoundingClientRect();
@@ -82,6 +96,14 @@ let browser,page;
   await page.getByRole('button',{name:'View Right Cut! details',exact:true}).click();await readyImage();await page.waitForTimeout(300);
   const sizes=await page.evaluate(()=>{const d=document.querySelector('#future-project-dialog');return{page:document.documentElement.scrollWidth,viewport:innerWidth,width:d.getBoundingClientRect().width,client:d.clientWidth,scroll:d.scrollWidth};});
   check(width+'px modal and page fit without horizontal overflow',sizes.page<=width&&sizes.width<=width&&sizes.scroll<=sizes.client+1,sizes);
+  const mobilePlacement=await page.locator('#future-project-dialog').evaluate(dialog=>{
+   const viewer=dialog.querySelector('.fp-viewer').getBoundingClientRect();
+   const facts=dialog.querySelector('.fp-facts').getBoundingClientRect();
+   const title=dialog.querySelector('.fp-details h2').getBoundingClientRect();
+   return {viewerBottom:viewer.bottom,factsTop:facts.top,factsBottom:facts.bottom,titleTop:title.top};
+  });
+  check(width+'px places facts immediately below the media and before the project title',
+   mobilePlacement.factsTop>=mobilePlacement.viewerBottom-1&&mobilePlacement.titleTop>=mobilePlacement.factsBottom-1,mobilePlacement);
   await shot('right-cut-'+width+'.jpg');
   await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('#future-project-dialog')?.open);
  }

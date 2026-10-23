@@ -63,3 +63,40 @@ test('title is reduced and gallery arrow controls are positioned inside the imag
  assert.match(css,/@media\(max-width:700px\)/);
  assert.doesNotMatch(css,/\.fp-media-choices|\.fp-media-tools/);
 });
+
+test('project facts appear once below the photo, never under the title',()=>{
+ const p=data.getFutureProject('0-1');
+ const html=ui.projectDialogContent(p);
+ const mediaStart=html.indexOf('<section class="fp-media"');
+ const viewer=html.indexOf('<div class="fp-viewer">');
+ const facts=html.indexOf('<dl class="fp-facts"');
+ const mediaEnd=html.indexOf('</section>',mediaStart);
+ const details=html.indexOf('<section class="fp-details">');
+ assert.ok(mediaStart>=0&&viewer>mediaStart&&facts>viewer&&mediaEnd>facts&&details>mediaEnd,
+  'metadata belongs to the left image column before the right description');
+ for(const field of ['Category','Platform','Collaborators']){
+  assert.equal((html.match(new RegExp('<dt>'+field+'</dt>','g'))||[]).length,1,field+' is rendered once');
+ }
+ assert.doesNotMatch(html,/FUTURE PROJECTS|FUTURE PROJECT|class="fp-platform"|ESC TO CLOSE/);
+ assert.match(html,/id="future-project-title">Right Cut!</);
+ assert.match(html,/class="fp-description"/);
+ assert.match(html,/data-project-close/);
+});
+test('placeholder projects keep their category and platform under the empty media frame',()=>{
+ const p=data.getFutureProject('2-1');
+ const html=ui.projectDialogContent(p);
+ const facts=html.indexOf('<dl class="fp-facts"'),details=html.indexOf('<section class="fp-details">');
+ assert.ok(facts>html.indexOf('data-project-stage')&&facts<details);
+ assert.equal((html.match(/<dt>Category<\/dt>/g)||[]).length,1);
+ assert.equal((html.match(/<dt>Platform<\/dt>/g)||[]).length,1);
+ assert.doesNotMatch(html,/<dt>Collaborators<\/dt>|data-project-step=|FUTURE PROJECTS/);
+ assert.match(html,/Preview coming soon/);
+});
+test('metadata is aligned under the gallery on desktop and stacks correctly on mobile',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const css=readFileSync(new URL('../src/styles-project-dialog.css',import.meta.url),'utf8');
+ assert.match(css,/\.fp-layout\{[^}]*grid-template-columns:minmax\(0,1\.15fr\) minmax\(0,1fr\)/);
+ assert.match(css,/\.fp-facts\{[^}]*margin:2[024]px 0 0/);
+ assert.match(css,/@media\(max-width:700px\)/);
+ assert.doesNotMatch(css,/\.fp-platform\{|\.fp-footer\{/);
+});
