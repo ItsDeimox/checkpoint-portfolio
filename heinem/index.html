@@ -21,7 +21,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link
       rel="preload"
-      href="/assets/layers/sky.webp"
+      href="/assets/layers/reference-background.webp"
       as="image"
       fetchpriority="high"
     />
@@ -183,21 +183,12 @@
       </div>
     </header>
 
-    <main id="scene-world">
+    <main id="scene-world" data-scene="reference-2026-10-23">
       <section id="home" class="hero" aria-label="Meet HEINEM">
         <div class="scene-board" id="scene">
-          <img class="scene-layer sky" src="/assets/layers/sky.webp" width="1672" height="941" alt="" fetchpriority="high" decoding="async" data-depth="0.64" />
-          <img class="scene-layer landscape distant-foliage" src="/assets/layers/foliage-far.webp" width="1672" height="941" alt="" decoding="async" data-depth="0.42" />
-          <img class="scene-layer mid-foliage" src="/assets/layers/foliage-mid.webp" width="1672" height="941" alt="" decoding="async" data-depth="0.22" />
-          <img class="scene-layer left-tree" src="/assets/layers/tree-left.webp" width="1672" height="941" alt="" decoding="async" data-depth="0.34" />
+          <img class="scene-layer sky reference-background" src="/assets/layers/reference-background.webp" width="1672" height="941" alt="" fetchpriority="high" decoding="async" data-depth="0.64" />
           <div class="scene-layer portrait" data-depth="0.08">
             <img class="artist-cutout" src="/assets/layers/artist-light.webp" width="802" height="1774" alt="HEINEM wearing headphones, glasses and a light hoodie." fetchpriority="high" decoding="async" />
-          </div>
-          <div class="butterfly butterfly-left" data-depth="0.24" aria-hidden="true">
-            <span class="butterfly-flight"><i class="wing wing-left"></i><i class="wing wing-right"></i><i class="butterfly-body"></i></span>
-          </div>
-          <div class="butterfly butterfly-right" data-depth="0.3" aria-hidden="true">
-            <span class="butterfly-flight"><i class="wing wing-left"></i><i class="wing wing-right"></i><i class="butterfly-body"></i></span>
           </div>
           <div
             class="bubble"
@@ -240,16 +231,8 @@
               ></span>
             </div>
           </div>
-          <div class="scene-layer foreground" aria-hidden="true" data-depth="-0.14">
-            <img src="/assets/layers/field-continuous.webp" width="1080" height="1456" alt="" decoding="async" />
-            <div class="field-detail" data-state="idle" hidden>
-              <div class="field-detail-plane">
-                <span class="field-tile field-tile-tl"><img data-field-detail="/assets/layers/field-detail-tl.webp" alt="" decoding="async" fetchpriority="low" /></span>
-                <span class="field-tile field-tile-tr"><img data-field-detail="/assets/layers/field-detail-tr.webp" alt="" decoding="async" fetchpriority="low" /></span>
-                <span class="field-tile field-tile-bl"><img data-field-detail="/assets/layers/field-detail-bl.webp" alt="" decoding="async" fetchpriority="low" /></span>
-                <span class="field-tile field-tile-br"><img data-field-detail="/assets/layers/field-detail-br.webp" alt="" decoding="async" fetchpriority="low" /></span>
-              </div>
-            </div>
+          <div class="scene-layer foreground reference-foreground" aria-hidden="true" data-depth="-0.14">
+            <img src="/assets/layers/reference-field.webp" width="1672" height="2380" alt="" decoding="async" />
           </div>
         </div>
         <a class="scroll-cue" href="#music"

@@ -1,75 +1,43 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-test('narrow screens and Low do not request desktop meadow detail', async ({ page }) => {
+test('generated panoramas replace the previous patches and keep the artist cutout', async ({ page }) => {
   const requests: string[] = [];
-  page.on('request', request => {
-    if (request.url().includes('/assets/layers/field-detail-')) requests.push(request.url());
-  });
-  await page.setViewportSize({ width: 390, height: 844 });
+  page.on('request', request => requests.push(request.url()));
   await page.goto('/');
-  await expect(page.locator('.artist-cutout')).toHaveJSProperty('complete', true);
-  await expect(page.locator('.field-detail')).toBeHidden();
-  await expect(page.locator('.field-detail')).toHaveAttribute('data-state', 'idle');
-  expect(requests).toHaveLength(0);
-
-  await page.locator('#quality-button').click();
-  await page.locator('#quality-menu button[data-quality="low"]').click();
-  await expect(page.locator('body')).toHaveAttribute('data-quality', 'low');
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.reload();
-  await expect(page.locator('body')).toHaveAttribute('data-quality', 'low');
-  await expect(page.locator('.field-detail')).toHaveAttribute('data-state', 'idle');
-  expect(requests).toHaveLength(0);
+  await expect(page.locator('.reference-background')).toHaveJSProperty('naturalWidth', 1672);
+  await expect(page.locator('.foreground > img')).toHaveJSProperty('naturalHeight', 2380);
+  await expect(page.locator('.artist-cutout')).toHaveAttribute('src', '/assets/layers/artist-light.webp');
+  await expect(page.locator('.distant-foliage, .mid-foliage, .left-tree, .field-detail, .butterfly')).toHaveCount(0);
+  expect(requests.filter(url => /field-detail-|field-continuous|foliage-far|foliage-mid|tree-left/.test(url))).toEqual([]);
 });
 
-test('desktop detail follows the same field and settles without more requests', async ({ page }) => {
-  const requests: string[] = [];
-  page.on('request', request => {
-    if (request.url().includes('/assets/layers/field-detail-')) requests.push(request.url());
-  });
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.addInitScript(() => localStorage.setItem('heinem.graphics.v1', 'high'));
+test('generated terrain begins transparent but becomes opaque through the music section', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.field-detail')).toHaveAttribute('data-state', 'ready', { timeout: 15_000 });
-  await expect(page.locator('.field-detail')).toBeVisible();
-  const before = await page.evaluate(() => {
-    const field = document.querySelector<HTMLElement>('.foreground')!;
-    const detail = document.querySelector<HTMLElement>('.field-detail')!;
-    return { fieldY: field.getBoundingClientRect().y, detailY: detail.getBoundingClientRect().y };
+  const alpha = await page.locator('.foreground > img').evaluate(async (image: HTMLImageElement) => {
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth; canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d')!; context.drawImage(image, 0, 0);
+    return [[10, 10], [800, 820], [800, 2200]].map(([x, y]) => context.getImageData(x, y, 1, 1).data[3]);
   });
-  await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(600);
-  const after = await page.evaluate(() => {
-    const field = document.querySelector<HTMLElement>('.foreground')!;
-    const detail = document.querySelector<HTMLElement>('.field-detail')!;
-    return {
-      fieldY: field.getBoundingClientRect().y,
-      detailY: detail.getBoundingClientRect().y,
-      opacity: getComputedStyle(field).opacity,
-      detailPlanes: document.querySelectorAll('.foreground .field-detail-plane').length,
-      decoded: [...detail.querySelectorAll('img')].every(image => image.naturalWidth >= 1000),
-    };
-  });
-  expect(after.detailY - after.fieldY).toBeCloseTo(before.detailY - before.fieldY, 1);
-  expect(after.opacity).toBe('1');
-  expect(after.detailPlanes).toBe(1);
-  expect(after.decoded).toBe(true);
-  expect(new Set(requests).size).toBe(4);
-  expect(requests).toHaveLength(4);
-
-  await page.locator('#quality-button').click();
-  await page.locator('#quality-menu button[data-quality="low"]').click();
-  await expect(page.locator('.field-detail')).toBeHidden();
-  expect(requests).toHaveLength(4);
+  expect(alpha).toEqual([0, 255, 255]);
 });
 
-test('a missing detail patch keeps the complete original field visible', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.addInitScript(() => localStorage.setItem('heinem.graphics.v1', 'high'));
-  await page.route('**/assets/layers/field-detail-tr.webp', route => route.abort());
-  await page.goto('/');
-  await expect(page.locator('.field-detail')).toHaveAttribute('data-state', 'fallback');
-  await expect(page.locator('.field-detail')).toBeHidden();
-  await expect(page.locator('.foreground > img')).toBeVisible();
-  await expect.poll(() => page.locator('.foreground > img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBe(1080);
+test('single field covers the music section even on unusually tall displays', async ({ page }) => {
+  for (const viewport of [{width: 1809,height:586},{width:1440,height:900},{width:390,height:844},{width:320,height:780},{width:600,height:1600}]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    await page.evaluate(() => scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
+    await page.waitForTimeout(90);
+    const geometry = await page.evaluate(() => ({
+      field: document.querySelector('.foreground')!.getBoundingClientRect().bottom,
+      page: document.querySelector('#music')!.getBoundingClientRect().bottom,
+      opacity: getComputedStyle(document.querySelector('.foreground')!).opacity,
+      overflow: document.documentElement.scrollWidth - innerWidth,
+    }));
+    expect(geometry.field).toBeGreaterThanOrEqual(geometry.page);
+    expect(geometry.field).toBeGreaterThanOrEqual(viewport.height);
+    expect(geometry.opacity).toBe('1');
+    expect(geometry.overflow).toBeLessThanOrEqual(1);
+  }
 });

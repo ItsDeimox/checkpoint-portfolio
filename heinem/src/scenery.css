@@ -1,194 +1,29 @@
-/* Reference-calibrated Frutiger Aero: steel-blue sky, naturally green
-   meadow, cool shade and visible sunlit blades. The previous .56/.63
-   chroma + sub-1 contrast flattened the dynamic range too much.
-   Grade scenery alone, not the portrait, CD sleeves or bubble typography. */
-:root {
-  --garden-sky-grade: saturate(.86) hue-rotate(-2deg) brightness(.98) contrast(1.035);
-  --garden-foliage-grade: saturate(.74) hue-rotate(13deg) brightness(.99) contrast(1.02);
-  --garden-foreground-grade: saturate(.79) hue-rotate(13deg) brightness(.99) contrast(1.025);
-}
-#scene-world {
-  position: relative;
-  isolation: isolate;
-  overflow: clip;
-  background: #415d50;
-}
-.hero {
-  position: relative;
-  height: 100svh;
-  min-height: 560px;
-  z-index: 0;
-  color: #fff;
-}
-.scene-board {
-  position: absolute;
-  width: max(100vw, 178.756svh);
-  height: max(55.941vw, 100svh);
-  min-width: 100%;
-  min-height: 560px;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  container-type: inline-size;
-}
-.scene-layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: fill;
-  pointer-events: none;
-  user-select: none;
-}
-.sky { z-index: 0; filter: var(--garden-sky-grade); }
-.distant-foliage { z-index: 1; filter: var(--garden-foliage-grade); }
-.mid-foliage { z-index: 2; filter: var(--garden-foliage-grade); }
-.left-tree { z-index: 3; filter: var(--garden-foliage-grade); }
-.scene-layer.portrait {
-  z-index: 4;
-  top: 9.5%;
-  left: 12.8%;
-  width: 36%;
-  height: 132%;
-  inset-inline-end: auto;
-  inset-block-end: auto;
-}
-.artist-cutout {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: contain;
-  object-position: 50% 0;
-}
-.scene-layer.foreground {
-  z-index: 8;
-  top: -10%;
-  height: 240%;
-  bottom: auto;
-  /* A single compositor filter covers both base grass and optional detail. */
-  filter: var(--garden-foreground-grade);
-}
-.foreground > img {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
-  object-position: 50% 0;
-}
-.field-detail {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  mask: url('/assets/layers/field-continuous.webp') 50% 0 / cover no-repeat;
-}
-.field-detail[hidden] { display: none; }
-.field-detail-plane {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  aspect-ratio: 1080 / 1456;
-}
-.field-tile {
-  position: absolute;
-  width: 55%;
-  height: 55.01373626%;
-  mask-image: var(--detail-mask-x);
-}
-.field-tile img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  mask-image: var(--detail-mask-y);
-}
-.field-tile-tl, .field-tile-bl {
-  left: 0;
-  --detail-mask-x: linear-gradient(90deg, #000 81.81818182%, transparent);
-}
-.field-tile-tr, .field-tile-br {
-  left: 45%;
-  --detail-mask-x: linear-gradient(90deg, transparent, #000 18.18181818%);
-}
-.field-tile-tl, .field-tile-tr {
-  top: 0;
-  --detail-mask-y: linear-gradient(#000 81.77278402%, transparent);
-}
-.field-tile-bl, .field-tile-br {
-  top: 44.98626374%;
-  --detail-mask-y: linear-gradient(transparent, #000 18.22721598%);
-}
+/* Approved HEINEM reference, 2026-10-23. Assets are NEW artworks,
+   independently generated, never clipped from the supplied mockup.
+   Two parallax planes: combined tree/sky and one tall alpha grass field.
+   Portrait and bubble remain separately interactive. */
+#scene-world { position: relative; isolation: isolate; overflow: clip; background: #20392e; }
+.hero { position: relative; height: 100svh; min-height: 560px; z-index: 0; color: #fff; }
+.scene-board { position: absolute; inset: 0; width: 100%; height: 100%; container-type: inline-size; }
+.scene-layer { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; pointer-events: none; user-select: none; }
+.reference-background { z-index: 0; object-fit: fill; filter: none; }
+.scene-layer.portrait { z-index: 4; top: 5%; left: 21.2%; width: 24%; height: auto; aspect-ratio: 802 / 1774; inset-inline-end: auto; inset-block-end: auto; }
+.artist-cutout { width: 100%; height: 100%; max-width: none; object-fit: contain; object-position: 50% 0; }
+/* The image source is 1672×2380, with the original 1672×941 foreground
+   generated, followed by an extension using ONLY its generated grass.
+   The alpha crest is unchanged; opaque terrain reaches the CD section. */
+.scene-layer.foreground { --field-width: max(100vw, 145svh); z-index: 8; width: var(--field-width); height: auto; aspect-ratio: 1672 / 2380; left: calc(50% - var(--field-width) / 2); top: calc(74% - var(--field-width) * .252); bottom: auto; right: auto; filter: none; }
+.foreground > img { width: 100%; height: 100%; max-width: none; object-fit: fill; }
 .music-section { z-index: 10; }
-.butterfly {
-  position: absolute;
-  width: 4.4%;
-  aspect-ratio: 1;
-  z-index: 6;
-  pointer-events: none;
-  user-select: none;
-  perspective: 240px;
-}
-.butterfly-left { left: 15.6%; top: 31%; --flight-angle: -27deg; }
-.butterfly-right { left: 91.3%; top: 20.5%; --flight-angle: 24deg; }
-.butterfly-flight {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  animation: butterfly-flight 7s ease-in-out infinite;
-}
-.butterfly-right .butterfly-flight { animation-duration: 9s; animation-delay: -2.5s; }
-.wing, .butterfly-body {
-  position: absolute;
-  inset: 0;
-  display: block;
-  background: url('/assets/layers/butterfly.webp') center / contain no-repeat;
-  transform-origin: 50% 50%;
-  backface-visibility: visible;
-}
-.wing-left { clip-path: inset(0 49% 0 0); animation: wing-left 560ms ease-in-out infinite alternate; }
-.wing-right { clip-path: inset(0 0 0 49%); animation: wing-right 560ms ease-in-out infinite alternate; }
-.butterfly-body { clip-path: inset(0 47% 0 47%); }
-.butterfly-right .wing { animation-delay: -230ms; animation-duration: 610ms; }
-@keyframes butterfly-flight {
-  0%, 100% { transform: translate3d(0,0,0) rotate(var(--flight-angle)); }
-  38% { transform: translate3d(4px,-9px,0) rotate(calc(var(--flight-angle) + 6deg)); }
-  72% { transform: translate3d(-4px,-3px,0) rotate(calc(var(--flight-angle) - 5deg)); }
-}
-@keyframes wing-left { from { transform: rotateY(8deg); } to { transform: rotateY(66deg); } }
-@keyframes wing-right { from { transform: rotateY(-8deg); } to { transform: rotateY(-66deg); } }
-body[data-scene-active="false"] .butterfly-flight,
-body[data-scene-active="false"] .wing { animation-play-state: paused; }
-body[data-quality="low"] .butterfly-flight,
-body[data-quality="low"] .wing,
-body[data-reduced-motion="true"] .butterfly-flight,
-body[data-reduced-motion="true"] .wing { animation: none; }
 @media (max-width: 900px) and (min-width: 701px) {
-  .hero { min-height: 510px; }
-  .scene-board { width: max(100vw,160svh); height: max(62.5vw,100svh); min-height: 510px; }
+  .hero { min-height: 600px; }
+  .scene-layer.portrait { left: 7%; width: 40%; top: 12%; }
 }
 @media (max-width: 700px) {
   .hero { height: 100svh; min-height: 880px; max-height: 1050px; }
-  .scene-board { width: 100%; height: 100%; min-height: 0; transform: none; left: 0; top: 0; }
-  .sky, .distant-foliage, .mid-foliage, .left-tree {
-    width: calc(100% + 430px);
-    height: 100%;
-    left: -160px;
-    object-fit: cover;
-    object-position: center;
-  }
-  .left-tree { left: -60px; object-position: left; }
-  .scene-layer.portrait { top: 8%; left: 4%; width: 83%; height: 74%; }
-  .scene-layer.foreground { width: 100%; height: max(240%, calc(124% + 100svh + 2px)); top: -10%; left: 0; }
-  .foreground > img { object-position: 43% 0; }
-  .butterfly { width: 12%; }
-  .butterfly-left { left: 5%; top: 35%; }
-  .butterfly-right { left: 83%; top: 13%; }
+  .reference-background { object-fit: cover; object-position: 28% 50%; }
+  .scene-layer.portrait { top: 8%; left: 6%; width: 83%; height: 74%; aspect-ratio: auto; }
+  .scene-layer.foreground { --field-width: max(100vw, 155svh, 1280px); top: calc(72% - var(--field-width) * .252); }
 }
-@media (max-width: 370px) {
-  .hero { min-height: 900px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .butterfly-flight, .wing { animation: none; }
+@media (max-width: 370px) { .hero { min-height: 900px; }
 }

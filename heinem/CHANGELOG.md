@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.5.0 — 2026-10-23 (São Paulo)
+
+### Changed
+- Replicated the artist-approved hero reference with **two newly generated assets**, not the screenshot cropped into planes: cool blue-gray tree/sky/horizon (`reference-background.webp`, 1672 × 941) and a green transparent grass mound (`reference-field.webp`, 1672 × 2380 including lower terrain continuation).
+- Replaced the old four separate backdrop pictures and the tiled grass with a new artist-approved **two-plane parallax**, preserving independent portrait and interactive bubble.
+- Baked restrained color grading into assets and sample the new actual sky/trees once inside the shader. Removed the historical live filter/color-matrix stack from the active rendering path, avoiding double tint and texture passes.
+- Aligned photo, bubble, text and foreground to the proportions of the provided 1809 × 586 mockup. Kept the native continuous scroll into the CD carousel and mobile coverage.
+- Kept the 1.4 continuous draggable CD/carousel, lazy SoundCloud transport, quality selector and accessible HTML text.
+
+### Verification
+- TypeScript, 44 unit/controller tests and new source/asset regressions passed in local Node; screenshots and geometry checked in five viewport sizes. Browser/WebGL production suite must be reported from the actual GitHub/Vercel run separately.
+- The mockup reference is NOT shipped as an image nor cropped for any layer. The generated grass alone was continued downward by reuse/blend of its OWN lower texture to avoid a seam at the music section.
+
+
 ## 1.4.3 — 2026-10-23 (São Paulo)
 
 ### Changed

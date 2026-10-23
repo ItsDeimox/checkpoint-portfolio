@@ -1,50 +1,21 @@
 import { expect, test } from '@playwright/test';
-import { inflateSync } from 'node:zlib';
 
-// A 1x1 screenshot has no prior pixel/row, so all PNG predictors are zero.
-function pixel(png: Buffer): number[] {
-  const chunks: Buffer[] = [];
-  for (let offset = 8; offset < png.length;) {
-    const size = png.readUInt32BE(offset);
-    if (png.toString('ascii', offset + 4, offset + 8) === 'IDAT') {
-      chunks.push(png.subarray(offset + 8, offset + 8 + size));
-    }
-    offset += size + 12;
-  }
-  const raw = inflateSync(Buffer.concat(chunks));
-  return [...raw.subarray(1, 4)];
-}
-
-test('cool finish covers scenery and refraction, not artist or music controls', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
+test('reference retains authentic portrait, readable membrane and interactive CD', async ({ page }) => {
+  await page.setViewportSize({width: 1809,height:586});
   await page.goto('/');
-  await expect(page.locator('#scene-world')).toHaveAttribute('data-color-finish', 'cool');
-  await expect(page.locator('#garden-cool-finish')).toHaveCount(1);
-  await expect(page.locator('#garden-cool-finish')).toHaveAttribute('color-interpolation-filters', 'sRGB');
-  for (const selector of ['.sky', '.distant-foliage', '.mid-foliage', '.left-tree', '.scene-layer.foreground', '#bubble-canvas']) {
-    expect(await page.locator(selector).evaluate(el => getComputedStyle(el).filter)).toContain('garden-cool-finish');
-  }
-  for (const selector of ['#scene-world', '.portrait', '.artist-cutout', '.music-caption', '.jewel-stage']) {
-    expect(await page.locator(selector).evaluate(el => getComputedStyle(el).filter)).toBe('none');
-  }
-  await expect(page.locator('.scene-layer.foreground')).toHaveCount(1);
-});
-
-test('actual browser pixels cool shadow greens while leaving white neutral', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
-  await expect(page.locator('#scene-world')).toHaveAttribute('data-color-finish', 'cool');
-  await page.evaluate(() => {
-    const chip = document.createElement('div');
-    chip.id = 'finish-pixel-probe';
-    chip.style.cssText = 'position:fixed;left:1px;top:1px;width:12px;height:12px;z-index:10000;filter:var(--garden-cool-finish);background:rgb(40,65,38)';
-    document.querySelector('#scene-world')!.append(chip);
-    scrollTo({top:0,behavior:'instant'});
+  await expect(page.locator('#bubble')).toHaveAttribute('data-webgl','ready');
+  await expect(page.locator('#bubble')).toHaveAttribute('data-gpu-copy','ready');
+  await expect(page.locator('.artist-cutout')).toHaveAttribute('src','/assets/layers/artist-light.webp');
+  const bounds = await page.evaluate(() => {
+    const toJSON = (sel: string) => document.querySelector(sel)!.getBoundingClientRect().toJSON();
+    return {portrait:toJSON('.portrait'), bubble:toJSON('#bubble'), copy:toJSON('.bubble-copy')};
   });
-  const shaded = pixel(await page.screenshot({clip:{x:5,y:5,width:1,height:1}}));
-  for (const [i, expected] of [27,57,42].entries()) expect(Math.abs(shaded[i] - expected)).toBeLessThanOrEqual(1);
-  await page.locator('#finish-pixel-probe').evaluate(el => (el as HTMLElement).style.background='white');
-  const white = pixel(await page.screenshot({clip:{x:5,y:5,width:1,height:1}}));
-  expect(white).toEqual([255,255,255]);
-  await page.locator('#finish-pixel-probe').evaluate(el => el.remove());
+  expect(bounds.portrait.x / 1809).toBeCloseTo(.212, 2);
+  expect(bounds.bubble.x / 1809).toBeCloseTo(.427, 2);
+  expect(bounds.copy.right).toBeLessThan(bounds.bubble.right);
+  await page.mouse.move(bounds.copy.x + 45, bounds.copy.y + 100);
+  await expect(page.locator('#bubble')).toHaveAttribute('data-webgl','ready');
+  await expect(page.locator('[data-bubble-glyph]')).toHaveCount(0);
+  await page.locator('#music').scrollIntoViewIfNeeded();
+  await expect(page.locator('#disc-button')).toBeVisible();
 });

@@ -683,3 +683,24 @@ body[data-scene-active="false"] .quality-control > button {
     bottom: 46px;
   }
 }
+
+/* Reference-matched typography and glass positioning; maintain mobile UI. */
+@media (min-width: 901px) {
+  .bubble { left: 42.7%; top: 14%; width: 37.6%; height: 76%; z-index: 9; }
+  .bubble-copy { top: 17.5%; left: 18.7%; width: 59.5%; }
+  .bubble-copy h1 { font-size: 2.3cqw; gap: .7cqw; margin-bottom: .85cqw; }
+  .bubble-copy h1 strong { font-size: 2.3cqw; }
+  .bubble-copy p { font-size: max(12px,.83cqw); line-height: 1.65; letter-spacing: .065cqw; }
+  .signature-line { margin-top: 1.65cqw; }
+  .site-header { top: 18px; height: 50px; }
+  .brand { width: 78px; }
+  .primary-nav { gap: 34px; }
+  .primary-nav a { font-size: 10px; font-weight: 500; }
+  .social-links { gap: 16px; }
+  .social-links svg { width: 17px; height: 17px; }
+  .scroll-cue, .hero-note { bottom: 6.5%; font-size: 7px; }
+}
+@media (min-width: 701px) and (max-width: 900px) {
+  .bubble { left: 40%; top: 22%; width: 59%; height: 69%; z-index: 9; }
+  .bubble-copy p { font-size: 12px; }
+}

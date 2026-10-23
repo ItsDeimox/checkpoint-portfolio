@@ -2,7 +2,7 @@
 
 A sunlit artist website with a layered meadow, an interactive iridescent soap-film surface, and a compact-disc interface connected to verified HEINEM releases through the official SoundCloud player.
 
-**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.4.3 · **Software:** MIT
+**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.5.0 · **Software:** MIT
 
 The site lives independently in [`checkpoint-portfolio/heinem`](https://github.com/ItsDeimox/checkpoint-portfolio/tree/main/heinem). It has its own package, lockfile, license and Vercel project. It does not depend on the other portfolio applications in this repository.
 
@@ -28,9 +28,9 @@ Browser checks use Playwright. Install its Chromium once with `npx playwright in
 
 ## What is implemented
 
-- Semantic navigation and biography based on the supplied 1178 × 659 reference.
-- Seven scenic roles: sky, left tree, distant foliage, middle foliage, the brighter generated portrait chosen for this revision, one tall continuous foreground field, and a butterfly sprite. The 1.2 original-RGB portrait remains archived as a reference; the selected 1.3 portrait contains reconstructed RGB.
-- Four native-resolution detail tiles improve the same foreground on desktop Medium/High. Their combined effective field resolution is about 1964 × 2648; mobile, Low and data-saving connections retain the complete base field. All tiles decode before the detail appears, and any failure retains the base.
+- Hero composition rebuilt to the artist-approved **1809 × 586 reference** using two brand-new high-resolution scene assets, not crops of that screenshot. The portrait, bubble copy, navigation and music controls remain independent.
+- Four compositing roles: a generated sky/tree/horizon background (1672 × 941), a generated transparent foreground meadow extended downward into the music section (1672 × 2380), the previously approved bright portrait, and the interactive film shader. The 1.2 original-RGB portrait remains archived; the 1.3 bright portrait has reconstructed RGB.
+- One continuous native-resolution alpha grass plane covers the scroll and CD section. The old four-tile field and duplicate distant vegetation are no longer requested; the two current scene assets total approximately 1.48 MiB.
 - One bounded WebGL2 mesh renders the soap film, clear refraction, title, biography, underline and sparkle. Up to six independent spring impulses give each touched region a lingering jelly response.
 - Typography and two glow masks are rasterized once on font/layout changes and packed into one GPU texture. Hover produces no glyph DOM writes, geometry reads or texture uploads; there is no full-screen bloom chain.
 - Gentle wheel interpolation on the real document scroll position, with parallax synchronized in the same write frame. The sky has no second easing delay. Native touch/keyboard/control behavior and immediate cancellation on focus navigation remain.
@@ -53,8 +53,8 @@ No audio is downloaded or re-hosted. The SoundCloud SDK and iframe load after a 
 | Biography, navigation and social URLs | `index.html` |
 | Track IDs, metadata and covers | `src/lib/player.ts` and the jewel-case buttons in `index.html` |
 | Hero type and controls | `src/style.css` |
-| Layer geometry, continuous field and butterfly wings | `src/scenery.css` |
-| Desktop field detail loading, quality gating and decode fallback | `src/lib/field-detail.ts` |
+| Two generated layers, portrait layout and continuous field | `src/scenery.css`, `public/assets/layers/reference-*` |
+| Former tiled field (historical; no longer active) | `src/lib/field-detail.ts` |
 | Music composition, jewel-case materials and disc pivot | `src/music.css` |
 | CD timeline, pointer dragging, capture, hover tilt and cancellation | `src/lib/disc-interaction.ts` |
 | Bubble optics, frame budgets and optical field | `src/graphics/bubble.ts` |
@@ -70,12 +70,13 @@ The artist's age is reproduced from the supplied design, not calculated from an 
 
 Vercel project: **heinem**, in the existing ItsDeimox team. Git repository: **ItsDeimox/checkpoint-portfolio**, production branch **main**, root directory **heinem**, Node **24.x**, framework **Vite**, install **npm ci**, build **npm run build**, output **dist**. The only intended public project alias is `heinem.vercel.app`.
 
-The **v1.3 scroll, asset-detail and disc-interaction revision** is documented in [VALIDATION-1.3.md](docs/VALIDATION-1.3.md), with [implementation decisions](docs/INTERACTION-REFINEMENT-1.3.md). That record separates focused tests, integrated results, published verification and playback/hardware limits. The [v1.2 GPU-typography record](docs/VALIDATION-1.2.md), [v1.1 record](docs/VALIDATION-1.1.md) and [v1.0 baseline](docs/VALIDATION.md) remain historical evidence. Code uses conventional commits and the version/changelog in this folder; a package version does not imply a GitHub Release or tag.
+The **v1.5 reference artwork and layer rebuild** is documented in [REFERENCE-HERO-1.5.md](docs/REFERENCE-HERO-1.5.md). The historical **v1.3 scroll, asset-detail and disc-interaction revision** is documented in [VALIDATION-1.3.md](docs/VALIDATION-1.3.md), with [implementation decisions](docs/INTERACTION-REFINEMENT-1.3.md). That record separates focused tests, integrated results, published verification and playback/hardware limits. The [v1.2 GPU-typography record](docs/VALIDATION-1.2.md), [v1.1 record](docs/VALIDATION-1.1.md) and [v1.0 baseline](docs/VALIDATION.md) remain historical evidence. Code uses conventional commits and the version/changelog in this folder; a package version does not imply a GitHub Release or tag.
 
 ## Technical documentation
 
 - [Approved brief](docs/DESIGN.md)
-- [Scroll, field detail, selected portrait and CD interaction — v1.3](docs/INTERACTION-REFINEMENT-1.3.md)
+- [Approved artwork and exact implementation — v1.5](docs/REFERENCE-HERO-1.5.md)
+- [Scroll, field detail, selected portrait and CD interaction — v1.3 (historical)](docs/INTERACTION-REFINEMENT-1.3.md)
 - [Current verification — v1.3](docs/VALIDATION-1.3.md)
 - [Layered assets and v1.2 decisions](docs/LAYERED-REVISION.md)
 - [Asset files and complete generation prompts](docs/LAYER-ASSETS.md)

@@ -11,41 +11,12 @@ test('HEINEM social links omit X while preserving the remaining official profile
   await expect(page.locator('#icon-x')).toHaveCount(0);
 });
 
-test('cooler grading touches scenery only and keeps the continuous foreground', async ({ page }) => {
+test('reference artwork is pregraded and never tinted twice at runtime', async ({ page }) => {
   await page.goto('/');
-  const filters = await page.evaluate(() => {
-    const f = (selector: string) => getComputedStyle(document.querySelector(selector)!).filter;
-    return {
-      sky: f('.sky'),
-      distant: f('.distant-foliage'),
-      mid: f('.mid-foliage'),
-      tree: f('.left-tree'),
-      field: f('.scene-layer.foreground'),
-      portrait: f('.artist-cutout'),
-      artwork: f('.jewel-artwork'),
-      bubble: f('#bubble'),
-      background: getComputedStyle(document.querySelector('#scene-world')!).backgroundColor,
-      fields: document.querySelectorAll('.scene-layer.foreground').length,
-    };
-  });
-  for (const key of ['sky', 'distant', 'mid', 'tree', 'field'] as const) {
-    expect(filters[key]).toContain('saturate(');
-    expect(filters[key]).toContain('hue-rotate(');
+  await expect(page.locator('#scene-world')).toHaveAttribute('data-scene','reference-2026-10-23');
+  for (const selector of ['.reference-background', '.foreground', '.artist-cutout', '#bubble-canvas']) {
+    expect(await page.locator(selector).evaluate(el => getComputedStyle(el).filter)).toBe('none');
   }
-  const amount = (filter: string, name: string) =>
-    Number(filter.split(name + '(')[1]?.split(')')[0]);
-  // The reference retains bright sunlit greens alongside deep cool shadows.
-  // Avoid the flat lower-contrast/lower-chroma look of v1.4.2.
-  for (const key of ['distant', 'mid', 'tree', 'field'] as const) {
-    expect(amount(filters[key], 'saturate')).toBeGreaterThanOrEqual(.72);
-    expect(amount(filters[key], 'saturate')).toBeLessThanOrEqual(.82);
-    expect(amount(filters[key], 'contrast')).toBeGreaterThanOrEqual(1.0);
-    expect(amount(filters[key], 'contrast')).toBeLessThan(1.045);
-  }
-  expect(amount(filters.sky, 'saturate')).toBeGreaterThanOrEqual(.80);
-  expect(amount(filters.sky, 'contrast')).toBeGreaterThanOrEqual(1.0);
-  expect(filters.portrait).toBe('none');
-  expect(filters.bubble).toBe('none');
-  expect(filters.fields).toBe(1);
-  expect(filters.background).toBe('rgb(65, 93, 80)');
+  await expect(page.locator('#garden-cool-finish')).toHaveCount(0);
+  await expect(page.locator('.foreground')).toHaveCount(1);
 });

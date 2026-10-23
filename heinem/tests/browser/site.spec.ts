@@ -71,7 +71,7 @@ test('native scroll gives foreground, portrait and sky distinct depths', async (
   expect(planes.foreground).toBeLessThan(planes.portrait);
   expect(planes.portrait).toBeLessThan(planes.sky);
   // The same tall alpha plane covers both sections; no dissolving replacement.
-  await expect(page.locator('.foreground > img')).toHaveAttribute('src', '/assets/layers/field-continuous.webp');
+  await expect(page.locator('.foreground > img')).toHaveAttribute('src', '/assets/layers/reference-field.webp');
   const continuity = await page.evaluate(() => {
     const hero = document.querySelector('#home')!;
     const field = document.querySelector('.foreground')!;
