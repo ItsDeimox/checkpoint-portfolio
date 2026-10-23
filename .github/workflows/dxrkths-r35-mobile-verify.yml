@@ -1,0 +1,40 @@
+name: Validate DXRKTHS mobile navigation and touch targets
+on:
+  push:
+    branches: [dxrkths-r35-mobile-verify]
+permissions:
+  contents: write
+jobs:
+  mobile:
+    if: "!contains(github.event.head_commit.message, '[r35 applied]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          sparse-checkout: dxrkths
+      - name: Apply reviewed exact-match mobile patches on the isolated branch
+        run: |
+          python dxrkths/tools/r35-apply.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dxrkths/src/pages/home-room.js dxrkths/index.html dxrkths/tools/build.mjs dxrkths/tests/entrypoints.test.mjs
+          git commit -m 'fix(dxrkths): apply responsive mobile navigation and target corrections [r35 applied]'
+          git push origin HEAD:dxrkths-r35-mobile-verify
+      - name: Run complete build and regression suite
+        working-directory: dxrkths
+        run: npm ci && npm run build
+      - name: Prepare browser test package
+        working-directory: dxrkths
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          if ! command -v google-chrome && ! command -v chromium; then npx playwright install --with-deps chromium; fi
+      - name: Validate mobile routes, tap targets, galleries, settings and orientations
+        working-directory: dxrkths
+        run: node tests/mobile-r35-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dxrkths-r35-mobile-verification
+          path: dxrkths/docs/r35-mobile-qa/
+          retention-days: 7
