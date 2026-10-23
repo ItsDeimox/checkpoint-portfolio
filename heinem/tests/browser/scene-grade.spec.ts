@@ -5,7 +5,7 @@ test('HEINEM social links omit X while preserving the remaining official profile
   const links = page.locator('.social-links a');
   await expect(links).toHaveCount(4);
   for (const service of ['YouTube', 'Spotify', 'Instagram', 'SoundCloud']) {
-    await expect(links.getByRole('link', { name: `HEINEM on ${service}` })).toHaveCount(1);
+    await expect(page.getByRole('link', { name: `HEINEM on ${service}` })).toHaveCount(1);
   }
   await expect(page.locator('.social-links a[href*="x.com"], .social-links a[href*="twitter.com"]')).toHaveCount(0);
   await expect(page.locator('#icon-x')).toHaveCount(0);
