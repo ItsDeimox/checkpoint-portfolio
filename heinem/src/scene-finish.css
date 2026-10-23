@@ -1,0 +1,17 @@
+/* Add a blue-shadow finish AFTER the approved v1.4.3 scene grade.
+   Whites map to white; alpha stays unchanged. Do not re-desaturate the scene.
+   Only scenery and the bubble's finished pixels are treated, not portrait/UI.
+   The attribute is enabled only once the same-document SVG filter exists. */
+#scene-world[data-color-finish="cool"] .sky {
+  filter: var(--garden-sky-grade) var(--garden-cool-finish);
+}
+#scene-world[data-color-finish="cool"] :is(.distant-foliage, .mid-foliage, .left-tree) {
+  filter: var(--garden-foliage-grade) var(--garden-cool-finish);
+}
+#scene-world[data-color-finish="cool"] .scene-layer.foreground {
+  filter: var(--garden-foreground-grade) var(--garden-cool-finish);
+}
+#scene-world[data-color-finish="cool"] #bubble-canvas {
+  /* Same finish after refraction, without changing mesh, spring or text atlas. */
+  filter: var(--garden-cool-finish);
+}
