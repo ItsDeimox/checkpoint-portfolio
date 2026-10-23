@@ -64,7 +64,7 @@ The artist's age is reproduced from the supplied design, not calculated from an 
 
 Vercel project: **heinem**, in the existing ItsDeimox team. Git repository: **ItsDeimox/checkpoint-portfolio**, production branch **main**, root directory **heinem**, Node **24.x**, framework **Vite**, install **npm ci**, build **npm run build**, output **dist**. The only intended public project alias is `heinem.vercel.app`.
 
-The version-specific source commit, deployment, browser results, bundle sizes and practical limits are recorded in [VALIDATION.md](docs/VALIDATION.md). The v1.0 production baseline is retained separately from the v1.1 meadow revision. Code changes use conventional commit messages and the version/changelog in this folder; a package version is not a claim that a GitHub Release or Git tag exists.
+The **v1.1 production revision was verified on 2026-10-23 UTC**: Vercel READY, public HTTPS 200, published HTML/JS/CSS identical to the tested build, and **15/15 live browser checks passed**. Source commit, deployment, bundle sizes and practical limits are recorded in [VALIDATION-1.1.md](docs/VALIDATION-1.1.md); the v1.0 baseline remains in [VALIDATION.md](docs/VALIDATION.md). Code changes use conventional commit messages and the version/changelog in this folder; a package version is not a claim that a GitHub Release or Git tag exists.
 
 ## Technical documentation
 

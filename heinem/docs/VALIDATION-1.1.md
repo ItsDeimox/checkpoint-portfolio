@@ -64,7 +64,20 @@ These counts exclude images/fonts. The new runtime meadow, focused grass and dis
 
 ## Publication
 
-The candidate is ready for the existing Git → Vercel production pipeline. Production source SHA, deployment state, public HTTPS and live checks will be recorded after the upload is confirmed; local test results above are not a claim that this revision is already live.
+Production verified **2026-10-23 UTC** through the existing Git → Vercel pipeline.
+
+| Evidence | Confirmed result |
+| --- | --- |
+| Public URL | [heinem.vercel.app](https://heinem.vercel.app/#music) |
+| Application source | [`58cb7512d81b48e68a3a022f23155a40d7bd23ae`](https://github.com/ItsDeimox/checkpoint-portfolio/commit/58cb7512d81b48e68a3a022f23155a40d7bd23ae) |
+| Vercel deployment | `dpl_6Vupbk9DGjAyj5MRi5mEGLJvL1rB`, **READY**, production, source SHA as above, public alias assigned |
+| Public HTTPS | **200 OK**, normal TLS verification, no login |
+| Artifact identity | Published HTML, JavaScript and CSS match the local tested production build byte for byte |
+| Live browser suite | **15/15 passed**, 1.0 minute; includes the CD center hit-test at all four viewport sizes |
+
+The live command used `PLAYWRIGHT_BASE_URL=https://heinem.vercel.app`, the Chromium path and the documented disposable-test TLS exception. The independent HTTP/artifact comparison retained normal TLS verification. Media checks in this suite still use controlled provider events; they do not claim continuous real streaming.
+
+Publication of this evidence may create a later documentation-only commit and Git deployment. The application source above identifies the revision that received the complete live suite; the bundle names and byte counts allow unchanged runtime output to be verified independently.
 
 ## External audio limitation
 
