@@ -22,13 +22,13 @@ export function projectDialogContent(project) {
      <div class="fp-stage" data-project-stage><div class="fp-empty">${mediaIcon}<span class="fp-eyebrow">BEHIND THE SCENES</span><strong>Preview coming soon</strong><p>Photos and videos will appear here when shared.</p></div></div>
      ${nav}
     </div>
-   </section>
-   <section class="fp-details"><p class="fp-eyebrow">${escape(project.category)} / FUTURE PROJECT</p><h2 id="future-project-title">${escape(project.name)}</h2><span class="fp-platform">${escape(project.platform)}</span>
-    <div class="fp-description">${paragraphs.length ? paragraphs.map(p=>`<p>${escape(p)}</p>`).join('') : '<p>More details about this project will be shared here.</p>'}</div>
-    ${project.disclaimer ? `<p class="fp-development-note">${escape(project.disclaimer)}</p>` : ''}
     <dl class="fp-facts"><div><dt>Category</dt><dd>${escape(project.category)}</dd></div><div><dt>Platform</dt><dd>${escape(project.platform)}</dd></div>${collaborators.length ? `<div><dt>Collaborators</dt><dd>${collaborators.map(escape).join(' &amp; ')}</dd></div>` : ''}</dl>
    </section>
-  </div><footer class="fp-footer"><span>FUTURE PROJECTS / DXT</span><span>ESC TO CLOSE</span></footer>
+   <section class="fp-details"><h2 id="future-project-title">${escape(project.name)}</h2>
+    <div class="fp-description">${paragraphs.length ? paragraphs.map(p=>`<p>${escape(p)}</p>`).join('') : '<p>More details about this project will be shared here.</p>'}</div>
+    ${project.disclaimer ? `<p class="fp-development-note">${escape(project.disclaimer)}</p>` : ''}
+   </section>
+  </div>
  </div>`;
 }
 
