@@ -54,11 +54,9 @@ export function home() {
         ${ROOM_PANELS.map((panel, index) => `<button class="room-panel-link" type="button" data-panel="${index}" data-open-panel="${index}" data-panel-title="${escape(panel.title)}" aria-controls="room-section-page" aria-label="Explore ${escape(panel.title)}">${panelCopy(panel, index)}</button>`).join('')}
         ${ROOM_PANELS.map((panel, index) => `<a class="room-panel-fallback-link" data-fallback-panel="${index}" href="${pathForPanel(index)}" aria-label="${escape(panel.title)}">${panelCopy(panel, index)}</a>`).join('')}
       </nav>
-      <div class="room-mobile-context" aria-label="Selected panel">
-        <span class="room-mobile-number" data-active-panel-number aria-hidden="true">01 <span>/ 05</span></span>
-        <span class="room-mobile-title" data-active-panel-title aria-live="polite" aria-atomic="true">Berserk Drift X</span>
-        <button id="room-open-panel" class="room-mobile-open" type="button" data-active-panel-open data-open-panel="0" aria-controls="room-section-page" aria-label="Explore Berserk Drift X"><span>Explore</span>${icon('external')}</button>
-      </div>
+      <nav class="room-mobile-context" aria-label="Explore DXT on mobile">
+        ${ROOM_PANELS.map((panel, index) => `<button class="room-mobile-card" type="button" data-mobile-panel="${index}" data-open-panel="${index}" aria-controls="room-section-page"><strong>${escape(panel.title)}</strong>${icon('arrow')}</button>`).join('')}
+      </nav>
       <section id="room-panel-options" class="room-panel-options" data-panel-options hidden role="dialog" aria-modal="true" aria-labelledby="room-options-title" aria-describedby="room-options-description" tabindex="-1"></section>
     </section>
   </div>`;

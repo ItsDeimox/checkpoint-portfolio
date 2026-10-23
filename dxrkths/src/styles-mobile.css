@@ -1,0 +1,147 @@
+/* Touch layout only. Desktop optics, camera, art and projection are unchanged.
+   Five labelled entry points replace tiny projected targets/step dots on phones. */
+@media (max-width: 740px), (pointer: coarse) and (max-width: 1024px) {
+  body[data-page="home"] .scene-ready .room-mobile-context {
+    position: absolute;
+    z-index: 6;
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(38px, calc(env(safe-area-inset-bottom) + 16px));
+    display: grid;
+    align-items: stretch;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    max-width: 560px;
+    min-height: 0;
+    margin: 0 auto;
+    padding: 10px;
+    border: 1px solid #b9adc322;
+    border-radius: 15px;
+    background: linear-gradient(160deg, #111019ef, #07070bf5);
+    text-shadow: none;
+    pointer-events: auto;
+  }
+  body[data-page="home"] .room-mobile-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+    min-height: 48px;
+    padding: 11px 12px;
+    border: 1px solid #e6dcf022;
+    border-left: 2px solid var(--mobile-accent);
+    border-radius: 8px;
+    background: #ffffff05;
+    color: #f1ebf6;
+    text-align: left;
+    touch-action: manipulation;
+  }
+  body[data-page="home"] .room-mobile-card strong {
+    min-width: 0;
+    font: 500 14px/1.25 var(--heading);
+    letter-spacing: .5px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  body[data-page="home"] .room-mobile-card .icon { width: 16px; height: 16px; color: var(--mobile-accent); }
+  body[data-page="home"] .room-mobile-card:nth-child(1) { --mobile-accent: #ff2348; }
+  body[data-page="home"] .room-mobile-card:nth-child(2) { --mobile-accent: #eef4ff; }
+  body[data-page="home"] .room-mobile-card:nth-child(3) { --mobile-accent: #a66bff; }
+  body[data-page="home"] .room-mobile-card:nth-child(4) { --mobile-accent: #ff913d; }
+  body[data-page="home"] .room-mobile-card:nth-child(5) { --mobile-accent: #79d8ff; grid-column: 1 / -1; }
+  body[data-page="home"] .room-mobile-card:active { background: #ffffff12; }
+  body[data-page="home"] .room-mobile-card:focus-visible { outline: 2px solid #f6eafe; outline-offset: 2px; }
+  body[data-page="home"] .scene-ready .room-panel-targets,
+  body[data-page="home"] .room-bottom-center { display: none; }
+  body[data-page="home"] .room-hero.scene-unavailable .room-mobile-context { display: none; }
+
+  /* All header actions fit the narrowest tested phone without shrinking targets. */
+  body[data-page="home"] #header {
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    top: max(12px, env(safe-area-inset-top));
+    height: 44px;
+  }
+  body[data-page="home"] .room-brand { gap: 0; min-width: 44px; min-height: 44px; }
+  body[data-page="home"] .room-brand-logo { width: 48px; height: 36px; }
+  body[data-page="home"] .room-brand-roles,
+  body[data-page="home"] .room-visitor-bar .room-home-link,
+  body[data-page="home"] .room-visitor-bar .room-enter > span { display: none; }
+  body[data-page="home"] .room-visitor-bar .room-header-nav { gap: 6px; }
+  .room-audio-controls { gap: 0; }
+  body[data-page="home"] .room-sound { min-width: 44px; min-height: 44px; gap: 7px; }
+  .room-audio-menu > summary { width: 44px; min-height: 44px; }
+  body[data-page="home"] .room-header-nav .room-quality { min-width: 50px; min-height: 44px; padding: 0 5px; }
+  body[data-page="home"] .room-visitor-bar .room-enter { width: 44px; min-width: 44px; min-height: 44px; padding: 0; }
+  .room-audio-popup {
+    position: fixed;
+    top: max(66px, calc(env(safe-area-inset-top) + 54px));
+    right: max(12px, env(safe-area-inset-right));
+    width: min(280px, calc(100vw - 24px));
+    max-height: calc(100dvh - 84px - env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  body[data-page="home"] .room-visual-control input { min-height: 44px; touch-action: pan-x; }
+
+  /* Keep every navigation link and gallery control finger-sized. */
+  .section-page { padding-inline: max(20px, env(safe-area-inset-left), env(safe-area-inset-right)); }
+  .section-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+  .section-navigation a { display: flex; align-items: center; min-height: 44px; padding: 8px 0; line-height: 1.4; }
+  .section-navigation a:last-child { grid-column: 1 / -1; }
+  .section-navigation a span { flex: none; }
+  .gallery-controls button,
+  .fp-arrow,
+  .fp-close { min-width: 44px; min-height: 44px; }
+  .game-gallery-thumbs { gap: 6px; }
+  .game-gallery-thumbs button { min-width: 44px; min-height: 44px; }
+  .game-gallery-view figcaption { flex-wrap: wrap; gap: 4px 14px; }
+  .game-gallery-view figcaption a { display: inline-flex; align-items: center; min-height: 44px; }
+  .group-scroll-navigation button { min-width: 44px; min-height: 44px; }
+  .group-scroll-navigation { gap: 12px; }
+  .group-scroll-navigation > span { min-width: 0; max-width: 60%; white-space: normal; line-height: 1.6; }
+  .group-community > a { min-height: 44px; }
+  .group-track { touch-action: pan-x pan-y pinch-zoom; }
+  .future-project-dialog { max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+  .fp-facts > div { min-width: 0; }
+  .fp-facts dd { min-width: 0; overflow-wrap: anywhere; }
+  .fp-arrow-prev { left: 8px; }
+  .fp-arrow-next { right: 8px; }
+  .section-action-copy strong { overflow-wrap: anywhere; }
+}
+
+/* A phone turned sideways keeps the same five destinations in one compact row. */
+@media (pointer: coarse) and (max-width: 1024px) and (min-width: 560px) and (max-height: 500px) {
+  body[data-page="home"] .scene-ready .room-mobile-context {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    max-width: 900px;
+    bottom: max(30px, calc(env(safe-area-inset-bottom) + 10px));
+    padding: 8px;
+    gap: 6px;
+  }
+  body[data-page="home"] .room-mobile-card { min-height: 48px; padding: 8px; gap: 6px; }
+  body[data-page="home"] .room-mobile-card strong { font-size: 12px; }
+  body[data-page="home"] .room-mobile-card:nth-child(5) { grid-column: auto; }
+  body[data-page="home"] .room-motto { display: none; }
+}
+
+/* Short landscape intros must never hide the Enter button below the screen. */
+@media (max-height: 500px) and (max-width: 1024px) {
+  body #room-intro { overflow-y: auto; }
+  .intro-content { padding: 38px 16px 42px; }
+  .intro-wordmark { width: 60px; height: 32px; }
+  .intro-kicker { margin: 6px 0; font-size: 8px; letter-spacing: 2px; }
+  #intro-title { font-size: 28px; }
+  .intro-loader { margin-top: 12px; }
+  #intro-status { margin: 7px 0 9px; font-size: 10px; }
+  .intro-audio-note { margin: 8px 0 0; font-size: 9px; }
+  .intro-topline { top: 12px; font-size: 8px; }
+  .intro-topline span:last-child { display: none; }
+  .intro-bottom { bottom: 10px; font-size: 7px; }
+  .intro-sound-toggle { top: 8px; right: 12px; min-height: 44px; }
+}

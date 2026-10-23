@@ -13,7 +13,7 @@ const read = filename => fs.readFile(path.join(root, filename), 'utf8');
 test('HTML starts the persistent room with its showroom, intro, dialog stylesheets and local fonts', async () => {
   const html = await read('index.html');
   const sheets = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(sheets, ['/src/styles-base.css', '/src/styles-room.css', '/src/styles-experience.css', '/src/styles-sections.css', '/src/styles-project-dialog.css']);
+  assert.deepEqual(sheets, ['/src/styles-base.css', '/src/styles-room.css', '/src/styles-experience.css', '/src/styles-sections.css', '/src/styles-project-dialog.css', '/src/styles-mobile.css']);
   assert.deepEqual([...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map(match => match[1]), ['/src/main.js']);
   assert.match(html, /<body data-page="home" class="intro-pending">/);
   assert.match(html, /class="skip-link" href="#main"/);
