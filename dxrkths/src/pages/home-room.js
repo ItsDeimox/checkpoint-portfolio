@@ -55,7 +55,7 @@ export function home() {
         ${ROOM_PANELS.map((panel, index) => `<a class="room-panel-fallback-link" data-fallback-panel="${index}" href="${pathForPanel(index)}" aria-label="${escape(panel.title)}">${panelCopy(panel, index)}</a>`).join('')}
       </nav>
       <nav class="room-mobile-context" aria-label="Explore DXT on mobile">
-        ${ROOM_PANELS.map((panel, index) => `<button class="room-mobile-card" type="button" data-mobile-panel="${index}" data-open-panel="${index}" aria-controls="room-section-page"><strong>${escape(panel.title)}</strong>${icon('arrow')}</button>`).join('')}
+        ${ROOM_PANELS.map((panel, index) => `<button class="room-mobile-card" type="button" data-mobile-panel="${index}" data-open-panel="${index}" aria-controls="room-section-page"><span class="room-mobile-index" aria-hidden="true">0${index + 1}</span><strong>${escape(panel.title)}</strong><span class="room-mobile-arrow" aria-hidden="true">${icon('external')}</span></button>`).join('')}
       </nav>
       <section id="room-panel-options" class="room-panel-options" data-panel-options hidden role="dialog" aria-modal="true" aria-labelledby="room-options-title" aria-describedby="room-options-description" tabindex="-1"></section>
     </section>
