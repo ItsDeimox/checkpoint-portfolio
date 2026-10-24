@@ -3,6 +3,7 @@ import { createQualityController } from './lib/quality';
 import { createParallax } from './lib/parallax';
 import { initPlayer } from './lib/player';
 import { createSmoothScroll } from './lib/smooth-scroll';
+import { createButterflyFlight } from './lib/butterfly-flight';
 
 const hero = document.querySelector<HTMLElement>('#home')!;
 const world = document.querySelector<HTMLElement>('#scene-world')!;
@@ -14,6 +15,7 @@ const backdrops = ['.reference-background', '.reference-foreground > img']
 let bubble: ReturnType<typeof createBubble> | undefined;
 let parallax: ReturnType<typeof createParallax> | undefined;
 let smoothScroll: ReturnType<typeof createSmoothScroll> | undefined;
+let butterflies: ReturnType<typeof createButterflyFlight> | undefined;
 
 const quality = createQualityController((tier, reducedMotion) => {
   document.body.dataset.quality = tier;
@@ -23,6 +25,8 @@ const quality = createQualityController((tier, reducedMotion) => {
   parallax?.setQuality(tier);
   parallax?.setReducedMotion(reducedMotion);
   smoothScroll?.setReducedMotion(reducedMotion);
+  butterflies?.setQuality(tier);
+  butterflies?.setReducedMotion(reducedMotion);
 });
 
 bubble = createBubble(canvas, host, {
@@ -37,6 +41,7 @@ parallax.setQuality(quality.quality);
 parallax.setReducedMotion(quality.reducedMotion);
 smoothScroll = createSmoothScroll(quality.reducedMotion, () => parallax?.syncScroll());
 const player = initPlayer();
+butterflies = createButterflyFlight(quality.quality, quality.reducedMotion);
 
 // Decode local layers early; the page never waits behind a decorative loader.
 for (const image of document.querySelectorAll<HTMLImageElement>('.hero img[src]:not([data-field-detail])')) {
@@ -88,6 +93,7 @@ function dispose() {
   quality.destroy();
   parallax?.destroy();
   smoothScroll?.destroy();
+  butterflies?.destroy();
   bubble?.destroy();
   player.destroy();
 }

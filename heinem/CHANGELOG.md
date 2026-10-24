@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.6 — 2026-10-24
+
+- Replaced 14 nearly identical CSS butterflies (eight on the hero, six on Music) with three unobtrusive hero flights and one near the Music edge. Lower GPU tiers and mobile automatically show fewer butterflies; low graphics keeps a single small hero butterfly.
+- Replaced straight linear diagonal drift with distinct, smooth, looping Catmull-Rom courses: modest climbs, sidesteps, short acceleration changes and curved turns. Each butterfly preserves its own geographic pocket instead of crossing the portrait, text or CD controls.
+- Corrected the anatomical problem where left/right wings beat 180 degrees out of phase. Both halves now share the same 6–7 Hz butterfly-like beat, with a short extended-wing glide window, a persistent thorax, slight bobbing and banking in turns.
+- One bounded, on-demand RAF controller updates compositor-friendly transforms only. It has no random per-frame re-targeting, no layout read per frame, no extra particles/canvases/assets/network requests, and pauses when sections or the document are hidden.
+- Added pure kinematics unit regressions (closed-loop continuity, speed variations, glide, edge confinement, determinism), plus browser coverage for synchronous stroke, offscreen sleep, interaction and reduced-motion.
+- Preserved portrait, sky, meadow, bubble, six-release carousel, branding, quality selector and the existing sprite.
+
+
 ## 1.5.5 — 2026-10-24
 
 - Align the actual H logo silhouette to the left gutter by trimming the SVG viewBox rather than distorting the artwork; remove compensating negative brand margins in all viewport sizes.

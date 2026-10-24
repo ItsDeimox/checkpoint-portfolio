@@ -1,84 +1,64 @@
-/* Decorative butterflies are compositor-only particles.
-   One shared original transparent asset, no per-frame DOM writes or WebGL passes.
-   Each flight starts/ends beyond the viewport and oscillates independently. */
+/* Flight is now composed on the GPU by a single on-demand controller.
+   Curved cyclic paths, synchronized wing stroke, wind glides and subtle
+   thorax banking are driven by one clock, not dozens of CSS animations. */
 .butterfly-swarm {
   position: absolute;
   inset: 0;
-  pointer-events: none;
   overflow: hidden;
+  pointer-events: none;
   z-index: 12;
   contain: layout paint;
 }
-.butterfly-swarm--music { z-index: 11; }
+.butterfly-swarm--music { z-index: 2; }
 .butterfly-flyer {
   position: absolute;
-  left: var(--start-x, 10%);
-  top: var(--start-y, 25%);
-  width: clamp(22px, 2.4vw, 43px);
+  left: 0;
+  top: 0;
+  width: clamp(18px, 2.25vw, 33px);
   aspect-ratio: 1;
-  opacity: var(--opacity, .72);
   pointer-events: none;
-  perspective: 180px;
-  transform-origin: center;
-  animation: butterfly-drift var(--duration, 21s) ease-in-out var(--delay, 0s) infinite alternate;
+  transform-origin: 50% 50%;
+  transform: translate3d(-90px, -90px, 0);
+  opacity: 0;
+  will-change: transform;
 }
 .butterfly-shape {
   position: absolute;
   inset: 0;
   display: block;
-  transform: rotate(var(--tilt, -9deg));
-  filter: hue-rotate(-36deg) saturate(.56) brightness(1.17)
-          drop-shadow(0 0 3px rgba(169, 221, 241, .18));
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  filter: hue-rotate(-21deg) saturate(.72) brightness(1.08);
+  will-change: transform;
 }
-.butterfly-wing {
+.butterfly-wing,
+.butterfly-thorax {
+  display: block;
   position: absolute;
   inset: 0;
-  display: block;
   background: url('/assets/layers/butterfly.webp') center / contain no-repeat;
+  pointer-events: none;
+}
+.butterfly-wing {
   transform-style: preserve-3d;
   backface-visibility: visible;
-}
-.butterfly-wing--left {
-  clip-path: inset(0 49% 0 0);
   transform-origin: 50% 50%;
-  animation: butterfly-wing-left var(--flap, 640ms) ease-in-out infinite alternate;
+  will-change: transform;
 }
-.butterfly-wing--right {
-  clip-path: inset(0 0 0 49%);
-  transform-origin: 50% 50%;
-  animation: butterfly-wing-right var(--flap, 640ms) ease-in-out calc(var(--flap, 640ms) / -2) infinite alternate;
+.butterfly-wing--left  { clip-path: inset(0 50% 0 0); }
+.butterfly-wing--right { clip-path: inset(0 0 0 50%); }
+/* Retain a stationary abdomen/thorax between the synchronous wing halves. */
+.butterfly-thorax {
+  clip-path: inset(0 46.5% 0 46.5%);
+  transform: translateZ(1px);
 }
-@keyframes butterfly-wing-left {
-  from { transform: rotateY(7deg) scaleX(.96); }
-  to { transform: rotateY(73deg) scaleX(1.05); }
-}
-@keyframes butterfly-wing-right {
-  from { transform: rotateY(-7deg) scaleX(.96); }
-  to { transform: rotateY(-73deg) scaleX(1.05); }
-}
-@keyframes butterfly-drift {
-  0% { transform: translate3d(-14vw, 5vh, 0) rotate(-16deg) scale(.77); }
-  21% { transform: translate3d(9vw, -11vh, 0) rotate(12deg) scale(.95); }
-  48% { transform: translate3d(29vw, 7vh, 0) rotate(-8deg) scale(1.06); }
-  74% { transform: translate3d(54vw, -9vh, 0) rotate(12deg) scale(.91); }
-  100% { transform: translate3d(88vw, -2vh, 0) rotate(-12deg) scale(.72); }
-}
-body[data-scene-active="false"] .butterfly-swarm--hero .butterfly-flyer,
-body[data-scene-active="false"] .butterfly-swarm--hero .butterfly-wing,
-body[data-music-active="false"] .butterfly-swarm--music .butterfly-flyer,
-body[data-music-active="false"] .butterfly-swarm--music .butterfly-wing {
-  animation-play-state: paused;
-}
-body[data-quality="low"] .butterfly-flyer:nth-child(n+4),
-body[data-quality="medium"] .butterfly-flyer:nth-child(n+7) { display: none; }
+.butterfly-flyer[hidden] { display: none !important; }
+/* Keep the original site's power and motion accessibility contracts. */
+body[data-quality="low"] .butterfly-swarm--music { display: none; }
+body[data-reduced-motion="true"] .butterfly-swarm { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .butterfly-swarm { visibility: hidden; }
-  .butterfly-flyer, .butterfly-wing { animation: none !important; }
 }
-body[data-reduced-motion="true"] .butterfly-swarm { visibility: hidden; }
-body[data-reduced-motion="true"] .butterfly-flyer,
-body[data-reduced-motion="true"] .butterfly-wing { animation: none !important; }
 @media (max-width: 700px) {
-  .butterfly-flyer { width: clamp(18px, 6.5vw, 31px); }
-  .butterfly-flyer:nth-child(n+5) { display: none; }
+  .butterfly-flyer { width: clamp(16px, 5.2vw, 25px); }
 }
