@@ -27,7 +27,7 @@
   inset: 0;
   display: block;
   transform: rotate(var(--tilt, -9deg));
-  filter: hue-rotate(56deg) saturate(.56) brightness(1.17)
+  filter: hue-rotate(-36deg) saturate(.56) brightness(1.17)
           drop-shadow(0 0 3px rgba(169, 221, 241, .18));
 }
 .butterfly-wing {

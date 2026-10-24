@@ -27,8 +27,11 @@ test('all six CD covers are local-first, while optional official art can replace
   for (const name of additional) {
     const sleeve = page.locator(`.generated-cover[data-cover="${name}"]`);
     await expect(sleeve).toBeAttached();
-    expect(await sleeve.evaluate(node => getComputedStyle(node).backgroundImage))
-      .toContain(`/assets/covers/${name}.svg`);
+    const background = await sleeve.evaluate(node => getComputedStyle(node).backgroundImage);
+    // The metadata loader may already have verified and installed the real
+    // SoundCloud cover. Both that success and the local fallback are valid.
+    expect(background.includes(`/assets/covers/${name}.svg`) ||
+      background.includes('https://i1.sndcdn.com/')).toBe(true);
     const status = await page.evaluate(async src => (await fetch(src)).status, `/assets/covers/${name}.svg`);
     expect(status).toBe(200);
   }
