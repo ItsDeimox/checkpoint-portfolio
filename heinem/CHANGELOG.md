@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.3 — 2026-10-23
+
+- Aligned the H logo farther left without shifting the central navigation.
+- Added three HEINEM SoundCloud releases: Don't Let Me Fall; JVKE - her (feat. Annika Wells) HEINEM FLIP; and Seven Lions × Brieanna Grace.
+- The CD carousel now supports six songs with only the active, previous and next sleeves visible. Extra sleeves are concealed and fade into position during transitions; dragging remains continuous.
+- SoundCloud permalinks are used for the additions instead of guessed numeric IDs. The widget supplies durations and, when available, official cover art after playback starts; locally styled placeholders remain available.
+- Kept the existing three album covers, disc animations, graphics profiles, reduced-motion behavior and no-network-before-play policy.
+
+
 ## 1.5.2 — 2026-10-23
 
 - Fixed the desktop/tablet bubble anchoring bug: parallax overwrote CSS transform: translateY(-50%), moving the glass down by half its height. Vertical centering now uses the independent CSS translate property alongside the parallax translate3d, anchored higher to match the approved hero composition.

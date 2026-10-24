@@ -62,7 +62,7 @@ function createPlayer({ withAPI = true, withMiniPlay = false, reducedMotion = tr
   if (withMiniPlay) ids.push('mini-play');
   const elements = Object.fromEntries(ids.map((id) => [id, new Element(id)]));
   elements.volume.value = '70';
-  const rows = [0, 1, 2].map((index) => {
+  const rows = [0, 1, 2, 3, 4, 5].map((index) => {
     const row = new Element();
     row.dataset.track = String(index);
     return row;
@@ -177,11 +177,11 @@ test('carousel initializes without mini-play and browsing covers does not reques
   assert.equal(p.elements['track-credit'].attributes.title, 'Aye Bay · HEINEM x Hyru Remix');
   assert.match(p.rows[0].attributes['aria-label'], /Aye Bay/);
   assert.match(p.elements['track-external'].attributes['aria-label'], /Aye Bay/);
-  assert.deepEqual(p.rows.map((row) => row.dataset.position), ['active', 'next', 'previous']);
+  assert.deepEqual(p.rows.map((row) => row.dataset.position), ['active', 'next', 'hidden', 'hidden', 'hidden', 'previous']);
   p.elements['previous-track'].click();
-  assert.equal(p.room.dataset.activeTrack, '2');
-  assert.equal(p.elements['track-title'].textContent, 'Show Me Love');
-  assert.deepEqual(p.rows.map((row) => row.dataset.position), ['next', 'previous', 'active']);
+  assert.equal(p.room.dataset.activeTrack, '5');
+  assert.equal(p.elements['track-title'].textContent, 'Seven Lions × Brieanna Grace');
+  assert.deepEqual(p.rows.map((row) => row.dataset.position), ['next', 'hidden', 'hidden', 'hidden', 'previous', 'active']);
   p.elements['next-track'].click();
   p.rows[1].click();
   assert.equal(p.room.dataset.activeTrack, '1');
@@ -222,7 +222,7 @@ test('rapid arrows retain one latest destination and reversing before concealmen
   const p = createPlayer({ reducedMotion: false });
   p.elements['next-track'].click();
   p.elements['next-track'].click();
-  p.advance(160);
+  p.advance(1200);
   assert.equal(p.room.dataset.activeTrack, '2');
   p.elements['previous-track'].click();
   p.elements['next-track'].click();
@@ -337,12 +337,12 @@ test('long drag crosses multiple sleeves seamlessly and selects its final stop o
 test('continuous carousel wraps beyond three steps and reverses during one hold', () => {
   const p = createPlayer({ reducedMotion: false });
   pointer(p.stage, 'pointerdown', 900, 180);
-  pointer(p.stage, 'pointermove', -330, 180); // 4.1 steps, crossing a whole lap.
+  pointer(p.stage, 'pointermove', -330, 180); // 4.1 steps in a single hold.
   p.advance(160);
   assert.equal(p.room.dataset.activeTrack, '0');
   pointer(p.stage, 'pointerup', -330, 180);
   p.advance(650);
-  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.room.dataset.activeTrack, '4');
   assert.equal(p.room.dataset.discPhase, 'idle');
   // One hold reverses direction through the origin and keeps moving.
   pointer(p.stage, 'pointerdown', 550, 180);
@@ -350,10 +350,10 @@ test('continuous carousel wraps beyond three steps and reverses during one hold'
   p.advance(16);
   pointer(p.stage, 'pointermove', 880, 180);
   p.advance(180);
-  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.room.dataset.activeTrack, '4');
   pointer(p.stage, 'pointerup', 880, 180);
   p.advance(650);
-  assert.equal(p.room.dataset.activeTrack, '0', 'a backward full step from 1 wraps to 0');
+  assert.equal(p.room.dataset.activeTrack, '3', 'reversing the drag moves to the previous of six albums');
   assert.equal(p.timers.size, 0);
   assert.equal(p.widgets.length, 0);
   p.controller.destroy();
@@ -612,4 +612,63 @@ test('timeout keeps provider fallback; retry and destruction clean up correctly'
   assert.equal(p.elements['embed-mount'].children.length, 0);
   p.elements['next-track'].click();
   assert.equal(p.room.dataset.activeTrack, '0', 'destroy removes navigation listeners');
+});
+
+test('six-track sleeve shows only adjacent covers, wraps, and stays network-idle', () => {
+  const p = createPlayer();
+  assert.equal(p.elements['track-counter'].textContent, '01 / 06');
+  assert.deepEqual(p.rows.map(row => row.dataset.position),
+    ['active', 'next', 'hidden', 'hidden', 'hidden', 'previous']);
+  assert.deepEqual(p.rows.map(row => row.style.opacity),
+    ['1.000', '1.000', '0.000', '0.000', '0.000', '1.000']);
+  p.elements['previous-track'].click();
+  assert.equal(p.room.dataset.activeTrack, '5');
+  assert.equal(p.elements['track-counter'].textContent, '06 / 06');
+  assert.equal(p.rows[4].dataset.position, 'previous');
+  assert.equal(p.rows[0].dataset.position, 'next');
+  p.elements['next-track'].click();
+  assert.equal(p.room.dataset.activeTrack, '0');
+  p.rows[3].click();
+  assert.equal(p.room.dataset.activeTrack, '3');
+  assert.equal(p.elements['track-title'].textContent, "Don't Let Me Fall");
+  assert.equal(p.elements['duration'].textContent, '0:00', 'duration is unknown until SoundCloud resolves it');
+  assert.equal(p.widgets.length, 0);
+  assert.equal(p.head.children.length, 0);
+  p.controller.destroy();
+});
+test('new releases use canonical SoundCloud permalinks rather than invented track IDs', async () => {
+  for (const [index, url] of [
+    [3, 'https://soundcloud.com/heinemstrange/dont-let-me-fall'],
+    [4, 'https://soundcloud.com/heinemstrange/jvke-her-feat-annika-wells'],
+    [5, 'https://soundcloud.com/heinemstrange/seven-lions-brieanna-grace'],
+  ]) {
+    const p = createPlayer();
+    p.rows[index].click();
+    p.elements['disc-button'].click();
+    await flush();
+    assert.equal(p.widgets.length, 1);
+    const iframe = p.widgets[0].iframe;
+    const actual = new URL(iframe.src).searchParams.get('url');
+    assert.equal(actual, url);
+    assert.equal(p.elements['track-external'].href, url);
+    assert.equal(iframe.allow, 'autoplay; encrypted-media');
+    p.controller.destroy();
+  }
+});
+test('six-cover transition crossfades hidden neighbors without stacking extra covers', () => {
+  const p = createPlayer({ reducedMotion: false });
+  p.elements['next-track'].click();
+  p.advance(260);
+  const alpha = p.rows.map(row => Number(row.style.opacity));
+  assert.equal(alpha[0], 1);
+  assert.equal(alpha[1], 1);
+  assert.ok(alpha[5] < 1, 'outgoing distant cover should fade');
+  assert.ok(alpha[2] > 0, 'new nearby cover should enter');
+  assert.equal(alpha[3], 0);
+  assert.equal(alpha[4], 0);
+  p.advance(500);
+  assert.equal(p.room.dataset.activeTrack, '1');
+  assert.equal(p.rows[5].style.opacity, '0.000');
+  assert.equal(p.rows[2].style.opacity, '1.000');
+  p.controller.destroy();
 });

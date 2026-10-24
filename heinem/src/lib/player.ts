@@ -7,7 +7,7 @@ interface Track {
   title: string;
   credit: string;
   displayCredit?: string;
-  id: number;
+  id?: number;
   duration: number;
   url: string;
   artwork: string;
@@ -39,12 +39,40 @@ const TRACKS: readonly Track[] = [
     url: 'https://soundcloud.com/heinemstrange/wizthemc-bees-honey-show-me',
     artwork: '/assets/show-me-love.jpg',
   },
+  {
+    title: "Don't Let Me Fall",
+    credit: 'HEINEM',
+    duration: 0, // resolved from the official widget once the visitor presses play
+    url: 'https://soundcloud.com/heinemstrange/dont-let-me-fall',
+    artwork: '', // official artwork replaces the neutral sleeve after SoundCloud responds
+  },
+  {
+    title: 'her',
+    credit: 'JVKE feat. Annika Wells · HEINEM FLIP',
+    displayCredit: 'JVKE · Annika Wells · HEINEM FLIP',
+    duration: 0,
+    url: 'https://soundcloud.com/heinemstrange/jvke-her-feat-annika-wells',
+    artwork: '',
+  },
+  {
+    title: 'Seven Lions × Brieanna Grace',
+    credit: 'HEINEM',
+    duration: 0,
+    url: 'https://soundcloud.com/heinemstrange/seven-lions-brieanna-grace',
+    artwork: '',
+  },
 ];
 
 interface SoundCloudProgress {
   currentPosition?: number;
   relativePosition?: number;
   loadProgress?: number;
+}
+
+interface SoundCloudMetadata {
+  title?: string;
+  artwork_url?: string;
+  duration?: number;
 }
 
 interface SoundCloudWidget {
@@ -55,6 +83,7 @@ interface SoundCloudWidget {
   seekTo(milliseconds: number): void;
   setVolume(value: number): void;
   getDuration(callback: (milliseconds: number) => void): void;
+  getCurrentSound?(callback: (sound?: SoundCloudMetadata) => void): void;
 }
 
 interface SoundCloudFactory {
@@ -178,7 +207,7 @@ export function initPlayer(): { destroy(): void } {
     external.setAttribute('aria-label', `Open ${track.title}, ${track.credit} on SoundCloud`);
     duration = track.duration;
     durationLabel.textContent = timeLabel(duration);
-    if (artwork) artwork.style.backgroundImage = `url("${track.artwork}")`;
+    if (artwork) artwork.style.backgroundImage = track.artwork ? `url("${track.artwork}")` : 'none';
     for (const row of rows) {
       const index = Number(row.dataset.track);
       const release = TRACKS[index];
@@ -190,7 +219,7 @@ export function initPlayer(): { destroy(): void } {
         ? 'active'
         : index === (selected + TRACKS.length - 1) % TRACKS.length
           ? 'previous'
-          : 'next';
+          : index === (selected + 1) % TRACKS.length ? 'next' : 'hidden';
     }
     updateProgress(0);
   }
@@ -287,7 +316,11 @@ export function initPlayer(): { destroy(): void } {
 
     const iframe = document.createElement('iframe');
     const params = new URLSearchParams({
-      url: `https://api.soundcloud.com/tracks/${TRACKS[selected].id}`,
+      // Permalinks are valid official widget sources. IDs for the three new
+      // releases are intentionally not guessed or scraped from unrelated tracks.
+      url: TRACKS[selected].id
+        ? `https://api.soundcloud.com/tracks/${TRACKS[selected].id}`
+        : TRACKS[selected].url,
       auto_play: 'false',
       visual: 'false',
       show_artwork: 'false',
@@ -339,6 +372,20 @@ export function initPlayer(): { destroy(): void } {
           duration = value;
           durationLabel.textContent = timeLabel(duration);
           updateProgress(position);
+        });
+        // After the first user-initiated play, let the official widget supply
+        // artwork for releases whose original covers were not supplied.
+        controller.getCurrentSound?.((sound) => {
+          if (destroyed || current !== generation || !sound?.artwork_url) return;
+          try {
+            const candidate = new URL(sound.artwork_url);
+            if (candidate.protocol !== 'https:' || !candidate.hostname.endsWith('.sndcdn.com')) return;
+            const sleeve = rows[selected]?.querySelector<HTMLElement>('.generated-cover');
+            if (sleeve) {
+              sleeve.style.backgroundImage = `url("${candidate.href}")`;
+              sleeve.classList.add('has-cover-art');
+            }
+          } catch { /* Keep the locally rendered sleeve when artwork is absent. */ }
         });
         if (wantsPlay) requestPlay();
         else if (state !== 'error') setState('paused');

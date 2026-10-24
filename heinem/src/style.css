@@ -750,3 +750,98 @@ body[data-scene-active="false"] .quality-control > button {
   .bubble-copy { left: 16%; width: 68%; }
   .bubble-copy p { letter-spacing: .035cqw; }
 }
+
+
+/* HEINEM 1.5.3: align only the brand, without shifting the centered nav. */
+@media (min-width: 701px) {
+  .brand { margin-left: clamp(-30px, -1.55vw, -12px); }
+}
+@media (max-width: 700px) {
+  .brand { margin-left: -8px; }
+}
+
+/* Six releases, three physical sleeves visible at a time. Extra releases
+   enter from the sides under the existing GPU-friendly CD timeline. */
+.jewel-case[data-position="hidden"] {
+  opacity: 0;
+  pointer-events: none;
+}
+.jewel-artwork.generated-cover {
+  --poster-top: #255461;
+  --poster-bottom: #0c2530;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: clamp(4px, .65cqw, 12px);
+  box-sizing: border-box;
+  padding: clamp(12px, 1.3cqw, 26px);
+  overflow: hidden;
+  isolation: isolate;
+  text-align: left;
+  color: white;
+  background:
+    radial-gradient(ellipse at 68% 28%, rgba(255,255,255,.23), transparent 45%),
+    linear-gradient(148deg, var(--poster-top), var(--poster-bottom));
+  filter: none;
+}
+.generated-cover[data-cover="fall"] { --poster-top: #506983; --poster-bottom: #151d34; }
+.generated-cover[data-cover="her"] { --poster-top: #947b9e; --poster-bottom: #293652; }
+.generated-cover[data-cover="seven"] { --poster-top: #4a6b7e; --poster-bottom: #112b38; }
+.generated-cover::before {
+  content: "";
+  position: absolute;
+  width: 78%;
+  aspect-ratio: 1;
+  top: -35%;
+  right: -24%;
+  border: 1px solid rgba(255,255,255,.38);
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgba(180,235,252,.23), inset 0 0 30px rgba(235,248,255,.17);
+  pointer-events: none;
+}
+.generated-cover .cover-wordmark,
+.generated-cover .cover-title { position: relative; z-index: 1; max-width: 100%; }
+.generated-cover .cover-wordmark {
+  font-size: clamp(7px, .8cqw, 14px);
+  letter-spacing: .25em;
+  font-weight: 400;
+  opacity: .8;
+}
+.generated-cover .cover-title {
+  font-size: clamp(16px, 1.9cqw, 42px);
+  letter-spacing: -.05em;
+  line-height: 1.05;
+  font-weight: 700;
+  text-shadow: 0 2px 15px rgba(10,20,35,.25);
+}
+.generated-cover[data-cover="seven"] .cover-title { font-size: clamp(12px, 1.34cqw, 28px); }
+.generated-cover .cover-ring {
+  position: absolute;
+  width: 72%; aspect-ratio: 1;
+  border: 1px solid rgba(255,255,255,.20);
+  border-radius: 50%;
+  right: -20%; top: -25%;
+  box-shadow: inset 0 0 30px rgba(246,255,255,.12);
+  pointer-events: none;
+}
+.generated-cover.has-cover-art {
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.generated-cover.has-cover-art::before,
+.generated-cover.has-cover-art .cover-ring,
+.generated-cover.has-cover-art .cover-wordmark,
+.generated-cover.has-cover-art .cover-title { display: none; }
+.listening-room[data-active-track="5"] #track-title {
+  font-size: clamp(17px, 1.48cqw, 34px);
+  white-space: normal;
+  line-height: 1.15;
+}
+@media (max-width: 700px) {
+  .generated-cover .cover-wordmark { font-size: clamp(7px, 1.5cqw, 10px); }
+  .generated-cover .cover-title { font-size: clamp(12px, 3cqw, 22px); }
+  .generated-cover[data-cover="seven"] .cover-title { font-size: clamp(9px, 2.2cqw, 17px); }
+  .listening-room[data-active-track="5"] #track-title { font-size: clamp(18px, 5vw, 26px); }
+}

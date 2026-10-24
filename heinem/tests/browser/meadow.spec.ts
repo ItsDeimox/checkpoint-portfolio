@@ -38,12 +38,15 @@ test('album sleeves select real tracks without loading media before play', async
   });
   await page.goto('/');
   await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '0');
-  await expect(page.locator('[data-track="2"]')).toHaveAttribute('data-position', 'previous');
+  await expect(page.locator('[data-track="5"]')).toHaveAttribute('data-position', 'previous');
   await expect(page.locator('[data-track="1"]')).toHaveAttribute('data-position', 'next');
+  await expect(page.locator('[data-track="2"]')).toHaveAttribute('data-position', 'hidden');
   await page.locator('#next-track').click();
   await expect(page.locator('#track-title')).toContainText('MHA');
   await page.locator('#previous-track').click();
   await expect(page.locator('#track-title')).toHaveText('Memories Of You');
+  await page.locator('#next-track').click();
+  await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
   await page.locator('[data-track="2"]').click();
   await expect(page.locator('#track-title')).toHaveText('Show Me Love');
   await expect(page.locator('#disc-button')).toHaveAttribute('aria-label', 'Play Show Me Love');
@@ -271,4 +274,21 @@ test('touch drags reserve horizontal intent and leave vertical scrolling to the 
   await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
   await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
   await client.detach();
+});
+
+test('six releases can be browsed with arrows and wrap without loading SoundCloud', async ({ page }) => {
+  const provider: string[] = [];
+  page.on('request', request => { if (/soundcloud\.com/.test(request.url())) provider.push(request.url()); });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.locator('#next-track').scrollIntoViewIfNeeded();
+  const titles = ['MHA 50k DROP', 'Show Me Love', "Don't Let Me Fall", 'her', 'Seven Lions × Brieanna Grace', 'Memories Of You'];
+  for (let i = 0; i < titles.length; i++) {
+    await page.locator('#next-track').click();
+    await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', String((i+1)%6));
+    await expect(page.locator('#track-title')).toHaveText(titles[i]);
+    await expect(page.locator('#track-counter')).toHaveText(`${String(((i + 1) % 6) + 1).padStart(2, '0')} / 06`);
+  }
+  await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
+  expect(provider).toEqual([]);
 });

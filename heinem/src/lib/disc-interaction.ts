@@ -78,8 +78,37 @@ export function initDiscInteraction(
     return { x: x / 100 * width, y: y / 100 * height, scale, yaw, roll, z: 0 };
   }
 
+  function concealedPose(side: 'previous' | 'next'): Pose {
+    const result = pose(side);
+    result.x += width * (side === 'next' ? .16 : -.16);
+    result.y += height * .07;
+    result.z = -width * .19;
+    result.scale *= .82;
+    return result;
+  }
+
+  function hiddenSide(index: number, selected: number): 'previous' | 'next' {
+    const forward = normalize(index - selected);
+    return forward <= count / 2 ? 'next' : 'previous';
+  }
+
   function settledPose(index: number, selected: number): Pose {
-    return pose(index === selected ? 'active' : index === normalize(selected - 1) ? 'previous' : 'next');
+    if (index === selected) return pose('active');
+    if (index === normalize(selected - 1)) return pose('previous');
+    if (count <= 3 || index === normalize(selected + 1)) return pose('next');
+    return concealedPose(hiddenSide(index, selected));
+  }
+
+  function visibility(index: number): number {
+    if (count <= 3) return 1;
+    if (!exchange) {
+      return index === active || index === normalize(active - 1) || index === normalize(active + 1) ? 1 : 0;
+    }
+    const { from, to, direction } = exchange;
+    if (index === from || index === to) return 1;
+    if (index === normalize(from - direction)) return 1 - smooth(0, .9, progress);
+    if (index === normalize(to + direction)) return smooth(.1, 1, progress);
+    return 0;
   }
 
   function movingPose(index: number): Pose {
@@ -89,6 +118,13 @@ export function initDiscInteraction(
     const outgoing = direction > 0 ? 'previous' : 'next';
     if (index === from) return interpolate(pose('active'), pose(outgoing), progress);
     if (index === to) return interpolate(pose(incoming), pose('active'), progress);
+    if (count > 3) {
+      if (index === normalize(from - direction))
+        return interpolate(pose(outgoing), concealedPose(outgoing), progress);
+      if (index === normalize(to + direction))
+        return interpolate(concealedPose(incoming), pose(incoming), progress);
+      return settledPose(index, progress < .5 ? from : to);
+    }
     // The third sleeve returns behind the two participating covers. No visible
     // teleport between the left and right slots, or extra duplicate card.
     const result = interpolate(pose(outgoing), pose(incoming), progress);
@@ -104,6 +140,11 @@ export function initDiscInteraction(
     for (const row of rows) {
       const index = Number(row.dataset.track);
       row.style.transform = transform(movingPose(index));
+      const opacity = visibility(index);
+      row.style.opacity = opacity.toFixed(3);
+      row.style.pointerEvents = opacity < .95 || exchange ? 'none' : 'auto';
+      row.tabIndex = opacity >= .95 && !exchange ? 0 : -1;
+      row.setAttribute('aria-hidden', opacity <= .01 ? 'true' : 'false');
       row.style.zIndex = String(exchange
         ? index === (progress < .5 ? exchange.from : exchange.to) ? 6
           : index === exchange.from || index === exchange.to ? 3 : 1
@@ -139,6 +180,12 @@ export function initDiscInteraction(
     onCommit(index);
   }
 
+  function stepToward(from: number, target: number) {
+    const forward = normalize(target - from);
+    const backward = normalize(from - target);
+    return normalize(from + (forward <= backward ? 1 : -1));
+  }
+
   function begin(from: number, to: number) {
     exchange = { from, to, direction: to === normalize(from + 1) ? 1 : -1, committed: false };
     progress = 0;
@@ -157,7 +204,7 @@ export function initDiscInteraction(
     dirty = true;
     render();
     if (requested !== active) {
-      begin(active, requested);
+      begin(active, stepToward(active, requested));
       animate(1);
     }
   }
@@ -313,11 +360,11 @@ export function initDiscInteraction(
     if (drag?.locked) releaseCapture();
     if (motion.matches) { finish(); return; }
     if (!exchange) {
-      begin(active, next);
+      begin(active, stepToward(active, next));
       animate(1);
     } else if (progress === 0 && !exchange.committed) {
       if (next === exchange.from) finish();
-      else { begin(exchange.from, next); animate(1); }
+      else { begin(exchange.from, stepToward(exchange.from, next)); animate(1); }
     } else if (next === exchange.from && !exchange.committed) animate(0);
     else if (next === exchange.to) animate(1);
     else if (!animation) animate(1);
