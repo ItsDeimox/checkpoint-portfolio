@@ -12,6 +12,7 @@ const interactionSource = stripTypeScriptTypes(
 const source = interactionSource + '\n' + stripTypeScriptTypes(
   readFileSync(new URL('../src/lib/player.ts', import.meta.url), 'utf8'),
 ).replace(/import \{ initDiscInteraction \} from '.\/disc-interaction';/, '')
+  .replace(/import \{ createSoundCloudCovers \} from '.\/soundcloud-covers';/, '')
   .replace('export function initPlayer', 'function initPlayer');
 
 class Element extends EventTarget {
@@ -110,6 +111,9 @@ function createPlayer({ withAPI = true, withMiniPlay = false, reducedMotion = tr
   });
   const context = vm.createContext({
     document, window,
+    // Artwork requests are a separate lazy browser boundary. Unit tests
+    // exercise only the carousel/player transport and must remain offline.
+    createSoundCloudCovers: () => ({ show() {}, destroy() {} }),
     URLSearchParams, AbortController,
     performance: { now: () => clock },
     requestAnimationFrame(callback) {
