@@ -215,6 +215,16 @@
             <img src="/assets/layers/reference-field.webp" width="1672" height="2380" alt="" decoding="async" />
           </div>
         </div>
+        <div class="butterfly-swarm butterfly-swarm--hero" aria-hidden="true">
+          <span class="butterfly-flyer" style="--start-x:-12%;--start-y:11%;--duration:21s;--delay:0s;--flap:490ms;--opacity:0.72;--tilt:11deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:5%;--start-y:24%;--duration:29s;--delay:-4.4s;--flap:570ms;--opacity:0.66;--tilt:-15deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:20%;--start-y:43%;--duration:26s;--delay:-8.8s;--flap:620ms;--opacity:0.8;--tilt:11deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:37%;--start-y:60%;--duration:33s;--delay:-13.2s;--flap:540ms;--opacity:0.58;--tilt:-15deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:57%;--start-y:73%;--duration:24s;--delay:-17.6s;--flap:680ms;--opacity:0.7;--tilt:11deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:69%;--start-y:32%;--duration:37s;--delay:-22s;--flap:590ms;--opacity:0.85;--tilt:-15deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:-19%;--start-y:81%;--duration:31s;--delay:-26.4s;--flap:710ms;--opacity:0.64;--tilt:11deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:14%;--start-y:52%;--duration:27s;--delay:-3.8s;--flap:530ms;--opacity:0.76;--tilt:-15deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+        </div>
         <a class="scroll-cue" href="#music"
           ><span>Scroll</span><i aria-hidden="true"></i
           ><span class="sr-only">to listen to music</span></a
@@ -225,26 +235,34 @@
       </section>
 
       <section id="music" class="music-section" aria-labelledby="music-title">
+        <div class="butterfly-swarm butterfly-swarm--music" aria-hidden="true">
+          <span class="butterfly-flyer" style="--start-x:37%;--start-y:60%;--duration:33s;--delay:-6.3s;--flap:540ms;--opacity:0.58;--tilt:11deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:57%;--start-y:73%;--duration:24s;--delay:-10.7s;--flap:680ms;--opacity:0.7;--tilt:-15deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:69%;--start-y:32%;--duration:37s;--delay:-15.1s;--flap:590ms;--opacity:0.85;--tilt:11deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:-19%;--start-y:81%;--duration:31s;--delay:-19.5s;--flap:710ms;--opacity:0.64;--tilt:-15deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:14%;--start-y:52%;--duration:27s;--delay:-23.9s;--flap:530ms;--opacity:0.76;--tilt:11deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+          <span class="butterfly-flyer" style="--start-x:31%;--start-y:19%;--duration:35s;--delay:-28.3s;--flap:620ms;--opacity:0.68;--tilt:-15deg"><span class="butterfly-shape"><i class="butterfly-wing butterfly-wing--left"></i><i class="butterfly-wing butterfly-wing--right"></i></span></span>
+        </div>
         <div class="listening-room" id="listening-room" data-state="idle" data-active-track="0">
           <div class="music-artboard">
             <div class="jewel-stage" aria-label="Choose a release">
               <button class="jewel-case selected" data-track="0" data-position="active" aria-pressed="true" aria-label="Select Memories Of You, HEINEM x Hyru Remix" type="button">
                 <span class="jewel-shell" aria-hidden="true">
-                  <img class="jewel-artwork" src="/assets/memories-of-you.jpg" width="500" height="500" alt="" loading="lazy" decoding="async" />
+                  <img class="jewel-artwork" src="/assets/memories-of-you.jpg" width="500" height="500" alt="" loading="eager" fetchpriority="low" decoding="async" />
                   <span class="jewel-spine"></span><span class="jewel-rim"></span><span class="jewel-reflection"></span>
                   <span class="jewel-hinge hinge-top"></span><span class="jewel-hinge hinge-bottom"></span>
                 </span>
               </button>
               <button class="jewel-case" data-track="1" data-position="next" aria-pressed="false" aria-label="Select MHA 50k DROP, HEINEM x DEIMOX" type="button">
                 <span class="jewel-shell" aria-hidden="true">
-                  <img class="jewel-artwork" src="/assets/mha-50k-drop.jpg" width="500" height="500" alt="" loading="lazy" decoding="async" />
+                  <img class="jewel-artwork" src="/assets/mha-50k-drop.jpg" width="500" height="500" alt="" loading="eager" fetchpriority="low" decoding="async" />
                   <span class="jewel-spine"></span><span class="jewel-rim"></span><span class="jewel-reflection"></span>
                   <span class="jewel-hinge hinge-top"></span><span class="jewel-hinge hinge-bottom"></span>
                 </span>
               </button>
               <button class="jewel-case" data-track="2" data-position="hidden" aria-pressed="false" aria-label="Select Show Me Love, HEINEM Remix" type="button">
                 <span class="jewel-shell" aria-hidden="true">
-                  <img class="jewel-artwork" src="/assets/show-me-love.jpg" width="500" height="500" alt="" loading="lazy" decoding="async" />
+                  <img class="jewel-artwork" src="/assets/show-me-love.jpg" width="500" height="500" alt="" loading="eager" fetchpriority="low" decoding="async" />
                   <span class="jewel-spine"></span><span class="jewel-rim"></span><span class="jewel-reflection"></span>
                   <span class="jewel-hinge hinge-top"></span><span class="jewel-hinge hinge-bottom"></span>
                 </span>

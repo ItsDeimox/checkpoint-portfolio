@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.5 — 2026-10-24
+
+- Align the actual H logo silhouette to the left gutter by trimming the SVG viewBox rather than distorting the artwork; remove compensating negative brand margins in all viewport sizes.
+- Restore the original transparent butterfly sprite as six plus eight small decorative flying particles across the Music and Hero sections. Flight and independently flapping wings use CSS compositor transforms, no JavaScript or extra canvas; visibility/graphics tier pause or reduce the effect.
+- Preload the three locally owned album JPGs independent of lazy intersection state, including hidden carousel cards.
+- Give the other three jewel sleeves actual small self-hosted, original abstract SVG poster images. They remain clearly branded fallback designs until verified SoundCloud track artwork loads, so offline/CDN-blocked visitors never see broken or empty artwork.
+- Preserve the existing official cover metadata loader, audio-on-click requirement, bubble shader and animated CD carousel; add four browser regressions for cover loading, logo alignment and butterfly motion/reduced motion.
+
+
 ## 1.5.4 — 2026-10-23
 
 - Populate the three recently added jewel cases with verified official SoundCloud artwork when the music scene enters the viewport, without triggering audio playback or creating a media iframe.

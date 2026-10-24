@@ -2,9 +2,9 @@
 
 A sunlit artist website with a layered meadow, an interactive iridescent soap-film surface, and a six-release CD interface connected to the official SoundCloud player.
 
-**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.5.4 · **Software:** MIT
+**Website:** [heinem.vercel.app](https://heinem.vercel.app) · **Version:** 1.5.5 · **Software:** MIT
 
-The music carousel has six releases and displays the current sleeve with its previous and next neighbors. New release covers are lazily resolved through SoundCloud's public oEmbed artwork metadata when the Music section enters view. The actual SoundCloud player remains unloaded until a click. When a track or thumbnail is unavailable, the original local fallback sleeve stays visible; no unknown track IDs or artwork are invented.\n\nThe site lives independently in [`checkpoint-portfolio/heinem`](https://github.com/ItsDeimox/checkpoint-portfolio/tree/main/heinem). It has its own package, lockfile, license and Vercel project. It does not depend on the other portfolio applications in this repository.
+The music carousel has six releases and displays the current sleeve with its previous and next neighbors. New release covers are lazily resolved through SoundCloud's public oEmbed artwork metadata when the Music section enters view. The actual SoundCloud player remains unloaded until a click. When a track or thumbnail is unavailable, a self-hosted abstract poster for that release stays visible (a clearly local design, not an invented official SoundCloud cover). The first three verified album JPGs are eager-loaded to avoid a blank frame during fast swipes.\n\nSmall cool-lilac butterflies fly through both sections as decorative CSS particles and pause outside their section or under reduced motion. The left logo uses a tight SVG viewBox for consistent alignment.\n\nThe site lives independently in [`checkpoint-portfolio/heinem`](https://github.com/ItsDeimox/checkpoint-portfolio/tree/main/heinem). It has its own package, lockfile, license and Vercel project. It does not depend on the other portfolio applications in this repository.
 
 ## Run locally
 
