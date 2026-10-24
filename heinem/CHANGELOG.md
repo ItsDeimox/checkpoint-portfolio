@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.2 — 2026-10-23
+
+- Fixed the desktop/tablet bubble anchoring bug: parallax overwrote CSS transform: translateY(-50%), moving the glass down by half its height. Vertical centering now uses the independent CSS translate property alongside the parallax translate3d, anchored higher to match the approved hero composition.
+- Confirmed the existing alpha-grass refraction and pure-white GPU lettering bloom from v1.5.1. Preserved artist-supplied H logo, portrait grade, continuous foreground, CD carousel, and quality/reduced-motion settings.
+- Added browser regression for six desktop/tablet viewport configurations, live progressive resize, mobile layout and the 2-layer WebGL backdrop uniform. No added textures, passes, DOM-per-frame work or altered foreground art.
+
+
 ## 1.5.1 — 2026-10-23
 
 - Replaced the old signature artwork with the artist-supplied geometric H, redrawn as scalable SVG and matching favicon.

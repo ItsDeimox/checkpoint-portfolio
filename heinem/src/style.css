@@ -705,19 +705,21 @@ body[data-scene-active="false"] .quality-control > button {
   .bubble-copy p { font-size: 12px; }
 }
 
-/* V1.5.1: anchor the glass to the viewport's shortest useful dimension.
-   Previously width tracked vw while height tracked vh, stretching the mesh
-   and pushing GPU typography outside at tall/short desktop aspect ratios. */
+/* V1.5.2: separate the visual anchor from the JS parallax transform.
+   Parallax writes element.style.transform = translate3d(...) per frame, which
+   overwrote transform: translateY(-50%) and left top:52% uncentered.
+   The individual CSS translate property composes with the inline transform,
+   and the elevated center matches the approved scene without clipping. */
 .brand { width: 47px; }
 .brand img { width: 100%; height: auto; display: block; }
 @media (min-width: 901px) {
   .bubble {
     left: 42.7%;
-    top: 52%;
+    top: 40%;
     width: min(44vw, 110svh);
     height: auto;
     aspect-ratio: 1.52;
-    transform: translateY(-50%);
+    translate: 0 -50%;
   }
   .bubble-copy {
     top: 16%;
@@ -728,11 +730,11 @@ body[data-scene-active="false"] .quality-control > button {
 @media (min-width: 701px) and (max-width: 900px) {
   .bubble {
     left: 40%;
-    top: 53%;
+    top: 43%;
     width: min(59vw, 113svh);
     height: auto;
     aspect-ratio: 1.44;
-    transform: translateY(-50%);
+    translate: 0 -50%;
   }
   .bubble-copy { top: 13.5%; left: 13.5%; width: 72%; }
 }
