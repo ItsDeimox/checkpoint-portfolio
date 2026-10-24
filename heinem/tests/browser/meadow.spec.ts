@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+// Browsing artwork can resolve SoundCloud oEmbed metadata, never its audio widget.
+const onlyArtworkMetadata = (urls: string[]) => urls.every(value => {
+  const url = new URL(value);
+  return url.hostname === 'soundcloud.com' && url.pathname === '/oembed';
+});
+
 test('disc stays centered during hover and a full rotation', async ({ page }) => {
   await page.goto('/');
   await page.locator('#disc-button').scrollIntoViewIfNeeded();
@@ -51,7 +57,7 @@ test('album sleeves select real tracks without loading media before play', async
   await expect(page.locator('#track-title')).toHaveText('Show Me Love');
   await expect(page.locator('#disc-button')).toHaveAttribute('aria-label', 'Play Show Me Love');
   await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
-  expect(remote).toEqual([]);
+  expect(onlyArtworkMetadata(remote)).toBe(true);
   await expect(page.locator('#about, #contact')).toHaveCount(0);
 });
 
@@ -150,7 +156,7 @@ test('drag scrubs the exchange on desktop and mobile, then commits without an ac
     await expect(page.locator('#listening-room')).toHaveAttribute('data-active-track', '0');
     await expect(page.locator('#listening-room')).toHaveAttribute('data-disc-phase', 'idle');
   }
-  expect(provider).toEqual([]);
+  expect(onlyArtworkMetadata(provider)).toBe(true);
 });
 
 test('pointer position tilts the case surface while its hit target and the CD pivot stay stable', async ({ page }) => {
@@ -205,7 +211,7 @@ test('one mouse hold travels through several releases in either viewport without
     await expect(stage).toHaveAttribute('data-dragging', 'false');
     await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
   }
-  expect(soundcloud).toEqual([]);
+  expect(onlyArtworkMetadata(soundcloud)).toBe(true);
 });
 
 test('real touch moves continuously past a second sleeve while vertical gestures still scroll', async ({ page }) => {
@@ -290,5 +296,5 @@ test('six releases can be browsed with arrows and wrap without loading SoundClou
     await expect(page.locator('#track-counter')).toHaveText(`${String(((i + 1) % 6) + 1).padStart(2, '0')} / 06`);
   }
   await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
-  expect(provider).toEqual([]);
+  expect(onlyArtworkMetadata(provider)).toBe(true);
 });
