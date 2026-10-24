@@ -1,0 +1,23 @@
+name: HEINEM source snapshot QA
+on:
+  push:
+    branches:
+      - heinem/qa-bubble-anchor-20261023
+    paths:
+      - '.github/workflows/heinem-source-snapshot.yml'
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: tar -czf heinem-source.tar.gz heinem
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: heinem-source-for-anchor-qa
+          path: heinem-source.tar.gz
+          retention-days: 1
