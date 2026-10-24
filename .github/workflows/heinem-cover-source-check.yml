@@ -1,0 +1,30 @@
+name: Verify HEINEM SoundCloud artwork URLs
+on:
+  push:
+    branches: [heinem/cover-source-verification]
+permissions:
+  contents: read
+jobs:
+  lookup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check SoundCloud oEmbed and official thumbnail URLs
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.parse,json
+          urls = {
+            "fall":"https://soundcloud.com/heinemstrange/dont-let-me-fall",
+            "her":"https://soundcloud.com/heinemstrange/jvke-her-feat-annika-wells",
+            "seven":"https://soundcloud.com/heinemstrange/seven-lions-brieanna-grace",
+          }
+          for name,track in urls.items():
+            target="https://soundcloud.com/oembed?"+urllib.parse.urlencode({"format":"json","url":track})
+            try:
+              req=urllib.request.Request(target,headers={"User-Agent":"Mozilla/5.0 (compatible; HEINEM artwork verification/1.0)"})
+              with urllib.request.urlopen(req,timeout=12) as reply:
+                obj=json.load(reply)
+                print(json.dumps({"name":name,"status":reply.status,"title":obj.get("title"),"artwork":obj.get("thumbnail_url"),"provider":obj.get("provider_name")}))
+            except Exception as e:
+              print(json.dumps({"name":name,"error":str(e)[:240]}))
+          PY
