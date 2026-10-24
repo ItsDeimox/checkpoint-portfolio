@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.4 — 2026-10-23
+
+- Populate the three recently added jewel cases with verified official SoundCloud artwork when the music scene enters the viewport, without triggering audio playback or creating a media iframe.
+- Fetch SoundCloud oEmbed JSON (CORS supported by the official API) for releases without local artwork and accept only HTTPS `i1.sndcdn.com` thumbnails; preload and validate the actual image before replacing each designed sleeve.
+- Seed the HEINEM FLIP of JVKE's *her* with the exact image URL linked from its real SoundCloud release page, then allow other metadata results to populate the remaining sleeves when available.
+- Keep the three preexisting local art files and avoid loading the third-party player until click. Fail gracefully if a permalink is invalid/private or a thumbnail cannot load.
+- Permit only `soundcloud.com` in CSP `connect-src` for oEmbed; keep the original CDN image allowlist, SoundCloud credit, links and player interactions.
+
+
 ## 1.5.3 — 2026-10-23
 
 - Aligned the H logo farther left without shifting the central navigation.

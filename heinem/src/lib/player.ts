@@ -1,4 +1,5 @@
 import { initDiscInteraction } from './disc-interaction';
+import { createSoundCloudCovers } from './soundcloud-covers';
 
 /** Official SoundCloud embeds; no audio is downloaded or re-hosted. */
 type PlayerState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
@@ -141,6 +142,7 @@ export function initPlayer(): { destroy(): void } {
   const artwork = room.querySelector<HTMLElement>('.disc-artwork');
   const rows = [...room.querySelectorAll<HTMLButtonElement>('[data-track]')];
   const events = new AbortController();
+  const covers = createSoundCloudCovers(room, TRACKS, events.signal);
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   let state: PlayerState = 'idle';
@@ -373,19 +375,11 @@ export function initPlayer(): { destroy(): void } {
           durationLabel.textContent = timeLabel(duration);
           updateProgress(position);
         });
-        // After the first user-initiated play, let the official widget supply
-        // artwork for releases whose original covers were not supplied.
+        // The widget remains an additional verified artwork source after
+        // actual playback. Covers are also fetched as metadata before play.
         controller.getCurrentSound?.((sound) => {
           if (destroyed || current !== generation || !sound?.artwork_url) return;
-          try {
-            const candidate = new URL(sound.artwork_url);
-            if (candidate.protocol !== 'https:' || !candidate.hostname.endsWith('.sndcdn.com')) return;
-            const sleeve = rows[selected]?.querySelector<HTMLElement>('.generated-cover');
-            if (sleeve) {
-              sleeve.style.backgroundImage = `url("${candidate.href}")`;
-              sleeve.classList.add('has-cover-art');
-            }
-          } catch { /* Keep the locally rendered sleeve when artwork is absent. */ }
+          covers.show(selected, sound.artwork_url);
         });
         if (wantsPlay) requestPlay();
         else if (state !== 'error') setState('paused');
@@ -517,6 +511,7 @@ export function initPlayer(): { destroy(): void } {
       destroyed = true;
       generation++;
       events.abort();
+      covers.destroy();
       carousel.destroy();
       clearWatchdog();
       cancelSDK?.();

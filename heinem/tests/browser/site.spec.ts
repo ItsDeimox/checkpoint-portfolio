@@ -36,8 +36,14 @@ for (const [width, height] of [[1178, 659], [1440, 900], [390, 844], [320, 780]]
     expect(centerTarget).toBe('disc-button');
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
-    // Fonts, artwork and graphics are local. Music only connects after intent.
-    expect(remoteRequests).toEqual([]);
+    // Artwork metadata (not media or iframes) may resolve when Music enters
+    // view. Streaming scripts and SoundCloud widgets still await play intent.
+    expect(remoteRequests.every(url => {
+      const target = new URL(url);
+      return (target.hostname === 'soundcloud.com' && target.pathname === '/oembed')
+        || target.hostname === 'i1.sndcdn.com';
+    })).toBe(true);
+    await expect(page.locator('#embed-mount iframe')).toHaveCount(0);
   });
 }
 
