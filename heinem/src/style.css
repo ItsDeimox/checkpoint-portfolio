@@ -891,3 +891,41 @@ body[data-scene-active="false"] .quality-control > button {
   background-size: cover;
   background-position: center;
 }
+
+
+/* HEINEM 1.5.7: constrain the entire optical surface by BOTH viewport axes.
+   The previous 110svh width cap still made the membrane taller than available
+   at unusual desktop aspect ratios. Anchor its center with CSS translate,
+   independent from the inline parallax transform updated by JS. */
+@media (min-width: 901px) {
+  .bubble {
+    top: 47%;
+    left: 43%;
+    width: min(44vw, 96svh);
+    height: auto;
+    aspect-ratio: 1.52;
+    translate: 0 -50%;
+  }
+  .bubble-copy {
+    top: 16%;
+    left: 18.5%;
+    width: 60%;
+  }
+}
+@media (min-width: 701px) and (max-width: 900px) {
+  .bubble {
+    top: 47%;
+    left: 40%;
+    width: min(58vw, 100svh);
+    height: auto;
+    aspect-ratio: 1.44;
+    translate: 0 -50%;
+  }
+}
+@media (min-width: 701px) and (max-height: 650px) {
+  .bubble-copy p {
+    font-size: clamp(10px, .79cqw, 13px);
+    line-height: 1.48;
+  }
+  .signature-line { margin-top: .9cqw; }
+}
