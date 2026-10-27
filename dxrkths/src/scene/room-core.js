@@ -20,10 +20,10 @@ export function roomShellAngles(segments=32){
 }
 export const ROOM_FOREGROUND_TIRES=Object.freeze({x:Object.freeze([3.48,-3.35]),z:-7.75,levels:3});
 export function renderBudget(width,height,dpr=1,quality='auto'){
- const maxPixels=quality==='high'?3686400:quality==='low'?450000:1900000;
  const compact=Math.min(width,height)<=740&&Math.max(width,height)<=1280&&dpr>1;
- // Low prioritizes fill-rate: native CSS pixels on phones, never retina supersampling.
- const lowRatio=compact?1:.82;
+ // A restrained phone-only sharpness lift. Large Low viewports keep their 450k cap.
+ const maxPixels=quality==='high'?3686400:quality==='low'?(compact?540000:450000):1900000;
+ const lowRatio=compact?1.12:.82;
  const ratio=Math.min(dpr,quality==='high'?1.6:quality==='low'?lowRatio:1.15,Math.sqrt(maxPixels/Math.max(1,width*height)));
  return {width:Math.max(2,Math.floor(width*ratio)),height:Math.max(2,Math.floor(height*ratio)),ratio,maxPixels,reflection:quality==='high'?1024:quality==='low'?1:768};
 }

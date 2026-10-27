@@ -35,8 +35,8 @@ test('mobile defaults to low without overriding explicit quality or music choice
  const existing=restoreVisitorSettings({visitorPreset:'showroom-intro-v1',quality:'auto',music:{volume:.13,reactivity:.72}},hints);
  assert.equal(existing.quality,'low');assert.deepEqual(existing.music,{volume:.13,reactivity:.72});
 });
-test('compact Low uses native pixels, while 2K and ultrawide stay within 450k pixels',()=>{
- for(const [w,h]of [[390,844],[844,390]]){const b=renderBudget(w,h,3,'low');assert.equal(b.ratio,1);assert.ok(b.width*b.height<=450000);}
+test('compact Low only lightly supersamples while 2K and ultrawide retain the 450k ceiling',()=>{
+ for(const [w,h]of [[390,844],[844,390]]){const b=renderBudget(w,h,3,'low');assert.equal(b.ratio,1.12);assert.ok(b.width*b.height<=540000);}
  for(const [w,h]of [[2560,1440],[5120,2160]]){const b=renderBudget(w,h,2,'low');assert.ok(b.width*b.height<=450000);}
 });
 test('reflection budget drops hidden MSAA, caches a stationary view, and invalidates camera/rotation changes',()=>{

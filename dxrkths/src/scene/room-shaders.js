@@ -72,7 +72,11 @@ void main(){
  if(lowQuality>.5){
   float detail=noise2(p*5.1);
   float contact=1.-.65*exp(-dot(centered/vec2(1.7,3.4),centered/vec2(1.7,3.4))*2.);
-  vec3 base=vec3(.014,.016,.021)*(.65+detail*.30)*contact;
+  // Subtle floor illumination directly beneath the already-existing car spotlight.
+  // Reuses the computed radius; no new lamp, reflection, blur or texture fetch.
+  float practicalLight=1.-smoothstep(1.2,4.6,radius);
+  vec3 base=vec3(.014,.016,.021)*(.65+detail*.30)*contact
+    + vec3(.025,.027,.035)*practicalLight*practicalLight;
   gl_FragColor=vec4(base,1.);
   #include <fog_fragment>
   return;
