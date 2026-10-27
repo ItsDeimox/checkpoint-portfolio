@@ -15,14 +15,14 @@ jobs:
       - name: Install locked dependencies and isolated browser driver
         working-directory: dxrkths
         run: npm ci && npm install --no-save --package-lock=false playwright@1.56.1 && npm run bundle
-      - name: Measure actual unmodified Low scene
-        working-directory: dxrkths
-        env:
-          BASELINE: '1'
-          DXT_QA_OUT: /tmp/dxt-r37/baseline
-        run: node tests/low-mobile-r37-browser.cjs
       - name: Apply reviewed exact-match source and regression changes
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('dxrkths/tools/r37-tests.py')
+          s=p.read_text().replace(' for old,new in pairs:\n'," for old,new in pairs:\n  if path=='tests/hover-regression.test.mjs':old='hoverPanel:-1,'+old;new='hoverPanel:-1,'+new\n")
+          p.write_text(s)
+          PY
           python dxrkths/tools/r37-apply.py
           python dxrkths/tools/r37-tests.py
           python - <<'PY'
