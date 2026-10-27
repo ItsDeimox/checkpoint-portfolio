@@ -35,16 +35,16 @@ test('mobile defaults to low without overriding explicit quality or music choice
  const existing=restoreVisitorSettings({visitorPreset:'showroom-intro-v1',quality:'auto',music:{volume:.13,reactivity:.72}},hints);
  assert.equal(existing.quality,'low');assert.deepEqual(existing.music,{volume:.13,reactivity:.72});
 });
-test('compact retina low is sharper, while 2K and ultrawide stay within 900k pixels',()=>{
- for(const [w,h]of [[390,844],[844,390]]){const b=renderBudget(w,h,3,'low');assert.ok(b.ratio>=1.2);assert.ok(b.width*b.height<=900000);}
- for(const [w,h]of [[2560,1440],[5120,2160]]){const b=renderBudget(w,h,2,'low');assert.ok(b.width*b.height<=900000);}
+test('compact Low uses native pixels, while 2K and ultrawide stay within 450k pixels',()=>{
+ for(const [w,h]of [[390,844],[844,390]]){const b=renderBudget(w,h,3,'low');assert.equal(b.ratio,1);assert.ok(b.width*b.height<=450000);}
+ for(const [w,h]of [[2560,1440],[5120,2160]]){const b=renderBudget(w,h,2,'low');assert.ok(b.width*b.height<=450000);}
 });
 test('reflection budget drops hidden MSAA, caches a stationary view, and invalidates camera/rotation changes',()=>{
  assert.equal(typeof reflections.ReflectionBudget,'function');
  const ground=new T.Mesh(new T.PlaneGeometry(),new T.MeshBasicMaterial()),target=new T.WebGLRenderTarget(64,64,{samples:4});
  let draws=0;ground.getRenderTarget=()=>target;ground.onBeforeRender=()=>{draws++;};
- const view={ground,settings:{quality:'low'},camera:new T.PerspectiveCamera(),turntable:{angle:0},smokes:[],beams:[],optics:{supportedSamples:[4,2]}};
- const budget=new reflections.ReflectionBudget(view);budget.configure('low');assert.equal(target.samples,0);
+ const view={ground,settings:{quality:'auto'},camera:new T.PerspectiveCamera(),turntable:{angle:0},smokes:[],beams:[],optics:{supportedSamples:[4,2]}};
+ const budget=new reflections.ReflectionBudget(view);budget.configure('auto');assert.equal(target.samples,0);
  const capture=()=>ground.onBeforeRender({}, {},view.camera);
  budget.advance(1/60);capture();assert.equal(draws,1);
  budget.advance(1/60);capture();assert.equal(draws,1);
@@ -70,8 +70,8 @@ test('high-quality reflection omits volumetric overdraw and restores the visible
 
 test('reflection capture failures restore temporary atmosphere visibility',()=>{
  const smoke=new T.Object3D(),beam=new T.Object3D(),target=new T.WebGLRenderTarget(2,2);
- const view={settings:{quality:'low'},ground:{getRenderTarget:()=>target,onBeforeRender(){throw Error('lost');}},smokes:[new T.Object3D(),smoke],beams:[beam]};
- const gate=new reflections.ReflectionBudget(view);gate.configure('low');
+ const view={settings:{quality:'auto'},ground:{getRenderTarget:()=>target,onBeforeRender(){throw Error('lost');}},smokes:[new T.Object3D(),smoke],beams:[beam]};
+ const gate=new reflections.ReflectionBudget(view);gate.configure('auto');
  assert.throws(()=>view.ground.onBeforeRender({}, {},new T.PerspectiveCamera()),/lost/);
  assert.equal(smoke.visible,true);assert.equal(beam.visible,true);assert.equal(gate.valid,false);target.dispose();
 });

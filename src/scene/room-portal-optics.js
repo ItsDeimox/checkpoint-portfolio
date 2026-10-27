@@ -74,16 +74,17 @@ export class PortalShutterPass extends SceneSourcePass {
         uInverseProjection:{value:new T.Matrix4()},uCameraWorld:{value:new T.Matrix4()},uPreviousVP:{value:new T.Matrix4()},
         uOrigin:{value:new T.Vector3()},uRight:{value:new T.Vector3()},uUp:{value:new T.Vector3()},uForward:{value:new T.Vector3()},
         uShutter:{value:0},uMaxBlur:{value:32},uSamples:{value:6},uChromaticPixels:{value:0},uShock:{value:0},uAge:{value:0},uSpeed:{value:0},uInterior:{value:0},uExit:{value:0}}}));
+    this.currentVP=new T.Matrix4();this.depthPoint=new T.Vector3();
     this.previous=new T.Matrix4();this.position=new T.Vector3();this.rotation=new T.Quaternion();this.center=new T.Vector3();this.enabled=false;this.valid=false;
   }
   setSize(w,h){this.uniforms.uResolution.value.set(Math.max(1,w),Math.max(1,h));this.valid=false;}
   update(camera,basis,{age=0,progress=0,active=false,interior=false,quality='auto',dt=1/60,reduced=false}={}){
-    if(!active||reduced){this.reset();return;}
+    if(!active||reduced||quality==='low'){this.reset();return;}
     const profile=PORTAL_FX_PROFILES[quality]??PORTAL_FX_PROFILES.auto,state=portalImpactEnvelope(age,progress,active,reduced),u=this.uniforms;
     this.enabled=true;camera.updateMatrixWorld(true);
     const distance=camera.position.distanceTo(this.position),angle=camera.quaternion.angleTo(this.rotation);
     const safe=this.valid&&interior&&this.wasInterior&&Number.isFinite(dt)&&dt>0&&dt<.15&&distance<=45*dt&&angle<=2.5*dt;
-    const vp=new T.Matrix4().multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);
+    const vp=this.currentVP.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);
     u.uPreviousVP.value.copy(safe?this.previous:vp);
     const stationary=this.previous.equals(vp);
     u.uShutter.value=safe&&!stationary?Math.min(.95,(1/55)/dt)*state.speed:0;
@@ -91,7 +92,7 @@ export class PortalShutterPass extends SceneSourcePass {
     u.uOrigin.value.copy(basis.center);u.uRight.value.copy(basis.right);u.uUp.value.copy(basis.up);u.uForward.value.copy(basis.forward);u.uHalf.value.copy(basis.half);
     this.center.copy(basis.center).project(camera);
     u.uCenter.value.set(interior?.5:Math.max(-1,Math.min(2,this.center.x*.5+.5)),interior?.5:Math.max(-1,Math.min(2,this.center.y*.5+.5)));
-    const depth=Math.max(.2,-basis.center.clone().applyMatrix4(camera.matrixWorldInverse).z);
+    const depth=Math.max(.2,-this.depthPoint.copy(basis.center).applyMatrix4(camera.matrixWorldInverse).z);
     u.uScope.value.set(Math.min(2,basis.half.x*Math.abs(camera.projectionMatrix.elements[0])/(depth*2)),Math.min(2,basis.half.y*Math.abs(camera.projectionMatrix.elements[5])/(depth*2)));
     u.uChromaticPixels.value=profile.chromaticPixels*(state.opening*.55+state.speed);
     u.uMaxBlur.value=profile.blurPixels;u.uSamples.value=profile.shutterSamples;u.uShock.value=state.opening;

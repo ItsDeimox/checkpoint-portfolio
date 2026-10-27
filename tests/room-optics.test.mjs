@@ -18,7 +18,8 @@ test('an inactive depth lens submits no full-screen copy and routes the captured
       assert.equal(draws.filter(d=>d.material===optics.lensPass.material).length,0,
         'An identity lens must not read and write the entire framebuffer');
       const bright=draws.find(d=>d.material===optics.bloomPass.brightMaterial);
-      assert.equal(bright.material.uniforms.tInput.value,optics.sceneTarget.texture);
+      if(quality==='low')assert.equal(bright,undefined);
+      else assert.equal(bright.material.uniforms.tInput.value,optics.sceneTarget.texture);
       assert.equal(draws.find(d=>d.material===optics.gradePass.material).input,optics.sceneTarget.texture);
       assert.ok(draws.every(d=>!d.input||d.input!==d.target?.texture));
     }
@@ -418,11 +419,11 @@ test('gentle pointer-look rotation receives camera motion blur without a panel a
  }finally{optics.dispose();}
 });
 
-test('low uses three bloom scales and no cinematic DOF, streak or moving-object capture',()=>{
+test('low uses no bloom scales, cinematic DOF, streak or moving-object capture',()=>{
  const {optics,draws}=fixture();
  try{
   optics.setQuality('low');optics.render(1/60);
-  assert.equal(optics.bloomPass.activeLevels,3);
+  assert.equal(optics.bloomPass.activeLevels,0);
   assert.equal(optics.lensPass.uniforms.uCocScale.value,0);
   assert.equal(optics.bloomPass.lensEnabled,false);
   const active=optics.bloomPass.targets.filter(t=>t.width>1);
@@ -430,5 +431,23 @@ test('low uses three bloom scales and no cinematic DOF, streak or moving-object 
   optics.setQuality('high');optics.render(1/60);
   assert.equal(optics.bloomPass.activeLevels,6);assert.ok(optics.lensPass.uniforms.uCocScale.value>0);
   assert.equal(optics.bloomPass.lensEnabled,true);
+ }finally{optics.dispose();}
+});
+
+test('R37 Low submits only scene, grade, tonemap and FXAA, even during continuous motion',()=>{
+ const {optics,camera,scene,draws}=fixture();
+ try{
+  optics.setQuality('low');optics.setVisualSettings({bloom:1,depthOfField:1,motionBlur:1,lens:1,sharpness:1});
+  for(let i=0;i<3;i++){
+   camera.position.x+=.01;draws.length=0;optics.render(1/30,{motion:1});
+   assert.equal(optics.bloomPass.enabled,false);assert.equal(optics.lensPass.enabled,false);assert.equal(optics.gradePass.uniforms.uSharpness.value,0);
+   assert.equal(draws.length,4);assert.equal(draws.filter(d=>d.object===scene).length,1);
+   assert.equal(draws.at(-1).material,optics.aaPass.material);
+   assert.equal(draws.find(d=>d.material===optics.gradePass.material).input,optics.sceneTarget.texture);
+   assert.ok(optics.bloomPass.targets.every(t=>t.width===1&&t.height===1));
+   assert.equal(optics.previousValid,false,'Low avoids reprojection history work');
+  }
+  optics.setQuality('high');draws.length=0;optics.render(1/60);
+  assert.equal(optics.bloomPass.enabled,true);assert.equal(optics.bloomPass.activeLevels,6);assert.equal(optics.sceneTarget.samples,4);assert.equal(optics.gradePass.uniforms.uSharpness.value,optics.visualSettings.sharpness);
  }finally{optics.dispose();}
 });

@@ -77,14 +77,14 @@ export class QualityTransition {
 export async function warmInteractivePaths(view,signal){
  const {renderer,optics}=view;
  if(!renderer?.getSize||!optics?.sceneTarget)return false;
+ const low=view.settings?.quality==='low';
  const shadows=renderer.shadowMap.enabled,pageActive=view.pageActive;
  const smokeState=(view.smokes??[]).map(s=>[s,s.visible]);
  const dustCount=view.dust?.geometry.drawRange.count;
  try{
   view.pageActive=false;
-  view.panelEnergy?.prime();for(const [s]of smokeState)s.visible=true;
-  view.dust?.geometry.setDrawRange(0,160);
-  for(const shadowed of [true,false]){
+  if(!low){view.panelEnergy?.prime();for(const [s]of smokeState)s.visible=true;view.dust?.geometry.setDrawRange(0,160);}
+  for(const shadowed of low?[false]:[true,false]){
    signal.throwIfAborted();renderer.shadowMap.enabled=shadowed;renderer.shadowMap.needsUpdate=true;
    view.render(1/60,0);await waitForGpu(renderer,signal);await yieldToBrowser(signal);
   }

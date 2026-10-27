@@ -62,12 +62,21 @@ float waterPerlin(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*f*(f*(f*6.-15.)+10.);
 float waterFbm3(vec2 p){float n=.57142857*waterPerlin(p);p=mat2(1.6,1.2,-1.2,1.6)*p;
  n+=.28571429*waterPerlin(p);p=mat2(1.6,1.2,-1.2,1.6)*p;return n+.14285714*waterPerlin(p);}
 `;
-export const floorFragment=`precision highp float;uniform sampler2D tDiffuse;uniform vec3 color;uniform float time;uniform float turntableAngle;uniform vec2 reflectionResolution;varying vec4 vReflection;varying vec3 vWorld;${noiseGLSL}${perlinWaterGLSL}
+export const floorFragment=`precision highp float;uniform float lowQuality;uniform sampler2D tDiffuse;uniform vec3 color;uniform float time;uniform float turntableAngle;uniform vec2 reflectionResolution;varying vec4 vReflection;varying vec3 vWorld;${noiseGLSL}${perlinWaterGLSL}
 #include <fog_pars_fragment>
 void main(){
  vec2 centered=vWorld.xz-vec2(0.,1.458534911);float radius=length(centered);
  float rotor=1.-smoothstep(5.14,5.17,radius);float a=-turntableAngle,c=cos(a),s=sin(a);
  vec2 p=mix(vWorld.xz,mat2(c,-s,s,c)*centered+vec2(0.,1.458534911),rotor);
+ // Cheap matte/contact-lit floor in Low: no water FBM, animated ripples or mirror fetches.
+ if(lowQuality>.5){
+  float detail=noise2(p*5.1);
+  float contact=1.-.65*exp(-dot(centered/vec2(1.7,3.4),centered/vec2(1.7,3.4))*2.);
+  vec3 base=vec3(.014,.016,.021)*(.65+detail*.30)*contact;
+  gl_FragColor=vec4(base,1.);
+  #include <fog_fragment>
+  return;
+ }
  vec2 warp=vec2(waterPerlin(p*.23+2.),waterPerlin(p*.23-7.))*.32;
  float waterField=.5+.5*waterFbm3(p*.54+warp+vec2(2.1,7.3));
  float puddle=smoothstep(.40,.62,waterField);

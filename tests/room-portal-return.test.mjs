@@ -40,7 +40,7 @@ test('reverse approach retraces the same Bezier and camera orientation, not a ha
  dispose(f);
 });
 test('reverse motion reuses signed camera reprojection and the existing effects without extra targets',()=>{
- const f=fixture();assert.equal(typeof f.portal.returnToShowroom,'function');f.portal.returnToShowroom(2,()=>{});const pass=f.portal.shutter;pass.setSize(960,640);
+ const f=fixture();f.view.settings.quality='auto';assert.equal(typeof f.portal.returnToShowroom,'function');f.portal.returnToShowroom(2,()=>{});const pass=f.portal.shutter;pass.setSize(960,640);
  advance(f,.3);f.portal.prepareFrame(1/60);assert.equal(pass.uniforms.uShutter.value,0);
  advance(f,1/60);f.portal.prepareFrame(1/60);assert.ok(pass.uniforms.uShutter.value>0);assert.ok(pass.uniforms.uChromaticPixels.value>0);
  const geometry=f.portal.effects.smoke.geometry;advance(f,F-.3-1/60+.45);assert.equal(f.portal.effects.smoke.geometry,geometry);

@@ -30,11 +30,15 @@ export class ReflectionBudget {
   invalidate(){this.valid=false;}
   configure(quality){
     this.quality=quality;
+    const low=this.view.ground.material?.uniforms?.lowQuality;
+    if(low)low.value=quality==='low'?1:0;
     const target=this.view.ground.getRenderTarget(),samples=0;
     if(target.samples!==samples){target.dispose();target.samples=samples;}
     this.invalidate();
   }
   shouldCapture(camera){
+    // Low's matte floor does not sample a reflection, even during camera/vehicle motion.
+    if(this.quality==='low')return false;
     const v=this.view,target=v.ground.getRenderTarget();
     if(!this.valid||!this.cameraMatrix.equals(camera.matrixWorld)||!this.projection.equals(camera.projectionMatrix)
       ||this.angle!==v.turntable?.angle||this.hover!==v.hoverPanel||this.content!==v.contentPanel

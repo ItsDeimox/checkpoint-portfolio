@@ -44,7 +44,7 @@ export class HeroScene extends ShowroomScene {
     this.canvas.addEventListener('webglcontextlost',()=>this.brandLogo?.restoreFallback(),{signal:this.controller.signal});
   }
   updatePanels(dt){
-    this.panels.forEach(panel=>updateHologramView(panel,this.camera.position));
+    if(this.settings.quality!=='low')this.panels.forEach(panel=>updateHologramView(panel,this.camera.position));
     const moving=super.updatePanels(dt);
     // Extra spill is restricted to the hovered display, never general room fill.
     if(this.hoverPanel>=0 && this.contentPanel===null){
@@ -83,7 +83,7 @@ export class HeroScene extends ShowroomScene {
   }
   resize(){super.resize();this.brandLogo?.invalidateLayout();}
   render(dt,motion){
-    const levels=this.music?.update(dt,!this.settings.paused&&!this.reduced.matches);
+    const levels=this.music?.update(dt,this.settings.quality!=='low'&&!this.settings.paused&&!this.reduced.matches);
     if(levels&&this.optics&&this.scene){
       this.musicLights ??= new MusicLights(this);
       this.musicLights.apply(levels,this.music.settings.reactivity);

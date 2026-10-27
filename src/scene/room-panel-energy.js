@@ -22,14 +22,14 @@ export class RoomPanelEnergy {
   this.selected=-1;
  }
  point(index,uv,time){
-  if(this.view.cameraRig?.mode!=='overview'||this.view.bannerPortal?.active||this.view.bannerPortal?.interior||this.view.reduced?.matches){this.release();return;}
+  if(this.view.settings?.quality==='low'||this.view.cameraRig?.mode!=='overview'||this.view.bannerPortal?.active||this.view.bannerPortal?.interior||this.view.reduced?.matches){this.release();return;}
   if(index!==this.selected){this.entries[this.selected]?.field.release();this.selected=index;}
   if(index<0||!uv||!Number.isFinite(time))return;
   this.entries[index]?.field.point(uv.x,uv.y,time);
  }
  update(dt){
   const reduced=!!this.view.reduced?.matches;
-  const hidden=this.view.bannerPortal?.active||this.view.bannerPortal?.interior||reduced;
+  const hidden=this.view.settings?.quality==='low'||this.view.bannerPortal?.active||this.view.bannerPortal?.interior||reduced;
   if(hidden)this.release();
   let moving=false;
   for(let i=0;i<this.entries.length;i++){

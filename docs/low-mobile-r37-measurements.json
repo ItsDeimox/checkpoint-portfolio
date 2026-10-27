@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-27",
+  "environment": "Linux system Chrome, mobile/touch emulation, CSS 390x844, DPR2, SwiftShader",
+  "hardware_fps_measured": false,
+  "baseline_run": 40548673112,
+  "optimized_profile_runs": [40549120933, 40550483283],
+  "mobile_acceptance_run": 40551619564,
+  "before": {"width":487,"height":1055,"pixels":513785,"captured_frame_draw_calls":259,"captured_frame_triangles":567487,"bloom_levels":3,"smoke_layers":8},
+  "after": {"width":390,"height":844,"pixels":329160,"captured_frame_draw_calls":120,"captured_frame_triangles":283682,"bloom_levels":0,"smoke_layers":0},
+  "optimized_idle_sample": {"duration_ms":2400,"new_frames":0,"reflection_captures":0,"audio_analysis_reads":0},
+  "focused_profile_checks_passed": 15,
+  "notes": [
+    "Captured-frame draw counts are not average cost across all frames; baseline snapshot included a planar reflection capture.",
+    "Do not convert GPU-work percentages into physical Android/iPhone FPS or battery-life claims.",
+    "High and Medium visual settings remain available and restoration was exercised in the browser.",
+    "Full mobile audit validates real target coordinates after finite modal entrance animations; it does not loosen the 44px threshold.",
+    "Image identity, decode and presentation are checked atomically to avoid the pre-existing preload replacement race."
+  ]
+}

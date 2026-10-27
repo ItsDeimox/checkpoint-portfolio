@@ -637,10 +637,10 @@ test('disposal cancels scheduled rendering, clears captured gestures and blocks 
 });
 
 for(const [quality,mobileDevice,expected] of [['low',false,180],['high',false,180],['low',true,30],['high',true,60]])
-test(`real frame loop delivers ${expected} ${quality}/${mobileDevice?'mobile':'desktop'} updates at 180 Hz without duplicate callbacks or lost time`,async()=>{
+test(`moving frame loop delivers ${expected} ${quality}/${mobileDevice?'mobile':'desktop'} updates at 180 Hz without duplicate callbacks or lost time`,async()=>{
  const f=harness({settings:{quality,mobileDevice,paused:false}}),v=f.instance;
  try{
-  await v.readyPromise;const start=v.last,initial=v.frames;let maximum=0;
+  await v.readyPromise;v.cameraRig.update=()=>true;const start=v.last,initial=v.frames;let maximum=0;
   for(let i=1;i<=180;i++){
    const pending=f.frames.entries().next().value;assert.ok(pending);
    const [id,callback]=pending;f.frames.delete(id);callback(start+i*1000/180);
@@ -650,4 +650,19 @@ test(`real frame loop delivers ${expected} ${quality}/${mobileDevice?'mobile':'d
   assert.ok(v.time>.97&&v.time<=1.01,`elapsed simulation ${v.time}`);
   assert.equal(maximum,1);v.sleep();assert.equal(f.frames.size,0);
  }finally{await v.dispose();}
+});
+
+test('Low stops its RAF when idle and wakes for interaction, High retains its ambient animation',async()=>{
+ for(const quality of ['low','high']){
+  const f=harness({settings:{quality,mobileDevice:true,paused:false}}),v=f.instance;
+  try{
+   await v.readyPromise;
+   let now=v.last;
+   for(let i=0;i<60&&f.frames.size;i++){
+    const [id,callback]=f.frames.entries().next().value;f.frames.delete(id);now+=1000/30;callback(now);
+   }
+   assert.equal(f.frames.size,quality==='low'?0:1);
+   v.sleep();v.wake();assert.equal(f.frames.size,1,'input can restart an idle Low scene');
+  }finally{await v.dispose();}
+ }
 });
