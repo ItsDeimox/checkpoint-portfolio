@@ -1,0 +1,43 @@
+name: Final real-touch acceptance for DXRKTHS Low
+on:
+  push:
+    branches: [dxrkths-r37-release-qa]
+permissions:
+  contents: write
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          sparse-checkout: dxrkths
+      - name: Measure hit areas after their finite entrance animation settles
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('dxrkths/tests/mobile-r35-browser.cjs');s=p.read_text()
+          old="async function target(locator,label,minimum=44){await locator.evaluate(e=>e.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));const d="
+          new="async function target(locator,label,minimum=44){await locator.evaluate(e=>e.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));await locator.evaluate(async e=>{const dialog=e.closest('dialog[open]');if(dialog)await Promise.all(dialog.getAnimations().filter(a=>Number.isFinite(a.effect?.getTiming().iterations)).map(a=>a.finished.catch(()=>{})));});const d="
+          assert s.count(old)==1
+          p.write_text(s.replace(old,new))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dxrkths/tests/mobile-r35-browser.cjs
+          git commit -m 'test(dxrkths): await finite modal entrance before checking 44px targets'
+          git push origin HEAD:dxrkths-r37-release-qa
+      - name: Build and run complete suite
+        working-directory: dxrkths
+        run: npm ci && npm run build && npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Validate every mobile route and touch action
+        working-directory: dxrkths
+        env:
+          DXT_QA_OUT: /tmp/dxt-r37/mobile
+        run: node tests/mobile-r35-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dxrkths-r37-mobile-accepted
+          path: /tmp/dxt-r37/
+          retention-days: 7
