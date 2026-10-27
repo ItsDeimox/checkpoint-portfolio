@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {renderBudget} from '../src/scene/room-core.js';
 import {HeroScene} from '../src/scene/room-scene.js';
+import {floorFragment} from '../src/scene/room-shaders.js';
 
 function atmosphere(quality) {
  const light={visible:false,material:{uniforms:{beamStrength:{value:.19},beamSamples:{value:16}}}};
@@ -49,4 +50,11 @@ test('switching Low → Medium → Low preserves original mid settings and the d
  v.settings.quality='low';apply();
  assert.equal(v.light.material.uniforms.beamStrength.value,lowStrength);
  assert.ok(v.light.material.uniforms.beamSamples.value<=8);
+});
+
+test('Low restores a faint practical-light pool without bringing back planar floor sampling',()=>{
+ const low=floorFragment.split('if(lowQuality>.5){')[1]?.split('return;')[0];
+ assert.ok(low,'Low matte floor fast path exists');
+ assert.match(low,/practicalLight/,'car spotlight must softly light the floor again');
+ assert.doesNotMatch(low,/texture2D\s*\(\s*tDiffuse/,'localized light must not reactivate floor reflection sampling');
 });
