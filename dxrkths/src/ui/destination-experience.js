@@ -3,7 +3,8 @@ import {CubeSurface} from './cube-surface.js';
 /** Delegated page interactions survive cached DOM navigation. One scheduler,
  * active only for an on-screen covered car or a decaying pointer energy pulse. */
 export class DestinationExperience {
- constructor(root){
+ constructor(root,{settings={}}={}){
+  this.settings=settings;
   this.root=root;this.document=root.ownerDocument;this.window=this.document.defaultView;
   this.controller=new AbortController();this.network=new CubeSurface();this.pointer=null;this.pendingPointer=null;this.raf=0;this.time=0;this.visible=true;
   this.reduced=this.window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -13,7 +14,7 @@ export class DestinationExperience {
   on(this.document,'pointerup',e=>this.groupPointerEnd(e));
   on(this.document,'pointercancel',e=>this.groupPointerEnd(e));
   on(root,'pointerout',e=>{const button=e.target.closest?.('[data-energy-button]');if(button&&!button.contains(e.relatedTarget)){this.pointer=null;this.pendingPointer=null;this.network.release();this.wake();}});
-  on(root,'focusin',e=>{if(e.target.closest?.('[data-energy-button]')){this.network.inject(.5,.5,.7);this.wake();}});
+  on(root,'focusin',e=>{if(this.settings?.quality!=='low'&&e.target.closest?.('[data-energy-button]')){this.network.inject(.5,.5,.7);this.wake();}});
   on(root,'click',e=>this.click(e));
   on(root,'wheel',e=>this.wheel(e),{passive:false});
   on(root,'scroll',e=>{if(e.target.matches?.('[data-group-track]'))this.groupScroll(e.target);},{capture:true,passive:true});
@@ -44,7 +45,7 @@ export class DestinationExperience {
   try{
    const {DestinationGraphics}=await import('../render/showroom.bundle.js');
    if(this.disposed)return false;
-   this.graphics=new DestinationGraphics(this.document);
+   this.graphics=new DestinationGraphics(this.document,{settings:this.settings});
    this.graphics.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();this.gpuReady=false;this.sleep();this.graphics.detach();},{signal:this.controller.signal});
    this.graphics.canvas.addEventListener('webglcontextrestored',()=>{
     this.preparation=this.graphics.prepare(this.controller.signal).then(()=>{if(!this.disposed){this.gpuReady=true;this.sync();}}).catch(()=>{});
@@ -72,13 +73,14 @@ export class DestinationExperience {
   // The cached, already rendered preview rides the wall. No second GPU
   // context draws while the showroom owns the portal animation.
   if(this.root.inert){this.sleep();return;}
+  if(this.settings?.quality==='low'){this.pendingPointer=null;this.network.clear();}
   if(this.gpuReady){this.graphics.attach(surface,surface.dataset.destinationSurface);this.drawOnce();}
   // The baked first frame can travel on the portal wall. Its camera starts
   // moving only once the native page owns input and the showroom is asleep.
-  if(this.root.inert||this.document.hidden||this.reduced.matches)this.sleep();else this.wake();
+  if(this.root.inert||this.document.hidden||this.reduced.matches||this.settings?.quality==='low')this.sleep();else this.wake();
  }
  point(event){
-  const button=event.target.closest?.('[data-energy-button]');if(!button||this.root.inert)return;
+  const button=event.target.closest?.('[data-energy-button]');if(!button||this.root.inert||this.settings?.quality==='low')return;
   const r=button.getBoundingClientRect();if(!r.width||!r.height)return;
   this.network.setAspect(r.width/r.height);
   const x=(event.clientX-r.left)/r.width,y=(event.clientY-r.top)/r.height;
@@ -233,13 +235,13 @@ export class DestinationExperience {
   this.graphics.uploadEnergy(this.network);this.graphics.draw(0,this.time,true);
  }
  wake(){
-  if(this.raf||this.disposed||!this.gpuReady||!this.surface||this.root.inert||this.root.hidden||this.document.hidden||!this.visible||this.reduced.matches)return;
+  if(this.settings?.quality==='low'||this.raf||this.disposed||!this.gpuReady||!this.surface||this.root.inert||this.root.hidden||this.document.hidden||!this.visible||this.reduced.matches)return;
   if(this.surface.dataset.destinationSurface==='energy'&&!this.network.awake&&!this.pendingPointer)return;
   this.last=this.window.performance.now();this.raf=this.window.requestAnimationFrame(now=>this.frame(now));
  }
  frame(now){
   this.raf=0;
-  if(this.disposed||!this.surface||this.root.inert||this.root.hidden||this.document.hidden||!this.visible||this.reduced.matches)return;
+  if(this.settings?.quality==='low'||this.disposed||!this.surface||this.root.inert||this.root.hidden||this.document.hidden||!this.visible||this.reduced.matches)return;
   const step=(now-this.last)/1000;
   if(step<1/30){this.raf=this.window.requestAnimationFrame(t=>this.frame(t));return;}
   const dt=Math.min(.05,step);this.last=now;this.time+=dt;

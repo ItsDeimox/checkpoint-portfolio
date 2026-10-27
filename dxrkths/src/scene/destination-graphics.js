@@ -8,8 +8,8 @@ import {yieldToBrowser} from './room-startup.js';
 /** One reusable page renderer, separate from the sleeping showroom. Both shader
  * paths are prepared during the intro. Never one renderer per cached page. */
 export class DestinationGraphics {
- constructor(document){
-  this.document=document;this.ready=false;this.mode=null;
+ constructor(document,{settings={}}={}){
+  this.settings=settings;this.document=document;this.ready=false;this.mode=null;
   this.canvas=document.createElement('canvas');this.canvas.className='destination-graphics';this.canvas.setAttribute('aria-hidden','true');
   this.renderer=new T.WebGLRenderer({canvas:this.canvas,alpha:true,antialias:true,powerPreference:'low-power'});
   installShaderChecks(this.renderer);
@@ -76,8 +76,9 @@ export class DestinationGraphics {
  }
  resize(){
   if(!this.host)return;
-  const cssWidth=Math.max(1,this.host.clientWidth),cssHeight=Math.max(1,this.host.clientHeight),limit=this.mode==='car'?1.25:1.5;
-  const ratio=Math.min(limit,this.document.defaultView?.devicePixelRatio||1,960/cssWidth,660/cssHeight);
+  const low=this.settings.quality==='low';
+  const cssWidth=Math.max(1,this.host.clientWidth),cssHeight=Math.max(1,this.host.clientHeight),limit=low?1:this.mode==='car'?1.25:1.5;
+  const ratio=Math.min(limit,this.document.defaultView?.devicePixelRatio||1,(low?640:960)/cssWidth,(low?440:660)/cssHeight);
   const w=Math.round(cssWidth*ratio),h=Math.round(cssHeight*ratio);
   if(this.canvas.width!==w||this.canvas.height!==h)this.renderer.setSize(w,h,false);
   this.energyMaterial.uniforms.uSurfaceSpan.value.set(...(cssWidth>=cssHeight?[1,cssHeight/cssWidth]:[cssWidth/cssHeight,1]));

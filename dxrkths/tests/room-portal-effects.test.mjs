@@ -30,10 +30,10 @@ test('opening atmosphere is anchored to the selected 3D banner, reused, and invi
  const geometry=effects.smoke.geometry,material=effects.smoke.material;
  assert.equal(effects.group.visible,false);
  for(const panel of createFixedPanelLayout()){
-  const basis=portalBasis(panel);effects.start(basis);effects.update(.3,0,'low',true,false);
+  const basis=portalBasis(panel);effects.start(basis);effects.update(.3,0,'auto',true,false);
   assert.equal(effects.group.visible,true);assert.ok(effects.origin.distanceTo(basis.center)<1e-8);
   assert.equal(effects.smoke.geometry,geometry);assert.equal(effects.smoke.material,material);
-  assert.equal(geometry.isInstancedBufferGeometry,true);assert.ok(geometry.instanceCount<=8);
+  assert.equal(geometry.isInstancedBufferGeometry,true);assert.equal(geometry.instanceCount,16);
   effects.update(2,.5,'high',true,true);assert.equal(effects.group.visible,false);
   effects.reset();assert.equal(effects.group.visible,false);
  }
@@ -51,11 +51,11 @@ test('portal shutter reprojects camera velocity, has no private render target, a
  const pass=new post.PortalShutterPass(),camera=new T.PerspectiveCamera(48,1.5,.08,100),b=portalBasis(createFixedPanelLayout()[2]);
  pass.setSize(960,640);
  const put=p=>{const pose=portalTravelPose(b,p);camera.position.copy(pose.position);camera.quaternion.copy(pose.rotation);camera.fov=pose.fov;camera.updateProjectionMatrix();camera.updateMatrixWorld(true);};
- put(.5);pass.update(camera,b,{age:2,progress:.5,active:true,interior:true,quality:'low',dt:1/60});
+ put(.5);pass.update(camera,b,{age:2,progress:.5,active:true,interior:true,quality:'auto',dt:1/60});
  assert.equal(pass.uniforms.uShutter.value,0);put(.504);
- pass.update(camera,b,{age:2.017,progress:.504,active:true,interior:true,quality:'low',dt:1/60});
+ pass.update(camera,b,{age:2.017,progress:.504,active:true,interior:true,quality:'auto',dt:1/60});
  assert.ok(pass.uniforms.uShutter.value>0);assert.ok(pass.uniforms.uChromaticPixels.value>0);
- assert.equal(pass.target,undefined);assert.equal(pass.enabled,true);assert.ok(pass.uniforms.uSamples.value<=6);
+ assert.equal(pass.target,undefined);assert.equal(pass.enabled,true);assert.equal(pass.uniforms.uSamples.value,9);
  put(.9);pass.update(camera,b,{age:2.5,progress:.9,active:true,interior:true,quality:'high',dt:1/60});
  assert.equal(pass.uniforms.uShutter.value,0,'A cut must not smear history');
  pass.reset();assert.equal(pass.enabled,false);assert.equal(pass.uniforms.uShutter.value,0);pass.dispose();
@@ -64,7 +64,7 @@ test('optics attachment is idempotent, idle passes stay off, and cancellation re
  const camera=new T.PerspectiveCamera(48,1.5,.08,100),rig=new RoomCamera(camera,960),scene=new T.Scene();
  const panels=createFixedPanelLayout().map(p=>({...p,material:new T.ShaderMaterial({uniforms:{artwork:{value:null},projection:{value:new T.Matrix3()}},fragmentShader:'void main(){vec2 p=vec2(0.);vec3 c=vec3(0.);gl_FragColor=vec4(c,1.);}'})}));
  const optics={composer:{passes:['lens','bloom'],insertPass(pass,i){this.passes.splice(i,0,pass);}},bloomPass:'bloom',resetHistory(){}};
- const view={scene,camera,cameraRig:rig,panels,ready:true,settings:{quality:'low'},reduced:{matches:false},optics,release(){},clearHover(){},hidePanelContent(){},wake(){}};
+ const view={scene,camera,cameraRig:rig,panels,ready:true,settings:{quality:'auto'},reduced:{matches:false},optics,release(){},clearHover(){},hidePanelContent(){},wake(){}};
  const portal=new BannerPortal(view);
  assert.equal(typeof portal.attachOptics,'function');portal.attachOptics(optics);portal.attachOptics(optics);assert.equal(optics.composer.passes.length,3);
  portal.enter(1,()=>{});rig.update(.3);portal.prepareFrame(1/60);assert.equal(portal.effects.group.visible,true);

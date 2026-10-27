@@ -28,7 +28,7 @@ import { normalizeVisualSettings } from './room-visual-settings.js';
 export { DEFAULT_VISUAL_SETTINGS, VISUAL_CONTROLS, normalizeVisualSettings } from './room-visual-settings.js';
 
 const PROFILES = {
-  low: { samples: 8, motionSamples: 4, maxBlur: 8, msaaSamples: 0, bloomEdge: 320, bloomScale: 0.25, bloomLevels: 3 },
+  low: { samples: 1, motionSamples: 1, maxBlur: 0, msaaSamples: 0, bloomEdge: 1, bloomScale: 0, bloomLevels: 0 },
   auto: { samples: 20, motionSamples: 6, maxBlur: 11, msaaSamples: 2, bloomEdge: 512, bloomScale: 0.33 },
   high: { samples: 32, motionSamples: 8, maxBlur: 13, msaaSamples: 4, bloomEdge: 768, bloomScale: 0.4 },
 };
@@ -327,8 +327,8 @@ class BoundedBloomPass extends Pass {
  }
  setProfile(profile){
   this.profile=profile;this.activeLevels=profile.bloomLevels??6;
-  this.wide=this.levels[Math.min(3,this.activeLevels-1)].vertical;
-  this.levels.forEach((_,i)=>{this.combineMaterial.uniforms['mip'+i].value=this.levels[Math.min(i,this.activeLevels-1)].vertical.texture;});
+  this.wide=this.levels[Math.max(0,Math.min(3,this.activeLevels-1))].vertical;
+  this.levels.forEach((_,i)=>{this.combineMaterial.uniforms['mip'+i].value=this.levels[Math.max(0,Math.min(i,this.activeLevels-1))].vertical.texture;});
   this.setSize(this.width,this.height);
  }
  setSize(width,height){
@@ -401,7 +401,8 @@ const GRADE_FRAGMENT = /* glsl */`
     vec2 shift = p / max(radius, 0.001) * smoothstep(0.1, 0.67, radius)
       * 0.6 * uLensStrength * uPixelRatio * uTexel;
     vec4 center = texture2D(tDiffuse, vUv);
-    vec3 color = vec3(
+    vec3 color = center.rgb;
+    if(uLensStrength>0.0)color=vec3(
       texture2D(tDiffuse, clamp(vUv + shift, uTexel * 0.5, 1.0 - uTexel * 0.5)).r,
       center.g,
       texture2D(tDiffuse, clamp(vUv - shift, uTexel * 0.5, 1.0 - uTexel * 0.5)).b
@@ -431,7 +432,8 @@ const GRADE_FRAGMENT = /* glsl */`
     }
     color = gradeLinear(color);
     color *= 1.0 - smoothstep(0.12, 0.5, dot(p, p)) * 0.12 * uLensStrength;
-    float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))
+    float grain = 0.0;
+    if(uLensStrength>0.0)grain=fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))
       + floor(uTime * 24.0) * 0.71) * 43758.5453) - 0.5;
     color = max(vec3(0.0), color + grain * 0.00012 * uLensStrength);
     // OutputPass alone applies renderer exposure, tone mapping, and sRGB transfer.
@@ -535,6 +537,7 @@ export class RoomOptics {
     // including fractional DPR and the floor at the ultrawide pixel budget.
     this.composer.setPixelRatio(1);
     this.composer.setSize(this.renderWidth, this.renderHeight);
+    if(this.turntableMotion && this.quality==='low')this.turntableMotion.target.setSize(1,1);
     this.gradePass.uniforms.uTexel.value.set(1 / this.renderWidth, 1 / this.renderHeight);
     this.gradePass.uniforms.uPixelRatio.value = this.pixelRatio;
     this.lensPass.uniforms.uMaxBlur.value = this.profile.maxBlur * this.pixelRatio;
@@ -567,11 +570,11 @@ export class RoomOptics {
     this.visualSettings = normalizeVisualSettings(settings, this.visualSettings);
     const values = this.visualSettings, uniforms = this.gradePass.uniforms;
     this.renderer.toneMappingExposure = values.exposure;
-    uniforms.uBloomStrength.value = values.bloom;
+    uniforms.uBloomStrength.value = this.quality==='low'?0:values.bloom;
     uniforms.uLensStrength.value = this.quality==='low'?0:values.lens;
     uniforms.uContrast.value = values.contrast;
-    uniforms.uSharpness.value = values.sharpness;
-    this.bloomPass.enabled = values.bloom > 0;
+    uniforms.uSharpness.value = this.quality==='low'?0:values.sharpness;
+    this.bloomPass.enabled = this.quality!=='low' && values.bloom > 0;
     this.bloomPass.lensEnabled = this.quality!=='low'&&values.lens > 0;
     this.resetHistory();
     return { ...values };
@@ -588,6 +591,18 @@ export class RoomOptics {
     const validDelta = Number.isFinite(deltaTime) && deltaTime > 0;
     const dt = validDelta ? deltaTime : 1 / 60;
     if (!paused) this.time = Number.isFinite(time) ? time : this.time + Math.min(dt, 0.05);
+    if(this.quality==='low'){
+      // Scene + grade + output + FXAA only. No matrix inversion, lens history,
+      // bloom dispatch or extra velocity capture while dragging/travelling.
+      this.lensPass.enabled=false;
+      this.lensPass.uniforms.uShutter.value=0;this.lensPass.uniforms.uCocScale.value=0;
+      this.lensPass.uniforms.uObjectMotion.value=0;
+      if(this.turntableMotion)this.turntableMotion.enabled=false;
+      this.portalPass?.reset();
+      this.bloomPass.enabled=false;this.gradePass.sourceTarget=this.sceneTarget;
+      this.gradePass.uniforms.uTime.value=this.time;
+      this.composer.render(Math.min(dt,.1));this.previousValid=false;return;
+    }
     this.camera.updateWorldMatrix(true, false);
     this.currentViewProjection.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
     this.currentPosition.setFromMatrixPosition(this.camera.matrixWorld);

@@ -495,7 +495,8 @@ export class HeroScene {
   }
 
   updateLinkProjection() {
-    if (!this.panelLinks) return;
+    // The mobile dock owns all five destinations; projected desktop targets are hidden.
+    if (!this.panelLinks || this.width<=740 || (this.settings.mobileDevice && this.width<=1024)) return;
     this.panels.forEach((panel, index) => {
       const points = panel.corners.map(corner => {
         const p = corner.clone().project(this.camera);
@@ -516,10 +517,12 @@ export class HeroScene {
   applyAtmosphereQuality() {
     const low=this.settings.quality==='low';
     for(const [i,smoke]of (this.smokes??[]).entries()){
-      smoke.visible=!low||i%5<2;
+      smoke.visible=!low;
       if(smoke.material.uniforms.smokeDetail)smoke.material.uniforms.smokeDetail.value=low?2:4;
     }
-    this.dust?.geometry.setDrawRange(0,low?48:160);
+    for(const beam of this.beams??[])beam.visible=!low;
+    if(this.dust)this.dust.visible=!low;
+    this.dust?.geometry.setDrawRange(0,low?0:160);
   }
 
   updateAtmosphere() { updateRoomAtmosphere(this); }
@@ -531,7 +534,7 @@ export class HeroScene {
     const turntableDelta=Number.isFinite(angle)&&Number.isFinite(this.renderedTurntableAngle)
       ?angle-this.renderedTurntableAngle:0;
     this.optics.render(dt, {
-      time: this.time, motion, focusDistance: this.cameraRig.focusDistance,
+      time: this.time, motion, focusDistance: this.settings.quality==='low'?12:this.cameraRig.focusDistance,
       // Simulation can advance while the draw queue is full. Match object
       // velocity to the last rendered pose, exactly like camera reprojection.
       turntableDelta:this.settings.quality==='low'?0:turntableDelta,
@@ -584,7 +587,7 @@ export class HeroScene {
         this.drawQueue?.submitted();
       }
       if (moving) this.updateLinkProjection();
-      continueFrames = !drawAllowed || animated || moving || rotating || this.turntable?.moving || surfacesMoving || Boolean(this.pendingPick);
+      continueFrames = !drawAllowed || (animated && this.settings.quality!=='low') || moving || rotating || this.turntable?.moving || surfacesMoving || Boolean(this.pendingPick);
     } catch(error) {
       this.ready=false;this.sleep();this.callbacks.onUnavailable?.(error);return;
     } finally { this.inFrame = false; }
@@ -610,6 +613,7 @@ export class HeroScene {
       skippedRefreshes:this.framePacer?.skipped,reflectionCaptures:this.reflectionBudget?.captures,
       reflectionSamples:this.ground?.getRenderTarget().samples,visibleSmoke:this.smokes?.filter(x=>x.visible).length,
       beamSamples:this.beams?.[0]?.material.uniforms.beamSamples.value,
+      effects:{bloom:Boolean(this.optics?.bloomPass.enabled),lens:Boolean(this.optics?.lensPass.enabled),reflection:this.settings.quality!=='low',ambient:this.settings.quality!=='low'},
       motionShutter:this.optics?.lensPass.uniforms.uShutter.value,
       objectMotion:this.optics?.lensPass.uniforms.uObjectMotion.value,
     };

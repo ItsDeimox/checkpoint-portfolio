@@ -101,6 +101,7 @@ export function updateRoomAtmosphere(view) {
     smoke.position.x = smoke.userData.base.x + Math.sin(view.time * .18 + smoke.userData.phase) * .23;
     smoke.position.y = smoke.userData.base.y + Math.sin(view.time * .23 + smoke.userData.phase) * .07;
   }
-  for (const beam of view.beams) beam.material.uniforms.time.value = view.time;
-  view.dust.rotation.y = view.time * .009; view.ground.material.uniforms.time.value = view.time;
+  for (const beam of view.beams) if(beam.visible)beam.material.uniforms.time.value = view.time;
+  if(view.dust.visible)view.dust.rotation.y = view.time * .009;
+  if(view.settings.quality!=='low')view.ground.material.uniforms.time.value = view.time;
 }
