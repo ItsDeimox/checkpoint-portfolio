@@ -15,7 +15,7 @@ import { renderBudget, panelIndex } from './room-core.js';
 import { ROOM_PANELS } from '../pages/room-panel-data.js';
 import { RoomPanelContent } from './room-panel-content.js';
 import { bindRoomPointer } from './room-input.js';
-import { buildRoomLights, dressStudioEnvironment, buildRoomAtmosphere, updateRoomAtmosphere } from './room-lighting.js';
+import { buildRoomLights, dressStudioEnvironment, buildRoomAtmosphere, updateRoomAtmosphere, CAR_BEAM_PROFILES } from './room-lighting.js';
 import { elapsedFrameTime } from '../core.js';
 
 function disposeObjects(root) {
@@ -465,7 +465,6 @@ export class HeroScene {
     this.optics.setQuality(quality,{resize:false});
     this.reflectionBudget?.configure(quality);this.applyAtmosphereQuality();
     this.optics.setVisualSettings(this.settings.visual);
-    for(const beam of this.beams??[])beam.material.uniforms.beamSamples.value=quality==='high'?24:quality==='low'?8:16;
     this.renderer.shadowMap.enabled=quality!=='low';this.renderer.shadowMap.needsUpdate=true;
     this.viewportKey=null;this.resize();
   }
@@ -520,7 +519,12 @@ export class HeroScene {
       smoke.visible=!low;
       if(smoke.material.uniforms.smokeDetail)smoke.material.uniforms.smokeDetail.value=low?2:4;
     }
-    for(const beam of this.beams??[])beam.visible=!low;
+    const beamProfile=CAR_BEAM_PROFILES[this.settings.quality]??CAR_BEAM_PROFILES.auto;
+    for(const beam of this.beams??[]){
+      beam.visible=true;
+      if(beam.material?.uniforms?.beamStrength)beam.material.uniforms.beamStrength.value=beamProfile.strength;
+      if(beam.material?.uniforms?.beamSamples)beam.material.uniforms.beamSamples.value=beamProfile.samples;
+    }
     if(this.dust)this.dust.visible=!low;
     this.dust?.geometry.setDrawRange(0,low?0:160);
   }

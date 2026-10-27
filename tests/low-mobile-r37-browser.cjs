@@ -26,8 +26,8 @@ async function quality(next){await page.locator('#quality').tap();await page.wai
  check('five native mobile destinations remain',await page.locator('[data-mobile-panel]:visible').count()===5);
  const low=report.low.scene;
  check('Low stops ambient frames and reflection captures at rest',report.idle.frames<=1&&report.idle.reflections===0,report.idle);
- check('Low main render at 390x844 is native-resolution not supersampled',low.width<=390&&low.height<=844,{width:low.width,height:low.height});
- check('Low disables atmosphere, bloom, lens and reflections',low.visibleSmoke===0&&low.bloomLevels===0&&low.motionShutter===0&&!low.effects.bloom&&!low.effects.lens&&!low.effects.reflection,low.effects);
+ check('Low main render at 390x844 is only slightly supersampled',low.width>390&&low.width<=Math.ceil(390*1.12)&&low.height>844&&low.width*low.height<=540000,{width:low.width,height:low.height});
+ check('Low leaves smoke/bloom/lens/reflections off while restoring a dim studio beam',low.visibleSmoke===0&&low.bloomLevels===0&&low.motionShutter===0&&!low.effects.bloom&&!low.effects.lens&&!low.effects.reflection&&low.beamSamples===6,low.effects);
  const cdp=await ctx.newCDPSession(page);
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:190,y:470}]});
  for(let i=1;i<=12;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:190+90*i/12,y:470}]});await page.waitForTimeout(25);}
@@ -51,6 +51,6 @@ async function quality(next){await page.locator('#quality').tap();await page.wai
  check('High retains larger raster and live planar reflections',high.width>low.width&&high.reflectionCaptures>0,{width:high.width,reflections:high.reflectionCaptures});
  await quality('low');await page.waitForTimeout(2000);const a=await inspect();await page.waitForTimeout(1400);const b=await inspect();
  check('switching High back to Low parks the scene again',b.scene.frames-a.scene.frames<=1&&!b.scene.effects.bloom&&b.scene.visibleSmoke===0,{frames:b.scene.frames-a.scene.frames,effects:b.scene.effects});
- for(const [width,height]of [[320,568],[844,390]]){await page.setViewportSize({width,height});await page.waitForTimeout(350);const state=await inspect();check(`${width}x${height} keeps Low within 450k pixels and all destinations accessible`,state.scene.width*state.scene.height<=450000&&await page.locator('[data-mobile-panel]:visible').count()===5);}
+ for(const [width,height]of [[320,568],[844,390]]){await page.setViewportSize({width,height});await page.waitForTimeout(350);const state=await inspect();check(`${width}x${height} keeps Low within 540k pixels and all destinations accessible`,state.scene.width*state.scene.height<=540000&&await page.locator('[data-mobile-panel]:visible').count()===5);}
  check('no unhandled JavaScript errors',report.errors.length===0,report.errors);
 })().catch(async e=>{report.failure=e.stack;process.exitCode=1;if(page)await page.screenshot({path:path.join(out,'failure.jpg'),type:'jpeg',quality:80}).catch(()=>{});}).finally(async()=>{fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({baseline,checks:report.checks.length,passed:report.checks.filter(x=>x.pass).length,idle:report.idle,low:report.low?.scene,errors:report.errors,failure:report.failure},null,2));if(browser)await browser.close();server.kill();});

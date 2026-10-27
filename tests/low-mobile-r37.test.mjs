@@ -10,8 +10,11 @@ import {RoomPanelEnergy} from '../src/scene/room-panel-energy.js';
 import {DestinationExperience} from '../src/ui/destination-experience.js';
 import {warmInteractivePaths} from '../src/scene/room-quality.js';
 
-test('Low never supersamples a phone and keeps the total raster within 450k pixels',()=>{
- for(const [w,h,dpr] of [[390,844,3],[844,390,2],[768,1024,2],[2560,1440,1],[5120,2160,2]]){
+test('Low raises compact phone sharpness a little while capping fill-rate and skipping reflections',()=>{
+ for(const [w,h,dpr] of [[390,844,3],[844,390,2],[320,568,3]]){
+  const b=renderBudget(w,h,dpr,'low');assert.ok(b.ratio>1&&b.ratio<=1.12);assert.ok(b.width*b.height<=540000);assert.equal(b.reflection,1);
+ }
+ for(const [w,h,dpr] of [[768,1024,2],[2560,1440,1],[5120,2160,2]]){
   const b=renderBudget(w,h,dpr,'low');assert.ok(b.ratio<=1);assert.ok(b.width*b.height<=450000);assert.equal(b.reflection,1);
  }
  assert.equal(renderBudget(2560,1440,2,'high').reflection,1024);
@@ -27,10 +30,10 @@ test('Low never captures a planar reflection even when the camera or car moves, 
  budget.configure('high');ground.onBeforeRender({}, {},camera);
  assert.equal(draws,1);assert.equal(ground.material.uniforms.lowQuality.value,0);target.dispose();
 });
-test('Low removes atmosphere geometry, while High restores every original layer',()=>{
+test('Low removes smoke and dust but keeps a dim car beam; High restores the original atmosphere',()=>{
  const view={settings:{quality:'low'},smokes:Array.from({length:20},()=>({visible:true,material:{uniforms:{smokeDetail:{value:4}}}})),beams:[{visible:true}],dust:{visible:true,geometry:{setDrawRange(a,n){this.count=n;}}}};
  HeroScene.prototype.applyAtmosphereQuality.call(view);
- assert.equal(view.smokes.filter(s=>s.visible).length,0);assert.equal(view.beams[0].visible,false);assert.equal(view.dust.visible,false);assert.equal(view.dust.geometry.count,0);
+ assert.equal(view.smokes.filter(s=>s.visible).length,0);assert.equal(view.beams[0].visible,true);assert.equal(view.dust.visible,false);assert.equal(view.dust.geometry.count,0);
  view.settings.quality='high';HeroScene.prototype.applyAtmosphereQuality.call(view);
  assert.equal(view.smokes.filter(s=>s.visible).length,20);assert.equal(view.beams[0].visible,true);assert.equal(view.dust.visible,true);assert.equal(view.dust.geometry.count,160);
 });
