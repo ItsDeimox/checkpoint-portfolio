@@ -3,8 +3,8 @@ import {FutureProjectDialog} from './future-project-dialog.js';
 import {BERSERK_MEDIA,galleryIndex} from '../pages/berserk-media.js';
 /** Delegated to the stable destination host. No new renderer or per-route frame loop. */
 export class SectionMedia {
- constructor(root){
-  this.experience=root.ownerDocument?.defaultView?.matchMedia?new DestinationExperience(root):null;this.ready=this.experience?.ready??Promise.resolve(false);
+ constructor(root,{settings={}}={}){
+  this.experience=root.ownerDocument?.defaultView?.matchMedia?new DestinationExperience(root,{settings}):null;this.ready=this.experience?.ready??Promise.resolve(false);
   this.projects=root.ownerDocument?.defaultView?.HTMLDialogElement?new FutureProjectDialog(root,{onOpen:()=>this.experience?.sleep(),onClose:()=>this.experience?.sync()}):null;
   this.root=root;this.controller=new AbortController();this.sequence=0;this.current=null;
   const signal=this.controller.signal;

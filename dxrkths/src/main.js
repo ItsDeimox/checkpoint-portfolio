@@ -20,7 +20,7 @@ let scene=null,phase='loading',selectedPanel=null,intro=null,sections=null,start
 let musicState={enabled:false,status:'idle',title:DEFAULT_TRACK.title,error:null,hasTrack:Boolean(DEFAULT_TRACK.url)};
 document.body.dataset.page='home';main.innerHTML=home()+sectionHost();footer.innerHTML=renderRoomFooter();
 const host=main.querySelector('.room-hero'),canvas=main.querySelector('#hero-canvas'),sectionRoot=main.querySelector('#room-section-page');
-const sectionMedia=new SectionMedia(sectionRoot);
+const sectionMedia=new SectionMedia(sectionRoot,{settings});
 
 function updateMusicUI(){
  const sound=header.querySelector('#sound-toggle');
@@ -88,7 +88,7 @@ document.addEventListener('click',async event=>{
   if(scene?.qualityChanging||sections.travelling)return;
   settings.qualityPreference='manual';settings.quality=QUALITY_VALUES[(QUALITY_VALUES.indexOf(settings.quality)+1)%QUALITY_VALUES.length];save();
   const preparation=scene?.setSettings();updateHeader();
-  await preparation;if(!pageDisposed){save();updateHeader();sections.ready();}
+  await preparation;if(!pageDisposed){save();sectionMedia.experience?.sync();updateHeader();sections.ready();}
  }
  else if(target.closest('#sound-toggle, #intro-sound-toggle')){
   settings.sound=!settings.sound;

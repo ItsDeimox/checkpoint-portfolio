@@ -15,7 +15,7 @@ import {FramePacer} from '../src/scene/room-performance.js';
 function fixture(){
  const scene=new T.Scene(),camera=new T.PerspectiveCamera(42,1.5,.08,100);
  const panels=createFixedPanelLayout().map(p=>{const frame=new T.Group();scene.add(frame);const material=new T.ShaderMaterial({vertexShader:roomVertex,fragmentShader:displayFragment,uniforms:{hover:{value:0},hoverUv:{value:new T.Vector2()},artwork:{value:null},projection:{value:new T.Matrix3()}}});const panel={...p,frame,material};configurePanelHologram(panel);return panel;});
- const v={scene,camera,cameraRig:new RoomCamera(camera,900),panels,carPivot:new T.Group(),screenLight:new T.PointLight(),hoverPanel:-1,settings:{quality:'low'},reduced:{matches:false},host:{style:{setProperty(){}}},reflectionBudget:{invalidate(){}}};
+ const v={scene,camera,cameraRig:new RoomCamera(camera,900),panels,carPivot:new T.Group(),screenLight:new T.PointLight(),hoverPanel:-1,settings:{quality:'auto'},reduced:{matches:false},host:{style:{setProperty(){}}},reflectionBudget:{invalidate(){}}};
  v.bannerPortal=new BannerPortal(v);v.identity=new RoomIdentity(v);v.panelEnergy=new RoomPanelEnergy(v);
  return {v,dispose(){v.panelEnergy.dispose();v.bannerPortal.dispose();panels.forEach(p=>p.material.dispose());}};
 }

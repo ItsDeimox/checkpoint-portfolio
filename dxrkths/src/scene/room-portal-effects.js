@@ -2,7 +2,7 @@ import * as T from 'three';
 import {noiseGLSL} from './room-shaders.js';
 
 export const PORTAL_FX_PROFILES = Object.freeze({
-  low: Object.freeze({smoke:8,sparks:32,shutterSamples:6,blurPixels:32,chromaticPixels:2.0}),
+  low: Object.freeze({smoke:0,sparks:0,shutterSamples:0,blurPixels:0,chromaticPixels:0}),
   auto: Object.freeze({smoke:16,sparks:72,shutterSamples:9,blurPixels:54,chromaticPixels:3.2}),
   high: Object.freeze({smoke:24,sparks:112,shutterSamples:12,blurPixels:70,chromaticPixels:4.2}),
 });
@@ -133,7 +133,7 @@ export class PortalEffects {
   }
   update(age,progress,quality,active,interior,reduced=false) {
     const state=portalImpactEnvelope(age,progress,active,reduced),profile=PORTAL_FX_PROFILES[quality]??PORTAL_FX_PROFILES.auto;
-    this.group.visible=!interior && state.smoke>.001;
+    this.group.visible=quality!=='low' && !interior && state.smoke>.001;
     this.uniforms.burstAge.value=Number.isFinite(age)?age:0;
     this.uniforms.burstDensity.value=state.smoke*(quality==='low'?.84:1.0);
     this.uniforms.smokeDetail.value=quality==='low'?2:3;

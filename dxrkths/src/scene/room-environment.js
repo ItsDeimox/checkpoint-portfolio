@@ -79,7 +79,7 @@ function buildPanels(view){
 }
 function buildFloor(view){
  view.turntableParts=[];
- view.ground=new Reflector(new T.PlaneGeometry(70,70),{clipBias:.001,textureWidth:768,textureHeight:768,color:0x111216,shader:{uniforms:{color:{value:new T.Color(0x111216)},tDiffuse:{value:null},textureMatrix:{value:new T.Matrix4()},time:{value:0},turntableAngle:{value:0},reflectionResolution:{value:new T.Vector2(768,768)}},vertexShader:floorVertex,fragmentShader:floorFragment}});
+ view.ground=new Reflector(new T.PlaneGeometry(70,70),{clipBias:.001,textureWidth:768,textureHeight:768,color:0x111216,shader:{uniforms:{color:{value:new T.Color(0x111216)},tDiffuse:{value:null},textureMatrix:{value:new T.Matrix4()},time:{value:0},turntableAngle:{value:0},reflectionResolution:{value:new T.Vector2(768,768)},lowQuality:{value:0}},vertexShader:floorVertex,fragmentShader:floorFragment}});
  Object.assign(view.ground.material.uniforms,T.UniformsUtils.clone(T.UniformsLib.fog));view.ground.material.fog=true;
  view.ground.rotation.x=-Math.PI/2;view.ground.position.y=.024;view.scene.add(view.ground);
  const shadow=new T.Mesh(new T.PlaneGeometry(20,20),new T.ShadowMaterial({opacity:.47}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.027;shadow.receiveShadow=true;view.scene.add(shadow);

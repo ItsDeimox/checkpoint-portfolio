@@ -78,7 +78,7 @@ test('scene warm-up temporarily renders even when restoration happens behind a p
 });
 
 test('portal prewarm covers every page, exterior effects and interior path before first input',async()=>{
- const f=journey(),v=f.view,seen=[];
+ const f=journey(),v=f.view,seen=[];v.settings.quality='auto';
  f.portal.attached=true;
  v.pageActive=false;v.renderer={shadowMap:{needsUpdate:false},getContext:()=>({})};
  v.render=()=>{if(!f.portal.panel)return;f.portal.prepareFrame(1/60);seen.push({index:f.portal.panel.index,interior:f.portal.interior,progress:f.portal.panel.portalUniforms.portalProgress.value,fx:f.portal.effects.group.visible,stage:f.portal.stage,shutter:f.portal.shutter.uniforms.uShutter.value});};
