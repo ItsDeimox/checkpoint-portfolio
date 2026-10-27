@@ -2,6 +2,14 @@ import * as T from 'three';
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import { roomVertex, smokeFragment, beamFragment } from './room-shaders.js';
 
+// Restore the practical car spotlight volume without paying for bloom/reflection.
+// Medium/High stay identical; Low uses a short, dim 6-sample cone.
+export const CAR_BEAM_PROFILES=Object.freeze({
+  low:Object.freeze({strength:.095,samples:6}),
+  auto:Object.freeze({strength:.19,samples:16}),
+  high:Object.freeze({strength:.19,samples:24}),
+});
+
 /** Broad studio sources define the paint, roof line and glass as real surfaces. */
 export function buildRoomLights(view) {
   RectAreaLightUniformsLib.init();
@@ -80,9 +88,10 @@ export function buildRoomAtmosphere(view) {
   // A single world-space cone replaces five camera-facing light billboards.
   // The fragment shader integrates only the finite ray/cone segment.
   const apex = new T.Vector3(0, 7.55, 1.458534911), floor = 1.25, radius = 1.30;
+  const carBeam=CAR_BEAM_PROFILES[view.settings?.quality]??CAR_BEAM_PROFILES.auto;
   const beam = new T.Mesh(new T.ConeGeometry(radius, apex.y - floor, 48, 1, false), new T.ShaderMaterial({
     vertexShader: roomVertex, fragmentShader: beamFragment,
-    uniforms: { time: { value: 0 }, apex: { value: apex }, bottom: { value: floor }, slope: { value: radius / (apex.y - floor) }, beamStrength:{value:.19}, beamSamples: { value: view.settings?.quality === 'high' ? 24 : view.settings?.quality === 'low' ? 8 : 16 } },
+    uniforms: { time: { value: 0 }, apex: { value: apex }, bottom: { value: floor }, slope: { value: radius / (apex.y - floor) }, beamStrength:{value:carBeam.strength}, beamSamples: { value: carBeam.samples } },
     transparent: true, depthWrite: false, side: T.BackSide, blending: T.AdditiveBlending,
   }));
   beam.name = 'Restrained car spotlight volume'; beam.position.set(apex.x, (apex.y + floor) / 2, apex.z); beam.renderOrder = 4;
