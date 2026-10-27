@@ -496,7 +496,7 @@ export class HeroScene {
 
   updateLinkProjection() {
     // The mobile dock owns all five destinations; projected desktop targets are hidden.
-    if (!this.panelLinks || this.settings.mobileDevice || this.width<=740) return;
+    if (!this.panelLinks || this.width<=740 || (this.settings.mobileDevice && this.width<=1024)) return;
     this.panels.forEach((panel, index) => {
       const points = panel.corners.map(corner => {
         const p = corner.clone().project(this.camera);

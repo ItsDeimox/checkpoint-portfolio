@@ -64,6 +64,13 @@ test('Low covered-car page draws a static frame and requests no perpetual RAF',(
  page.settings.quality='high';page.wake();assert.equal(requests,1);
 });
 test('hidden mobile panel projection never allocates or reads the desktop target geometry',()=>{
- const view={settings:{mobileDevice:true},panelLinks:[{}],panels:[{get corners(){throw Error('projecting invisible targets');}}]};
+ const view={settings:{mobileDevice:true},width:390,panelLinks:[{}],panels:[{get corners(){throw Error('projecting invisible targets');}}]};
  assert.doesNotThrow(()=>HeroScene.prototype.updateLinkProjection.call(view));
+});
+
+test('large touch viewports retain projected navigation outside the mobile dock breakpoint',()=>{
+ const camera=new T.PerspectiveCamera(45,1366/1024,.1,100);camera.position.z=5;camera.updateMatrixWorld();
+ const view={settings:{mobileDevice:true},width:1366,height:1024,camera,panelLinks:[{style:{}}],panels:[{corners:[new T.Vector3(-1,1,0),new T.Vector3(1,1,0),new T.Vector3(1,-1,0),new T.Vector3(-1,-1,0)]}]};
+ HeroScene.prototype.updateLinkProjection.call(view);
+ assert.ok(parseFloat(view.panelLinks[0].style.width)>0);assert.match(view.panelLinks[0].style.clipPath,/^polygon\(/);
 });

@@ -14,20 +14,19 @@ async function target(locator,label,minimum=44){await locator.evaluate(e=>e.scro
 async function routeReady(index){await page.waitForFunction(i=>window.__DXT__?.inspect().selectedPanel===i&&window.__DXT__.inspect().section.active&&!window.__DXT__.inspect().section.travelling,index,{timeout:60000});await page.waitForTimeout(300);}
 async function roomReady(){await page.waitForFunction(()=>window.__DXT__?.inspect().phase==='ready'&&!window.__DXT__.inspect().section.active&&!window.__DXT__.inspect().section.travelling&&!document.body.classList.contains('intro-pending'),null,{timeout:90000});await page.waitForTimeout(200);}
 async function imageReady(selector='[data-project-stage] img'){
- // Selection changes before its async preloader replaces the main image.
- // Wait for the selected source, then decode and presentation frames.
- await page.waitForFunction(selector=>{
-  const i=document.querySelector(selector);
-  if(!i||!i.complete||i.naturalWidth===0)return false;
-  if(selector==='[data-gallery-main]'){
-   const selected=document.querySelector('[data-gallery-select][aria-pressed="true"] img');
-   if(selected&&i.src!==selected.src)return false;
-  }
-  return true;
- },selector);
- await page.locator(selector).evaluate(async i=>{
-  await i.decode();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
- });
+ // Decode can be aborted when SectionMedia commits even the same selected URL.
+ // Validate identity, decode and presentation atomically; a genuinely broken
+ // image still fails the bounded wait rather than being treated as a pass.
+ await page.waitForFunction(async selector=>{
+  const image=document.querySelector(selector);
+  if(!image||!image.complete||!image.naturalWidth)return false;
+  const source=image.src;
+  const selected=selector==='[data-gallery-main]'?document.querySelector('[data-gallery-select][aria-pressed="true"] img'):null;
+  if(selected&&source!==selected.src)return false;
+  try{await image.decode();}catch{return false;}
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  return image.isConnected&&image.src===source&&image.complete&&image.naturalWidth>0&&(!selected||image.src===selected.src);
+ },selector,{timeout:15000});
 }
 async function swipe(x,y,dx,dy){const cdp=await page.context().newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});for(let i=1;i<=12;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx*i/12,y:y+dy*i/12}]});await page.waitForTimeout(16);}await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();await page.waitForTimeout(650);}
 (async()=>{
