@@ -1,0 +1,50 @@
+name: Verify DXRKTHS explicit intro and Enter BDX routing
+on:
+  push:
+    branches: [dxrkths-r39-entry-intent]
+permissions:
+  contents: write
+jobs:
+  entry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          sparse-checkout: dxrkths
+      - name: Install locked dependencies
+        working-directory: dxrkths
+        run: npm ci
+      - name: Reproduce the current ambiguous entry before fixing it
+        working-directory: dxrkths
+        run: |
+          if node --test tests/entry-intent-r39.test.mjs; then
+            echo 'Expected entry regressions to fail against the original behavior'
+            exit 1
+          fi
+      - name: Apply exact-match source edits and verify all output hashes
+        run: python dxrkths/tools/r39-entry-apply.py
+      - name: Run every test and build the actual site
+        working-directory: dxrkths
+        run: npm run build
+      - name: Save only the verified source on this isolated QA branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dxrkths/index.html dxrkths/src/main.js dxrkths/src/styles-experience.css dxrkths/src/ui/room-intro.js dxrkths/src/ui/room-visitor-shell.js
+          git commit -m 'fix(dxrkths): apply verified explicit entry and Enter BDX target [R39 QA]'
+          git push origin HEAD:dxrkths-r39-entry-intent
+      - name: Install isolated browser driver
+        working-directory: dxrkths
+        run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Check real entry before and after readiness, routes, keyboard and touch
+        working-directory: dxrkths
+        env:
+          DXT_QA_OUT: /tmp/dxt-r39
+        run: node tests/entry-intent-r39-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dxrkths-r39-entry-evidence
+          path: /tmp/dxt-r39/
+          retention-days: 7
