@@ -24,7 +24,8 @@ async function closed(){await page.waitForFunction(()=>!document.body.classList.
  for(const [width,height] of [[390,844],[320,568],[568,320],[1366,768]]){
   const c=await context(width,height);await open(c);await page.waitForTimeout(200);
   check(width+' landing has no expensive showroom instance or automatic route',await page.evaluate(()=>{const s=window.__DXT__.inspect();return s.phase==='dormant'&&!s.scene&&s.selectedPanel===null&&!s.intro.entered;}));
-  check(width+' primary label is Enter BDX',await page.locator('#intro-enter').innerText()==='Enter BDX');
+  // textContent tests the authored label; innerText includes CSS text-transform.
+  check(width+' primary label is Enter BDX',await page.locator('#intro-enter').textContent()==='Enter BDX');
   for(const selector of ['#intro-enter','#intro-showroom']){
    const r=await page.locator(selector).evaluate(e=>{const r=e.getBoundingClientRect();const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return{w:r.width,h:r.height,x:r.x,y:r.y,right:r.right,bottom:r.bottom,vw:innerWidth,vh:innerHeight,hit:hit===e||e.contains(hit)};});
    check(width+' '+selector+' is finger-sized and inside the screen',r.w>=44&&r.h>=44&&r.x>=0&&r.y>=0&&r.right<=r.vw+1&&r.bottom<=r.vh+1&&r.hit,r);
@@ -41,7 +42,7 @@ async function closed(){await page.waitForFunction(()=>!document.body.classList.
  }
  for(const [route,index] of [['/projects',2],['/about',3]]){
   const c=await context();await open(c,route);
-  check(route+' keeps contextual Continue entry',await page.locator('#intro-enter').innerText().then(s=>s.startsWith('Continue to '))&&await page.locator('#intro-showroom').isHidden());
+  check(route+' keeps contextual Continue entry',await page.locator('#intro-enter').textContent().then(s=>s.startsWith('Continue to '))&&await page.locator('#intro-showroom').isHidden());
   await page.locator('#intro-enter').tap();await closed();
   check(route+' keeps its original destination',new URL(page.url()).pathname===route&&await page.evaluate(i=>window.__DXT__.inspect().selectedPanel===i,index));
   await c.close();
