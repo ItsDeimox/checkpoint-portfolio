@@ -22,7 +22,7 @@
   <script type="module" src="/src/main.js"></script>
 </head>
 <body data-page="home" class="intro-pending">
-  <section id="room-intro" role="dialog" aria-modal="true" aria-labelledby="intro-title" aria-describedby="intro-status" aria-busy="true" data-stage="0">
+  <section id="room-intro" role="dialog" aria-modal="true" aria-labelledby="intro-title" aria-describedby="intro-status" aria-busy="false" data-stage="0">
     <div class="intro-topline"><span>DXT / DIGITAL SHOWROOM</span><span>CREATOR · DRIFTER · BUILDER</span></div>
     <div class="intro-orbit" aria-hidden="true"></div>
     <div class="intro-content">
@@ -30,9 +30,12 @@
       <p class="intro-kicker">Berserk Drift X &amp; beyond</p>
       <h1 id="intro-title">Same passion.<br><span>Different roads.</span></h1>
       <div class="intro-loader" aria-hidden="true"><i></i><i></i><i></i></div>
-      <p id="intro-status" role="status" aria-live="polite">Loading the showroom</p>
-      <button id="intro-enter" type="button" disabled>Enter DXT</button>
-      <p class="intro-audio-note">Click to enter · Music starts at 20%</p>
+      <p id="intro-status" role="status" aria-live="polite">Open BDX or explore the 3D showroom.</p>
+      <div class="intro-actions">
+        <button id="intro-enter" type="button" disabled>Enter BDX</button>
+        <button id="intro-showroom" type="button" disabled>3D Showroom</button>
+      </div>
+      <p class="intro-audio-note">Music starts at 20%</p>
     </div>
     <button id="intro-sound-toggle" class="intro-sound-toggle" type="button" hidden>Pause music</button>
     <div class="intro-bottom"><span>REAL-TIME 3D EXPERIENCE</span><span>BUILT DIFFERENT</span></div>

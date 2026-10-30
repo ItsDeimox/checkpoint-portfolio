@@ -16,6 +16,7 @@ const settings={...restoreVisitorSettings(stored),paused:false,sound:false,visua
 const save=()=>{try{localStorage.setItem('dxt-settings',JSON.stringify(settings));}catch{}};
 let persistentBrand=null,modulePromise=null,pageDisposed=false,preloadTask=Promise.resolve();
 const loadExperience=()=>modulePromise??=import('./render/showroom.bundle.js');
+const initialPanel=panelFromPath(location.pathname);
 let scene=null,phase='loading',selectedPanel=null,intro=null,sections=null,started=false,bootTimedOut=false,startupTimeout=null;
 let musicState={enabled:false,status:'idle',title:DEFAULT_TRACK.title,error:null,hasTrack:Boolean(DEFAULT_TRACK.url)};
 document.body.dataset.page='home';main.innerHTML=home()+sectionHost();footer.innerHTML=renderRoomFooter();
@@ -58,19 +59,36 @@ async function onReady(){
 }
 const soundtrack=new RoomMusic({settings:settings.music,onState(state){musicState=state;settings.sound=state.enabled;updateMusicUI();scene?.wake();}});
 sections=new SectionRoutes({document,host,root:sectionRoot,canvas,footer,getScene:()=>scene,getPhase:()=>phase,
- entered:()=>!intro||intro.dismissed,setLocation,onSelect(index){selectedPanel=index;announcer.textContent=index===null?'Showroom overview.':`Opening ${ROOM_PANELS[index].title}.`;},
+ entered:()=>!intro||intro.released,setLocation,onSelect(index){selectedPanel=index;announcer.textContent=index===null?'Showroom overview.':`Opening ${ROOM_PANELS[index].title}.`;},
  onNeedScene(){if(!started)start();},onPreparePage:async(stage,signal)=>{
   await sectionMedia.experience?.preparePage(stage);
   const {capturePagePreview}=await loadExperience();return capturePagePreview(stage,signal);
  },onRefresh:updateHeader});
 updateHeader();
-intro=mountIntro(document,{onActivate(){save();return soundtrack.setEnabled(true);},onDismiss(){sections.ready();const focus=sections.page?sectionRoot.querySelector('#section-title'):canvas;focus?.focus({preventScroll:true});scene?.wake();}});
-const entryNote=document.querySelector('.intro-audio-note');if(entryNote)entryNote.textContent=`Click to enter · Music starts at ${Math.round(settings.music.volume*100)}%`;
+intro=mountIntro(document,{
+ primaryDestination:initialPanel===null?'berserk':'page',
+ primaryLabel:initialPanel===null||initialPanel===0?'Enter BDX':`Continue to ${ROOM_PANELS[initialPanel].title}`,
+ showShowroom:initialPanel===null,
+ onActivate(destination){
+  save();const audio=soundtrack.setEnabled(true);
+  if(destination==='showroom'){
+   preloadTask=Promise.all([sections.preload(),sectionMedia.ready]).catch(error=>{if(!pageDisposed)console.warn('[DXT] Destination preparation failed:',error);});
+   start();
+  }
+  return audio;
+ },
+ onBeforeDismiss(destination){
+  if(destination==='berserk')sections.open(0,null,'replace',true);
+ },
+ onDismiss(){sections.ready();const focus=sections.page?sectionRoot.querySelector('#section-title'):canvas;focus?.focus({preventScroll:true});scene?.wake();startBrand();}
+});
+const entryNote=document.querySelector('.intro-audio-note');if(entryNote)entryNote.textContent=`Music starts at ${Math.round(settings.music.volume*100)}%`;
 
 // Preserve native new-tab and external-link activation; only authored local routes are intercepted.
 document.addEventListener('click',async event=>{
  const target=event.target instanceof Element?event.target:null;
  if(!target||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+ if(document.body.classList.contains('intro-pending')&&!target.closest('#intro-sound-toggle'))return;
  const destination=target.closest('[data-section-route], [data-open-panel], [data-fallback-panel]');
  if(destination){event.preventDefault();sections.open(destination.dataset.sectionRoute??destination.dataset.openPanel??destination.dataset.fallbackPanel,destination);return;}
  const brand=target.closest('[data-spin-logo]');
@@ -104,7 +122,7 @@ header.addEventListener('input',event=>{
 header.addEventListener('change',event=>{if(event.target.matches?.('[data-music-setting]'))save();});
 document.addEventListener('click',event=>{if(!event.target.closest?.('.room-audio-controls'))header.querySelector('.room-audio-menu')?.removeAttribute('open');});
 document.addEventListener('keydown',event=>{
- if(event.key!=='Escape')return;
+ if(event.key!=='Escape'||document.body.classList.contains('intro-pending'))return;
  if(selectedPanel!==null||sections.returning||sections.capturingReturn){event.preventDefault();sections.close('push',sections.returning||sections.capturingReturn);}
  else{const menu=header.querySelector('.room-audio-menu');if(menu?.open){menu.removeAttribute('open');header.querySelector('#music-settings-toggle')?.focus();}}
 });
@@ -130,13 +148,15 @@ async function start(){
   await preloadTask;
  }catch(error){unavailable(error);if(scene&&!scene.lost)await scene.dispose();}finally{clearTimeout(startupTimeout);}
 }
-const initialPanel=panelFromPath(location.pathname);
 if(initialPanel!==null){phase='dormant';sections.open(initialPanel,null,'none',true);intro.ready();}
-else{setLocation(null,'none');preloadTask=Promise.all([sections.preload(),sectionMedia.ready]).catch(error=>{if(!pageDisposed)console.warn('[DXT] Destination preparation failed:',error);});start();}
+// The landing page is ready without loading the showroom. Only the explicit
+// 3D choice (or the existing return control) pays for its preparation.
+else{phase='dormant';setLocation(null,'none');updateHeader();}
+// Embedded/no-cover entrypoints retain the normal showroom fallback.
+if(intro.released){startBrand();if(initialPanel===null)start();}
 async function startBrand(){
  try{const {PersistentBrand}=await loadExperience();if(pageDisposed||!PersistentBrand)return;
   persistentBrand=new PersistentBrand({document,settings,onState:updateMusicUI});await persistentBrand.readyPromise;
  }catch(error){console.warn('[DXT] Header logo unavailable:',error);}
 }
-startBrand();
 if(new URLSearchParams(location.search).has('debug'))window.__DXT__={inspect:()=>({phase,selectedPanel,settings:{...settings},intro:{entered:intro.activated,closed:intro.dismissed},section:{active:sections.page,travelling:sections.travelling,returning:sections.returning,waitingReturn:sections.waitingReturn},brand:persistentBrand?.inspect()??null,music:soundtrack.inspect(),scene:scene?.inspect()??null})};
