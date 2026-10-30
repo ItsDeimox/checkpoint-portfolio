@@ -1,0 +1,31 @@
+name: Verify DXRKTHS explicit BDX entry
+on:
+  push:
+    branches: [dxrkths-r39-entry-qa]
+permissions:
+  contents: read
+jobs:
+  entry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          sparse-checkout: dxrkths
+      - name: Build and run complete current regression suite
+        working-directory: dxrkths
+        run: npm ci && npm run build
+      - name: Install isolated browser driver
+        working-directory: dxrkths
+        run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Test BDX entry, inert cover, mobile layouts, deep links and showroom
+        working-directory: dxrkths
+        env:
+          DXT_QA_OUT: /tmp/dxt-r39
+        run: node tests/intro-entry-r39-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dxrkths-r39-entry-evidence
+          path: /tmp/dxt-r39/
+          retention-days: 7
