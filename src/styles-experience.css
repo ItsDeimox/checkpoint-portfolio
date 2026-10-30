@@ -1,6 +1,7 @@
 /* First-paint cover. All decoration is CSS; no additional model or texture. */
 body #room-intro{display:grid;place-items:center;overflow:hidden;color:#f5f3f2;background:radial-gradient(ellipse at 50% 115%,#71132238,transparent 57%),#070708;transition:opacity .6s ease,visibility .6s}
-body.intro-leaving #room-intro{opacity:0;pointer-events:none}
+/* Keep the fading cover as a hit shield until its underlay is released. */
+body.intro-leaving #room-intro{opacity:0;pointer-events:auto}
 body.intro-leaving>#main,body.intro-leaving>#header,body.intro-leaving>#footer{visibility:visible}
 body.intro-pending .skip-link{display:none}
 #room-intro::before{content:'';position:absolute;inset:18px;border:1px solid #d3babe12;pointer-events:none}

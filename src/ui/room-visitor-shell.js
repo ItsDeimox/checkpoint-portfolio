@@ -28,7 +28,7 @@ export function renderRoomHeader(settings={},navigation={}){
     </details>
    </div>
    <button id="quality" class="room-quality" type="button" aria-label="Rendering quality: ${label}. Activate to change quality." title="Low / Medium / High"><span>Quality</span><strong>${label}</strong></button>
-   <button type="button" data-open-panel="3" class="room-enter" aria-label="Enter DXT" aria-controls="room-panel-options"><span>Enter DXT</span>${icon('external')}</button>
+   <button type="button" data-open-panel="0" class="room-enter" aria-label="Enter BDX" aria-controls="room-section-page"><span>Enter BDX</span>${icon('external')}</button>
   </nav>
  </div>`;
 }

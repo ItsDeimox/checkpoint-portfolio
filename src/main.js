@@ -17,6 +17,7 @@ const save=()=>{try{localStorage.setItem('dxt-settings',JSON.stringify(settings)
 let persistentBrand=null,modulePromise=null,pageDisposed=false,preloadTask=Promise.resolve();
 const loadExperience=()=>modulePromise??=import('./render/showroom.bundle.js');
 let scene=null,phase='loading',selectedPanel=null,intro=null,sections=null,started=false,bootTimedOut=false,startupTimeout=null;
+const initialPanel=panelFromPath(location.pathname);
 let musicState={enabled:false,status:'idle',title:DEFAULT_TRACK.title,error:null,hasTrack:Boolean(DEFAULT_TRACK.url)};
 document.body.dataset.page='home';main.innerHTML=home()+sectionHost();footer.innerHTML=renderRoomFooter();
 const host=main.querySelector('.room-hero'),canvas=main.querySelector('#hero-canvas'),sectionRoot=main.querySelector('#room-section-page');
@@ -64,8 +65,8 @@ sections=new SectionRoutes({document,host,root:sectionRoot,canvas,footer,getScen
   const {capturePagePreview}=await loadExperience();return capturePagePreview(stage,signal);
  },onRefresh:updateHeader});
 updateHeader();
-intro=mountIntro(document,{onActivate(){save();return soundtrack.setEnabled(true);},onDismiss(){sections.ready();const focus=sections.page?sectionRoot.querySelector('#section-title'):canvas;focus?.focus({preventScroll:true});scene?.wake();}});
-const entryNote=document.querySelector('.intro-audio-note');if(entryNote)entryNote.textContent=`Click to enter · Music starts at ${Math.round(settings.music.volume*100)}%`;
+intro=mountIntro(document,{destination:initialPanel===null?'Showroom':ROOM_PANELS[initialPanel].title,onActivate(){save();return soundtrack.setEnabled(true);},onDismiss(){sections.ready();const focus=sections.page?sectionRoot.querySelector('#section-title'):canvas;focus?.focus({preventScroll:true});scene?.wake();}});
+const entryNote=document.querySelector('.intro-audio-note');if(entryNote)entryNote.textContent=`Use the button to enter · Music starts at ${Math.round(settings.music.volume*100)}%`;
 
 // Preserve native new-tab and external-link activation; only authored local routes are intercepted.
 document.addEventListener('click',async event=>{
@@ -130,7 +131,6 @@ async function start(){
   await preloadTask;
  }catch(error){unavailable(error);if(scene&&!scene.lost)await scene.dispose();}finally{clearTimeout(startupTimeout);}
 }
-const initialPanel=panelFromPath(location.pathname);
 if(initialPanel!==null){phase='dormant';sections.open(initialPanel,null,'none',true);intro.ready();}
 else{setLocation(null,'none');preloadTask=Promise.all([sections.preload(),sectionMedia.ready]).catch(error=>{if(!pageDisposed)console.warn('[DXT] Destination preparation failed:',error);});start();}
 async function startBrand(){

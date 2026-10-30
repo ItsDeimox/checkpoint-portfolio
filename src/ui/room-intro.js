@@ -20,11 +20,12 @@ export class IntroGate {
  }
 }
 
-export function mountIntro(document,{onActivate,onDismiss}={}){
+export function mountIntro(document,{onActivate,onDismiss,destination='Showroom'}={}){
  const root=document.querySelector('#room-intro');
  if(!root)return {dismissed:true,activated:true,ready(){},fail(){},progress(){},dispose(){}};
  const button=root.querySelector('#intro-enter'),status=root.querySelector('#intro-status');
  const body=document.body,underlay=['#header','#main','#footer'].map(s=>document.querySelector(s)).filter(Boolean);
+ const entryLabel=destination==='Showroom'?'Enter Showroom':destination==='Berserk Drift X'?'Enter BDX':`Continue to ${destination}`;
  let timer=null,stage=0,removed=false;
  const release=()=>{
   if(removed)return;removed=true;clearTimeout(timer);root.hidden=true;root.inert=true;
@@ -35,10 +36,10 @@ export function mountIntro(document,{onActivate,onDismiss}={}){
   root.setAttribute('aria-busy',String(!gate.prepared&&!gate.failed));
   root.dataset.stage=String(gate.prepared?3:stage);
   root.dataset.entered=String(gate.activated);
-  button.textContent=gate.failed?'Continue to site':gate.activated?'Preparing your showroom…':'Enter DXT';
+  button.textContent=gate.failed?'Continue without 3D':gate.activated?`Preparing ${destination}…`:entryLabel;
   button.setAttribute('aria-disabled',String(gate.activated&&!gate.failed));
   if(gate.failed)status.textContent='3D is unavailable. You can still explore the links.';
-  else if(gate.prepared)status.textContent='Showroom ready';
+  else if(gate.prepared)status.textContent=`${destination} ready`;
  };
  const gate=new IntroGate({onActivate,onChange:paint,onDismiss(){
   body.classList.add('intro-leaving');
@@ -49,7 +50,10 @@ export function mountIntro(document,{onActivate,onDismiss}={}){
  }});
  underlay.forEach(el=>el.inert=true);
  const click=event=>{
-  if(event.button!==0||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey||event.target.closest?.('a'))return;
+  // A decorative click must not silently queue entry while the 3D scene loads.
+  // Consume only this button's activation; keep the separate audio toggle usable.
+  if(event.button!==0||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey||event.target.closest?.('#intro-enter')!==button)return;
+  event.preventDefault();event.stopPropagation();
   gate.activate();
  };
  const ended=event=>{if(event.target===root&&event.propertyName==='opacity'&&gate.dismissed)release();};
