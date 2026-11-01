@@ -3,3 +3,10 @@ dist/
 .vercel/
 qa-output/
 public/qa/
+
+.cache/
+public/assets/
+public/qa/
+capture.mjs
+inspect-assets.mjs
+qa-*.mjs

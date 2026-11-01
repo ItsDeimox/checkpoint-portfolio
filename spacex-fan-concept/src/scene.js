@@ -1,5 +1,7 @@
 import * as T from 'three';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
+import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
+import {AssetLibrary,createModel,isEffectivelyVisible} from './external-models.js';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 import {buildRocket} from './models.js';
 import {disposeSharedTextures} from './materials.js';
@@ -18,16 +20,17 @@ const floorShader={
   void main(){vec2 uv=vReflection.xy/vReflection.w;
     float grain=hash(floor(vWorld.xz*320.));
     float ripples=sin(vWorld.z*180.+sin(vWorld.x*18.)*2.)*.5+.5;
-    vec2 blur=vec2(.0025,.0040)*(1.+abs(vWorld.z)*.06);uv.x+=(grain-.5)*.00065;
+    vec2 blur=vec2(.0018,.0065)*(1.+abs(vWorld.z)*.06);uv.x+=(grain-.5)*.00065;
     vec3 reflected=texture2D(tDiffuse,uv).rgb*.36;
     reflected+=texture2D(tDiffuse,uv+vec2(blur.x,0.)).rgb*.16;
     reflected+=texture2D(tDiffuse,uv-vec2(blur.x,0.)).rgb*.16;
     reflected+=texture2D(tDiffuse,uv+vec2(0.,blur.y)).rgb*.16;
     reflected+=texture2D(tDiffuse,uv-vec2(0.,blur.y)).rgb*.16;
-    float falloff=exp(-abs(vWorld.x)*.08-max(0.,vWorld.z)*.75);
-    vec3 outColor=reflected*.26*falloff*(.86+grain*.10+ripples*.04);
+    float falloff=exp(-abs(vWorld.x)*.08-max(0.,vWorld.z)*.19);
+    reflected=reflected/(vec3(1.)+reflected*.55);
+    vec3 outColor=reflected*.30*falloff*(.86+grain*.10+ripples*.04);
     float pool=exp(-pow(vWorld.x*.34,2.)-pow((vWorld.z+1.)*.7,2.));
-    outColor+=vec3(pool*.014*(.55+grain*.45));
+    outColor+=vec3(pool*.026*(.55+grain*.45));
     gl_FragColor=vec4(outColor,1.);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -48,41 +51,81 @@ function atmosphere(width,height,opacity){
 }
 
 export class RocketViewer {
-  constructor(canvas,{onAction,onHover,onProgress,onError}){
-    Object.assign(this,{canvas,onAction,onHover,onProgress,onError,models:[],frameId:0,frames:0,lastTime:0,hover:null,drag:null,qualityMode:'auto',disposed:false});
+  constructor(canvas,{onAction,onHover,onProgress,onError,onAssetStatus}){
+    Object.assign(this,{canvas,onAction,onHover,onProgress,onError,onAssetStatus,models:[],frameId:0,frames:0,lastTime:0,hover:null,drag:null,qualityMode:'auto',disposed:false});
+    this.library=new AssetLibrary();this.assetStates={};this.assetJobs=new Map();this.assetVersions={};this.studioSource='procedural';
     this.abort=new AbortController();this.reduced=matchMedia('(prefers-reduced-motion: reduce)');this.target=new T.Vector3();this.raycaster=new T.Raycaster();this.pointer=new T.Vector2();this.lastStats={};
   }
   async initialize(state){
-    this.state=state;
+    this.state=state;this.quality=getQuality({width:innerWidth,dpr:devicePixelRatio,memory:navigator.deviceMemory??8});
     this.renderer=new T.WebGLRenderer({canvas:this.canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
-    this.renderer.setClearColor(0x000000,1);this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.05;this.renderer.info.autoReset=false;
+    this.renderer.setClearColor(0x000000,1);this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.10;this.renderer.info.autoReset=false;
     this.scene=new T.Scene();this.scene.background=new T.Color(0x000000);
     this.camera=new T.PerspectiveCamera(32,1,.025,240);
     this.onProgress?.(.12,'CALIBRATING THE LIGHT');RectAreaLightUniformsLib.init();this.buildStudio();
     for(let i=0;i<vehicles.length;i++){
       const model=buildRocket(i);this.scene.add(model.group);this.models.push(model);this.onProgress?.(.2+i*.16,`ASSEMBLING ${vehicles[i].name}`);await new Promise(requestAnimationFrame);
     }
-    this.quality=getQuality({width:innerWidth,dpr:devicePixelRatio,memory:navigator.deviceMemory??8});
+    this.onProgress?.(.78,'LOADING LICENSED GEOMETRY');
+    await this.loadLicensed(state.index);
     this.floor=new Reflector(new T.PlaneGeometry(160,160),{clipBias:.002,textureWidth:this.quality.reflectionSize,textureHeight:this.quality.reflectionSize,multisample:0,shader:floorShader});
     this.floor.rotation.x=-Math.PI/2;this.floor.position.y=-.012;this.floor.material.dithering=true;this.scene.add(this.floor);
-    this.haze=atmosphere(10,3.4,.25);this.haze.position.set(0,.9,-1.6);this.scene.add(this.haze);
-    this.wideHaze=atmosphere(28,1.2,.09);this.wideHaze.position.set(0,.30,-3);this.scene.add(this.wideHaze);
+    this.contactShadow=new T.Mesh(new T.PlaneGeometry(1,1),new T.ShaderMaterial({transparent:true,depthWrite:false,vertexShader:atmosphereVertex,fragmentShader:`varying vec2 vUv;void main(){vec2 p=(vUv-.5)*2.;float a=exp(-dot(p,p)*4.)*.76;gl_FragColor=vec4(0.,0.,0.,a);}`}));
+    this.contactShadow.rotation.x=-Math.PI/2;this.contactShadow.position.y=-.008;this.contactShadow.renderOrder=1;this.scene.add(this.contactShadow);
+    this.haze=atmosphere(12,3.0,.22);this.haze.position.set(0,.9,-1.6);this.scene.add(this.haze);
+    this.wideHaze=atmosphere(30,1.0,.075);this.wideHaze.position.set(0,.30,-3);this.scene.add(this.wideHaze);
     this.bindEvents();this.resize();this.applyState(state,true);
     this.onProgress?.(.9,'PREPARING THE SHOWROOM');await this.renderer.compileAsync(this.scene,this.camera);
     this.onProgress?.(1,'READY TO EXPLORE');this.wake();
+    this.loadStudioEnvironment();
+    if(!this.quality.low)this.loadLicensed(2);
+  }
+  async loadLicensed(index){
+    if(index===0||this.disposed)return;
+    const quality=(this.quality.low||index===2)?'eco':'high',key=`${index}-${quality}`;
+    if(this.models[index]?.assetKey===key)return;
+    if(this.assetJobs.has(key))return this.assetJobs.get(key);
+    const version=(this.assetVersions[index]??0)+1;this.assetVersions[index]=version;
+    this.assetStates[index]='loading';this.onAssetStatus?.(index,'loading');
+    const job=(async()=>{
+      try{
+        const template=await this.library.template(index===3?'starship':'falcon',quality);
+        if(this.disposed||version!==this.assetVersions[index])return;
+        const previous=this.models[index],model=createModel(template,index,{dragon:index===1?previous.group:null});
+        model.assetKey=key;model.group.position.copy(previous.group.position);model.group.quaternion.copy(previous.group.quaternion);model.group.scale.copy(previous.group.scale);model.group.visible=previous.group.visible;
+        for(const part of Object.keys(model.uniforms)){model.uniforms[part].brightness.value=previous.uniforms[part].brightness.value;model.uniforms[part].highlight.value=previous.uniforms[part].highlight.value;}
+        model.payload(index===1?this.state.payload:'fairing');this.scene.remove(previous.group);this.scene.add(model.group);this.models[index]=model;previous.dispose();
+        this.assetStates[index]=`licensed-${quality}`;this.onAssetStatus?.(index,this.assetStates[index]);this.wake();
+      }catch(error){
+        if(this.disposed)return;
+        this.assetStates[index]=this.models[index]?.source==='licensed'?'licensed-fallback':'procedural-fallback';
+        this.onAssetStatus?.(index,this.assetStates[index]);console.warn('Detailed model unavailable; retaining the working model.',error.message);
+      }finally{this.assetJobs.delete(key);}
+    })();this.assetJobs.set(key,job);return job;
+  }
+  async loadStudioEnvironment(){
+    try{
+      const manifest=await this.library.manifest();
+      const response=await fetch(manifest.files.studio.url,{signal:AbortSignal.any([this.abort.signal,AbortSignal.timeout(15000)])});
+      if(!response.ok)throw Error('HDRI unavailable');
+      const data=new HDRLoader().parse(await response.arrayBuffer());if(this.disposed)return;
+      const texture=new T.DataTexture(data.data,data.width,data.height,T.RGBAFormat,data.type);texture.mapping=T.EquirectangularReflectionMapping;texture.colorSpace=T.LinearSRGBColorSpace;texture.minFilter=T.LinearFilter;texture.magFilter=T.LinearFilter;texture.generateMipmaps=false;texture.flipY=true;texture.needsUpdate=true;
+      const pmrem=new T.PMREMGenerator(this.renderer),environment=pmrem.fromEquirectangular(texture);texture.dispose();pmrem.dispose();
+      this.environment.dispose();this.environment=environment;this.scene.environment=environment.texture;this.scene.environmentIntensity=.32;this.scene.environmentRotation.set(0,.65,0);this.studioSource='poly-haven-studio-small-03';this.wake();
+    }catch(error){if(!this.disposed)console.warn('Keeping the fallback studio environment.',error.message);}
   }
   buildStudio(){
     const studio=new T.Scene();studio.background=new T.Color(.009,.009,.011);
     const card=(x,y,z,w,h,power)=>{const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:new T.Color(power,power,power),side:T.DoubleSide}));m.position.set(x,y,z);m.lookAt(0,9,0);studio.add(m);};
     card(-5,10,4,3,24,7);card(5,13,-4,2,28,11);card(0,24,4,8,4,4);card(1,5,8,5,15,.7);
-    const pmrem=new T.PMREMGenerator(this.renderer);this.environment=pmrem.fromScene(studio,.05,.1,100);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.27;
+    const pmrem=new T.PMREMGenerator(this.renderer);this.environment=pmrem.fromScene(studio,.035,.1,100);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.27;
     studio.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});pmrem.dispose();
     const area=(x,y,z,w,h,intensity,target)=>{const light=new T.RectAreaLight(0xffffff,intensity,w,h);light.position.set(x,y,z);light.lookAt(...target);this.scene.add(light);return light;};
-    this.key=area(-5.8,8,2.2,2.2,16,3.0,[0,7,0]);
+    this.key=area(-5.8,8,2.2,2.2,16,2.2,[0,7,0]);
     this.rim=area(2.7,10,-3,1.5,20,8,[0,9,0]);
-    this.uplight=area(-.6,.25,2.4,3.0,1.2,12,[0,6,0]);
+    this.uplight=area(-.6,.25,2.4,3.0,1.2,8,[0,6,0]);
     this.fill=area(3,9,6,4,16,.25,[0,7,0]);
-    const top=new T.DirectionalLight(0xdde6f1,1.6);top.position.set(-2,25,5);this.scene.add(top,new T.AmbientLight(0xffffff,.035));
+    const top=new T.DirectionalLight(0xdde6f1,1.0);top.position.set(-2,25,5);this.scene.add(top,new T.AmbientLight(0xffffff,.035));
   }
   bindEvents(){
     const options={signal:this.abort.signal},on=(target,event,fn)=>target.addEventListener(event,fn,options);
@@ -118,7 +161,7 @@ export class RocketViewer {
   applyQuality(mode=this.qualityMode){
     this.qualityMode=mode;this.quality=getQuality({width:this.width,dpr:devicePixelRatio,memory:navigator.deviceMemory??8,mode});
     this.renderer.setPixelRatio(this.quality.dpr);this.renderer.setSize(this.width,this.height,false);
-    this.floor?.getRenderTarget().setSize(this.quality.reflectionSize,this.quality.reflectionSize);this.wake();
+    this.floor?.getRenderTarget().setSize(this.quality.reflectionSize,this.quality.reflectionSize);if(this.floor)this.loadLicensed(this.state.index);this.wake();
   }
   desiredCamera(state){
     const vehicle=vehicles[state.index],fit=fitView(vehicle.height,this.width,this.height);
@@ -141,13 +184,14 @@ export class RocketViewer {
       return {x:delta*spacing,scale,brightness:i===state.index?1:state.part?0:.24};
     });
     this.animation={start:performance.now(),duration:instant||this.reduced.matches?0:1150,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),from:this.models.map(m=>({x:m.group.position.x,scale:m.group.scale.x,brightness:m.uniforms.tanks.brightness.value})),to:destinations};
+    const footprint=[.65,1.45,3.3,3.3][state.index];this.contactShadow.scale.set(footprint,footprint*.7,1);
     this.haze.scale.setScalar(height/14);this.wideHaze.scale.x=height/14;
     this.haze.position.y=height*.065;
     const h=height/14;this.key.position.set(-5.8*h,8*h,2.2*h);this.key.width=2.2*h;this.key.height=16*h;this.key.lookAt(0,7*h,0);
     this.rim.position.set(2.7*h,10*h,-3*h);this.rim.width=1.5*h;this.rim.height=20*h;this.rim.lookAt(0,9*h,0);
     this.uplight.position.set(-.6*h,.25*h,2.4*h);this.uplight.width=3*h;this.uplight.height=1.2*h;this.uplight.lookAt(0,6*h,0);
     this.fill.position.set(3*h,9*h,6*h);this.fill.width=4*h;this.fill.height=16*h;this.fill.lookAt(0,7*h,0);
-    if(instant)this.updateAnimation(performance.now());this.wake();
+    if(instant)this.updateAnimation(performance.now());if(this.floor)this.loadLicensed(state.index);this.wake();
   }
   updateAnimation(time){
     const a=this.animation;if(!a)return false;
@@ -166,7 +210,7 @@ export class RocketViewer {
     let best=null;
     for(let i=0;i<this.models.length;i++){
       if(Math.abs(i-this.state.index)>1||!this.models[i].group.visible)continue;
-      const hits=this.raycaster.intersectObject(this.models[i].group,true).filter(hit=>hit.object.visible&&hit.object.userData.part);
+      const hits=this.raycaster.intersectObject(this.models[i].group,true).filter(hit=>isEffectivelyVisible(hit.object)&&hit.object.userData.part);
       if(hits[0]&&(!best||hits[0].distance<best.distance))best={...hits[0],index:i,part:hits[0].object.userData.part};
     }
     return best;
@@ -191,16 +235,17 @@ export class RocketViewer {
     if(this.pendingPointer){this.setHover(this.pick(this.pendingPointer.x,this.pendingPointer.y));this.pendingPointer=null;}
     for(const [i,model] of this.models.entries())for(const [part,u] of Object.entries(model.uniforms)){
       const target=i===this.state.index&&part===this.hover?1:0;
-      if(Math.abs(u.highlight.value-target)>.002){u.highlight.value=T.MathUtils.lerp(u.highlight.value,target,1-Math.exp(-dt*15));active=true;}else u.highlight.value=target;
+      if(this.reduced.matches)u.highlight.value=target;
+      else if(Math.abs(u.highlight.value-target)>.002){u.highlight.value=T.MathUtils.lerp(u.highlight.value,target,1-Math.exp(-dt*15));active=true;}else u.highlight.value=target;
     }
     if(this.state.rotating&&!this.reduced.matches){this.models[this.state.index].group.rotation.y+=dt*.15;active=true;}
     this.renderer.info.reset();this.renderer.render(this.scene,this.camera);this.frames++;
-    this.lastStats={frames:this.frames,triangles:this.renderer.info.render.triangles,drawCalls:this.renderer.info.render.calls,dpr:this.renderer.getPixelRatio(),geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures};
+    this.lastStats={frames:this.frames,triangles:this.renderer.info.render.triangles,drawCalls:this.renderer.info.render.calls,dpr:this.renderer.getPixelRatio(),geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,assets:{...this.assetStates},studio:this.studioSource};
     if(this.hover)this.onHover?.(this.hover,this.projectPart(this.hover));
     if(active)this.wake();else this.lastTime=0;
   }
   dispose(){
-    this.disposed=true;cancelAnimationFrame(this.frameId);this.abort.abort();this.models.forEach(model=>model.dispose());this.floor?.dispose();this.environment?.dispose();
+    this.disposed=true;cancelAnimationFrame(this.frameId);this.abort.abort();this.models.forEach(model=>model.dispose());this.library.dispose();this.contactShadow?.geometry.dispose();this.contactShadow?.material.dispose();this.floor?.dispose();this.environment?.dispose();
     for(const mesh of [this.haze,this.wideHaze]){mesh?.geometry.dispose();mesh?.material.dispose();}disposeSharedTextures();this.renderer?.dispose();
   }
 }

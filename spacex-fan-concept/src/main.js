@@ -1,3 +1,4 @@
+import './refinement.css';
 import './style.css';
 import {RocketViewer} from './scene.js';
 import {vehicles,partOrder,partLabels,getPart} from './data.js';
@@ -13,6 +14,7 @@ function render(){
   const vehicle=vehicles[state.index],detail=state.part?getPart(vehicle,state.part,state.payload):null;
   $('app').classList.toggle('is-detail',Boolean(detail));$('hero-copy').hidden=Boolean(detail);$('detail-copy').hidden=!detail;$('back').hidden=!detail;$('parts-nav').hidden=!detail;
   $('vehicle-title').textContent=vehicle.name;format($('vehicle-subtitle'),vehicle.subtitle);$('explore').replaceChildren(document.createTextNode(`EXPLORE ${vehicle.name} `),Object.assign(document.createElement('span'),{className:'chevron'}));$('back-name').textContent=vehicle.name;
+  $('model-status').textContent=viewer?.assetStates[state.index]==='loading'?'REFINING GEOMETRY':'';
   $('configuration').hidden=!vehicle.reference;$('configuration').textContent=vehicle.reference??'';
   for(const [id,offset] of [['previous',-1],['next',1]]){const neighbor=vehicles[state.index+offset],button=$(id);button.disabled=!neighbor;button.setAttribute('aria-label',neighbor?`Explore ${neighbor.name}`:offset<0?'First rocket':'Last rocket');button.querySelector('.neighbor-name').textContent=neighbor?.name??'';button.querySelector('.neighbor-years').textContent=neighbor?.years??'';}
   [...$('pagination').children].forEach((button,i)=>button.setAttribute('aria-current',String(i===state.index)));
@@ -86,9 +88,9 @@ function hover(part,point){
 render();
 (async()=>{
   try{
-    viewer=new RocketViewer($('viewer'),{onAction:action,onHover:hover,onProgress:(n,text)=>{$('loading-progress').style.width=`${n*100}%`;$('loading-caption').textContent=text;},onError:showError});
+    viewer=new RocketViewer($('viewer'),{onAction:action,onHover:hover,onProgress:(n,text)=>{$('loading-progress').style.width=`${n*100}%`;$('loading-caption').textContent=text;},onError:showError,onAssetStatus:(index,status)=>{if(index===state.index)$('model-status').textContent=status==='loading'?'REFINING GEOMETRY':status.includes('fallback')?'STANDARD MODEL':'';}});
     await viewer.initialize(state);ready=true;document.documentElement.dataset.ready='true';$('loading').classList.add('leaving');setTimeout(()=>$('loading').hidden=true,700);
-    if(new URLSearchParams(location.search).has('qa'))window.__SPACEX_QA__={state:()=>({...state}),stats:()=>({...viewer.lastStats}),point:part=>viewer.projectPart(part),action};
+    if(new URLSearchParams(location.search).has('qa'))window.__SPACEX_QA__={state:()=>({...state}),stats:()=>({...viewer.lastStats}),assets:()=>({...viewer.assetStates}),models:()=>viewer.models.map(m=>({name:m.group.name,source:m.source||'procedural',meshes:m.group.children.filter(o=>o.isMesh).length,parts:[...new Set(m.group.children.filter(o=>o.isMesh).map(o=>o.userData.part))]})),point:part=>viewer.projectPart(part),action};
   }catch(error){console.error('Showroom initialization failed:',error);showError('The 3D showroom could not start. Try reloading or enable hardware acceleration in your browser.');viewer?.dispose();}
 })();
 window.addEventListener('pagehide',event=>{if(!event.persisted)viewer?.dispose();});

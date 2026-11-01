@@ -1,0 +1,1 @@
+.model-status{position:absolute;left:var(--gutter);bottom:24px;z-index:8;color:#85858b;font-size:9px;letter-spacing:.16em;pointer-events:none}@media(max-width:759px){.model-status{bottom:66px;font-size:8px}}
