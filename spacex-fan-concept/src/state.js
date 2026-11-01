@@ -13,10 +13,7 @@ export function reduce(state,event) {
   }
 }
 export function ease(value) { const t=Math.max(0,Math.min(1,value)); return t*t*t*(t*(t*6-15)+10); }
-export function getQuality({width=1280,dpr=1,memory=8,mode='auto'}={}) {
-  const low=mode==='eco'||(mode==='auto'&&(width<768||memory<=4));
-  return {dpr:Math.min(dpr,low?1.25:1.75), reflectionSize:low?256:768, low};
-}
+export {qualityProfile as getQuality} from './quality.js';
 export function fitView(height,width,screenHeight) {
   const aspect=Math.max(.25,width/Math.max(1,screenHeight));
   const mobile=width<760;

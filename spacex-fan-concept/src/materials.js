@@ -15,12 +15,12 @@ function noiseTexture(kind) {
 }
 export function surfaceMaterial(kind,uniforms,textures=true) {
   const recipes={
-    paint:{color:0xc6c8cb,metalness:.23,roughness:.34},
-    pale:{color:0xe3e4e6,metalness:.16,roughness:.32},
-    dark:{color:0x16191e,metalness:.54,roughness:.34},
+    paint:{color:0xc6c8cb,metalness:.02,roughness:.32},
+    pale:{color:0xd7d9dc,metalness:.02,roughness:.30},
+    dark:{color:0x111419,metalness:.12,roughness:.46},
     carbon:{color:0x111419,metalness:.12,roughness:.62},
-    steel:{color:0x91979d,metalness:1,roughness:.27},
-    silver:{color:0xc5c9cf,metalness:.98,roughness:.24},
+    steel:{color:0xa4abb2,metalness:1,roughness:.23},
+    silver:{color:0xc5c9cf,metalness:.98,roughness:.19},
     bronze:{color:0x61534a,metalness:.92,roughness:.33},
     black:{color:0x060708,metalness:.15,roughness:.57},
     glass:{color:0x0a1623,metalness:.9,roughness:.12},
@@ -34,10 +34,10 @@ export function installHighlight(material,uniforms) {
   material.onBeforeCompile=shader=>{
     shader.uniforms.uHighlight=uniforms.highlight;shader.uniforms.uBrightness=uniforms.brightness;
     shader.fragmentShader='uniform float uHighlight; uniform float uBrightness;\n'+shader.fragmentShader;
-    shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`float edge=pow(1.0-abs(dot(normalize(normal),normalize(vViewPosition))),3.0);\noutgoingLight+=vec3(0.48)*edge*uHighlight;\n#include <opaque_fragment>`);
-    shader.fragmentShader=shader.fragmentShader.replace('#include <dithering_fragment>','#include <dithering_fragment>\ngl_FragColor.rgb *= uBrightness;');
+    shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`float edge=pow(1.0-abs(dot(normalize(normal),normalize(vViewPosition))),3.0);\noutgoingLight+=vec3(0.48)*edge*uHighlight;\noutgoingLight*=uBrightness;\n#include <opaque_fragment>`);
+    // Brightness is applied in linear light, before bloom, tone mapping and sRGB.
   };
-  material.customProgramCacheKey=()=> 'spacex-part-surface-v1';
+  material.customProgramCacheKey=()=> 'spacex-part-surface-v2-linear';
 }
 export function decalTexture(kind) {
   if(textureCache.has(kind))return textureCache.get(kind);

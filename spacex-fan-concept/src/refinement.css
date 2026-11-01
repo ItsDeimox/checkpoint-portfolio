@@ -1,1 +1,13 @@
 .model-status{position:absolute;left:var(--gutter);bottom:24px;z-index:8;color:#85858b;font-size:9px;letter-spacing:.16em;pointer-events:none}@media(max-width:759px){.model-status{bottom:66px;font-size:8px}}
+
+/* Keep the approved layout; add compact controls inside the existing information panel. */
+.inspection-controls{display:flex;gap:20px;margin:22px 0 12px;align-items:center}
+.inspection-controls button{font-size:10px;letter-spacing:.16em;color:#777b82;padding:9px 0;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.inspection-controls button[aria-pressed=true]{color:#f4f4f4;border-color:#bfc4cd}
+.inspection-controls button:hover{color:#fff}
+.interior-note{font-size:8px!important;line-height:1.6!important;letter-spacing:.12em!important;color:#747981!important;margin:0 0 18px!important;max-width:320px}
+@media(max-width:759px){.inspection-controls{margin:8px 0 5px;gap:22px}.inspection-controls button{font-size:9px;padding:7px 0}.interior-note{font-size:7px!important;margin-bottom:10px!important}.is-detail .detail-copy{max-height:39svh;overflow-y:auto;scrollbar-width:thin}}
+@media(prefers-reduced-motion:reduce){.inspection-controls button{transition:none}}
+/* The original presentation panel lets pointer events pass to the canvas. Controls must not. */
+.inspection-controls,.inspection-controls button{pointer-events:auto}
+@media(max-width:759px){.is-detail .detail-copy{pointer-events:auto}}

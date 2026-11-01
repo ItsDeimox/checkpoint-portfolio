@@ -1,5 +1,5 @@
-import './refinement.css';
 import './style.css';
+import './refinement.css';
 import {RocketViewer} from './scene.js';
 import {vehicles,partOrder,partLabels,getPart} from './data.js';
 import {initialState,reduce} from './state.js';
@@ -20,7 +20,7 @@ function render(){
   [...$('pagination').children].forEach((button,i)=>button.setAttribute('aria-current',String(i===state.index)));
   [...$('parts-nav').children].forEach(button=>button.setAttribute('aria-current',String(button.dataset.part===state.part)));
   $('rotate').setAttribute('aria-pressed',String(state.rotating));$('rotate').setAttribute('aria-label',state.rotating?'Pause automatic rotation':'Enable automatic rotation');
-  $('interaction-hint').textContent=detail?'DRAG TO ROTATE · CLICK OUTSIDE TO RETURN':'DRAG TO ROTATE · SELECT TO EXPLORE';
+  $('interaction-hint').textContent=detail?'DRAG TO INSPECT · CLICK OUTSIDE TO RETURN':'DRAG TO ROTATE · SELECT TO EXPLORE';
   document.querySelectorAll('.primary-nav button').forEach(button=>button.classList.toggle('active',button.dataset.action===(state.payload==='dragon'?'dragon':state.index===3?'starship':'rockets')));
   if(detail){
     $('detail-parent').textContent=`${vehicle.name} / COMPONENT VIEW`;$('detail-title').textContent=detail.title;$('detail-kicker').textContent=detail.kicker;$('detail-description').textContent=detail.description;
@@ -56,7 +56,8 @@ document.querySelectorAll('[data-action]').forEach(button=>button.addEventListen
 }));
 $('previous').addEventListener('click',()=>action({type:'NAVIGATE',index:state.index-1}));$('next').addEventListener('click',()=>action({type:'NAVIGATE',index:state.index+1}));
 $('explore').addEventListener('click',()=>action({type:'FOCUS',part:'engines'}));$('rotate').addEventListener('click',()=>action({type:'ROTATE'}));
-$('quality').addEventListener('change',event=>ready&&viewer.applyQuality(event.target.value));
+$('quality').addEventListener('change',event=>{if(ready){viewer.autoCap=null;viewer.frameBudget.reset();viewer.applyQuality(event.target.value);}});
+for(const [id,enabled] of [['view-exterior',false],['view-cutaway',true]])$(id).addEventListener('click',()=>{if(!ready)return;viewer.setCutaway(enabled);$('view-exterior').setAttribute('aria-pressed',String(!enabled));$('view-cutaway').setAttribute('aria-pressed',String(enabled));$('interior-note').hidden=!enabled;});
 $('reload').addEventListener('click',()=>location.reload());
 window.addEventListener('keydown',event=>{
   if(dialogs.some(dialog=>dialog.open)||/INPUT|SELECT|TEXTAREA/.test(event.target.tagName))return;
@@ -90,7 +91,7 @@ render();
   try{
     viewer=new RocketViewer($('viewer'),{onAction:action,onHover:hover,onProgress:(n,text)=>{$('loading-progress').style.width=`${n*100}%`;$('loading-caption').textContent=text;},onError:showError,onAssetStatus:(index,status)=>{if(index===state.index)$('model-status').textContent=status==='loading'?'REFINING GEOMETRY':status.includes('fallback')?'STANDARD MODEL':'';}});
     await viewer.initialize(state);ready=true;document.documentElement.dataset.ready='true';$('loading').classList.add('leaving');setTimeout(()=>$('loading').hidden=true,700);
-    if(new URLSearchParams(location.search).has('qa'))window.__SPACEX_QA__={state:()=>({...state}),stats:()=>({...viewer.lastStats}),assets:()=>({...viewer.assetStates}),models:()=>viewer.models.map(m=>({name:m.group.name,source:m.source||'procedural',meshes:m.group.children.filter(o=>o.isMesh).length,parts:[...new Set(m.group.children.filter(o=>o.isMesh).map(o=>o.userData.part))]})),point:part=>viewer.projectPart(part),action};
+    if(new URLSearchParams(location.search).has('qa'))window.__SPACEX_QA__={state:()=>({...state}),stats:()=>({...viewer.lastStats}),quality:mode=>viewer.applyQuality(mode),orientation:()=>viewer.displayGroup().rotation.y,framing:()=>{if(!viewer.inspection)return null;const b=viewer.inspection.bounds.clone().applyMatrix4(viewer.inspection.group.matrixWorld),p=[];for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z]){const v=b.min.clone().set(x,y,z).project(viewer.camera);p.push([(v.x+1)*viewer.width/2,(1-v.y)*viewer.height/2]);}return p;},inspection:()=>viewer.inspection?({key:viewer.inspectionKey,interiorVisible:viewer.inspection.interior.visible,exteriorCount:viewer.inspection.exterior.children.length,bounds:{min:viewer.inspection.bounds.min.toArray(),max:viewer.inspection.bounds.max.toArray()},originalsVisible:viewer.models.filter(m=>m.group.visible).length}):null,visible:()=>viewer.models.map(m=>m.group.visible),assets:()=>({...viewer.assetStates}),models:()=>viewer.models.map(m=>({name:m.group.name,source:m.source||'procedural',meshes:m.group.children.filter(o=>o.isMesh).length,parts:[...new Set(m.group.children.filter(o=>o.isMesh).map(o=>o.userData.part))]})),point:part=>viewer.projectPart(part),action};
   }catch(error){console.error('Showroom initialization failed:',error);showError('The 3D showroom could not start. Try reloading or enable hardware acceleration in your browser.');viewer?.dispose();}
 })();
 window.addEventListener('pagehide',event=>{if(!event.persisted)viewer?.dispose();});

@@ -1,4 +1,7 @@
 import * as T from 'three';
+import {createInspection,inspectionCamera} from './inspection.js';
+import {CinematicPipeline,buildPracticals} from './cinematic.js';
+import {FrameBudget} from './quality.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {AssetLibrary,createModel,isEffectivelyVisible} from './external-models.js';
@@ -27,8 +30,9 @@ const floorShader={
     reflected+=texture2D(tDiffuse,uv+vec2(0.,blur.y)).rgb*.16;
     reflected+=texture2D(tDiffuse,uv-vec2(0.,blur.y)).rgb*.16;
     float falloff=exp(-abs(vWorld.x)*.08-max(0.,vWorld.z)*.19);
-    reflected=reflected/(vec3(1.)+reflected*.55);
-    vec3 outColor=reflected*.30*falloff*(.86+grain*.10+ripples*.04);
+    // Preserve linear HDR highlights for the camera bloom pass.
+    float grazing=clamp(abs(vWorld.z)*.025+.50,.50,.78);
+    vec3 outColor=reflected*grazing*falloff*(.91+grain*.06+ripples*.03);
     float pool=exp(-pow(vWorld.x*.34,2.)-pow((vWorld.z+1.)*.7,2.));
     outColor+=vec3(pool*.026*(.55+grain*.45));
     gl_FragColor=vec4(outColor,1.);
@@ -53,15 +57,16 @@ function atmosphere(width,height,opacity){
 export class RocketViewer {
   constructor(canvas,{onAction,onHover,onProgress,onError,onAssetStatus}){
     Object.assign(this,{canvas,onAction,onHover,onProgress,onError,onAssetStatus,models:[],frameId:0,frames:0,lastTime:0,hover:null,drag:null,qualityMode:'auto',disposed:false});
+    this.frameBudget=new FrameBudget();this.inspection=null;this.cutaway=true;this.autoCap=null;
     this.library=new AssetLibrary();this.assetStates={};this.assetJobs=new Map();this.assetVersions={};this.studioSource='procedural';
     this.abort=new AbortController();this.reduced=matchMedia('(prefers-reduced-motion: reduce)');this.target=new T.Vector3();this.raycaster=new T.Raycaster();this.pointer=new T.Vector2();this.lastStats={};
   }
   async initialize(state){
-    this.state=state;this.quality=getQuality({width:innerWidth,dpr:devicePixelRatio,memory:navigator.deviceMemory??8});
+    this.state=state;this.quality=getQuality({width:innerWidth,dpr:devicePixelRatio,memory:navigator.deviceMemory??4,cores:navigator.hardwareConcurrency??4});
     this.renderer=new T.WebGLRenderer({canvas:this.canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
-    this.renderer.setClearColor(0x000000,1);this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.10;this.renderer.info.autoReset=false;
+    this.renderer.setClearColor(0x000000,1);this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=.95;this.renderer.localClippingEnabled=true;this.renderer.info.autoReset=false;
     this.scene=new T.Scene();this.scene.background=new T.Color(0x000000);
-    this.camera=new T.PerspectiveCamera(32,1,.025,240);
+    this.camera=new T.PerspectiveCamera(32,1,.025,240);this.pipeline=new CinematicPipeline(this.renderer,this.scene,this.camera);
     this.onProgress?.(.12,'CALIBRATING THE LIGHT');RectAreaLightUniformsLib.init();this.buildStudio();
     for(let i=0;i<vehicles.length;i++){
       const model=buildRocket(i);this.scene.add(model.group);this.models.push(model);this.onProgress?.(.2+i*.16,`ASSEMBLING ${vehicles[i].name}`);await new Promise(requestAnimationFrame);
@@ -69,6 +74,8 @@ export class RocketViewer {
     this.onProgress?.(.78,'LOADING LICENSED GEOMETRY');
     await this.loadLicensed(state.index);
     this.floor=new Reflector(new T.PlaneGeometry(160,160),{clipBias:.002,textureWidth:this.quality.reflectionSize,textureHeight:this.quality.reflectionSize,multisample:0,shader:floorShader});
+    this.floor.getRenderTarget().texture.type=this.renderer.extensions.has('EXT_color_buffer_float')?T.HalfFloatType:T.UnsignedByteType;
+    this.practicals=buildPracticals();this.scene.add(this.practicals.group);
     this.floor.rotation.x=-Math.PI/2;this.floor.position.y=-.012;this.floor.material.dithering=true;this.scene.add(this.floor);
     this.contactShadow=new T.Mesh(new T.PlaneGeometry(1,1),new T.ShaderMaterial({transparent:true,depthWrite:false,vertexShader:atmosphereVertex,fragmentShader:`varying vec2 vUv;void main(){vec2 p=(vUv-.5)*2.;float a=exp(-dot(p,p)*4.)*.76;gl_FragColor=vec4(0.,0.,0.,a);}`}));
     this.contactShadow.rotation.x=-Math.PI/2;this.contactShadow.position.y=-.008;this.contactShadow.renderOrder=1;this.scene.add(this.contactShadow);
@@ -82,7 +89,7 @@ export class RocketViewer {
   }
   async loadLicensed(index){
     if(index===0||this.disposed)return;
-    const quality=(this.quality.low||index===2)?'eco':'high',key=`${index}-${quality}`;
+    const quality=this.quality.tier==='high'?'high':'eco',key=`${index}-${quality}`;
     if(this.models[index]?.assetKey===key)return;
     if(this.assetJobs.has(key))return this.assetJobs.get(key);
     const version=(this.assetVersions[index]??0)+1;this.assetVersions[index]=version;
@@ -94,7 +101,7 @@ export class RocketViewer {
         const previous=this.models[index],model=createModel(template,index,{dragon:index===1?previous.group:null});
         model.assetKey=key;model.group.position.copy(previous.group.position);model.group.quaternion.copy(previous.group.quaternion);model.group.scale.copy(previous.group.scale);model.group.visible=previous.group.visible;
         for(const part of Object.keys(model.uniforms)){model.uniforms[part].brightness.value=previous.uniforms[part].brightness.value;model.uniforms[part].highlight.value=previous.uniforms[part].highlight.value;}
-        model.payload(index===1?this.state.payload:'fairing');this.scene.remove(previous.group);this.scene.add(model.group);this.models[index]=model;previous.dispose();
+        model.payload(index===1?this.state.payload:'fairing');this.scene.remove(previous.group);this.scene.add(model.group);this.models[index]=model;previous.dispose();if(this.state.part&&this.state.index===index&&this.floor)this.applyState(this.state,false,true);
         this.assetStates[index]=`licensed-${quality}`;this.onAssetStatus?.(index,this.assetStates[index]);this.wake();
       }catch(error){
         if(this.disposed)return;
@@ -111,7 +118,7 @@ export class RocketViewer {
       const data=new HDRLoader().parse(await response.arrayBuffer());if(this.disposed)return;
       const texture=new T.DataTexture(data.data,data.width,data.height,T.RGBAFormat,data.type);texture.mapping=T.EquirectangularReflectionMapping;texture.colorSpace=T.LinearSRGBColorSpace;texture.minFilter=T.LinearFilter;texture.magFilter=T.LinearFilter;texture.generateMipmaps=false;texture.flipY=true;texture.needsUpdate=true;
       const pmrem=new T.PMREMGenerator(this.renderer),environment=pmrem.fromEquirectangular(texture);texture.dispose();pmrem.dispose();
-      this.environment.dispose();this.environment=environment;this.scene.environment=environment.texture;this.scene.environmentIntensity=.32;this.scene.environmentRotation.set(0,.65,0);this.studioSource='poly-haven-studio-small-03';this.wake();
+      this.environment.dispose();this.environment=environment;this.scene.environment=environment.texture;this.scene.environmentIntensity=.23;this.scene.environmentRotation.set(0,.65,0);this.studioSource='poly-haven-studio-small-03';this.wake();
     }catch(error){if(!this.disposed)console.warn('Keeping the fallback studio environment.',error.message);}
   }
   buildStudio(){
@@ -121,10 +128,10 @@ export class RocketViewer {
     const pmrem=new T.PMREMGenerator(this.renderer);this.environment=pmrem.fromScene(studio,.035,.1,100);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.27;
     studio.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});pmrem.dispose();
     const area=(x,y,z,w,h,intensity,target)=>{const light=new T.RectAreaLight(0xffffff,intensity,w,h);light.position.set(x,y,z);light.lookAt(...target);this.scene.add(light);return light;};
-    this.key=area(-5.8,8,2.2,2.2,16,2.2,[0,7,0]);
-    this.rim=area(2.7,10,-3,1.5,20,8,[0,9,0]);
-    this.uplight=area(-.6,.25,2.4,3.0,1.2,8,[0,6,0]);
-    this.fill=area(3,9,6,4,16,.25,[0,7,0]);
+    this.key=area(-5.8,8,2.2,1.8,16,1.65,[0,7,0]);this.key.color.set(0xe4edff);
+    this.rim=area(2.7,10,-3,1.2,20,12,[0,9,0]);
+    this.uplight=area(-.6,.25,2.4,3.0,1.2,6,[0,6,0]);this.uplight.color.set(0xffebd2);
+    this.fill=area(3,9,6,4,16,.10,[0,7,0]);
     const top=new T.DirectionalLight(0xdde6f1,1.0);top.position.set(-2,25,5);this.scene.add(top,new T.AmbientLight(0xffffff,.035));
   }
   bindEvents(){
@@ -135,10 +142,10 @@ export class RocketViewer {
     on(this.canvas,'pointermove',e=>{
       if(this.drag){
         const dx=e.clientX-this.drag.x,dy=e.clientY-this.drag.y;this.drag.moved=this.drag.moved||Math.hypot(dx,dy)>7;
-        if(e.pointerType!=='touch'||this.state.part){this.models[this.state.index].group.rotation.y=this.drag.yaw+dx*.008;this.wake();}
+        if(e.pointerType!=='touch'||this.state.part){this.displayGroup().rotation.y=this.drag.yaw+dx*.008;this.wake();}
       }else if(e.pointerType!=='touch'){this.pendingPointer={x:e.clientX,y:e.clientY};this.wake();}
     });
-    on(this.canvas,'pointerdown',e=>{if(e.button!==0)return;this.drag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:this.models[this.state.index].group.rotation.y,moved:false,type:e.pointerType};this.canvas.setPointerCapture(e.pointerId);this.canvas.classList.add('is-dragging');});
+    on(this.canvas,'pointerdown',e=>{if(e.button!==0)return;this.drag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:this.displayGroup().rotation.y,moved:false,type:e.pointerType};this.canvas.setPointerCapture(e.pointerId);this.canvas.classList.add('is-dragging');});
     on(this.canvas,'pointerup',e=>{
       if(!this.drag||this.drag.id!==e.pointerId)return;
       const drag=this.drag,dx=e.clientX-drag.x,dy=e.clientY-drag.y;this.releasePointer();
@@ -158,13 +165,35 @@ export class RocketViewer {
     this.camera.aspect=this.width/this.height;this.camera.updateProjectionMatrix();this.applyQuality();
     if(this.models.length===vehicles.length&&this.floor)this.applyState(this.state,true);
   }
-  applyQuality(mode=this.qualityMode){
-    this.qualityMode=mode;this.quality=getQuality({width:this.width,dpr:devicePixelRatio,memory:navigator.deviceMemory??8,mode});
+  displayGroup(){return this.inspection?.group??this.models[this.state.index].group;}
+  setCutaway(value){this.cutaway=Boolean(value);this.inspection?.setCutaway(this.cutaway);this.wake();}
+  syncInspection(state,force=false){
+    const key=state.part?`${state.index}:${state.part}:${state.payload}`:null;
+    if(key===this.inspectionKey&&!force)return;
+    const previous=this.inspection;this.inspection?.dispose();this.inspection=null;this.inspectionKey=key;
+    if(key){
+      const model=this.models[state.index];model.payload(state.payload);
+      this.inspection=createInspection(model,state.index,state.part,state.payload);
+      this.inspection.group.rotation.y=previous?.group.rotation.y??.18;
+      this.inspection.group.position.y=previous?0:this.inspection.originY;
+      this.inspection.setCutaway(this.cutaway);this.scene.add(this.inspection.group);
+    }
+  }
+  applyQuality(mode=this.qualityMode,reset=true){
+    if(reset&&mode!==this.qualityMode){this.autoCap=null;this.frameBudget.reset();}
+    this.qualityMode=mode;
+    const options={width:this.width,dpr:devicePixelRatio,memory:navigator.deviceMemory??4,cores:navigator.hardwareConcurrency??4,mode};
+    this.quality=getQuality(options);
+    if(mode==='auto'&&this.autoCap&&['low','medium','high'].indexOf(this.autoCap)<['low','medium','high'].indexOf(this.quality.tier))this.quality=getQuality({...options,mode:this.autoCap});
+    this.canvas.dataset.quality=this.quality.tier;
+    this.models.forEach((m,i)=>{m.group.visible=!this.inspection&&(!this.quality.low||i===this.state.index)&&Math.abs(i-this.state.index)<=1;});
     this.renderer.setPixelRatio(this.quality.dpr);this.renderer.setSize(this.width,this.height,false);
+    this.pipeline.configure(this.quality,this.width,this.height);
     this.floor?.getRenderTarget().setSize(this.quality.reflectionSize,this.quality.reflectionSize);if(this.floor)this.loadLicensed(this.state.index);this.wake();
   }
   desiredCamera(state){
     const vehicle=vehicles[state.index],fit=fitView(vehicle.height,this.width,this.height);
+    if(state.part&&this.inspection)return inspectionCamera(this.inspection.bounds,this.width,this.height);
     if(!state.part)return {position:[fit.target[0],fit.target[1]+vehicle.height*.03,fit.distance],target:fit.target};
     const f=getPart(vehicle,state.part,state.payload).focus;
     const span=f.span*(fit.mobile?1.85:1.12);
@@ -173,41 +202,48 @@ export class RocketViewer {
     const targetY=f.y-(fit.mobile?f.span*.35:0);
     return {position:[Math.sin(f.angle)*distance+targetX,Math.max(.14,targetY+f.elevation),Math.cos(f.angle)*distance],target:[targetX,targetY,0]};
   }
-  applyState(state,instant=false){
+  applyState(state,instant=false,forceInspection=false){
     if(!this.models.length)return;this.state=state;this.setHover(null);this.pendingPointer=null;
+    this.syncInspection(state,forceInspection);
     const desired=this.desiredCamera(state),height=vehicles[state.index].height;
     const aspect=this.width/this.height;
     const spacing=height*(this.width<760?.64:Math.max(.78,aspect*.51));
     const destinations=this.models.map((model,i)=>{
       const delta=i-state.index;model.payload(i===1?state.payload:'fairing');
       const scale=i===state.index?1:height*(delta<0?.64:1.02)/vehicles[i].height;
-      return {x:delta*spacing,scale,brightness:i===state.index?1:state.part?0:.24};
+      return {x:delta*spacing,scale,brightness:i===state.index?1:state.part?0:.075};
     });
-    this.animation={start:performance.now(),duration:instant||this.reduced.matches?0:1150,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),from:this.models.map(m=>({x:m.group.position.x,scale:m.group.scale.x,brightness:m.uniforms.tanks.brightness.value})),to:destinations};
+    this.animation={inspectionFromY:this.inspection?.group.position.y??0,start:performance.now(),duration:instant||this.reduced.matches?0:1150,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),from:this.models.map(m=>({x:m.group.position.x,scale:m.group.scale.x,brightness:m.uniforms.tanks.brightness.value})),to:destinations};
     const footprint=[.65,1.45,3.3,3.3][state.index];this.contactShadow.scale.set(footprint,footprint*.7,1);
     this.haze.scale.setScalar(height/14);this.wideHaze.scale.x=height/14;
     this.haze.position.y=height*.065;
-    const h=height/14;this.key.position.set(-5.8*h,8*h,2.2*h);this.key.width=2.2*h;this.key.height=16*h;this.key.lookAt(0,7*h,0);
-    this.rim.position.set(2.7*h,10*h,-3*h);this.rim.width=1.5*h;this.rim.height=20*h;this.rim.lookAt(0,9*h,0);
+    const extent=this.inspection?this.inspection.bounds.getSize(new T.Vector3()):null;
+    const h=extent?Math.max(extent.y,extent.x*2.5)/14:height/14;
+    this.haze.scale.setScalar(h);this.haze.position.set(0,.9*h,-1.6*h);this.wideHaze.scale.set(h,h,h);this.wideHaze.position.set(0,.3*h,-3*h);this.practicals?.group.scale.setScalar(h);
+    this.contactShadow.scale.set(footprint*(extent?.5:1),footprint*.7*(extent?.5:1),1);
+    this.key.position.set(-5.8*h,8*h,2.2*h);this.key.width=1.8*h;this.key.height=16*h;this.key.lookAt(0,7*h,0);
+    this.rim.position.set(2.7*h,10*h,-3*h);this.rim.width=1.2*h;this.rim.height=20*h;this.rim.lookAt(0,9*h,0);
     this.uplight.position.set(-.6*h,.25*h,2.4*h);this.uplight.width=3*h;this.uplight.height=1.2*h;this.uplight.lookAt(0,6*h,0);
     this.fill.position.set(3*h,9*h,6*h);this.fill.width=4*h;this.fill.height=16*h;this.fill.lookAt(0,7*h,0);
-    if(instant)this.updateAnimation(performance.now());if(this.floor)this.loadLicensed(state.index);this.wake();
+    if(instant||this.reduced.matches)this.updateAnimation(performance.now());if(this.floor)this.loadLicensed(state.index);this.wake();
   }
   updateAnimation(time){
     const a=this.animation;if(!a)return false;
     const p=a.duration===0?1:Math.min(1,(time-a.start)/a.duration),t=ease(p);
+    if(this.inspection)this.inspection.group.position.y=T.MathUtils.lerp(a.inspectionFromY,0,t);
     this.camera.position.lerpVectors(a.fromPosition,a.position,t);this.target.lerpVectors(a.fromTarget,a.target,t);
     this.models.forEach((model,i)=>{
       model.group.position.x=T.MathUtils.lerp(a.from[i].x,a.to[i].x,t);model.group.scale.setScalar(T.MathUtils.lerp(a.from[i].scale,a.to[i].scale,t));
       const brightness=T.MathUtils.lerp(a.from[i].brightness,a.to[i].brightness,t);
       for(const u of Object.values(model.uniforms))u.brightness.value=brightness;
-      model.group.visible=brightness>.002;
+      model.group.visible=!this.inspection&&brightness>.002&&(!this.quality.low||i===this.state.index);
     });
     if(p===1)this.animation=null;return p<1;
   }
   pick(x,y){
     const rect=this.canvas.getBoundingClientRect();this.pointer.set(((x-rect.left)/rect.width)*2-1,-((y-rect.top)/rect.height)*2+1);this.raycaster.setFromCamera(this.pointer,this.camera);
     let best=null;
+    if(this.inspection){const hits=this.raycaster.intersectObject(this.inspection.group,true).filter(h=>isEffectivelyVisible(h.object));return hits[0]?{...hits[0],index:this.state.index,part:this.state.part}:null;}
     for(let i=0;i<this.models.length;i++){
       if(Math.abs(i-this.state.index)>1||!this.models[i].group.visible)continue;
       const hits=this.raycaster.intersectObject(this.models[i].group,true).filter(hit=>isEffectivelyVisible(hit.object)&&hit.object.userData.part);
@@ -238,13 +274,16 @@ export class RocketViewer {
       if(this.reduced.matches)u.highlight.value=target;
       else if(Math.abs(u.highlight.value-target)>.002){u.highlight.value=T.MathUtils.lerp(u.highlight.value,target,1-Math.exp(-dt*15));active=true;}else u.highlight.value=target;
     }
-    if(this.state.rotating&&!this.reduced.matches){this.models[this.state.index].group.rotation.y+=dt*.15;active=true;}
-    this.renderer.info.reset();this.renderer.render(this.scene,this.camera);this.frames++;
-    this.lastStats={frames:this.frames,triangles:this.renderer.info.render.triangles,drawCalls:this.renderer.info.render.calls,dpr:this.renderer.getPixelRatio(),geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,assets:{...this.assetStates},studio:this.studioSource};
+    if(this.state.rotating&&!this.reduced.matches){this.displayGroup().rotation.y+=dt*.15;active=true;}
+    this.inspection?.update();
+    this.renderer.info.reset();this.pipeline.render();this.frames++;
+    if(this.qualityMode==='auto'&&active&&!this.animation){const next=this.frameBudget.sample(dt*1000,this.quality.tier,time);if(next){this.autoCap=next;this.applyQuality('auto',false);}}
+    this.lastStats={quality:this.quality.tier,bloom:Boolean(this.pipeline.composer),inspection:this.inspectionKey,cutaway:this.cutaway,frames:this.frames,triangles:this.renderer.info.render.triangles,drawCalls:this.renderer.info.render.calls,dpr:this.renderer.getPixelRatio(),geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,assets:{...this.assetStates},studio:this.studioSource};
     if(this.hover)this.onHover?.(this.hover,this.projectPart(this.hover));
     if(active)this.wake();else this.lastTime=0;
   }
   dispose(){
+    this.inspection?.dispose();this.pipeline?.dispose();this.practicals?.dispose();
     this.disposed=true;cancelAnimationFrame(this.frameId);this.abort.abort();this.models.forEach(model=>model.dispose());this.library.dispose();this.contactShadow?.geometry.dispose();this.contactShadow?.material.dispose();this.floor?.dispose();this.environment?.dispose();
     for(const mesh of [this.haze,this.wideHaze]){mesh?.geometry.dispose();mesh?.material.dispose();}disposeSharedTextures();this.renderer?.dispose();
   }

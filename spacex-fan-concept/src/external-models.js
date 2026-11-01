@@ -49,12 +49,13 @@ export function prepareTemplate(source,family,height){
  source.traverse(o=>o.geometry?.dispose());
  return {family,height,entries,sourceMaterials,textures};
 }
-function calibrate(material){
+export function calibrate(material){
  const m=material.clone(),n=(m.name||'').toLowerCase();m.dithering=true;
- if(/engine|merlin|raptor|steel|metal|silver/.test(n)&&!/cloth/.test(n)){m.metalness=Math.max(m.metalness??0,.75);m.roughness=T.MathUtils.clamp(m.roughness??.35,.30,.56);if(/engine|merlin|raptor/.test(n))m.color.multiplyScalar(.82);}
- else if(/black|cloth|tile|carbon/.test(n)){m.roughness=T.MathUtils.clamp(m.roughness??.5,.35,.78);}
- else {m.roughness=T.MathUtils.clamp(m.roughness??.38,.28,.58);}
- if(m.map)m.map.anisotropy=4;
+ if(/engine|merlin|raptor|steel|metal|silver/.test(n)&&!/cloth/.test(n)){m.metalness=Math.max(m.metalness??0,.75);m.roughness=T.MathUtils.clamp(m.roughness??.30,.19,.46);m.envMapIntensity=1.25;if(/engine|merlin|raptor/.test(n))m.color.multiplyScalar(.88);}
+ else if(/black|cloth|tile|carbon/.test(n)){m.metalness=.04;m.roughness=/cloth|tile/.test(n)?.82:.43;m.envMapIntensity=.70;}
+ else if(/stage|fairing|white/.test(n)){m.metalness=.02;m.roughness=T.MathUtils.clamp(m.roughness??.35,.30,.55);m.envMapIntensity=.85;}
+ else {m.roughness=T.MathUtils.clamp(m.roughness??.38,.24,.58);}
+ if(m.map)m.map.anisotropy=8;
  return m;
 }
 export function createModel(template,index,{dragon=null}={}){
@@ -66,13 +67,13 @@ export function createModel(template,index,{dragon=null}={}){
   const instanced=index===2&&entry.stage!=='upper'&&entry.part!=='fairing';
   const mesh=instanced?new T.InstancedMesh(entry.geometry,material,3):new T.Mesh(entry.geometry,material);
   if(instanced){[0,-.82,.82].forEach((x,i)=>mesh.setMatrixAt(i,new T.Matrix4().makeTranslation(x,0,0)));mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingBox();mesh.computeBoundingSphere();}
-  mesh.name=`licensed-${entry.part}`;mesh.userData={part:entry.part,variant:entry.part==='fairing'?'fairing':'main',licensed:true};group.add(mesh);
+  mesh.name=`licensed-${entry.part}`;mesh.userData={part:entry.part,stage:entry.stage,variant:entry.part==='fairing'?'fairing':'main',licensed:true};group.add(mesh);
  }
  template.entries.forEach(e=>put(e));
  if(index===2){
   for(const x of [-.82,.82]){
-   const points=[[.366,0],[.366,.10],[.342,.35],[.285,.67],[.19,.96],[.085,1.16],[.002,1.30]].map(p=>new T.Vector2(...p));
-   const geo=new T.LatheGeometry(points,48),mat=surfaceMaterial('pale',uniforms.interstage,false);ownedGeometries.add(geo);materials.add(mat);const cap=new T.Mesh(geo,mat);cap.position.set(x,9.38,0);cap.userData={part:'interstage',variant:'main'};group.add(cap);
+   const points=[[.369,-.10],[.369,.06],[.366,.10],[.342,.35],[.285,.67],[.19,.96],[.085,1.16],[.002,1.30]].map(p=>new T.Vector2(...p));
+   const geo=new T.LatheGeometry(points,48),mat=surfaceMaterial('pale',uniforms.interstage,false);ownedGeometries.add(geo);materials.add(mat);const cap=new T.Mesh(geo,mat);cap.position.set(x,9.38,0);cap.userData={boosterCap:true,stage:'booster',part:'interstage',variant:'main'};group.add(cap);
   }
  }
  if(dragon)dragon.traverse(o=>{
