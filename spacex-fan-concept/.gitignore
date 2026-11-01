@@ -2,3 +2,4 @@ node_modules/
 dist/
 .vercel/
 qa-output/
+public/qa/

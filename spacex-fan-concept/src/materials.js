@@ -18,7 +18,7 @@ export function surfaceMaterial(kind,uniforms,textures=true) {
     paint:{color:0xc6c8cb,metalness:.23,roughness:.34},
     pale:{color:0xe3e4e6,metalness:.16,roughness:.32},
     dark:{color:0x16191e,metalness:.54,roughness:.34},
-    carbon:{color:0x111419,metalness:.35,roughness:.38},
+    carbon:{color:0x111419,metalness:.12,roughness:.62},
     steel:{color:0x91979d,metalness:1,roughness:.27},
     silver:{color:0xc5c9cf,metalness:.98,roughness:.24},
     bronze:{color:0x61534a,metalness:.92,roughness:.33},

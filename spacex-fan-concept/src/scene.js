@@ -10,19 +10,22 @@ const floorShader={
   uniforms:{color:{value:new T.Color(0x070809)},tDiffuse:{value:null},textureMatrix:{value:new T.Matrix4()}},
   vertexShader:`uniform mat4 textureMatrix; varying vec4 vReflection; varying vec3 vWorld;
   void main(){vReflection=textureMatrix*vec4(position,1.);vWorld=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-  fragmentShader:`uniform sampler2D tDiffuse; uniform vec3 color; varying vec4 vReflection; varying vec3 vWorld;
+  fragmentShader:`
+  #include <common>
+  #include <dithering_pars_fragment>
+  uniform sampler2D tDiffuse; uniform vec3 color; varying vec4 vReflection; varying vec3 vWorld;
   float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
   void main(){vec2 uv=vReflection.xy/vReflection.w;
     float grain=hash(floor(vWorld.xz*320.));
     float ripples=sin(vWorld.z*180.+sin(vWorld.x*18.)*2.)*.5+.5;
-    vec2 blur=vec2(.0010,.0018)*(1.+abs(vWorld.z)*.06);uv.x+=(grain-.5)*.00065;
+    vec2 blur=vec2(.0025,.0040)*(1.+abs(vWorld.z)*.06);uv.x+=(grain-.5)*.00065;
     vec3 reflected=texture2D(tDiffuse,uv).rgb*.36;
     reflected+=texture2D(tDiffuse,uv+vec2(blur.x,0.)).rgb*.16;
     reflected+=texture2D(tDiffuse,uv-vec2(blur.x,0.)).rgb*.16;
     reflected+=texture2D(tDiffuse,uv+vec2(0.,blur.y)).rgb*.16;
     reflected+=texture2D(tDiffuse,uv-vec2(0.,blur.y)).rgb*.16;
-    float falloff=exp(-length(vWorld.xz)*.045);
-    vec3 outColor=reflected*.34*falloff*(.86+grain*.10+ripples*.04);
+    float falloff=exp(-abs(vWorld.x)*.08-max(0.,vWorld.z)*.75);
+    vec3 outColor=reflected*.26*falloff*(.86+grain*.10+ripples*.04);
     float pool=exp(-pow(vWorld.x*.34,2.)-pow((vWorld.z+1.)*.7,2.));
     outColor+=vec3(pool*.014*(.55+grain*.45));
     gl_FragColor=vec4(outColor,1.);
@@ -52,7 +55,7 @@ export class RocketViewer {
   async initialize(state){
     this.state=state;
     this.renderer=new T.WebGLRenderer({canvas:this.canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
-    this.renderer.setClearColor(0x000000,1);this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.18;this.renderer.info.autoReset=false;
+    this.renderer.setClearColor(0x000000,1);this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.05;this.renderer.info.autoReset=false;
     this.scene=new T.Scene();this.scene.background=new T.Color(0x000000);
     this.camera=new T.PerspectiveCamera(32,1,.025,240);
     this.onProgress?.(.12,'CALIBRATING THE LIGHT');RectAreaLightUniformsLib.init();this.buildStudio();
@@ -72,13 +75,13 @@ export class RocketViewer {
     const studio=new T.Scene();studio.background=new T.Color(.009,.009,.011);
     const card=(x,y,z,w,h,power)=>{const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:new T.Color(power,power,power),side:T.DoubleSide}));m.position.set(x,y,z);m.lookAt(0,9,0);studio.add(m);};
     card(-5,10,4,3,24,7);card(5,13,-4,2,28,11);card(0,24,4,8,4,4);card(1,5,8,5,15,.7);
-    const pmrem=new T.PMREMGenerator(this.renderer);this.environment=pmrem.fromScene(studio,.05,.1,100);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.48;
+    const pmrem=new T.PMREMGenerator(this.renderer);this.environment=pmrem.fromScene(studio,.05,.1,100);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.27;
     studio.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});pmrem.dispose();
     const area=(x,y,z,w,h,intensity,target)=>{const light=new T.RectAreaLight(0xffffff,intensity,w,h);light.position.set(x,y,z);light.lookAt(...target);this.scene.add(light);return light;};
-    this.key=area(-3.8,8,4.5,3.2,16,4.5,[0,7,0]);
+    this.key=area(-5.8,8,2.2,2.2,16,3.0,[0,7,0]);
     this.rim=area(2.7,10,-3,1.5,20,8,[0,9,0]);
-    this.uplight=area(-.6,.25,2.4,3.0,1.2,17,[0,6,0]);
-    this.fill=area(3,9,6,4,16,.6,[0,7,0]);
+    this.uplight=area(-.6,.25,2.4,3.0,1.2,12,[0,6,0]);
+    this.fill=area(3,9,6,4,16,.25,[0,7,0]);
     const top=new T.DirectionalLight(0xdde6f1,1.6);top.position.set(-2,25,5);this.scene.add(top,new T.AmbientLight(0xffffff,.035));
   }
   bindEvents(){
@@ -88,7 +91,7 @@ export class RocketViewer {
     on(this.canvas,'webglcontextlost',event=>{event.preventDefault();this.onError?.('The 3D context was interrupted. Reload to restore the showroom.');cancelAnimationFrame(this.frameId);this.frameId=0;});
     on(this.canvas,'pointermove',e=>{
       if(this.drag){
-        const dx=e.clientX-this.drag.x,dy=e.clientY-this.drag.y;this.drag.moved=Math.hypot(dx,dy)>7;
+        const dx=e.clientX-this.drag.x,dy=e.clientY-this.drag.y;this.drag.moved=this.drag.moved||Math.hypot(dx,dy)>7;
         if(e.pointerType!=='touch'||this.state.part){this.models[this.state.index].group.rotation.y=this.drag.yaw+dx*.008;this.wake();}
       }else if(e.pointerType!=='touch'){this.pendingPointer={x:e.clientX,y:e.clientY};this.wake();}
     });
@@ -135,12 +138,12 @@ export class RocketViewer {
     const destinations=this.models.map((model,i)=>{
       const delta=i-state.index;model.payload(i===1?state.payload:'fairing');
       const scale=i===state.index?1:height*(delta<0?.64:1.02)/vehicles[i].height;
-      return {x:delta*spacing,scale,brightness:i===state.index?1:state.part?0:.19};
+      return {x:delta*spacing,scale,brightness:i===state.index?1:state.part?0:.24};
     });
     this.animation={start:performance.now(),duration:instant||this.reduced.matches?0:1150,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),from:this.models.map(m=>({x:m.group.position.x,scale:m.group.scale.x,brightness:m.uniforms.tanks.brightness.value})),to:destinations};
     this.haze.scale.setScalar(height/14);this.wideHaze.scale.x=height/14;
     this.haze.position.y=height*.065;
-    const h=height/14;this.key.position.set(-3.8*h,8*h,4.5*h);this.key.width=3.2*h;this.key.height=16*h;this.key.lookAt(0,7*h,0);
+    const h=height/14;this.key.position.set(-5.8*h,8*h,2.2*h);this.key.width=2.2*h;this.key.height=16*h;this.key.lookAt(0,7*h,0);
     this.rim.position.set(2.7*h,10*h,-3*h);this.rim.width=1.5*h;this.rim.height=20*h;this.rim.lookAt(0,9*h,0);
     this.uplight.position.set(-.6*h,.25*h,2.4*h);this.uplight.width=3*h;this.uplight.height=1.2*h;this.uplight.lookAt(0,6*h,0);
     this.fill.position.set(3*h,9*h,6*h);this.fill.width=4*h;this.fill.height=16*h;this.fill.lookAt(0,7*h,0);
