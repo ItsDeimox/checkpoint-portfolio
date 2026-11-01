@@ -4,10 +4,8 @@ import {CinematicPipeline,buildPracticals} from './cinematic.js';
 import {FrameBudget} from './quality.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
-import {AssetLibrary,createModel,isEffectivelyVisible} from './external-models.js';
+import {AssetLibrary,createModel,createEmptyModel,sourceFamilies,isEffectivelyVisible} from './external-models.js';
 import {Reflector} from 'three/addons/objects/Reflector.js';
-import {buildRocket} from './models.js';
-import {disposeSharedTextures} from './materials.js';
 import {vehicles,getPart} from './data.js';
 import {fitView,getQuality,ease} from './state.js';
 
@@ -57,7 +55,7 @@ function atmosphere(width,height,opacity){
 export class RocketViewer {
   constructor(canvas,{onAction,onHover,onProgress,onError,onAssetStatus}){
     Object.assign(this,{canvas,onAction,onHover,onProgress,onError,onAssetStatus,models:[],frameId:0,frames:0,lastTime:0,hover:null,drag:null,qualityMode:'auto',disposed:false});
-    this.frameBudget=new FrameBudget();this.inspection=null;this.cutaway=true;this.autoCap=null;
+    this.frameBudget=new FrameBudget();this.inspection=null;this.cutaway=false;this.autoCap=null;this.dragonModel=null;this.assetWants={};
     this.library=new AssetLibrary();this.assetStates={};this.assetJobs=new Map();this.assetVersions={};this.studioSource='procedural';
     this.abort=new AbortController();this.reduced=matchMedia('(prefers-reduced-motion: reduce)');this.target=new T.Vector3();this.raycaster=new T.Raycaster();this.pointer=new T.Vector2();this.lastStats={};
   }
@@ -69,7 +67,7 @@ export class RocketViewer {
     this.camera=new T.PerspectiveCamera(32,1,.025,240);this.pipeline=new CinematicPipeline(this.renderer,this.scene,this.camera);
     this.onProgress?.(.12,'CALIBRATING THE LIGHT');RectAreaLightUniformsLib.init();this.buildStudio();
     for(let i=0;i<vehicles.length;i++){
-      const model=buildRocket(i);this.scene.add(model.group);this.models.push(model);this.onProgress?.(.2+i*.16,`ASSEMBLING ${vehicles[i].name}`);await new Promise(requestAnimationFrame);
+      const model=createEmptyModel(i);this.scene.add(model.group);this.models.push(model);this.onProgress?.(.2+i*.16,`ASSEMBLING ${vehicles[i].name}`);await new Promise(requestAnimationFrame);
     }
     this.onProgress?.(.78,'LOADING LICENSED GEOMETRY');
     await this.loadLicensed(state.index);
@@ -89,27 +87,42 @@ export class RocketViewer {
   }
   async loadLicensed(index){
     if(index===0||this.disposed)return;
+    if(this.state.payload==='dragon'&&index===this.state.index)this.loadDragon();
     const quality=this.quality.tier==='high'?'high':'eco',key=`${index}-${quality}`;
-    if(this.models[index]?.assetKey===key)return;
+    this.assetWants[index]=key;if(this.models[index]?.assetKey===key){const status='licensed-'+quality;if(this.assetStates[index]!==status){this.assetStates[index]=status;this.onAssetStatus?.(index,status);}return;}
     if(this.assetJobs.has(key))return this.assetJobs.get(key);
     const version=(this.assetVersions[index]??0)+1;this.assetVersions[index]=version;
     this.assetStates[index]='loading';this.onAssetStatus?.(index,'loading');
     const job=(async()=>{
       try{
-        const template=await this.library.template(index===3?'starship':'falcon',quality);
-        if(this.disposed||version!==this.assetVersions[index])return;
-        const previous=this.models[index],model=createModel(template,index,{dragon:index===1?previous.group:null});
-        model.assetKey=key;model.group.position.copy(previous.group.position);model.group.quaternion.copy(previous.group.quaternion);model.group.scale.copy(previous.group.scale);model.group.visible=previous.group.visible;
+        const template=await this.library.template(sourceFamilies[index],quality);
+        if(this.disposed||this.assetWants[index]!==key)return;
+        const previous=this.models[index],model=createModel(template,index);
+        model.assetKey=key;this.applyTextureBudget(model);model.group.position.copy(previous.group.position);model.group.quaternion.copy(previous.group.quaternion);model.group.scale.copy(previous.group.scale);model.group.visible=previous.group.visible;
         for(const part of Object.keys(model.uniforms)){model.uniforms[part].brightness.value=previous.uniforms[part].brightness.value;model.uniforms[part].highlight.value=previous.uniforms[part].highlight.value;}
         model.payload(index===1?this.state.payload:'fairing');this.scene.remove(previous.group);this.scene.add(model.group);this.models[index]=model;previous.dispose();if(this.state.part&&this.state.index===index&&this.floor)this.applyState(this.state,false,true);
         this.assetStates[index]=`licensed-${quality}`;this.onAssetStatus?.(index,this.assetStates[index]);this.wake();
       }catch(error){
         if(this.disposed)return;
-        this.assetStates[index]=this.models[index]?.source==='licensed'?'licensed-fallback':'procedural-fallback';
-        this.onAssetStatus?.(index,this.assetStates[index]);console.warn('Detailed model unavailable; retaining the working model.',error.message);
+        if(this.assetWants[index]!==key)return;
+        this.assetStates[index]=this.models[index]?.source==='licensed'?'licensed-fallback':'unavailable';
+        this.onAssetStatus?.(index,this.assetStates[index]);console.warn('Authored model unavailable; no substitute geometry is generated.',error.message);
       }finally{this.assetJobs.delete(key);}
     })();this.assetJobs.set(key,job);return job;
   }
+  async loadDragon(){
+    const quality=this.quality.tier==='high'?'high':'eco',key='dragon-'+quality;this.assetWants.dragon=key;
+    if(this.dragonModel?.assetKey===key){const status='licensed-'+quality;if(this.assetStates.dragon!==status){this.assetStates.dragon=status;this.onAssetStatus?.('dragon',status);}return;}if(this.assetJobs.has(key))return;
+    this.assetStates.dragon='loading';this.onAssetStatus?.('dragon','loading');
+    const job=(async()=>{try{
+      const t=await this.library.template('dragon',quality);if(this.disposed||this.assetWants.dragon!==key)return;
+      const model=createModel(t,1);model.assetKey=key;this.applyTextureBudget(model);const old=this.dragonModel;this.dragonModel=model;
+      if(this.state.payload==='dragon'&&this.floor)this.applyState(this.state,false,true);
+      old?.dispose();this.assetStates.dragon='licensed-'+quality;this.onAssetStatus?.('dragon',this.assetStates.dragon);this.wake();
+    }catch(error){if(!this.disposed&&this.assetWants.dragon===key){this.assetStates.dragon=this.dragonModel?'licensed-fallback':'unavailable';this.onAssetStatus?.('dragon',this.assetStates.dragon);console.warn('Authored Dragon model unavailable.',error.message);}}finally{this.assetJobs.delete(key);}})();this.assetJobs.set(key,job);return job;
+  }
+  inspectionModel(){return this.state.payload==='dragon'?this.dragonModel:this.models[this.state.index];}
+  retryModel(){if(this.state.payload==='dragon')this.loadDragon();else this.loadLicensed(this.state.index);}
   async loadStudioEnvironment(){
     try{
       const manifest=await this.library.manifest();
@@ -165,19 +178,16 @@ export class RocketViewer {
     this.camera.aspect=this.width/this.height;this.camera.updateProjectionMatrix();this.applyQuality();
     if(this.models.length===vehicles.length&&this.floor)this.applyState(this.state,true);
   }
+  applyTextureBudget(model){const max=Math.min(this.quality.anisotropy,this.renderer.capabilities.getMaxAnisotropy());model.group.traverse(o=>{if(o.isMesh)for(const value of Object.values(o.material))if(value?.isTexture&&value.anisotropy!==max){value.anisotropy=max;value.needsUpdate=true;}});}
   displayGroup(){return this.inspection?.group??this.models[this.state.index].group;}
-  setCutaway(value){this.cutaway=Boolean(value);this.inspection?.setCutaway(this.cutaway);this.wake();}
+  setCutaway(){this.cutaway=false;return false;}
   syncInspection(state,force=false){
     const key=state.part?`${state.index}:${state.part}:${state.payload}`:null;
-    if(key===this.inspectionKey&&!force)return;
-    const previous=this.inspection;this.inspection?.dispose();this.inspection=null;this.inspectionKey=key;
-    if(key){
-      const model=this.models[state.index];model.payload(state.payload);
-      this.inspection=createInspection(model,state.index,state.part,state.payload);
-      this.inspection.group.rotation.y=previous?.group.rotation.y??.18;
-      this.inspection.group.position.y=previous?0:this.inspection.originY;
-      this.inspection.setCutaway(this.cutaway);this.scene.add(this.inspection.group);
-    }
+    if(key===this.inspectionKey&&!force&&this.inspection)return;
+    const yaw=this.inspection?.group.rotation.y??.18;this.inspection?.dispose();this.inspection=null;this.inspectionKey=null;
+    if(!key)return;const model=this.inspectionModel();if(!model||model.source!=='licensed')return;
+    model.payload('fairing');if(!model.group.children.some(o=>o.userData.part===state.part))return;
+    this.inspection=createInspection(model,state.index,state.part,state.payload);this.inspectionKey=key;this.inspection.group.rotation.y=yaw;this.scene.add(this.inspection.group);
   }
   applyQuality(mode=this.qualityMode,reset=true){
     if(reset&&mode!==this.qualityMode){this.autoCap=null;this.frameBudget.reset();}
@@ -186,7 +196,8 @@ export class RocketViewer {
     this.quality=getQuality(options);
     if(mode==='auto'&&this.autoCap&&['low','medium','high'].indexOf(this.autoCap)<['low','medium','high'].indexOf(this.quality.tier))this.quality=getQuality({...options,mode:this.autoCap});
     this.canvas.dataset.quality=this.quality.tier;
-    this.models.forEach((m,i)=>{m.group.visible=!this.inspection&&(!this.quality.low||i===this.state.index)&&Math.abs(i-this.state.index)<=1;});
+    this.models.forEach((m,i)=>{m.group.visible=!this.state.part&&(!this.quality.low||i===this.state.index)&&Math.abs(i-this.state.index)<=1;});
+    for(const model of [...this.models,this.dragonModel].filter(Boolean))this.applyTextureBudget(model);
     this.renderer.setPixelRatio(this.quality.dpr);this.renderer.setSize(this.width,this.height,false);
     this.pipeline.configure(this.quality,this.width,this.height);
     this.floor?.getRenderTarget().setSize(this.quality.reflectionSize,this.quality.reflectionSize);if(this.floor)this.loadLicensed(this.state.index);this.wake();
@@ -203,7 +214,10 @@ export class RocketViewer {
     return {position:[Math.sin(f.angle)*distance+targetX,Math.max(.14,targetY+f.elevation),Math.cos(f.angle)*distance],target:[targetX,targetY,0]};
   }
   applyState(state,instant=false,forceInspection=false){
-    if(!this.models.length)return;this.state=state;this.setHover(null);this.pendingPointer=null;
+    if(!this.models.length)return;
+    const sameView=this.state?.index===state.index&&this.state?.part===state.part&&this.state?.payload===state.payload;
+    this.state=state;this.setHover(null);this.pendingPointer=null;
+    if(sameView&&this.floor&&!instant&&!forceInspection&&this.inspection){this.wake();return;}
     this.syncInspection(state,forceInspection);
     const desired=this.desiredCamera(state),height=vehicles[state.index].height;
     const aspect=this.width/this.height;
@@ -211,7 +225,7 @@ export class RocketViewer {
     const destinations=this.models.map((model,i)=>{
       const delta=i-state.index;model.payload(i===1?state.payload:'fairing');
       const scale=i===state.index?1:height*(delta<0?.64:1.02)/vehicles[i].height;
-      return {x:delta*spacing,scale,brightness:i===state.index?1:state.part?0:.075};
+      return {x:delta*spacing,scale,brightness:i===state.index?1:state.part||Math.abs(delta)>1?0:.10};
     });
     this.animation={inspectionFromY:this.inspection?.group.position.y??0,start:performance.now(),duration:instant||this.reduced.matches?0:1150,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),from:this.models.map(m=>({x:m.group.position.x,scale:m.group.scale.x,brightness:m.uniforms.tanks.brightness.value})),to:destinations};
     const footprint=[.65,1.45,3.3,3.3][state.index];this.contactShadow.scale.set(footprint,footprint*.7,1);
@@ -236,7 +250,7 @@ export class RocketViewer {
       model.group.position.x=T.MathUtils.lerp(a.from[i].x,a.to[i].x,t);model.group.scale.setScalar(T.MathUtils.lerp(a.from[i].scale,a.to[i].scale,t));
       const brightness=T.MathUtils.lerp(a.from[i].brightness,a.to[i].brightness,t);
       for(const u of Object.values(model.uniforms))u.brightness.value=brightness;
-      model.group.visible=!this.inspection&&brightness>.002&&(!this.quality.low||i===this.state.index);
+      model.group.visible=!this.state.part&&brightness>.002&&Math.abs(i-this.state.index)<=1&&(!this.quality.low||i===this.state.index);
     });
     if(p===1)this.animation=null;return p<1;
   }
@@ -284,7 +298,7 @@ export class RocketViewer {
   }
   dispose(){
     this.inspection?.dispose();this.pipeline?.dispose();this.practicals?.dispose();
-    this.disposed=true;cancelAnimationFrame(this.frameId);this.abort.abort();this.models.forEach(model=>model.dispose());this.library.dispose();this.contactShadow?.geometry.dispose();this.contactShadow?.material.dispose();this.floor?.dispose();this.environment?.dispose();
-    for(const mesh of [this.haze,this.wideHaze]){mesh?.geometry.dispose();mesh?.material.dispose();}disposeSharedTextures();this.renderer?.dispose();
+    this.dragonModel?.dispose();this.disposed=true;cancelAnimationFrame(this.frameId);this.abort.abort();this.models.forEach(model=>model.dispose());this.library.dispose();this.contactShadow?.geometry.dispose();this.contactShadow?.material.dispose();this.floor?.dispose();this.environment?.dispose();
+    for(const mesh of [this.haze,this.wideHaze]){mesh?.geometry.dispose();mesh?.material.dispose();}this.renderer?.dispose();
   }
 }

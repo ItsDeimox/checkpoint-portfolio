@@ -15,7 +15,7 @@ if (ready) {
     assert.equal(s.part,'engines'); s=reduce(s,{type:'NAVIGATE',index:2});
     assert.equal(s.index,2); assert.equal(s.part,null);
     assert.equal(reduce(s,{type:'NAVIGATE',index:99}).index,3);
-    assert.equal(reduce(s,{type:'NAVIGATE',index:-1}).index,0);
+    assert.equal(reduce(s,{type:'NAVIGATE',index:-1}).index,1);
   });
   test('invalid selection cannot poison camera state', () => {
     const s=initialState(); assert.deepEqual(reduce(s,{type:'FOCUS',part:'unknown'}),s);
@@ -29,7 +29,7 @@ if (ready) {
   test('Dragon is only an option on Falcon 9 and changes upper section information',()=> {
     let s=reduce(initialState(),{type:'DRAGON'});
     assert.equal(s.index,1); assert.equal(s.payload,'dragon'); assert.equal(s.part,'fairing');
-    assert.equal(getPart(vehicles[1],'fairing',s.payload).title,'CREW DRAGON');
+    assert.equal(getPart(vehicles[1],'fairing',s.payload).title,'DRAGON 2');
     s=reduce(s,{type:'NAVIGATE',index:3}); assert.equal(s.payload,'fairing');
   });
   test('quality bounds DPR for mobile and low-memory devices',()=> {
@@ -54,3 +54,4 @@ if (ready) {
     }
   });
 }
+test('switching from Dragon to a rocket component restores Falcon geometry',async()=>{const {reduce,initialState}=await import('../src/state.js');const dragon=reduce(initialState(),{type:'DRAGON'}),next=reduce(dragon,{type:'FOCUS',part:'engines'});assert.equal(next.payload,'fairing');assert.equal(next.part,'engines');});

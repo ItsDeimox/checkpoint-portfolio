@@ -14,4 +14,4 @@ test('quantized GLB positions are expanded before world transforms',()=>{
  const template=mod.prepareTemplate(root,'falcon',14),model=mod.createModel(template,1),b=new T.Box3().setFromObject(model.group);
  assert.ok(Math.abs(b.max.y-14)<.001,`normalized height is ${b.max.y}`);assert.ok(Math.abs(b.min.y)<.001);model.dispose();mod.disposeTemplate(template);
 });
-test('Falcon Heavy reuses instanced licensed boosters instead of tripling draw calls',()=>{const t=mod.prepareTemplate(fixture(),'falcon',14),m=mod.createModel(t,2);const cores=m.group.children.filter(o=>o.isInstancedMesh);assert.ok(cores.length>0);assert.ok(cores.every(o=>o.count===3));m.dispose();mod.disposeTemplate(t);});
+test('authored models are not replicated into invented vehicles',()=>{const t=mod.prepareTemplate(fixture(),'heavy',14),m=mod.createModel(t,2);assert.ok(m.group.children.every(o=>!o.isInstancedMesh));assert.equal(m.group.children.length,t.entries.length);m.dispose();mod.disposeTemplate(t);});

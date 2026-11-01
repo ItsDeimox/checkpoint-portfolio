@@ -14,9 +14,13 @@ function render(){
   const vehicle=vehicles[state.index],detail=state.part?getPart(vehicle,state.part,state.payload):null;
   $('app').classList.toggle('is-detail',Boolean(detail));$('hero-copy').hidden=Boolean(detail);$('detail-copy').hidden=!detail;$('back').hidden=!detail;$('parts-nav').hidden=!detail;
   $('vehicle-title').textContent=vehicle.name;format($('vehicle-subtitle'),vehicle.subtitle);$('explore').replaceChildren(document.createTextNode(`EXPLORE ${vehicle.name} `),Object.assign(document.createElement('span'),{className:'chevron'}));$('back-name').textContent=vehicle.name;
-  $('model-status').textContent=viewer?.assetStates[state.index]==='loading'?'REFINING GEOMETRY':'';
+  const assetKey=state.payload==='dragon'?'dragon':state.index,assetStatus=viewer?.assetStates[assetKey];
+  const hasModel=state.payload==='dragon'?Boolean(viewer?.dragonModel):viewer?.models[state.index]?.source==='licensed';
+  $('model-status').textContent=assetStatus==='loading'?'LOADING AUTHORED MODEL':'';$('asset-notice').hidden=hasModel||!ready;
+  $('asset-notice-text').textContent=assetStatus==='unavailable'?'THE SOURCE MODEL COULD NOT BE LOADED.':'LOADING SOURCE GEOMETRY';$('retry-model').hidden=assetStatus!=='unavailable';$('explore').disabled=!hasModel;
+  $('interior-note').textContent=state.payload==='dragon'?'HISTORICAL DRAGON 2 EXTERIOR · NO ADDED INTERNALS':'AUTHORED EXTERIOR · INTERNAL GEOMETRY NOT PROVIDED';
   $('configuration').hidden=!vehicle.reference;$('configuration').textContent=vehicle.reference??'';
-  for(const [id,offset] of [['previous',-1],['next',1]]){const neighbor=vehicles[state.index+offset],button=$(id);button.disabled=!neighbor;button.setAttribute('aria-label',neighbor?`Explore ${neighbor.name}`:offset<0?'First rocket':'Last rocket');button.querySelector('.neighbor-name').textContent=neighbor?.name??'';button.querySelector('.neighbor-years').textContent=neighbor?.years??'';}
+  for(const [id,offset] of [['previous',-1],['next',1]]){const candidate=vehicles[state.index+offset],neighbor=candidate?.available===false?null:candidate,button=$(id);button.disabled=!neighbor;button.setAttribute('aria-label',neighbor?`Explore ${neighbor.name}`:offset<0?'First rocket':'Last rocket');button.querySelector('.neighbor-name').textContent=neighbor?.name??'';button.querySelector('.neighbor-years').textContent=neighbor?.years??'';}
   [...$('pagination').children].forEach((button,i)=>button.setAttribute('aria-current',String(i===state.index)));
   [...$('parts-nav').children].forEach(button=>button.setAttribute('aria-current',String(button.dataset.part===state.part)));
   $('rotate').setAttribute('aria-pressed',String(state.rotating));$('rotate').setAttribute('aria-label',state.rotating?'Pause automatic rotation':'Enable automatic rotation');
@@ -31,8 +35,8 @@ function render(){
   document.title=`${detail?.title??vehicle.name} | SpaceX Fan Concept`;
 }
 for(const [i,vehicle] of vehicles.entries()){
-  const dot=document.createElement('button');dot.setAttribute('aria-label',`View ${vehicle.name}`);dot.innerHTML=`<span class="page-name">${vehicle.name}</span>`;dot.addEventListener('click',()=>action({type:'NAVIGATE',index:i}));$('pagination').append(dot);
-  const item=document.createElement('button');item.innerHTML=`<small>0${i+1}</small>${vehicle.name}`;item.addEventListener('click',()=>{closeDialogs();action({type:'NAVIGATE',index:i});});$('menu-fleet').append(item);
+  const dot=document.createElement('button');dot.setAttribute('aria-label',`View ${vehicle.name}`);dot.innerHTML=`<span class="page-name">${vehicle.name}</span>`;dot.addEventListener('click',()=>action({type:'NAVIGATE',index:i}));dot.hidden=vehicle.available===false;dot.disabled=vehicle.available===false;$('pagination').append(dot);
+  const item=document.createElement('button');item.innerHTML=`<small>0${i+1}</small>${vehicle.name}`;item.addEventListener('click',()=>{closeDialogs();action({type:'NAVIGATE',index:i});});item.disabled=vehicle.available===false;if(item.disabled){item.title='No verified reusable model is available';item.append(Object.assign(document.createElement('small'),{textContent:'MODEL UNAVAILABLE'}));}$('menu-fleet').append(item);
   const source=document.createElement('a');source.href=vehicle.source;source.target='_blank';source.rel='noopener noreferrer';source.textContent=`${vehicle.name} ↗`;$('source-list').append(source);
 }
 for(const key of partOrder){const button=document.createElement('button');button.dataset.part=key;button.textContent=partLabels[key];button.addEventListener('click',()=>action({type:'FOCUS',part:key}));$('parts-nav').append(button);}
@@ -58,7 +62,7 @@ $('previous').addEventListener('click',()=>action({type:'NAVIGATE',index:state.i
 $('explore').addEventListener('click',()=>action({type:'FOCUS',part:'engines'}));$('rotate').addEventListener('click',()=>action({type:'ROTATE'}));
 $('quality').addEventListener('change',event=>{if(ready){viewer.autoCap=null;viewer.frameBudget.reset();viewer.applyQuality(event.target.value);}});
 for(const [id,enabled] of [['view-exterior',false],['view-cutaway',true]])$(id).addEventListener('click',()=>{if(!ready)return;viewer.setCutaway(enabled);$('view-exterior').setAttribute('aria-pressed',String(!enabled));$('view-cutaway').setAttribute('aria-pressed',String(enabled));$('interior-note').hidden=!enabled;});
-$('reload').addEventListener('click',()=>location.reload());
+$('reload').addEventListener('click',()=>location.reload());$('retry-model').addEventListener('click',()=>viewer?.retryModel());
 window.addEventListener('keydown',event=>{
   if(dialogs.some(dialog=>dialog.open)||/INPUT|SELECT|TEXTAREA/.test(event.target.tagName))return;
   if(event.key==='Escape'){action({type:'BACK'});event.preventDefault();}
@@ -69,10 +73,11 @@ window.addEventListener('keydown',event=>{
 function search(query){
   const q=query.trim().toLowerCase(),results=[];
   for(const [i,v] of vehicles.entries()){
+    if(v.available===false)continue;
     if(!q||v.name.toLowerCase().includes(q))results.push({name:v.name,label:'VEHICLE',index:i});
     if(q)for(const key of partOrder){const p=v.parts[key];if(`${v.name} ${p.title} ${partLabels[key]}`.toLowerCase().includes(q))results.push({name:p.title,label:v.name,index:i,part:key});}
   }
-  if(q&&'crew dragon human spaceflight'.includes(q))results.push({name:'CREW DRAGON',label:'SPACECRAFT',dragon:true});
+  if(q&&'crew dragon 2 human spaceflight'.includes(q))results.push({name:'DRAGON 2',label:'HISTORICAL EXTERIOR',dragon:true});
   $('search-results').replaceChildren(...results.slice(0,20).map(result=>{
     const button=document.createElement('button'),span=document.createElement('span'),small=document.createElement('small');span.textContent=result.name;small.textContent=result.label;button.append(span,small);
     button.addEventListener('click',()=>{closeDialogs();if(result.dragon)action({type:'DRAGON'});else{action({type:'NAVIGATE',index:result.index});if(result.part)action({type:'FOCUS',part:result.part});}});return button;
@@ -89,9 +94,9 @@ function hover(part,point){
 render();
 (async()=>{
   try{
-    viewer=new RocketViewer($('viewer'),{onAction:action,onHover:hover,onProgress:(n,text)=>{$('loading-progress').style.width=`${n*100}%`;$('loading-caption').textContent=text;},onError:showError,onAssetStatus:(index,status)=>{if(index===state.index)$('model-status').textContent=status==='loading'?'REFINING GEOMETRY':status.includes('fallback')?'STANDARD MODEL':'';}});
-    await viewer.initialize(state);ready=true;document.documentElement.dataset.ready='true';$('loading').classList.add('leaving');setTimeout(()=>$('loading').hidden=true,700);
-    if(new URLSearchParams(location.search).has('qa'))window.__SPACEX_QA__={state:()=>({...state}),stats:()=>({...viewer.lastStats}),quality:mode=>viewer.applyQuality(mode),orientation:()=>viewer.displayGroup().rotation.y,framing:()=>{if(!viewer.inspection)return null;const b=viewer.inspection.bounds.clone().applyMatrix4(viewer.inspection.group.matrixWorld),p=[];for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z]){const v=b.min.clone().set(x,y,z).project(viewer.camera);p.push([(v.x+1)*viewer.width/2,(1-v.y)*viewer.height/2]);}return p;},inspection:()=>viewer.inspection?({key:viewer.inspectionKey,interiorVisible:viewer.inspection.interior.visible,exteriorCount:viewer.inspection.exterior.children.length,bounds:{min:viewer.inspection.bounds.min.toArray(),max:viewer.inspection.bounds.max.toArray()},originalsVisible:viewer.models.filter(m=>m.group.visible).length}):null,visible:()=>viewer.models.map(m=>m.group.visible),assets:()=>({...viewer.assetStates}),models:()=>viewer.models.map(m=>({name:m.group.name,source:m.source||'procedural',meshes:m.group.children.filter(o=>o.isMesh).length,parts:[...new Set(m.group.children.filter(o=>o.isMesh).map(o=>o.userData.part))]})),point:part=>viewer.projectPart(part),action};
+    viewer=new RocketViewer($('viewer'),{onAction:action,onHover:hover,onProgress:(n,text)=>{$('loading-progress').style.width=`${n*100}%`;$('loading-caption').textContent=text;},onError:showError,onAssetStatus:()=>{if(ready)render();}});
+    await viewer.initialize(state);ready=true;render();document.documentElement.dataset.ready='true';$('loading').classList.add('leaving');setTimeout(()=>$('loading').hidden=true,700);
+    if(new URLSearchParams(location.search).has('qa'))window.__SPACEX_QA__={state:()=>({...state}),stats:()=>({...viewer.lastStats}),quality:mode=>viewer.applyQuality(mode),yaw:value=>{viewer.displayGroup().rotation.y=value;viewer.wake();},retry:()=>viewer.retryModel(),orientation:()=>viewer.displayGroup().rotation.y,framing:()=>{if(!viewer.inspection)return null;const b=viewer.inspection.bounds.clone().applyMatrix4(viewer.inspection.group.matrixWorld),p=[];for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z]){const v=b.min.clone().set(x,y,z).project(viewer.camera);p.push([(v.x+1)*viewer.width/2,(1-v.y)*viewer.height/2]);}return p;},inspection:()=>viewer.inspection?({key:viewer.inspectionKey,interiorVisible:false,supportsInterior:viewer.inspection.supportsInterior,exteriorCount:viewer.inspection.exterior.children.length,bounds:{min:viewer.inspection.bounds.min.toArray(),max:viewer.inspection.bounds.max.toArray()},originalsVisible:viewer.models.filter(m=>m.group.visible).length}):null,visible:()=>viewer.models.map(m=>m.group.visible),assets:()=>({...viewer.assetStates}),models:()=>viewer.models.map(m=>({name:m.group.name,source:m.source||'unavailable',meshes:m.group.children.filter(o=>o.isMesh).length,parts:[...new Set(m.group.children.filter(o=>o.isMesh).map(o=>o.userData.part))]})),point:part=>viewer.projectPart(part),action};
   }catch(error){console.error('Showroom initialization failed:',error);showError('The 3D showroom could not start. Try reloading or enable hardware acceleration in your browser.');viewer?.dispose();}
 })();
 window.addEventListener('pagehide',event=>{if(!event.persisted)viewer?.dispose();});

@@ -1,21 +1,12 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {existsSync} from 'node:fs';
-const ready=existsSync(new URL('../src/models.js',import.meta.url));
-test('part-segmented rocket geometry exists',()=>assert.ok(ready,'Implement actual geometry, not image planes'));
-if(ready) {
-  const T=await import('three');
-  const {buildRocket}=await import('../src/models.js');
-  const {vehicles,partOrder}=await import('../src/data.js');
-  for(const [i,v] of vehicles.entries()) test(`${v.name}: finite bounds, distinct parts, merged mesh budget`,()=>{
-    const model=buildRocket(i,{textures:false});
-    const bounds=new T.Box3().setFromObject(model.group); const size=bounds.getSize(new T.Vector3());
-    assert.ok(size.y>v.height*.85&&size.y<v.height*1.1,`height ${size.y}`);
-    assert.ok(size.x>0&&size.x<8); let triangles=0,meshes=0;
-    const parts=new Set();model.group.traverse(o=>{if(o.isMesh){meshes++;parts.add(o.userData.part);triangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;assert.ok([...o.geometry.attributes.position.array].every(Number.isFinite));}});
-    for(const p of partOrder)assert.ok(parts.has(p),`missing ${p}`);
-    assert.ok(meshes<110,`merge repetitive details (${meshes} meshes)`);
-    assert.ok(triangles<300000,`geometry budget (${triangles} triangles)`);
-    model.dispose();
-  });
-}
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import * as T from 'three';
+import {prepareTemplate,createModel,calibrate,createEmptyModel,sourceFamilies} from '../src/external-models.js';
+import {createInspection} from '../src/inspection.js';import {bakeSourceRange,partitionAuthoredRegions} from '../src/source-geometry.js';
+test('runtime never imports spacecraft or interior generators',()=>{for(const file of ['scene.js','inspection.js','external-models.js'])assert.doesNotMatch(fs.readFileSync(new URL('../src/'+file,import.meta.url),'utf8'),/buildRocket|buildInterior|LatheGeometry|CylinderGeometry|SphereGeometry/);assert.equal(fs.existsSync(new URL('../src/models.js',import.meta.url)),false);assert.equal(fs.existsSync(new URL('../src/interiors.js',import.meta.url)),false);});
+test('unavailable model has no fabricated geometry',()=>{const model=createEmptyModel(0);assert.equal(model.group.children.length,0);assert.equal(model.source,'unavailable');assert.equal(sourceFamilies[0],undefined);assert.equal(sourceFamilies[2],'heavy');});
+test('PBR maps and authored factors survive calibration',()=>{const map=new T.Texture(),normal=new T.Texture(),material=new T.MeshStandardMaterial({name:'Engine_Metal',metalness:.4,roughness:.61,map,normalMap:normal}),copy=calibrate(material);assert.equal(copy.metalness,.4);assert.equal(copy.roughness,.61);assert.equal(copy.map,map);assert.equal(copy.normalMap,normal);copy.dispose();material.dispose();});
+test('every source material group and tangent is retained',()=>{const scene=new T.Group(),g=new T.BoxGeometry(1,8,1);g.computeTangents();const mats=Array.from({length:6},(_,i)=>new T.MeshStandardMaterial({name:'source-'+i}));scene.add(new T.Mesh(g,mats));const t=prepareTemplate(scene,'falcon',14);assert.equal(new Set(t.entries.map(e=>e.material.name)).size,6);for(const e of t.entries)assert.ok(e.geometry.getAttribute('tangent'));});
+test('inspection neither fabricates internals nor changes source sidedness',()=>{const mesh=new T.Mesh(new T.CylinderGeometry(.4,.4,2,16),new T.MeshStandardMaterial({side:T.FrontSide}));mesh.userData.part='tanks';const group=new T.Group();group.add(mesh);const v=createInspection({group},1,'tanks');assert.equal(v.supportsInterior,false);assert.equal(v.setCutaway(true),false);assert.equal(v.group.children.length,1);v.exterior.traverse(o=>{if(o.isMesh){assert.equal(o.material.side,T.FrontSide);assert.ok(!o.material.clippingPlanes?.length);}});v.dispose();assert.equal(group.children.length,1);});
+test('authored Heavy never clones Falcon 9 cores',()=>{const t={family:'heavy',height:14,entries:[{geometry:new T.BoxGeometry(1,10,1),material:new T.MeshStandardMaterial(),part:'tanks',stage:'booster'}]},m=createModel(t,2);assert.equal(m.group.children.length,1);assert.ok(m.group.children.every(o=>!o.isInstancedMesh));m.dispose();});
+test('region selection conserves all original triangles and vertices',()=>{const g=new T.BoxGeometry(1,14,1).toNonIndexed(),p=partitionAuthoredRegions(g,14);assert.equal(p.reduce((n,x)=>n+x.geometry.getAttribute('position').count,0),g.getAttribute('position').count);const original=new Set(Array.from({length:g.getAttribute('position').count},(_,i)=>[g.getAttribute('position').getX(i),g.getAttribute('position').getY(i),g.getAttribute('position').getZ(i)].join(',')));for(const {geometry}of p){const a=geometry.getAttribute('position');for(let i=0;i<a.count;i++)assert.ok(original.has([a.getX(i),a.getY(i),a.getZ(i)].join(',')));}});
+test('mirrored source transforms preserve front-face winding',()=>{const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute([0,0,0,1,0,0,0,1,0],3));g.setAttribute('normal',new T.Float32BufferAttribute([0,0,1,0,0,1,0,0,1],3));const baked=bakeSourceRange(g,0,3,new T.Matrix4().makeScale(-1,1,1)),p=baked.getAttribute('position'),a=new T.Vector3().fromBufferAttribute(p,0),b=new T.Vector3().fromBufferAttribute(p,1),c=new T.Vector3().fromBufferAttribute(p,2);assert.ok(b.sub(a).cross(c.sub(a)).z>0);});
+test('engine inspection excludes landing gear without removing it from the overview',()=>{const group=new T.Group();for(const role of ['component','landing-gear']){const mesh=new T.Mesh(new T.BoxGeometry(1,role==='component'?1:10,1),new T.MeshStandardMaterial());mesh.userData={part:'engines',role};group.add(mesh);}const v=createInspection({group,family:'falcon'},1,'engines');assert.equal(v.exterior.children.length,1);assert.equal(group.children.length,2);v.dispose();});

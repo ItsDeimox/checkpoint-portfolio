@@ -4,9 +4,9 @@ export function reduce(state,event) {
   switch(event.type) {
     case 'NAVIGATE':
       if(!Number.isFinite(event.index)) return state;
-      return {...state,index:Math.max(0,Math.min(vehicles.length-1,Math.round(event.index))),part:null,payload:'fairing',rotating:false};
-    case 'FOCUS': return Object.hasOwn(vehicles[state.index].parts,event.part) ? {...state,part:event.part,rotating:false} : state;
-    case 'BACK': return {...state,part:null,rotating:false};
+      return {...state,index:Math.max(vehicles.findIndex(v=>v.available!==false),Math.min(vehicles.length-1,Math.round(event.index))),part:null,payload:'fairing',rotating:false};
+    case 'FOCUS': return Object.hasOwn(vehicles[state.index].parts,event.part) ? {...state,part:event.part,payload:event.part==='fairing'?state.payload:'fairing',rotating:false} : state;
+    case 'BACK': return {...state,part:null,payload:'fairing',rotating:false};
     case 'DRAGON': return {...state,index:1,part:'fairing',payload:'dragon',rotating:false};
     case 'ROTATE': return {...state,rotating:!state.rotating};
     default: return state;
