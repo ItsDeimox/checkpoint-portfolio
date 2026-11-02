@@ -17,7 +17,7 @@ The build fetches pinned, SHA-256-verified source files, optimizes copies and se
 
 ## Authored geometry only
 
-Falcon 9, the complete Falcon Heavy, Starship Block 3 and the historical Dragon 2 exterior use preauthored licensed files. Falcon 1 remains in the historical catalog but is unavailable until a suitable reusable asset is verified. No spacecraft generator, synthetic fallback or invented internal assembly is used.
+Falcon 9, the complete Falcon Heavy, Starship Block 3 and the Dragon 2 capsule use preauthored licensed files. Falcon 1 remains in the historical catalog but is unavailable until a suitable reusable asset is verified. No spacecraft generator, synthetic fallback or invented internal assembly is used.
 
 Select a module to isolate its supplied geometry; drag to rotate and click outside or press Escape to return. For Falcon 9 engines/interstage and the Starship cargo rack, INTERNAL STRUCTURE exposes the hardware already authored in those source files. Outer meshes fade before the camera recenters on the original internal assembly. This is partial artist-model coverage, not certified manufacturer CAD; tank internals and unsupported modules remain explicitly unavailable. Single-mesh regions use existing triangles only, without fabricated caps or surfaces.
 
@@ -28,7 +28,7 @@ The studio retains HDR reflections, restrained bloom, floor reflection, Fresnel 
 - Falcon 9, Stanley Creative, CC BY 4.0: https://sketchfab.com/3d-models/falcon-9-spacex-394f7cf52d124bbd9db69f24d1ff2f08
 - Falcon Heavy (Low Poly), Antonio_Adams, CC BY 4.0: https://sketchfab.com/3d-models/spacex-falcon-heavylow-poly-0dc068a462e34258b3872085a7f592c8
 - Starship Block 3, Clarence365, CC BY 4.0: https://sketchfab.com/3d-models/spacex-starship-block-3-6f6c6f88a3eb4b4d822fdca66733fbb2
-- Dragon 2 exterior, Jon Ross, CC BY 4.0: https://sketchfab.com/3d-models/spacex-dragon-2-exterior-2575398db20c406cab2cf72b89a9be8b
+- Dragon 2, KUBAHA, CC BY 4.0: https://sketchfab.com/3d-models/spacex-dragon-2-1b125e30a2cb442288580290536fbe5d
 - Studio Small 03, Greg Zaal / Poly Haven, CC0: https://polyhaven.com/a/studio_small_03
 
 Pinned mirrors and checksums are in `scripts/prepare-assets.mjs` and `scripts/authored-assets.json`. The build writes `/assets/ATTRIBUTION.json`; the About dialog records authors, licenses and adaptations. Michroma and Barlow use the SIL Open Font License. SpaceX marks identify this independent concept.
@@ -37,7 +37,7 @@ Pinned mirrors and checksums are in `scripts/prepare-assets.mjs` and `scripts/au
 
 `npm test` runs source-preservation, navigation, framing, quality and ownership regressions. Optional reproducible Linux browser checks are documented in `scripts/qa/README.md`; they cover desktop, portrait, landscape, errors, retry, quality switching and idle rendering.
 
-Models are artistic references, not official engineering CAD. Heavy's source is low-poly; Dragon is a historical exterior study, not a current flight configuration. No invented internals are presented as real. The approved concepts remain an art-direction target, not a claim of identical rendering. Software-rendered mobile emulation does not establish physical-phone frame rates.
+Models are artistic references, not official engineering CAD. Heavy's source is low-poly; Dragon includes its source-authored docking hardware and heat shield, but no cabin. No invented internals are presented as real. The approved concepts remain an art-direction target, not a claim of identical rendering. Software-rendered mobile emulation does not establish physical-phone frame rates.
 
 ## Commercial-readiness work
 

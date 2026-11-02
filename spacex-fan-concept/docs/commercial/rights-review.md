@@ -8,7 +8,7 @@ Código do projeto: revisar autoria, contribuições e direitos de contratação
 
 Software/fontes: Three.js e Meshoptimizer sob MIT; Michroma e Barlow sob OFL-1.1 conforme os pacotes instalados. O build publica textos e versões sem oferecer esses direitos como exclusividade própria.
 
-Modelos: Stanley Creative/Falcon 9, Antonio_Adams/Falcon Heavy, Clarence365/Starship e Jon Ross/Dragon 2 histórica têm CC BY 4.0 declarada nos registros usados. Manter autor, fonte, licença e modificações. Confirmar autorização do autor antes da contratação; checksums verificam bytes, não direitos ou fidelidade técnica. Studio Small 03, Greg Zaal/Poly Haven, tem registro CC0.
+Modelos: Stanley Creative/Falcon 9, Antonio_Adams/Falcon Heavy, Clarence365/Starship e KUBAHA/Dragon 2 têm CC BY 4.0 declarada nos registros usados. Manter autor, fonte, licença e modificações. Confirmar autorização do autor antes da contratação; checksums verificam bytes, não direitos ou fidelidade técnica. Studio Small 03, Greg Zaal/Poly Haven, tem registro CC0.
 
 Marca/logotipo/nomes SpaceX têm direitos próprios, distintos das licenças dos modelos. O aviso de fan concept não é autorização automática de uso comercial.
 

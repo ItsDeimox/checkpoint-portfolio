@@ -14,7 +14,7 @@ Oferecer serviços de implementação e integração de experiências 3D, eventu
 
 | Área | Requisito antes da contratação/produção |
 |---|---|
-| Fidelidade | Assets aprovados e revisão técnica. Heavy low-poly, Dragon histórica, Falcon 1 ausente e interiores parciais ainda limitam esta demonstração. |
+| Fidelidade | Assets aprovados e revisão técnica. Heavy low-poly, Dragon sem cabine, Falcon 1 ausente e interiores parciais ainda limitam esta demonstração. |
 | Direitos | Revisar autoria do código, permissões dos assets e uso comercial da marca. Créditos e hashes não constituem liberação jurídica. |
 | Aparelhos reais | Medir Android/iOS e Safari/WebKit reais; testes em Chromium por CPU não substituem hardware do cliente. |
 | Acessibilidade | Completar avaliação manual, NVDA/VoiceOver, zoom e contraste sobre canvas. Axe não é certificação. |

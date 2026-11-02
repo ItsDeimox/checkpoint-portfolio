@@ -7,6 +7,7 @@ import {ALL_EXTENSIONS} from '@gltf-transform/extensions';
 import {dedup,prune,weld,simplify,textureCompress,meshopt} from '@gltf-transform/functions';
 import {MeshoptEncoder,MeshoptDecoder,MeshoptSimplifier} from 'meshoptimizer';
 import sharp from 'sharp';
+import {applyDragonSourcePose} from './dragon-pose.mjs';
 const cache=path.resolve('.cache/3d'),out=path.resolve('public/assets');
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const f9='https://raw.githubusercontent.com/codeLabs-summer2021/3D-Model-World/b0e1bec349a2f603da3c76ce12d09094596285e3/res/falcon9/';
@@ -22,13 +23,13 @@ const sources=[
 sources.push(...JSON.parse(await readFile(new URL('./authored-assets.json',import.meta.url),'utf8')));
 const authors={
  falconheavy:{title:'SpaceX Falcon Heavy (Low Poly)',author:'Antonio_Adams',license:'CC-BY-4.0',source:'https://sketchfab.com/3d-models/spacex-falcon-heavylow-poly-0dc068a462e34258b3872085a7f592c8',mirror:'DominicwalterLOF/singularity',reference:'Authored visual model; not official engineering CAD'},
- dragon:{title:'SpaceX Dragon 2 exterior',author:'Jon Ross',license:'CC-BY-4.0',source:'https://sketchfab.com/3d-models/spacex-dragon-2-exterior-2575398db20c406cab2cf72b89a9be8b',mirror:'Harshal0902/SkillCept',reference:'Historical design study, not a current flight-configuration model'},
+ dragon:{title:'SpaceX - Dragon 2',author:'KUBAHA',license:'CC-BY-4.0',source:'https://sketchfab.com/3d-models/spacex-dragon-2-1b125e30a2cb442288580290536fbe5d',mirror:'crgonzales/docking-sim',reference:'Source-authored capsule, heat shield and docking hardware; cabin not supplied'},
  falcon9:{title:'Falcon 9 - SpaceX',author:'Stanley Creative',license:'CC-BY-4.0',source:'https://sketchfab.com/3d-models/falcon-9-spacex-394f7cf52d124bbd9db69f24d1ff2f08',mirror:'codeLabs-summer2021/3D-Model-World'},
  starship:{title:'SpaceX Starship Block 3',author:'Clarence365',license:'CC-BY-4.0',source:'https://sketchfab.com/3d-models/spacex-starship-block-3-6f6c6f88a3eb4b4d822fdca66733fbb2',mirror:'haskaomni/blueprint (initial optimization)'},
  studio:{title:'Studio Small 03',author:'Greg Zaal / Poly Haven',license:'CC0-1.0',source:'https://polyhaven.com/a/studio_small_03',mirror:'pmndrs/drei-assets'},
 };
 await mkdir(out,{recursive:true});await mkdir(cache,{recursive:true});
-const fingerprint=sha(Buffer.concat([await readFile(new URL(import.meta.url)),await readFile('package.json'),await readFile(new URL('./authored-assets.json',import.meta.url))]));
+const fingerprint=sha(Buffer.concat([await readFile(new URL(import.meta.url)),await readFile('package.json'),await readFile(new URL('./authored-assets.json',import.meta.url)),await readFile(new URL('./dragon-pose.mjs',import.meta.url))]));
 try{const old=JSON.parse(await readFile(path.join(out,'manifest.json'),'utf8'));if(old.fingerprint===fingerprint){await Promise.all(Object.values(old.files).map(f=>stat(path.join('public',f.url))));console.log('Verified asset build already exists.');process.exit(0);}}catch{}
 async function acquire([name,url,expected]) {
  const dest=path.join(cache,name);await mkdir(path.dirname(dest),{recursive:true});
@@ -42,7 +43,8 @@ await Promise.all([MeshoptEncoder.ready,MeshoptDecoder.ready,MeshoptSimplifier.r
 const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.encoder':MeshoptEncoder,'meshopt.decoder':MeshoptDecoder});
 const files={};
 for(const family of ['falcon9','falconheavy','dragon','starship'])for(const quality of ['high','eco']){
- const doc=await io.read(path.join(cache,family==='starship'?'starship.glb':`${family}/scene.gltf`));
+ const doc=await io.read(path.join(cache,['starship','dragon'].includes(family)?`${family}.glb`:`${family}/scene.gltf`));
+ if(family==='dragon')applyDragonSourcePose(doc);
  const eco=quality==='eco';
  const steps=[dedup(),weld()];
  if(eco&&family!=='falconheavy')steps.push(simplify({simplifier:MeshoptSimplifier,ratio:family==='starship'?.10:.62,error:family==='starship'?.008:.002,lockBorder:family!=='starship'}));
@@ -54,7 +56,7 @@ for(const family of ['falcon9','falconheavy','dragon','starship'])for(const qual
  files[`${family}-${quality}`]={url:`/assets/${filename}`,bytes:b.byteLength,triangles,sha256:hash};console.log(family,quality,Math.round(b.byteLength/1024)+'KB',triangles+' triangles');
 }
 const hdrName='studio-small-03-29267a4aa8c1.hdr';await copyFile(path.join(cache,'studio.hdr'),path.join(out,hdrName));files.studio={url:'/assets/'+hdrName,bytes:1680234,sha256:sources.find(s=>s[0]==='studio.hdr')[2]};
-const manifest={version:3,fingerprint,files,authors,modifications:'Deimox: authored GLTF optimization, texture resizing/WebP, Meshopt compression, source PBR preservation and grouping of existing source triangles for selection. No generated spacecraft or invented internals. Falcon Heavy uses its complete source asset. Dragon is a historical exterior design study. Falcon 1 is unavailable pending a verified reusable source.'};
+const manifest={version:3,fingerprint,files,authors,modifications:'Deimox: authored GLTF optimization, texture resizing/WebP, Meshopt compression, source PBR preservation and grouping of existing source triangles for selection. No generated spacecraft or invented internals. Falcon Heavy uses its complete source asset. Dragon by KUBAHA uses the original authored open-nose keyframe at the original 100/24-second keyframe; capsule inspection omits the separate cargo trunk while retaining the supplied heat shield. No cabin is supplied. Falcon 1 is unavailable pending a verified reusable source.'};
 await writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2));await writeFile(path.join(out,'ATTRIBUTION.json'),JSON.stringify({authors,modifications:manifest.modifications,inputs:sources},null,2));
 
 const keep=new Set(Object.values(files).map(f=>path.basename(f.url)));

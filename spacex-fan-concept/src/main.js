@@ -23,8 +23,9 @@ function render(){
   const coverage=viewer?.inspection?.coverage,supported=Boolean(detail&&coverage?.supported),internal=Boolean(viewer?.cutaway&&supported);
   document.querySelector('.inspection-controls').hidden=!supported;$('view-cutaway').disabled=!supported;
   $('view-exterior').setAttribute('aria-pressed',String(!internal));$('view-cutaway').setAttribute('aria-pressed',String(internal));
-  $('interior-note').hidden=false;$('interior-note').textContent=supported?coverage.summary:state.payload==='dragon'?'HISTORICAL DRAGON 2 EXTERIOR · INTERNAL MODEL NOT AVAILABLE':viewer?.inspection?.contextual?'CONTINUOUS SOURCE SHELL RETAINED · NO ARTIFICIAL CUTS OR INTERNALS':'INTERNAL ASSEMBLY NOT AVAILABLE IN THIS SOURCE MODEL';
-  $('assembly-source').hidden=!supported;if(supported){$('assembly-source').href=coverage.url;$('assembly-source').textContent=`MODEL SOURCE · ${coverage.author} ↗`;}
+  $('interior-note').hidden=false;$('interior-note').textContent=supported?coverage.summary:state.payload==='dragon'?'AUTHORED DOCKING HARDWARE AND HEAT SHIELD · CABIN NOT INCLUDED':viewer?.inspection?.contextual?'CONTINUOUS SOURCE SHELL RETAINED · NO ARTIFICIAL CUTS OR INTERNALS':'INTERNAL ASSEMBLY NOT AVAILABLE IN THIS SOURCE MODEL';
+  const source=supported?coverage:state.payload==='dragon'?{url:'https://sketchfab.com/3d-models/spacex-dragon-2-1b125e30a2cb442288580290536fbe5d',author:'KUBAHA'}:null;
+  $('assembly-source').hidden=!source;if(source){$('assembly-source').href=source.url;$('assembly-source').textContent=`MODEL SOURCE · ${source.author} ↗`;}
   $('configuration').hidden=!vehicle.reference;$('configuration').textContent=vehicle.reference??'';
   for(const [id,offset] of [['previous',-1],['next',1]]){const candidate=vehicles[state.index+offset],neighbor=candidate?.available===false?null:candidate,button=$(id);button.disabled=!neighbor;button.setAttribute('aria-label',neighbor?`Explore ${neighbor.name}`:offset<0?'First rocket':'Last rocket');button.querySelector('.neighbor-name').textContent=neighbor?.name??'';button.querySelector('.neighbor-years').textContent=neighbor?.years??'';}
   [...$('pagination').children].forEach((button,i)=>button.setAttribute('aria-current',String(i===state.index)));
@@ -83,7 +84,7 @@ function search(query){
     if(!q||v.name.toLowerCase().includes(q))results.push({name:v.name,label:'VEHICLE',index:i});
     if(q)for(const key of partOrder){const p=v.parts[key];if(`${v.name} ${p.title} ${partLabels[key]}`.toLowerCase().includes(q))results.push({name:p.title,label:v.name,index:i,part:key});}
   }
-  if(q&&'crew dragon 2 human spaceflight'.includes(q))results.push({name:'DRAGON 2',label:'HISTORICAL EXTERIOR',dragon:true});
+  if(q&&'crew dragon 2 human spaceflight'.includes(q))results.push({name:'DRAGON 2',label:'CAPSULE / DOCKING',dragon:true});
   $('search-results').replaceChildren(...results.slice(0,20).map(result=>{
     const button=document.createElement('button'),span=document.createElement('span'),small=document.createElement('small');span.textContent=result.name;small.textContent=result.label;button.append(span,small);
     button.addEventListener('click',()=>{closeDialogs();if(result.dragon)action({type:'DRAGON'});else{action({type:'NAVIGATE',index:result.index});if(result.part)action({type:'FOCUS',part:result.part});}});return button;

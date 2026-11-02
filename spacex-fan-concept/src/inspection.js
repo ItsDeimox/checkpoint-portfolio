@@ -8,6 +8,7 @@ export function createInspection(model,index,part,payload='fairing'){
  const group=new T.Group(),exterior=new T.Group();group.name='inspection-'+part;group.add(exterior);const materials=new Set(),sourceMeshes=[];model.group.updateMatrixWorld(true);const inverse=model.group.matrixWorld.clone().invert();
  model.group.traverse(o=>{
   if(!o.isMesh||!(o.userData.inspectionParts??[o.userData.part]).includes(part)||!visibleWithin(o,model.group))return;
+  if(model.family==='dragon'&&o.userData.role==='cargo-trunk')return;
   if(part==='engines'&&o.userData.role==='landing-gear')return;
   if(part==='interstage'&&model.family==='falcon'&&o.userData.stage==='upper'&&!o.userData.assemblyFeature)return;
   sourceMeshes.push(o);const mesh=o.clone();mesh.children=[];mesh.geometry=o.geometry;

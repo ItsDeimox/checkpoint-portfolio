@@ -1,0 +1,57 @@
+{
+  "result": [
+    {
+      "quality": "low",
+      "top": {
+        "y": 0.7339743309921604,
+        "material": "BIALY.001"
+      },
+      "bottom": {
+        "y": 0.0025060865860507334,
+        "material": "METAL"
+      },
+      "meshCount": 5,
+      "sourceOnly": true,
+      "trunkHidden": true,
+      "sourceNames": [
+        "Object_9 Circle132_1 GLTF_SceneRootNode root",
+        "Object_15 Circle001_2 GLTF_SceneRootNode root",
+        "Object_18 Circle012_3 GLTF_SceneRootNode root",
+        "Object_10 Circle132_1 GLTF_SceneRootNode root",
+        "Object_16 Circle001_2 GLTF_SceneRootNode root",
+        "Object_19 Circle012_3 GLTF_SceneRootNode root",
+        "Object_11 Circle132_1 GLTF_SceneRootNode root",
+        "Object_12 Circle132_1 GLTF_SceneRootNode root",
+        "Object_13 Circle132_1 GLTF_SceneRootNode root"
+      ],
+      "supportsCabin": false
+    },
+    {
+      "quality": "high",
+      "top": {
+        "y": 0.7339743309921604,
+        "material": "BIALY.001"
+      },
+      "bottom": {
+        "y": 0.0024824600874888683,
+        "material": "METAL"
+      },
+      "meshCount": 5,
+      "sourceOnly": true,
+      "trunkHidden": true,
+      "sourceNames": [
+        "Object_9 Circle132_1 GLTF_SceneRootNode root",
+        "Object_15 Circle001_2 GLTF_SceneRootNode root",
+        "Object_18 Circle012_3 GLTF_SceneRootNode root",
+        "Object_10 Circle132_1 GLTF_SceneRootNode root",
+        "Object_16 Circle001_2 GLTF_SceneRootNode root",
+        "Object_19 Circle012_3 GLTF_SceneRootNode root",
+        "Object_11 Circle132_1 GLTF_SceneRootNode root",
+        "Object_12 Circle132_1 GLTF_SceneRootNode root",
+        "Object_13 Circle132_1 GLTF_SceneRootNode root"
+      ],
+      "supportsCabin": false
+    }
+  ],
+  "errors": []
+}

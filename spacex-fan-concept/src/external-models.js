@@ -29,7 +29,7 @@ export function prepareTemplate(source,family,height){
    for(const range of ranges){
     const material=materials[range.materialIndex]??materials[0];if(family==='dragon'&&/^ground$/i.test(material.name))continue;
     const geometry=bakeSourceRange(g,range.start,range.count,matrix);geometry.computeBoundingBox();const y=geometry.boundingBox.getCenter(new T.Vector3()).y/height,name=chainName(o);
-    const role=/landing.?leg/i.test(name)?'landing-gear':'component',feature=assemblyFeature(family,name,material.name,y);
+    const role=family==='dragon'&&/\bCircle\.?002_0\b/.test(name)?'cargo-trunk':/landing.?leg/i.test(name)?'landing-gear':'component',feature=assemblyFeature(family,name,material.name,y);
     const stage=family==='falcon'&&(/second.?stage|engine.?holder/i.test(name)||geometry.boundingBox.min.y>height*.65)?'upper':'booster';
     const parts=family==='heavy'?partitionAuthoredRegions(geometry,height):[{geometry,part:family==='dragon'?'fairing':classifyPart(family,name,y)}];if(family==='heavy')geometry.dispose();
     for(const item of parts){const layout=Object.keys(item.geometry.attributes).sort().map(n=>n+item.geometry.getAttribute(n).itemSize).join(','),key=`${item.part}|${material.uuid}|${stage}|${role}|${feature??''}|${item.inspectionParts?.join(',')??item.part}|${Boolean(item.assemblyContext)}|${layout}`;if(!bins.has(key))bins.set(key,{part:item.part,stage,role,assemblyFeature:feature,inspectionParts:item.inspectionParts,assemblyContext:item.assemblyContext,material,geometries:[],sourceNames:new Set()});const bin=bins.get(key);bin.geometries.push(item.geometry);bin.sourceNames.add(name);}
