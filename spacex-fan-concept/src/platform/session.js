@@ -2,9 +2,9 @@
 export const CHANNEL='deimox-viewer/v1';
 const plain=v=>v!==null&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
 const finite=v=>typeof v==='number'&&Number.isFinite(v);
-export function createSession({catalog,read,dispatch,controls}){
+export function createSession({catalog,read,dispatch,controls,describe}){
  if(!Array.isArray(catalog)||typeof read!=='function'||typeof dispatch!=='function')throw new TypeError('Invalid session adapter');
- const snapshot=()=>{const s=read(),v=catalog[s.index];return {vehicle:v?.id??null,name:v?.name??'',part:s.part??null};};
+ const snapshot=()=>{const s=read(),v=catalog[s.index],part=s.part?(describe?.(s,v)??v?.parts?.[s.part]):null;return {vehicle:v?.id??null,name:v?.name??'',part:s.part??null,variant:s.payload??null,partTitle:part?.title??null};};
  function execute(command){
   if(!plain(command)||typeof command.type!=='string')return {ok:false,error:'INVALID_COMMAND'};
   const state=read(),vehicle=catalog[state.index];

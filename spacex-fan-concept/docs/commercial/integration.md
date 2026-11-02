@@ -23,3 +23,5 @@ window.addEventListener('message', event => {
 Commands: getState; selectVehicle(id); selectPart(id); back; setQuality(value: auto/low/medium/high); setInternal(boolean value, only supported modules); rotate(finite x/y, each within +/-60); zoom(value 0.7-1.8); resetView. Replies contain selected vehicle/name/part, not model bytes or private data.
 
 This command filter does not secure confidential CAD. Host authentication, asset authorization and restricted-data handling require separate design. No analytics or SpaceX communication is performed.
+
+The v1 state reply now also reports `variant` and `partTitle`. These additive fields distinguish a capsule variant from the parent rocket fairing without embedding vendor-specific logic in the session module. Consumers should ignore unknown fields for forward compatibility.

@@ -4,6 +4,7 @@ import {CarouselMotion,createFade,componentPose,rotateInView,depthRange,clamp,sm
 import {bindViewerControls} from './viewer-controls.js';
 import {CinematicPipeline,buildPracticals} from './cinematic.js';
 import {FrameBudget} from './quality.js';
+import {createGraphicsRecovery} from './platform/graphics-recovery.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {AssetLibrary,createModel,createEmptyModel,sourceFamilies,isEffectivelyVisible} from './external-models.js';
@@ -55,8 +56,9 @@ function atmosphere(width,height,opacity){
 }
 
 export class RocketViewer {
-  constructor(canvas,{onAction,onHover,onProgress,onError,onAssetStatus}){
-    Object.assign(this,{canvas,onAction,onHover,onProgress,onError,onAssetStatus,models:[],frameId:0,frames:0,lastTime:0,hover:null,drag:null,qualityMode:'auto',disposed:false});
+  constructor(canvas,{onAction,onHover,onProgress,onError,onAssetStatus,onRecovered}){
+    Object.assign(this,{canvas,onAction,onHover,onProgress,onError,onAssetStatus,onRecovered,models:[],frameId:0,frames:0,lastTime:0,hover:null,drag:null,qualityMode:'auto',disposed:false});
+    this.recovery=createGraphicsRecovery({release:()=>this.releaseGraphics(),rebuild:()=>this.rebuildGraphics(),complete:()=>{this.onRecovered?.();this.wake();},fail:error=>{console.warn('Graphics recovery failed.',error.message);this.onError?.('The 3D context could not be restored. Reload to retry, or use the text catalogue.');}});
     this.carousel=new CarouselMotion(1);this.contextAlpha=1;this.retiring=[];this.hiddenSources=[];this.rotationDelta=new T.Vector2();this.zoom=1;this.zoomTarget=1;this.stageScale=1;this.scratchSphere=new T.Sphere();this.scratchVector=new T.Vector3();this.depthVector=new T.Vector3();this.unitScale=new T.Vector3(1,1,1);this.poseTarget=new T.Vector3();this.lastPick=0;
     this.frameBudget=new FrameBudget();this.inspection=null;this.cutaway=false;this.autoCap=null;this.dragonModel=null;this.assetWants={};
     this.library=new AssetLibrary();this.assetStates={};this.assetJobs=new Map();this.assetVersions={};this.studioSource='procedural';
@@ -137,12 +139,31 @@ export class RocketViewer {
       this.environment.dispose();this.environment=environment;this.scene.environment=environment.texture;this.scene.environmentIntensity=.23;this.scene.environmentRotation.set(0,.65,0);this.studioSource='poly-haven-studio-small-03';this.wake();
     }catch(error){if(!this.disposed)console.warn('Keeping the fallback studio environment.',error.message);}
   }
-  buildStudio(){
+  buildEnvironment(){
     const studio=new T.Scene();studio.background=new T.Color(.009,.009,.011);
     const card=(x,y,z,w,h,power)=>{const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:new T.Color(power,power,power),side:T.DoubleSide}));m.position.set(x,y,z);m.lookAt(0,9,0);studio.add(m);};
     card(-5,10,4,3,24,7);card(5,13,-4,2,28,11);card(0,24,4,8,4,4);card(1,5,8,5,15,.7);
     const pmrem=new T.PMREMGenerator(this.renderer);this.environment=pmrem.fromScene(studio,.035,.1,100);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.27;
     studio.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});pmrem.dispose();
+  }
+  releaseGraphics(){
+    // WebKit rejects deleting handles from the previous context after restoration.
+    // Release GPU allocations while the context is lost; keep every CPU-side source buffer/image.
+    this.pipeline?.dispose();if(this.pipeline)this.pipeline.key='';
+    this.environment?.dispose();this.environment=null;if(this.scene)this.scene.environment=null;
+    this.floor?.getRenderTarget().dispose();
+    const geometries=new Set(),materials=new Set(),textures=new Set();
+    this.scene?.traverse(o=>{if(!o.isMesh)return;geometries.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
+    for(const m of materials)for(const v of Object.values(m))if(v?.isTexture&&!v.isRenderTargetTexture)textures.add(v);
+    for(const geometry of geometries)geometry.dispose();for(const material of materials)material.dispose();for(const texture of textures)texture.dispose();
+  }
+  async rebuildGraphics(){
+    this.lastTime=0;this.pipeline.dispose();this.pipeline.key='';this.environment?.dispose();this.buildEnvironment();
+    this.applyQuality();await this.loadStudioEnvironment();if(this.disposed)return;
+    await this.renderer.compileAsync(this.scene,this.camera);
+  }
+  buildStudio(){
+    this.buildEnvironment();
     const area=(x,y,z,w,h,intensity,target)=>{const light=new T.RectAreaLight(0xffffff,intensity,w,h);light.position.set(x,y,z);light.lookAt(...target);this.scene.add(light);return light;};
     this.key=area(-5.8,8,2.2,1.8,16,1.65,[0,7,0]);this.key.color.set(0xe4edff);
     this.rim=area(2.7,10,-3,1.2,20,12,[0,9,0]);
@@ -277,9 +298,9 @@ export class RocketViewer {
     const pos=new T.Vector3(0,f.y,.4).applyMatrix4(this.models[this.state.index].group.matrixWorld).project(this.camera);
     return {x:(pos.x*.5+.5)*this.width,y:(-.5*pos.y+.5)*this.height};
   }
-  wake(){if(this.disposed||document.hidden||this.frameId)return;this.frameId=requestAnimationFrame(t=>this.frame(t));}
+  wake(){if(this.disposed||this.recovery.blocked||document.hidden||this.frameId)return;this.frameId=requestAnimationFrame(t=>this.frame(t));}
   frame(time){
-    this.frameId=0;if(this.disposed||document.hidden||!this.floor)return;
+    this.frameId=0;if(this.disposed||this.recovery.blocked||document.hidden||!this.floor)return;
     const rawDelta=this.lastTime?time-this.lastTime:16.67,dt=Math.min(.05,rawDelta/1000);this.lastTime=time;
     let active=this.carousel.step(dt);active=this.updateAnimation(time,rawDelta)||active;
     if(Math.abs(this.zoom-this.zoomTarget)>.0002){this.zoom=T.MathUtils.lerp(this.zoom,this.zoomTarget,1-Math.exp(-dt*14));active=true;}else this.zoom=this.zoomTarget;
@@ -299,7 +320,7 @@ export class RocketViewer {
     if(active)this.wake();else this.lastTime=0;
   }
   dispose(){
-    this.restoreSources();for(const x of this.retiring)x.view.dispose();this.retiring.length=0;this.inspection?.dispose();this.pipeline?.dispose();this.practicals?.dispose();
+    this.recovery.dispose();this.restoreSources();for(const x of this.retiring)x.view.dispose();this.retiring.length=0;this.inspection?.dispose();this.pipeline?.dispose();this.practicals?.dispose();
     this.dragonModel?.dispose();this.disposed=true;cancelAnimationFrame(this.frameId);this.abort.abort();this.models.forEach(model=>model.dispose());this.library.dispose();this.contactShadow?.geometry.dispose();this.contactShadow?.material.dispose();this.floor?.dispose();this.environment?.dispose();
     for(const mesh of [this.haze,this.wideHaze]){mesh?.geometry.dispose();mesh?.material.dispose();}this.renderer?.dispose();
   }

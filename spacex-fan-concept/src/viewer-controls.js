@@ -23,7 +23,8 @@ export function bindViewerControls(v){
  on(window,'resize',()=>v.resize());
  on(document,'visibilitychange',()=>{if(document.hidden){if(v.drag)finish({pointerId:v.drag.id},true);cancelAnimationFrame(v.frameId);v.frameId=0;v.lastTime=0;}else v.wake();});
  on(v.reduced,'change',()=>{if(v.reduced.matches&&v.state.rotating)v.onAction({type:'ROTATE'});v.applyState(v.state,true);});
- on(v.canvas,'webglcontextlost',e=>{e.preventDefault();v.onError?.('The 3D context was interrupted. Reload to restore the showroom.');cancelAnimationFrame(v.frameId);v.frameId=0;});
+ on(v.canvas,'webglcontextlost',e=>{e.preventDefault();v.recovery.lose();v.onError?.('Graphics were interrupted. The viewer will resume if the context recovers; reload or use the text catalogue if it does not.');cancelAnimationFrame(v.frameId);v.frameId=0;});
+ on(v.canvas,'webglcontextrestored',()=>v.recovery.restore());
  on(v.canvas,'contextmenu',e=>e.preventDefault());
  on(v.canvas,'pointerdown',e=>{
   if(e.button!==0&&e.button!==2)return;

@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-02",
+  "playwright": "1.64.0",
+  "os": "Ubuntu 26.04",
+  "physicalDevices": false,
+  "base": "compiled preview with production CSP",
+  "results": [
+    {
+      "engine": "chromium",
+      "version": "156.0.8078.4",
+      "passed": 12,
+      "failed": 0,
+      "checks": [
+        "authored overview and HDR environment",
+        "high graphics shader and five-level bloom",
+        "isolated module and screen-relative XY input",
+        "existing internal hardware and unsupported tanks",
+        "Dragon correct screen-reader description",
+        "keyboard rotation then browser-navigation return",
+        "carousel tracks touch before release",
+        "portrait framing and controls",
+        "idle renderer sleeps",
+        "graphics context recovers HDR and preserves selected hardware",
+        "source identities validated in built GLBs",
+        "no page/shader errors"
+      ],
+      "failures": [],
+      "errors": [],
+      "environment": {
+        "headless": true,
+        "softwareRendering": true,
+        "physicalDevice": false
+      }
+    },
+    {
+      "engine": "firefox",
+      "version": "157.0",
+      "passed": 12,
+      "failed": 0,
+      "checks": [
+        "authored overview and HDR environment",
+        "high graphics shader and five-level bloom",
+        "isolated module and screen-relative XY input",
+        "existing internal hardware and unsupported tanks",
+        "Dragon correct screen-reader description",
+        "keyboard rotation then browser-navigation return",
+        "carousel tracks touch before release",
+        "portrait framing and controls",
+        "idle renderer sleeps",
+        "graphics context recovers HDR and preserves selected hardware",
+        "source identities validated in built GLBs",
+        "no page/shader errors"
+      ],
+      "failures": [],
+      "errors": [],
+      "environment": {
+        "headless": false,
+        "softwareRendering": true,
+        "physicalDevice": false
+      }
+    },
+    {
+      "engine": "webkit",
+      "version": "27.2",
+      "passed": 12,
+      "failed": 0,
+      "checks": [
+        "authored overview and HDR environment",
+        "high graphics shader and five-level bloom",
+        "isolated module and screen-relative XY input",
+        "existing internal hardware and unsupported tanks",
+        "Dragon correct screen-reader description",
+        "keyboard rotation then browser-navigation return",
+        "carousel tracks touch before release",
+        "portrait framing and controls",
+        "idle renderer sleeps",
+        "graphics context recovers HDR and preserves selected hardware",
+        "source identities validated in built GLBs",
+        "no page/shader errors"
+      ],
+      "failures": [],
+      "errors": [],
+      "environment": {
+        "headless": true,
+        "softwareRendering": true,
+        "physicalDevice": false
+      }
+    }
+  ]
+}

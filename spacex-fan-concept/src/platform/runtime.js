@@ -1,16 +1,16 @@
 import {createSession,connectBridge} from './session.js';
 import {siteConfig} from './site-config.js';
 /** A small adapter; the approved renderer remains unchanged. No analytics requests. */
-export function startProductLayer({viewer,read,dispatch,catalog,refresh=()=>{},document:doc=document,window:win=window}){
+export function startProductLayer({viewer,read,dispatch,catalog,describe,refresh=()=>{},document:doc=document,window:win=window}){
  const abort=new AbortController(),canvas=doc.getElementById('viewer');
- const session=createSession({catalog,read,dispatch,controls:{
+ const session=createSession({catalog,read,dispatch,describe,controls:{
   setQuality(value){viewer.applyQuality(value);doc.getElementById('quality').value=value;},
   setInternal(value){const ok=viewer.setCutaway(value);if(ok){refresh();sync();}return ok;},
   rotate(x,y){if(read().rotating)dispatch({type:'ROTATE'});if(viewer.animation)viewer.animation.orientationCancelled=true;viewer.rotationDelta.x+=x;viewer.rotationDelta.y+=y;viewer.wake();},
   zoom(value){viewer.setZoom(value);},reset(){viewer.zoom=viewer.zoomTarget=1;viewer.applyState(read(),false,true);}
  }});
  const status=doc.getElementById('viewer-status');let previous='';
- function sync(){const s=read(),v=catalog[s.index],part=v?.parts?.[s.part],text=s.part?`${v.name}: ${part?.title??s.part}. ${viewer.cutaway?'Internal structure':'Assembled view'}.`:`${v?.name??'Viewer'} selected.`;if(text!==previous){status.textContent=text;previous=text;}canvas.setAttribute('aria-label',text+' Interactive 3D viewer.');}
+ function sync(){const s=read(),v=catalog[s.index],snapshot=session.snapshot(),text=s.part?`${v.name}: ${snapshot.partTitle??s.part}. ${viewer.cutaway?'Internal structure':'Assembled view'}.`:`${v?.name??'Viewer'} selected.`;if(text!==previous){status.textContent=text;previous=text;}canvas.setAttribute('aria-label',text+' Interactive 3D viewer.');}
  canvas.addEventListener('keydown',event=>{
   if(event.altKey||event.ctrlKey||event.metaKey)return;
   const s=read(),step=event.shiftKey?32:14;let command;

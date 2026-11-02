@@ -1,0 +1,1 @@
+{"private":true,"type":"module","description":"Separate cross-engine validation; not shipped with the viewer","dependencies":{"playwright":"1.64.0"},"scripts":{"test":"node run.mjs"}}

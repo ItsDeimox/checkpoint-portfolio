@@ -23,3 +23,7 @@ Oferecer serviços de implementação e integração de experiências 3D, eventu
 | Contato SpaceX | Obter abertura/acordo antes de compartilhar conceitos, links ou proposta. Nenhum contato foi feito. |
 
 Resultados executados: `validation.md`. Metas propostas e não garantidas: `acceptance.md`. O relatório público `/release/readiness.json` permanece identificado como protótipo, não como aprovação comercial.
+
+## Segunda etapa
+
+A matriz de Chromium/Firefox/WebKit, a recuperação de contexto gráfico e a verificação da identidade interna dos GLBs estão documentadas em `validation-stage2-2026-11-02.md`. A avaliação de candidatos está em `model-acceptance-2026-11-02.md`. Os testes são de laboratório, não substituem aparelhos reais.
