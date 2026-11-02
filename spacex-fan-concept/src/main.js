@@ -1,10 +1,12 @@
 import './style.css';
 import './refinement.css';
-import {RocketViewer} from './scene.js';
+import './platform/accessibility.css';
+import {startProductLayer} from './platform/runtime.js';
+import {siteConfig} from './platform/site-config.js';
 import {vehicles,partOrder,partLabels,getPart} from './data.js';
 import {initialState,reduce} from './state.js';
 
-const $=id=>document.getElementById(id);let state=initialState(),viewer,ready=false;
+const $=id=>document.getElementById(id);let state=initialState(),viewer,product,ready=false;
 const dialogs=['search-dialog','menu-dialog','about-dialog'].map($);
 const format=(node,text)=>{node.replaceChildren(...text.split('\n').flatMap((line,i)=>i?[document.createElement('br'),document.createTextNode(line)]:[document.createTextNode(line)]));};
 const action=(event)=>{
@@ -36,7 +38,7 @@ function render(){
     $('detail-source').href=state.payload==='dragon'&&state.part==='fairing'?'https://www.spacex.com/vehicles/dragon/':vehicle.source;
     $('detail-copy').scrollTop=0;
   }
-  document.title=`${detail?.title??vehicle.name} | SpaceX Fan Concept`;
+  document.title=`${detail?.title??vehicle.name} | ${siteConfig.demoTitle}`;product?.sync();
 }
 for(const [i,vehicle] of vehicles.entries()){
   const dot=document.createElement('button');dot.setAttribute('aria-label',`View ${vehicle.name}`);dot.innerHTML=`<span class="page-name">${vehicle.name}</span>`;dot.addEventListener('click',()=>action({type:'NAVIGATE',index:i}));dot.hidden=vehicle.available===false;dot.disabled=vehicle.available===false;$('pagination').append(dot);
@@ -98,9 +100,10 @@ function hover(part,point){
 render();
 (async()=>{
   try{
+    const {RocketViewer}=await import('./scene.js');
     viewer=new RocketViewer($('viewer'),{onAction:action,onHover:hover,onProgress:(n,text)=>{$('loading-progress').style.width=`${n*100}%`;$('loading-caption').textContent=text;},onError:showError,onAssetStatus:()=>{if(ready)render();}});
-    await viewer.initialize(state);ready=true;render();document.documentElement.dataset.ready='true';$('loading').classList.add('leaving');setTimeout(()=>$('loading').hidden=true,700);
-    if(new URLSearchParams(location.search).has('qa'))window.__SPACEX_QA__={state:()=>({...state}),stats:()=>({...viewer.lastStats}),quality:mode=>viewer.applyQuality(mode),yaw:value=>{viewer.displayGroup().rotation.y=value;viewer.wake();},retry:()=>viewer.retryModel(),orientation:()=>viewer.displayGroup().rotation.y,quaternion:()=>viewer.displayGroup().quaternion.toArray(),motion:()=>({position:viewer.carousel.position,dragging:viewer.carousel.dragging,contextAlpha:viewer.contextAlpha,transition:Boolean(viewer.animation),rotation:viewer.displayGroup().quaternion.toArray(),inspectionOpacity:viewer.inspection?.fade.value??0,visibleFades:viewer.models.map(m=>m.fade?.value??0)}),zoom:value=>viewer.setZoom(value),framing:()=>{if(!viewer.inspection)return null;const b=viewer.inspection.bounds.clone().applyMatrix4(viewer.inspection.group.matrixWorld),p=[];for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z]){const v=b.min.clone().set(x,y,z).project(viewer.camera);p.push([(v.x+1)*viewer.width/2,(1-v.y)*viewer.height/2]);}return p;},inspection:()=>viewer.inspection?({key:viewer.inspectionKey,interiorVisible:viewer.cutaway,supportsInterior:viewer.inspection.supportsInterior,coverage:viewer.inspection.coverage,features:[...new Set(viewer.inspection.exterior.children.map(m=>m.userData.assemblyFeature).filter(Boolean))],internalMeshes:viewer.inspection.internalMeshes.size,exteriorCount:viewer.inspection.exterior.children.length,bounds:{min:viewer.inspection.bounds.min.toArray(),max:viewer.inspection.bounds.max.toArray()},originalsVisible:viewer.models.filter(m=>m.group.visible).length}):null,visible:()=>viewer.models.map(m=>m.group.visible),assets:()=>({...viewer.assetStates}),models:()=>viewer.models.map(m=>({name:m.group.name,source:m.source||'unavailable',meshes:m.group.children.filter(o=>o.isMesh).length,parts:[...new Set(m.group.children.filter(o=>o.isMesh).map(o=>o.userData.part))]})),point:part=>viewer.projectPart(part),action};
+    await viewer.initialize(state);ready=true;product=startProductLayer({viewer,read:()=>state,dispatch:action,catalog:vehicles,refresh:render});render();document.documentElement.dataset.ready='true';$('loading').classList.add('leaving');setTimeout(()=>$('loading').hidden=true,700);
+    if(new URLSearchParams(location.search).has('qa'))window.__SPACEX_QA__={state:()=>({...state}),stats:()=>({...viewer.lastStats}),session:command=>product.session.execute(command),quality:mode=>viewer.applyQuality(mode),yaw:value=>{viewer.displayGroup().rotation.y=value;viewer.wake();},retry:()=>viewer.retryModel(),orientation:()=>viewer.displayGroup().rotation.y,quaternion:()=>viewer.displayGroup().quaternion.toArray(),motion:()=>({position:viewer.carousel.position,dragging:viewer.carousel.dragging,contextAlpha:viewer.contextAlpha,transition:Boolean(viewer.animation),rotation:viewer.displayGroup().quaternion.toArray(),inspectionOpacity:viewer.inspection?.fade.value??0,visibleFades:viewer.models.map(m=>m.fade?.value??0)}),zoom:value=>viewer.setZoom(value),framing:()=>{if(!viewer.inspection)return null;const b=viewer.inspection.bounds.clone().applyMatrix4(viewer.inspection.group.matrixWorld),p=[];for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z]){const v=b.min.clone().set(x,y,z).project(viewer.camera);p.push([(v.x+1)*viewer.width/2,(1-v.y)*viewer.height/2]);}return p;},inspection:()=>viewer.inspection?({key:viewer.inspectionKey,interiorVisible:viewer.cutaway,supportsInterior:viewer.inspection.supportsInterior,coverage:viewer.inspection.coverage,features:[...new Set(viewer.inspection.exterior.children.map(m=>m.userData.assemblyFeature).filter(Boolean))],internalMeshes:viewer.inspection.internalMeshes.size,exteriorCount:viewer.inspection.exterior.children.length,bounds:{min:viewer.inspection.bounds.min.toArray(),max:viewer.inspection.bounds.max.toArray()},originalsVisible:viewer.models.filter(m=>m.group.visible).length}):null,visible:()=>viewer.models.map(m=>m.group.visible),assets:()=>({...viewer.assetStates}),models:()=>viewer.models.map(m=>({name:m.group.name,source:m.source||'unavailable',meshes:m.group.children.filter(o=>o.isMesh).length,parts:[...new Set(m.group.children.filter(o=>o.isMesh).map(o=>o.userData.part))]})),point:part=>viewer.projectPart(part),action};
   }catch(error){console.error('Showroom initialization failed:',error);showError('The 3D showroom could not start. Try reloading or enable hardware acceleration in your browser.');viewer?.dispose();}
 })();
-window.addEventListener('pagehide',event=>{if(!event.persisted)viewer?.dispose();});
+window.addEventListener('pagehide',event=>{if(!event.persisted){product?.dispose();viewer?.dispose();}});

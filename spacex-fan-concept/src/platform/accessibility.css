@@ -1,0 +1,10 @@
+/* Preserve the cinematic layout. Changes target focus, secondary contrast and alternative access. */
+#viewer:focus-visible{outline:2px solid #dce7ff;outline-offset:-4px}
+.menu-fleet small,.search-results small{color:#a3a6ae}
+input:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.catalog-links{margin:20px 0;color:#bbbfc7;font-size:11px;letter-spacing:.1em;line-height:1.7}
+.catalog-links a{display:inline-block;padding:8px 0}
+@media(forced-colors:active){button,a,select{forced-color-adjust:auto}.brand img{forced-color-adjust:none}}
+
+.loading-alternative{font-size:10px;letter-spacing:.1em;padding:12px;color:#b8bec9;text-decoration:underline;text-underline-offset:4px}
+#search-results button small,.search-dialog .dialog-footnote{color:#a3a6ae}

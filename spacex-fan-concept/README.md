@@ -38,3 +38,7 @@ Pinned mirrors and checksums are in `scripts/prepare-assets.mjs` and `scripts/au
 `npm test` runs source-preservation, navigation, framing, quality and ownership regressions. Optional reproducible Linux browser checks are documented in `scripts/qa/README.md`; they cover desktop, portrait, landscape, errors, retry, quality switching and idle rendering.
 
 Models are artistic references, not official engineering CAD. Heavy's source is low-poly; Dragon is a historical exterior study, not a current flight configuration. No invented internals are presented as real. The approved concepts remain an art-direction target, not a claim of identical rendering. Software-rendered mobile emulation does not establish physical-phone frame rates.
+
+## Commercial-readiness work
+
+The current phase adds a vendor-neutral command adapter, keyboard inspection, a static HTML catalogue, third-party notices and build integrity/size gates. It does not establish legal clearance or complete engineering fidelity. See [commercial preparation](docs/commercial/README.md), [executed validation](docs/commercial/validation.md) and [integration protocol](docs/commercial/integration.md). No outreach was sent.
