@@ -10,6 +10,7 @@ import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {AssetLibrary,createModel,createEmptyModel,sourceFamilies,isEffectivelyVisible} from './external-models.js';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 import {vehicles,getPart} from './data.js';
+import {authoredRegion} from './source-geometry.js';
 import {fitView,getQuality,ease} from './state.js';
 
 const floorShader={
@@ -190,7 +191,7 @@ export class RocketViewer {
     if(previous){this.retiring.push({view:previous,from:previous.fade.value,elapsed:0});if(this.retiring.length>2)this.retiring.shift().view.dispose();}
     if(!key)return null;
     const model=this.inspectionModel();if(!model||model.source!=='licensed')return null;
-    model.payload('fairing');if(!model.group.children.some(o=>o.userData.part===state.part))return null;
+    model.payload('fairing');if(!model.group.children.some(o=>(o.userData.inspectionParts??[o.userData.part]).includes(state.part)))return null;
     const view=createInspection(model,state.index,state.part,state.payload);this.inspection=view;this.inspectionKey=key;this.scene.add(view.group);
     const initial=state.payload!=='dragon'&&!previous&&this.contextAlpha>.85;
     if(initial){model.group.updateMatrixWorld(true);view.group.position.copy(view.sourceCenter).applyMatrix4(model.group.matrixWorld);model.group.getWorldQuaternion(view.group.quaternion);model.group.getWorldScale(view.group.scale);}
@@ -283,7 +284,7 @@ export class RocketViewer {
       if(Math.abs(i-this.state.index)>1||!this.models[i].group.visible)continue;
       const model=this.models[i];if(model.sphere&&!this.raycaster.ray.intersectsSphere(this.scratchSphere.copy(model.sphere).applyMatrix4(model.group.matrixWorld)))continue;
       const hits=this.raycaster.intersectObject(model.group,true).filter(hit=>isEffectivelyVisible(hit.object)&&hit.object.userData.part);
-      if(hits[0]&&(!best||hits[0].distance<best.distance))best={...hits[0],index:i,part:hits[0].object.userData.part};
+      if(hits[0]&&(!best||hits[0].distance<best.distance)){const hit=hits[0],part=hit.object.userData.assemblyContext?authoredRegion(model.group.worldToLocal(hit.point.clone()).y/vehicles[i].height):hit.object.userData.part;best={...hit,index:i,part};}
     }
     return best;
   }

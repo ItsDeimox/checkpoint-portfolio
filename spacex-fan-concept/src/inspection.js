@@ -7,7 +7,7 @@ function visibleWithin(o,root){for(let n=o;n&&n!==root;n=n.parent)if(!n.visible)
 export function createInspection(model,index,part,payload='fairing'){
  const group=new T.Group(),exterior=new T.Group();group.name='inspection-'+part;group.add(exterior);const materials=new Set(),sourceMeshes=[];model.group.updateMatrixWorld(true);const inverse=model.group.matrixWorld.clone().invert();
  model.group.traverse(o=>{
-  if(!o.isMesh||o.userData.part!==part||!visibleWithin(o,model.group))return;
+  if(!o.isMesh||!(o.userData.inspectionParts??[o.userData.part]).includes(part)||!visibleWithin(o,model.group))return;
   if(part==='engines'&&o.userData.role==='landing-gear')return;
   if(part==='interstage'&&model.family==='falcon'&&o.userData.stage==='upper'&&!o.userData.assemblyFeature)return;
   sourceMeshes.push(o);const mesh=o.clone();mesh.children=[];mesh.geometry=o.geometry;
@@ -22,7 +22,7 @@ export function createInspection(model,index,part,payload='fairing'){
  const innerCenter=coverage.supported?innerBounds.getCenter(new T.Vector3()):new T.Vector3();
  if(coverage.supported)innerBounds.translate(innerCenter.clone().negate());
  let lastFocus=-1;
- const view={group,exterior,bounds,sphere,sourceCenter,sourceMeshes,radius:bounds.getSize(new T.Vector3()).length()/2,fade,coverage,internalMeshes,originY:raw.min.y,supportsInterior:coverage.supported,
+ const view={group,exterior,bounds,sphere,sourceCenter,sourceMeshes,contextual:sourceMeshes.some(m=>m.userData.assemblyContext),radius:bounds.getSize(new T.Vector3()).length()/2,fade,coverage,internalMeshes,originY:raw.min.y,supportsInterior:coverage.supported,
   setCutaway(enabled){if(!coverage.supported)return false;fade.setInterior(enabled);return true;},
   step(dt,reduced){
    const active=fade.step(dt,reduced),x=Math.max(0,(fade.progress-.5)*2),t=x*x*(3-2*x);
