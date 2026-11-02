@@ -1,5 +1,7 @@
 import * as T from 'three';
 import {createInspection,inspectionCamera} from './inspection.js';
+import {CarouselMotion,createFade,componentPose,rotateInView,depthRange,clamp,smooth} from './viewer-motion.js';
+import {bindViewerControls} from './viewer-controls.js';
 import {CinematicPipeline,buildPracticals} from './cinematic.js';
 import {FrameBudget} from './quality.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
@@ -55,6 +57,7 @@ function atmosphere(width,height,opacity){
 export class RocketViewer {
   constructor(canvas,{onAction,onHover,onProgress,onError,onAssetStatus}){
     Object.assign(this,{canvas,onAction,onHover,onProgress,onError,onAssetStatus,models:[],frameId:0,frames:0,lastTime:0,hover:null,drag:null,qualityMode:'auto',disposed:false});
+    this.carousel=new CarouselMotion(1);this.contextAlpha=1;this.retiring=[];this.hiddenSources=[];this.rotationDelta=new T.Vector2();this.zoom=1;this.zoomTarget=1;this.stageScale=1;this.scratchSphere=new T.Sphere();this.scratchVector=new T.Vector3();this.depthVector=new T.Vector3();this.unitScale=new T.Vector3(1,1,1);this.poseTarget=new T.Vector3();this.lastPick=0;
     this.frameBudget=new FrameBudget();this.inspection=null;this.cutaway=false;this.autoCap=null;this.dragonModel=null;this.assetWants={};
     this.library=new AssetLibrary();this.assetStates={};this.assetJobs=new Map();this.assetVersions={};this.studioSource='procedural';
     this.abort=new AbortController();this.reduced=matchMedia('(prefers-reduced-motion: reduce)');this.target=new T.Vector3();this.raycaster=new T.Raycaster();this.pointer=new T.Vector2();this.lastStats={};
@@ -67,7 +70,7 @@ export class RocketViewer {
     this.camera=new T.PerspectiveCamera(32,1,.025,240);this.pipeline=new CinematicPipeline(this.renderer,this.scene,this.camera);
     this.onProgress?.(.12,'CALIBRATING THE LIGHT');RectAreaLightUniformsLib.init();this.buildStudio();
     for(let i=0;i<vehicles.length;i++){
-      const model=createEmptyModel(i);this.scene.add(model.group);this.models.push(model);this.onProgress?.(.2+i*.16,`ASSEMBLING ${vehicles[i].name}`);await new Promise(requestAnimationFrame);
+      const model=createEmptyModel(i);model.group.visible=false;model.fade=createFade(model.group);this.scene.add(model.group);this.models.push(model);this.onProgress?.(.2+i*.16,`ASSEMBLING ${vehicles[i].name}`);await new Promise(requestAnimationFrame);
     }
     this.onProgress?.(.78,'LOADING LICENSED GEOMETRY');
     await this.loadLicensed(state.index);
@@ -98,7 +101,7 @@ export class RocketViewer {
         const template=await this.library.template(sourceFamilies[index],quality);
         if(this.disposed||this.assetWants[index]!==key)return;
         const previous=this.models[index],model=createModel(template,index);
-        model.assetKey=key;this.applyTextureBudget(model);model.group.position.copy(previous.group.position);model.group.quaternion.copy(previous.group.quaternion);model.group.scale.copy(previous.group.scale);model.group.visible=previous.group.visible;
+        model.assetKey=key;model.fade=createFade(model.group);model.fade.set(previous.fade?.value??1);model.sphere=new T.Box3().setFromObject(model.group).getBoundingSphere(new T.Sphere());this.applyTextureBudget(model);model.group.position.copy(previous.group.position);model.group.quaternion.copy(previous.group.quaternion);model.group.scale.copy(previous.group.scale);model.group.visible=previous.group.visible;
         for(const part of Object.keys(model.uniforms)){model.uniforms[part].brightness.value=previous.uniforms[part].brightness.value;model.uniforms[part].highlight.value=previous.uniforms[part].highlight.value;}
         model.payload(index===1?this.state.payload:'fairing');this.scene.remove(previous.group);this.scene.add(model.group);this.models[index]=model;previous.dispose();if(this.state.part&&this.state.index===index&&this.floor)this.applyState(this.state,false,true);
         this.assetStates[index]=`licensed-${quality}`;this.onAssetStatus?.(index,this.assetStates[index]);this.wake();
@@ -116,7 +119,7 @@ export class RocketViewer {
     this.assetStates.dragon='loading';this.onAssetStatus?.('dragon','loading');
     const job=(async()=>{try{
       const t=await this.library.template('dragon',quality);if(this.disposed||this.assetWants.dragon!==key)return;
-      const model=createModel(t,1);model.assetKey=key;this.applyTextureBudget(model);const old=this.dragonModel;this.dragonModel=model;
+      const model=createModel(t,1);model.assetKey=key;model.fade=createFade(model.group);this.applyTextureBudget(model);const old=this.dragonModel;this.dragonModel=model;
       if(this.state.payload==='dragon'&&this.floor)this.applyState(this.state,false,true);
       old?.dispose();this.assetStates.dragon='licensed-'+quality;this.onAssetStatus?.('dragon',this.assetStates.dragon);this.wake();
     }catch(error){if(!this.disposed&&this.assetWants.dragon===key){this.assetStates.dragon=this.dragonModel?'licensed-fallback':'unavailable';this.onAssetStatus?.('dragon',this.assetStates.dragon);console.warn('Authored Dragon model unavailable.',error.message);}}finally{this.assetJobs.delete(key);}})();this.assetJobs.set(key,job);return job;
@@ -147,31 +150,7 @@ export class RocketViewer {
     this.fill=area(3,9,6,4,16,.10,[0,7,0]);
     const top=new T.DirectionalLight(0xdde6f1,1.0);top.position.set(-2,25,5);this.scene.add(top,new T.AmbientLight(0xffffff,.035));
   }
-  bindEvents(){
-    const options={signal:this.abort.signal},on=(target,event,fn)=>target.addEventListener(event,fn,options);
-    on(window,'resize',()=>this.resize());on(document,'visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(this.frameId);this.frameId=0;this.lastTime=0;}else this.wake();});
-    on(this.reduced,'change',()=>{if(this.reduced.matches&&this.state.rotating)this.onAction({type:'ROTATE'});this.applyState(this.state);});
-    on(this.canvas,'webglcontextlost',event=>{event.preventDefault();this.onError?.('The 3D context was interrupted. Reload to restore the showroom.');cancelAnimationFrame(this.frameId);this.frameId=0;});
-    on(this.canvas,'pointermove',e=>{
-      if(this.drag){
-        const dx=e.clientX-this.drag.x,dy=e.clientY-this.drag.y;this.drag.moved=this.drag.moved||Math.hypot(dx,dy)>7;
-        if(e.pointerType!=='touch'||this.state.part){this.displayGroup().rotation.y=this.drag.yaw+dx*.008;this.wake();}
-      }else if(e.pointerType!=='touch'){this.pendingPointer={x:e.clientX,y:e.clientY};this.wake();}
-    });
-    on(this.canvas,'pointerdown',e=>{if(e.button!==0)return;this.drag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:this.displayGroup().rotation.y,moved:false,type:e.pointerType};this.canvas.setPointerCapture(e.pointerId);this.canvas.classList.add('is-dragging');});
-    on(this.canvas,'pointerup',e=>{
-      if(!this.drag||this.drag.id!==e.pointerId)return;
-      const drag=this.drag,dx=e.clientX-drag.x,dy=e.clientY-drag.y;this.releasePointer();
-      if(drag.type==='touch'&&!this.state.part&&Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.3){this.onAction({type:'NAVIGATE',index:this.state.index+(dx<0?1:-1)});return;}
-      if(drag.moved)return;
-      const hit=this.pick(e.clientX,e.clientY);
-      if(hit){if(hit.index!==this.state.index)this.onAction({type:'NAVIGATE',index:hit.index});else this.onAction({type:'FOCUS',part:hit.part});}
-      else if(this.state.part)this.onAction({type:'BACK'});
-    });
-    on(this.canvas,'pointercancel',()=>this.releasePointer());on(this.canvas,'lostpointercapture',()=>this.releasePointer());
-    on(this.canvas,'pointerleave',()=>{this.pendingPointer=null;this.setHover(null);});
-  }
-  releasePointer(){const id=this.drag?.id;this.drag=null;this.canvas.classList.remove('is-dragging');if(id!==undefined&&this.canvas.hasPointerCapture(id))this.canvas.releasePointerCapture(id);}
+  bindEvents(){bindViewerControls(this);}
   resize(){
     if(!this.renderer)return;
     const rect=this.canvas.getBoundingClientRect();this.width=rect.width||innerWidth;this.height=rect.height||innerHeight;
@@ -181,14 +160,23 @@ export class RocketViewer {
   applyTextureBudget(model){const max=Math.min(this.quality.anisotropy,this.renderer.capabilities.getMaxAnisotropy());model.group.traverse(o=>{if(o.isMesh)for(const value of Object.values(o.material))if(value?.isTexture&&value.anisotropy!==max){value.anisotropy=max;value.needsUpdate=true;}});}
   displayGroup(){return this.inspection?.group??this.models[this.state.index].group;}
   setCutaway(){this.cutaway=false;return false;}
+  restoreSources(){for(const [mesh,visible]of this.hiddenSources)mesh.visible=visible;this.hiddenSources.length=0;}
   syncInspection(state,force=false){
     const key=state.part?`${state.index}:${state.part}:${state.payload}`:null;
-    if(key===this.inspectionKey&&!force&&this.inspection)return;
-    const yaw=this.inspection?.group.rotation.y??.18;this.inspection?.dispose();this.inspection=null;this.inspectionKey=null;
-    if(!key)return;const model=this.inspectionModel();if(!model||model.source!=='licensed')return;
-    model.payload('fairing');if(!model.group.children.some(o=>o.userData.part===state.part))return;
-    this.inspection=createInspection(model,state.index,state.part,state.payload);this.inspectionKey=key;this.inspection.group.rotation.y=yaw;this.scene.add(this.inspection.group);
+    if(key===this.inspectionKey&&!force&&this.inspection)return this.inspection;
+    const previous=this.inspection;this.restoreSources();this.inspection=null;this.inspectionKey=null;
+    if(previous){this.retiring.push({view:previous,from:previous.fade.value,elapsed:0});if(this.retiring.length>2)this.retiring.shift().view.dispose();}
+    if(!key)return null;
+    const model=this.inspectionModel();if(!model||model.source!=='licensed')return null;
+    model.payload('fairing');if(!model.group.children.some(o=>o.userData.part===state.part))return null;
+    const view=createInspection(model,state.index,state.part,state.payload);this.inspection=view;this.inspectionKey=key;this.scene.add(view.group);
+    const initial=state.payload!=='dragon'&&!previous&&this.contextAlpha>.85;
+    if(initial){model.group.updateMatrixWorld(true);view.group.position.copy(view.sourceCenter).applyMatrix4(model.group.matrixWorld);model.group.getWorldQuaternion(view.group.quaternion);model.group.getWorldScale(view.group.scale);}
+    else {view.group.position.set(0,view.radius+.08,0);view.group.quaternion.copy(previous?.group.quaternion??componentPose(state.part));view.fade.set(0);}
+    for(const mesh of view.sourceMeshes){this.hiddenSources.push([mesh,mesh.visible]);mesh.visible=false;}
+    return view;
   }
+  setZoom(value){this.zoomTarget=clamp(value,.7,1.8);this.wake();}
   applyQuality(mode=this.qualityMode,reset=true){
     if(reset&&mode!==this.qualityMode){this.autoCap=null;this.frameBudget.reset();}
     this.qualityMode=mode;
@@ -196,63 +184,73 @@ export class RocketViewer {
     this.quality=getQuality(options);
     if(mode==='auto'&&this.autoCap&&['low','medium','high'].indexOf(this.autoCap)<['low','medium','high'].indexOf(this.quality.tier))this.quality=getQuality({...options,mode:this.autoCap});
     this.canvas.dataset.quality=this.quality.tier;
-    this.models.forEach((m,i)=>{m.group.visible=!this.state.part&&(!this.quality.low||i===this.state.index)&&Math.abs(i-this.state.index)<=1;});
+    // Keep an in-progress fade/drag intact when a graphics budget changes.
     for(const model of [...this.models,this.dragonModel].filter(Boolean))this.applyTextureBudget(model);
     this.renderer.setPixelRatio(this.quality.dpr);this.renderer.setSize(this.width,this.height,false);
     this.pipeline.configure(this.quality,this.width,this.height);
     this.floor?.getRenderTarget().setSize(this.quality.reflectionSize,this.quality.reflectionSize);if(this.floor)this.loadLicensed(this.state.index);this.wake();
   }
-  desiredCamera(state){
-    const vehicle=vehicles[state.index],fit=fitView(vehicle.height,this.width,this.height);
-    if(state.part&&this.inspection)return inspectionCamera(this.inspection.bounds,this.width,this.height);
-    if(!state.part)return {position:[fit.target[0],fit.target[1]+vehicle.height*.03,fit.distance],target:fit.target};
-    const f=getPart(vehicle,state.part,state.payload).focus;
-    const span=f.span*(fit.mobile?1.85:1.12);
-    const distance=span/(2*Math.tan(16*Math.PI/180));
-    const targetX=fit.mobile?0:f.span*.28;
-    const targetY=f.y-(fit.mobile?f.span*.35:0);
-    return {position:[Math.sin(f.angle)*distance+targetX,Math.max(.14,targetY+f.elevation),Math.cos(f.angle)*distance],target:[targetX,targetY,0]};
+  overviewCamera(position=this.carousel.position){
+    const p=clamp(position,1,3),i=Math.floor(p),next=Math.min(3,i+1),h=T.MathUtils.lerp(vehicles[i].height,vehicles[next].height,p-i),fit=fitView(h,this.width,this.height);
+    return {height:h,position:[fit.target[0],fit.target[1]+h*.03,fit.distance],target:fit.target};
   }
-  applyState(state,instant=false,forceInspection=false){
-    if(!this.models.length)return;
-    const sameView=this.state?.index===state.index&&this.state?.part===state.part&&this.state?.payload===state.payload;
+  desiredCamera(state){
+    if(state.part&&this.inspection)return inspectionCamera(this.inspection.bounds,this.width,this.height,this.zoom);
+    return this.overviewCamera(state.index);
+  }
+  applyState(state,instant=false,force=false){
+    if(!this.floor||!this.models.length)return;
+    const same=this.state?.index===state.index&&this.state?.part===state.part&&this.state?.payload===state.payload,wasPart=this.inspection||this.retiring.length;
     this.state=state;this.setHover(null);this.pendingPointer=null;
-    if(sameView&&this.floor&&!instant&&!forceInspection&&this.inspection){this.wake();return;}
-    this.syncInspection(state,forceInspection);
-    const desired=this.desiredCamera(state),height=vehicles[state.index].height;
-    const aspect=this.width/this.height;
-    const spacing=height*(this.width<760?.64:Math.max(.78,aspect*.51));
-    const destinations=this.models.map((model,i)=>{
-      const delta=i-state.index;model.payload(i===1?state.payload:'fairing');
-      const scale=i===state.index?1:height*(delta<0?.64:1.02)/vehicles[i].height;
-      return {x:delta*spacing,scale,brightness:i===state.index?1:state.part||Math.abs(delta)>1?0:.10};
-    });
-    this.animation={inspectionFromY:this.inspection?.group.position.y??0,start:performance.now(),duration:instant||this.reduced.matches?0:1150,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),from:this.models.map(m=>({x:m.group.position.x,scale:m.group.scale.x,brightness:m.uniforms.tanks.brightness.value})),to:destinations};
-    const footprint=[.65,1.45,3.3,3.3][state.index];this.contactShadow.scale.set(footprint,footprint*.7,1);
-    this.haze.scale.setScalar(height/14);this.wideHaze.scale.x=height/14;
-    this.haze.position.y=height*.065;
-    const extent=this.inspection?this.inspection.bounds.getSize(new T.Vector3()):null;
-    const h=extent?Math.max(extent.y,extent.x*2.5)/14:height/14;
-    this.haze.scale.setScalar(h);this.haze.position.set(0,.9*h,-1.6*h);this.wideHaze.scale.set(h,h,h);this.wideHaze.position.set(0,.3*h,-3*h);this.practicals?.group.scale.setScalar(h);
-    this.contactShadow.scale.set(footprint*(extent?.5:1),footprint*.7*(extent?.5:1),1);
+    if(same&&!instant&&!force){this.wake();return;}
+    if(!same){this.zoom=this.zoomTarget=1;this.rotationDelta.set(0,0);}
+    this.carousel.target=state.index;if(instant||this.reduced.matches)this.carousel.snap(state.index);
+    if(!state.part){this.restoreSources();for(const m of this.models)m.payload('fairing');}
+    const view=this.syncInspection(state,force),desired=this.desiredCamera(state),duration=instant||this.reduced.matches?0:force?420:950;
+    if(state.part||wasPart){
+      this.animation={start:performance.now(),elapsed:0,duration,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),fromContext:this.contextAlpha,toContext:state.part?0:1,view,fromPose:view?.group.position.clone(),fromScale:view?.group.scale.clone(),fromQuat:view?.group.quaternion.clone(),fromFade:view?.fade.value??0,toQuat:componentPose(state.part),fromLight:this.stageScale,toLight:view?Math.max(view.radius*3,.3)/14:vehicles[state.index].height/14};
+    }else {this.animation=null;this.contextAlpha=1;}
+    if(instant||this.reduced.matches){this.updateAnimation(performance.now());for(const x of this.retiring)x.view.dispose();this.retiring.length=0;}
+    this.loadLicensed(state.index);this.wake();
+  }
+  layoutCarousel(){
+    const p=this.carousel.position,overview=this.overviewCamera(),h=overview.height,spacing=h*(this.width<760?.64:Math.max(.78,this.width/this.height*.51));
+    for(let i=1;i<this.models.length;i++){
+      const m=this.models[i],d=i-p,a=Math.abs(d),proximity=1-smooth(Math.min(1,a)),sideScale=d<0?1-.36*smooth(Math.min(1,a)):1;
+      m.group.position.x=d*spacing;m.group.scale.setScalar(h/vehicles[i].height*sideScale);
+      const brightness=.10+.90*proximity;for(const u of Object.values(m.uniforms))u.brightness.value=brightness;
+      const edge=1-smooth((a-1.03)/.25),budget=this.quality.low&&!this.carousel.dragging&&Math.abs(this.carousel.velocity)<.02&&a>.99?0:1;
+      m.fade.set(m.source==='licensed'?this.contextAlpha*edge*budget:0);
+    }
+    const copy=1-.75*smooth(Math.abs(p-this.state.index));if(Math.abs(copy-this.lastCopyOpacity)>.003||this.lastCopyOpacity===undefined){this.lastCopyOpacity=copy;this.canvas.parentElement?.style.setProperty('--carousel-copy-opacity',copy.toFixed(3));}
+    if(!this.animation&&!this.state.part){this.camera.position.set(...overview.position);this.target.set(...overview.target);this.updateStudio(h/14);}
+  }
+  updateStudio(h){
+    if(!this.haze||Math.abs(h-this.lastLightScale)<.00001)return;this.lastLightScale=h;this.stageScale=h;
+    this.haze.scale.setScalar(h);this.haze.position.set(0,.9*h,-1.6*h);this.wideHaze.scale.setScalar(h);this.wideHaze.position.set(0,.3*h,-3*h);this.practicals.group.scale.setScalar(h);
+    const footprint=this.inspection?this.inspection.radius*1.8:[.65,1.45,3.3,3.3][this.state.index];this.contactShadow.scale.set(footprint,footprint*.7,1);
+    const detail=this.state.part==='engines';this.uplight.intensity=detail?2.5:6;this.rim.intensity=detail?7:12;
     this.key.position.set(-5.8*h,8*h,2.2*h);this.key.width=1.8*h;this.key.height=16*h;this.key.lookAt(0,7*h,0);
     this.rim.position.set(2.7*h,10*h,-3*h);this.rim.width=1.2*h;this.rim.height=20*h;this.rim.lookAt(0,9*h,0);
     this.uplight.position.set(-.6*h,.25*h,2.4*h);this.uplight.width=3*h;this.uplight.height=1.2*h;this.uplight.lookAt(0,6*h,0);
     this.fill.position.set(3*h,9*h,6*h);this.fill.width=4*h;this.fill.height=16*h;this.fill.lookAt(0,7*h,0);
-    if(instant||this.reduced.matches)this.updateAnimation(performance.now());if(this.floor)this.loadLicensed(state.index);this.wake();
   }
-  updateAnimation(time){
-    const a=this.animation;if(!a)return false;
-    const p=a.duration===0?1:Math.min(1,(time-a.start)/a.duration),t=ease(p);
-    if(this.inspection)this.inspection.group.position.y=T.MathUtils.lerp(a.inspectionFromY,0,t);
-    this.camera.position.lerpVectors(a.fromPosition,a.position,t);this.target.lerpVectors(a.fromTarget,a.target,t);
-    this.models.forEach((model,i)=>{
-      model.group.position.x=T.MathUtils.lerp(a.from[i].x,a.to[i].x,t);model.group.scale.setScalar(T.MathUtils.lerp(a.from[i].scale,a.to[i].scale,t));
-      const brightness=T.MathUtils.lerp(a.from[i].brightness,a.to[i].brightness,t);
-      for(const u of Object.values(model.uniforms))u.brightness.value=brightness;
-      model.group.visible=!this.state.part&&brightness>.002&&Math.abs(i-this.state.index)<=1&&(!this.quality.low||i===this.state.index);
-    });
+  updateAnimation(time,delta=0){
+    const a=this.animation;if(!a)return false;a.elapsed+=Math.min(64,Math.max(0,delta));const p=a.duration===0?1:clamp(a.elapsed/a.duration,0,1),t=ease(p);
+    const contextT=a.toContext>a.fromContext?smooth((p-.30)/.70):smooth(p*1.45);
+    this.contextAlpha=T.MathUtils.lerp(a.fromContext,a.toContext,contextT);
+    this.camera.position.lerpVectors(a.fromPosition,a.position,t);this.target.lerpVectors(a.fromTarget,a.target,t);this.updateStudio(T.MathUtils.lerp(a.fromLight,a.toLight,t));
+    if(a.view===this.inspection&&a.view){const g=a.view.group;g.position.lerpVectors(a.fromPose,this.poseTarget.set(0,a.view.radius+.08,0),t);g.scale.lerpVectors(a.fromScale,this.unitScale,t);if(!a.orientationCancelled)g.quaternion.slerpQuaternions(a.fromQuat,a.toQuat,t);a.view.fade.set(T.MathUtils.lerp(a.fromFade,1,smooth(p*1.5)));}
     if(p===1)this.animation=null;return p<1;
+  }
+  updateDepth(){
+    let nearest=Infinity,farthest=20;this.camera.getWorldDirection(this.scratchVector);
+    const consider=(group,sphere)=>{if(!group.visible||!sphere)return;const b=this.scratchSphere.copy(sphere).applyMatrix4(group.matrixWorld),depth=this.depthVector.copy(b.center).sub(this.camera.position).dot(this.scratchVector);nearest=Math.min(nearest,depth-b.radius);farthest=Math.max(farthest,depth+b.radius*3);};
+    for(const m of this.models)consider(m.group,m.sphere);
+    if(this.inspection)consider(this.inspection.group,this.inspection.sphere);for(const x of this.retiring)consider(x.view.group,x.view.sphere);
+    const near=Number.isFinite(nearest)?Math.max(.002,nearest*.16):.1,far=Math.max(20,farthest);
+    if(Math.abs(near-this.camera.near)>.0005||Math.abs(far-this.camera.far)>.01){this.camera.near=near;this.camera.far=far;this.camera.updateProjectionMatrix();}
+    this.clearance=nearest;
   }
   pick(x,y){
     const rect=this.canvas.getBoundingClientRect();this.pointer.set(((x-rect.left)/rect.width)*2-1,-((y-rect.top)/rect.height)*2+1);this.raycaster.setFromCamera(this.pointer,this.camera);
@@ -260,7 +258,8 @@ export class RocketViewer {
     if(this.inspection){const hits=this.raycaster.intersectObject(this.inspection.group,true).filter(h=>isEffectivelyVisible(h.object));return hits[0]?{...hits[0],index:this.state.index,part:this.state.part}:null;}
     for(let i=0;i<this.models.length;i++){
       if(Math.abs(i-this.state.index)>1||!this.models[i].group.visible)continue;
-      const hits=this.raycaster.intersectObject(this.models[i].group,true).filter(hit=>isEffectivelyVisible(hit.object)&&hit.object.userData.part);
+      const model=this.models[i];if(model.sphere&&!this.raycaster.ray.intersectsSphere(this.scratchSphere.copy(model.sphere).applyMatrix4(model.group.matrixWorld)))continue;
+      const hits=this.raycaster.intersectObject(model.group,true).filter(hit=>isEffectivelyVisible(hit.object)&&hit.object.userData.part);
       if(hits[0]&&(!best||hits[0].distance<best.distance))best={...hits[0],index:i,part:hits[0].object.userData.part};
     }
     return best;
@@ -279,25 +278,25 @@ export class RocketViewer {
   wake(){if(this.disposed||document.hidden||this.frameId)return;this.frameId=requestAnimationFrame(t=>this.frame(t));}
   frame(time){
     this.frameId=0;if(this.disposed||document.hidden||!this.floor)return;
-    const dt=Math.min(.05,(time-(this.lastTime||time))/1000);this.lastTime=time;
-    let active=this.updateAnimation(time);
-    this.camera.lookAt(this.target);this.camera.updateMatrixWorld();this.scene.updateMatrixWorld();
-    if(this.pendingPointer){this.setHover(this.pick(this.pendingPointer.x,this.pendingPointer.y));this.pendingPointer=null;}
-    for(const [i,model] of this.models.entries())for(const [part,u] of Object.entries(model.uniforms)){
-      const target=i===this.state.index&&part===this.hover?1:0;
-      if(this.reduced.matches)u.highlight.value=target;
-      else if(Math.abs(u.highlight.value-target)>.002){u.highlight.value=T.MathUtils.lerp(u.highlight.value,target,1-Math.exp(-dt*15));active=true;}else u.highlight.value=target;
-    }
-    if(this.state.rotating&&!this.reduced.matches){this.displayGroup().rotation.y+=dt*.15;active=true;}
-    this.inspection?.update();
+    const rawDelta=this.lastTime?time-this.lastTime:16.67,dt=Math.min(.05,rawDelta/1000);this.lastTime=time;
+    let active=this.carousel.step(dt);active=this.updateAnimation(time,rawDelta)||active;
+    if(Math.abs(this.zoom-this.zoomTarget)>.0002){this.zoom=T.MathUtils.lerp(this.zoom,this.zoomTarget,1-Math.exp(-dt*14));active=true;}else this.zoom=this.zoomTarget;
+    if(this.inspection&&!this.animation){const c=this.desiredCamera(this.state);this.camera.position.set(...c.position);this.target.set(...c.target);}
+    this.layoutCarousel();this.camera.lookAt(this.target);this.camera.updateMatrixWorld();
+    if(this.rotationDelta.lengthSq()){if(this.inspection)rotateInView(this.inspection.group.quaternion,this.rotationDelta.x,this.rotationDelta.y,this.camera.quaternion,Math.min(this.width,this.height));else this.models[this.state.index].group.rotateY(this.rotationDelta.x*.006);this.rotationDelta.set(0,0);}
+    if(this.state.rotating&&!this.reduced.matches){if(this.inspection)rotateInView(this.inspection.group.quaternion,dt*22,0,this.camera.quaternion,Math.min(this.width,this.height));else this.displayGroup().rotateY(dt*.15);active=true;}
+    for(let i=this.retiring.length-1;i>=0;i--){const x=this.retiring[i];x.elapsed+=Math.min(rawDelta,64);const p=this.reduced.matches?1:clamp(x.elapsed/420,0,1);x.view.fade.set(x.from*(1-smooth(p)));if(p===1){x.view.dispose();this.retiring.splice(i,1);}else active=true;}
+    this.scene.updateMatrixWorld();this.updateDepth();
+    if(this.pendingPointer){if(time-this.lastPick>=32){this.setHover(this.pick(this.pendingPointer.x,this.pendingPointer.y));this.pendingPointer=null;this.lastPick=time;}else active=true;}
+    for(const [i,m]of this.models.entries())for(const [part,u]of Object.entries(m.uniforms)){const target=i===this.state.index&&part===this.hover?1:0;if(this.reduced.matches)u.highlight.value=target;else if(Math.abs(u.highlight.value-target)>.002){u.highlight.value=T.MathUtils.lerp(u.highlight.value,target,1-Math.exp(-dt*15));active=true;}else u.highlight.value=target;}
     this.renderer.info.reset();this.pipeline.render();this.frames++;
-    if(this.qualityMode==='auto'&&active&&!this.animation){const next=this.frameBudget.sample(dt*1000,this.quality.tier,time);if(next){this.autoCap=next;this.applyQuality('auto',false);}}
-    this.lastStats={quality:this.quality.tier,bloom:Boolean(this.pipeline.composer),inspection:this.inspectionKey,cutaway:this.cutaway,frames:this.frames,triangles:this.renderer.info.render.triangles,drawCalls:this.renderer.info.render.calls,dpr:this.renderer.getPixelRatio(),geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,assets:{...this.assetStates},studio:this.studioSource};
+    if(this.qualityMode==='auto'&&active&&!this.animation){const next=this.frameBudget.sample(rawDelta,this.quality.tier,time);if(next){this.autoCap=next;this.applyQuality('auto',false);}}
+    this.lastStats={quality:this.quality.tier,bloom:Boolean(this.pipeline.composer),bloomResolution:this.pipeline.bloom?[this.pipeline.bloom.renderTargetBright.width,this.pipeline.bloom.renderTargetBright.height]:null,inspection:this.inspectionKey,cutaway:false,frames:this.frames,triangles:this.renderer.info.render.triangles,drawCalls:this.renderer.info.render.calls,dpr:this.renderer.getPixelRatio(),geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,assets:{...this.assetStates},studio:this.studioSource,carousel:this.carousel.position,contextAlpha:this.contextAlpha,near:this.camera.near,far:this.camera.far,clearance:this.clearance,transition:Boolean(this.animation),retiring:this.retiring.length,zoom:this.zoom};
     if(this.hover)this.onHover?.(this.hover,this.projectPart(this.hover));
     if(active)this.wake();else this.lastTime=0;
   }
   dispose(){
-    this.inspection?.dispose();this.pipeline?.dispose();this.practicals?.dispose();
+    this.restoreSources();for(const x of this.retiring)x.view.dispose();this.retiring.length=0;this.inspection?.dispose();this.pipeline?.dispose();this.practicals?.dispose();
     this.dragonModel?.dispose();this.disposed=true;cancelAnimationFrame(this.frameId);this.abort.abort();this.models.forEach(model=>model.dispose());this.library.dispose();this.contactShadow?.geometry.dispose();this.contactShadow?.material.dispose();this.floor?.dispose();this.environment?.dispose();
     for(const mesh of [this.haze,this.wideHaze]){mesh?.geometry.dispose();mesh?.material.dispose();}this.renderer?.dispose();
   }

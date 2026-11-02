@@ -5,8 +5,8 @@ export function qualityProfile({width=1280,dpr=1,memory=8,cores=8,mode='auto'}={
   const tier=['low','medium','high'].includes(requested)?requested:automatic;
   const presets={
     low:{dpr:1.0,reflectionSize:256,bloom:false,bloomScale:0,bloomStrength:0,anisotropy:2},
-    medium:{dpr:1.25,reflectionSize:512,bloom:true,bloomScale:.35,bloomStrength:.24,anisotropy:4},
-    high:{dpr:1.75,reflectionSize:768,bloom:true,bloomScale:.5,bloomStrength:.34,anisotropy:8},
+    medium:{dpr:1.25,reflectionSize:512,bloom:true,bloomScale:.75,bloomStrength:.28,anisotropy:8},
+    high:{dpr:1.75,reflectionSize:768,bloom:true,bloomScale:1,bloomStrength:.34,anisotropy:16},
   };
   return {...presets[tier],tier,low:tier==='low',dpr:Math.max(.5,Math.min(Number(dpr)||1,presets[tier].dpr))};
 }

@@ -17,3 +17,9 @@
 .menu-fleet button:disabled{opacity:.35;cursor:not-allowed}.menu-fleet button:disabled small:last-child{font-size:8px;letter-spacing:.08em;margin-left:auto}
 .inspection-controls[hidden],.asset-notice[hidden]{display:none!important}
 @media(max-width:759px){.asset-notice{left:10%;right:10%;top:30%;max-width:none}}
+
+/* Presentation only. Live geometry remains responsible for the interaction. */
+.hero-copy{opacity:var(--carousel-copy-opacity,1)}
+.hero-copy:not([hidden]),.detail-copy:not([hidden]){animation:copy-reveal .4s ease-out both}
+@keyframes copy-reveal{from{opacity:0;translate:0 7px}to{opacity:var(--carousel-copy-opacity,1);translate:0 0}}
+@media(prefers-reduced-motion:reduce){.hero-copy:not([hidden]),.detail-copy:not([hidden]){animation:none}}

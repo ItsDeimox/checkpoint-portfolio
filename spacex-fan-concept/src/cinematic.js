@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {LensBloomPass} from './lens-bloom.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 
 /** Linear half-float scene -> thresholded, multiscale lens bloom -> one output transform. */
@@ -10,11 +10,10 @@ export class CinematicPipeline {
   configure(quality,width,height){
     const key=`${quality.tier}:${width}:${height}:${quality.dpr}`;if(this.key===key)return;this.key=key;this.dispose();
     if(!quality.bloom||!this.renderer.extensions.has('EXT_color_buffer_float'))return;
-    const target=new T.WebGLRenderTarget(1,1,{type:T.HalfFloatType,depthBuffer:true,samples:quality.tier==='high'?Math.min(2,this.renderer.capabilities.maxSamples):0});
+    const target=new T.WebGLRenderTarget(1,1,{type:T.HalfFloatType,depthBuffer:true,samples:quality.tier==='high'?Math.min(4,this.renderer.capabilities.maxSamples):Math.min(2,this.renderer.capabilities.maxSamples)});
     this.composer=new EffectComposer(this.renderer,target);this.composer.setPixelRatio(quality.dpr);this.composer.setSize(width,height);
     this.renderPass=new RenderPass(this.scene,this.camera);
-    this.bloom=new UnrealBloomPass(new T.Vector2(width,height),quality.bloomStrength,.72,1.35);
-    this.bloom.setSize(width*quality.dpr*quality.bloomScale,height*quality.dpr*quality.bloomScale);
+    this.bloom=new LensBloomPass(quality.bloomStrength);
     this.output=new OutputPass();
     this.composer.addPass(this.renderPass);this.composer.addPass(this.bloom);this.composer.addPass(this.output);
     // addPass reuses the full viewport; restore the bounded bloom working resolution.
