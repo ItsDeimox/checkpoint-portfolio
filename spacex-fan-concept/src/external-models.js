@@ -4,6 +4,7 @@ import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {classifyPart,normalization} from './asset-parts.js';
 import {installHighlight} from './materials.js';
+import {assemblyFeature} from './source-assemblies.js';
 import {bakeSourceRange,partitionAuthoredRegions} from './source-geometry.js';
 import {partOrder,vehicles} from './data.js';
 export const sourceFamilies={1:'falcon',2:'heavy',3:'starship'};
@@ -28,21 +29,21 @@ export function prepareTemplate(source,family,height){
    for(const range of ranges){
     const material=materials[range.materialIndex]??materials[0];if(family==='dragon'&&/^ground$/i.test(material.name))continue;
     const geometry=bakeSourceRange(g,range.start,range.count,matrix);geometry.computeBoundingBox();const y=geometry.boundingBox.getCenter(new T.Vector3()).y/height,name=chainName(o);
-    const role=/landing.?leg/i.test(name)?'landing-gear':'component';
+    const role=/landing.?leg/i.test(name)?'landing-gear':'component',feature=assemblyFeature(family,name,material.name,y);
     const stage=family==='falcon'&&(/second.?stage|engine.?holder/i.test(name)||geometry.boundingBox.min.y>height*.65)?'upper':'booster';
     const parts=family==='heavy'?partitionAuthoredRegions(geometry,height):[{geometry,part:family==='dragon'?'fairing':classifyPart(family,name,y)}];if(family==='heavy')geometry.dispose();
-    for(const item of parts){const layout=Object.keys(item.geometry.attributes).sort().map(n=>n+item.geometry.getAttribute(n).itemSize).join(','),key=`${item.part}|${material.uuid}|${stage}|${role}|${layout}`;if(!bins.has(key))bins.set(key,{part:item.part,stage,role,material,geometries:[],sourceNames:new Set()});const bin=bins.get(key);bin.geometries.push(item.geometry);bin.sourceNames.add(name);}
+    for(const item of parts){const layout=Object.keys(item.geometry.attributes).sort().map(n=>n+item.geometry.getAttribute(n).itemSize).join(','),key=`${item.part}|${material.uuid}|${stage}|${role}|${feature??''}|${layout}`;if(!bins.has(key))bins.set(key,{part:item.part,stage,role,assemblyFeature:feature,material,geometries:[],sourceNames:new Set()});const bin=bins.get(key);bin.geometries.push(item.geometry);bin.sourceNames.add(name);}
    }
   }
  }
- const entries=[];for(const bin of bins.values()){const geometry=mergeGeometries(bin.geometries,false);bin.geometries.forEach(g=>g.dispose());if(!geometry)throw Error('Incompatible authored attributes');geometry.computeBoundingBox();geometry.computeBoundingSphere();entries.push({geometry,material:bin.material,part:bin.part,stage:bin.stage,role:bin.role,sourceNames:[...bin.sourceNames]});}
+ const entries=[];for(const bin of bins.values()){const geometry=mergeGeometries(bin.geometries,false);bin.geometries.forEach(g=>g.dispose());if(!geometry)throw Error('Incompatible authored attributes');geometry.computeBoundingBox();geometry.computeBoundingSphere();entries.push({geometry,material:bin.material,part:bin.part,stage:bin.stage,role:bin.role,assemblyFeature:bin.assemblyFeature,sourceNames:[...bin.sourceNames]});}
  sourceGeometry.forEach(g=>g.dispose());return {family,height,entries,sourceMaterials,textures,supportsInterior:false};
 }
 /** Preserve authored paint, cloth, foil and metal responses. Never flatten source PBR maps. */
 export function calibrate(material){const m=material.clone();m.dithering=true;return m;}
 export function createModel(template,index){
  const group=new T.Group();group.name=template.family==='dragon'?'dragon-2':vehicles[index].id;const u=uniforms(),materials=new Set();
- for(const entry of template.entries){const material=calibrate(entry.material);installHighlight(material,u[entry.part]);materials.add(material);const mesh=new T.Mesh(entry.geometry,material);mesh.name=`authored-${entry.part}`;mesh.userData={part:entry.part,stage:entry.stage,role:entry.role,variant:entry.part==='fairing'?'fairing':'main',licensed:true,sourceNames:entry.sourceNames??[]};group.add(mesh);}
+ for(const entry of template.entries){const material=calibrate(entry.material);installHighlight(material,u[entry.part]);materials.add(material);const mesh=new T.Mesh(entry.geometry,material);mesh.name=`authored-${entry.part}`;mesh.userData={part:entry.part,stage:entry.stage,role:entry.role,assemblyFeature:entry.assemblyFeature,variant:entry.part==='fairing'?'fairing':'main',licensed:true,sourceNames:entry.sourceNames??[]};group.add(mesh);}
  function payload(value){group.traverse(o=>{if(o.isMesh&&o.userData.variant==='fairing')o.visible=value!=='dragon';});}
  return {group,uniforms:u,payload,source:'licensed',family:template.family,supportsInterior:template.supportsInterior,dispose(){materials.forEach(m=>m.dispose());}};
 }

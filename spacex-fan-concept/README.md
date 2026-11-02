@@ -19,7 +19,7 @@ The build fetches pinned, SHA-256-verified source files, optimizes copies and se
 
 Falcon 9, the complete Falcon Heavy, Starship Block 3 and the historical Dragon 2 exterior use preauthored licensed files. Falcon 1 remains in the historical catalog but is unavailable until a suitable reusable asset is verified. No spacecraft generator, synthetic fallback or invented internal assembly is used.
 
-Select a module to isolate its supplied geometry; drag to rotate and click outside or press Escape to return. The current sources do not include verified internal assemblies, so the interface explicitly says that internal geometry is unavailable. Single-mesh regions use existing triangles only, without fabricated caps or surfaces.
+Select a module to isolate its supplied geometry; drag to rotate and click outside or press Escape to return. For Falcon 9 engines/interstage and the Starship cargo rack, INTERNAL STRUCTURE exposes the hardware already authored in those source files. Outer meshes fade before the camera recenters on the original internal assembly. This is partial artist-model coverage, not certified manufacturer CAD; tank internals and unsupported modules remain explicitly unavailable. Single-mesh regions use existing triangles only, without fabricated caps or surfaces.
 
 The studio retains HDR reflections, restrained bloom, floor reflection, Fresnel hover and adaptive low/medium/high budgets. Rendering pauses while idle. Import preserves original PBR maps, material groups, UV channels, normals and tangents. Mobile variants reduce geometry and texture size; detailed assets load only when needed. Failed requests show retry rather than replacement geometry.
 

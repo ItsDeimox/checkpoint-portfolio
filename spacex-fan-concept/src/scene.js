@@ -159,12 +159,13 @@ export class RocketViewer {
   }
   applyTextureBudget(model){const max=Math.min(this.quality.anisotropy,this.renderer.capabilities.getMaxAnisotropy());model.group.traverse(o=>{if(o.isMesh)for(const value of Object.values(o.material))if(value?.isTexture&&value.anisotropy!==max){value.anisotropy=max;value.needsUpdate=true;}});}
   displayGroup(){return this.inspection?.group??this.models[this.state.index].group;}
-  setCutaway(){this.cutaway=false;return false;}
+  setCutaway(value){if(!this.inspection?.setCutaway(Boolean(value)))return false;this.cutaway=Boolean(value);if(this.reduced.matches)this.inspection.step(1,true);this.wake();return true;}
   restoreSources(){for(const [mesh,visible]of this.hiddenSources)mesh.visible=visible;this.hiddenSources.length=0;}
   syncInspection(state,force=false){
     const key=state.part?`${state.index}:${state.part}:${state.payload}`:null;
     if(key===this.inspectionKey&&!force&&this.inspection)return this.inspection;
-    const previous=this.inspection;this.restoreSources();this.inspection=null;this.inspectionKey=null;
+    const preserveMode=force&&key===this.inspectionKey&&this.cutaway;
+    const previous=this.inspection;this.restoreSources();this.inspection=null;this.inspectionKey=null;this.cutaway=false;
     if(previous){this.retiring.push({view:previous,from:previous.fade.value,elapsed:0});if(this.retiring.length>2)this.retiring.shift().view.dispose();}
     if(!key)return null;
     const model=this.inspectionModel();if(!model||model.source!=='licensed')return null;
@@ -173,6 +174,7 @@ export class RocketViewer {
     const initial=state.payload!=='dragon'&&!previous&&this.contextAlpha>.85;
     if(initial){model.group.updateMatrixWorld(true);view.group.position.copy(view.sourceCenter).applyMatrix4(model.group.matrixWorld);model.group.getWorldQuaternion(view.group.quaternion);model.group.getWorldScale(view.group.scale);}
     else {view.group.position.set(0,view.radius+.08,0);view.group.quaternion.copy(previous?.group.quaternion??componentPose(state.part));view.fade.set(0);}
+    if(preserveMode&&view.setCutaway(true)){this.cutaway=true;view.step(1,true);view.group.position.copy(previous.group.position);view.group.scale.copy(previous.group.scale);}
     for(const mesh of view.sourceMeshes){this.hiddenSources.push([mesh,mesh.visible]);mesh.visible=false;}
     return view;
   }
@@ -281,6 +283,7 @@ export class RocketViewer {
     const rawDelta=this.lastTime?time-this.lastTime:16.67,dt=Math.min(.05,rawDelta/1000);this.lastTime=time;
     let active=this.carousel.step(dt);active=this.updateAnimation(time,rawDelta)||active;
     if(Math.abs(this.zoom-this.zoomTarget)>.0002){this.zoom=T.MathUtils.lerp(this.zoom,this.zoomTarget,1-Math.exp(-dt*14));active=true;}else this.zoom=this.zoomTarget;
+    if(this.inspection){if(!this.animation)active=this.inspection.step(dt,this.reduced.matches)||active;if(!this.animation){this.inspection.group.position.y=this.inspection.radius+.08;this.updateStudio(Math.max(this.inspection.radius*3,.3)/14);}}
     if(this.inspection&&!this.animation){const c=this.desiredCamera(this.state);this.camera.position.set(...c.position);this.target.set(...c.target);}
     this.layoutCarousel();this.camera.lookAt(this.target);this.camera.updateMatrixWorld();
     if(this.rotationDelta.lengthSq()){if(this.inspection)rotateInView(this.inspection.group.quaternion,this.rotationDelta.x,this.rotationDelta.y,this.camera.quaternion,Math.min(this.width,this.height));else this.models[this.state.index].group.rotateY(this.rotationDelta.x*.006);this.rotationDelta.set(0,0);}
@@ -291,7 +294,7 @@ export class RocketViewer {
     for(const [i,m]of this.models.entries())for(const [part,u]of Object.entries(m.uniforms)){const target=i===this.state.index&&part===this.hover?1:0;if(this.reduced.matches)u.highlight.value=target;else if(Math.abs(u.highlight.value-target)>.002){u.highlight.value=T.MathUtils.lerp(u.highlight.value,target,1-Math.exp(-dt*15));active=true;}else u.highlight.value=target;}
     this.renderer.info.reset();this.pipeline.render();this.frames++;
     if(this.qualityMode==='auto'&&active&&!this.animation){const next=this.frameBudget.sample(rawDelta,this.quality.tier,time);if(next){this.autoCap=next;this.applyQuality('auto',false);}}
-    this.lastStats={quality:this.quality.tier,bloom:Boolean(this.pipeline.composer),bloomResolution:this.pipeline.bloom?[this.pipeline.bloom.renderTargetBright.width,this.pipeline.bloom.renderTargetBright.height]:null,inspection:this.inspectionKey,cutaway:false,frames:this.frames,triangles:this.renderer.info.render.triangles,drawCalls:this.renderer.info.render.calls,dpr:this.renderer.getPixelRatio(),geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,assets:{...this.assetStates},studio:this.studioSource,carousel:this.carousel.position,contextAlpha:this.contextAlpha,near:this.camera.near,far:this.camera.far,clearance:this.clearance,transition:Boolean(this.animation),retiring:this.retiring.length,zoom:this.zoom};
+    this.lastStats={quality:this.quality.tier,bloom:Boolean(this.pipeline.composer),bloomResolution:this.pipeline.bloom?[this.pipeline.bloom.renderTargetBright.width,this.pipeline.bloom.renderTargetBright.height]:null,inspection:this.inspectionKey,cutaway:this.cutaway,internalProgress:this.inspection?.fade.progress??0,frames:this.frames,triangles:this.renderer.info.render.triangles,drawCalls:this.renderer.info.render.calls,dpr:this.renderer.getPixelRatio(),geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,assets:{...this.assetStates},studio:this.studioSource,carousel:this.carousel.position,contextAlpha:this.contextAlpha,near:this.camera.near,far:this.camera.far,clearance:this.clearance,transition:Boolean(this.animation),retiring:this.retiring.length,zoom:this.zoom};
     if(this.hover)this.onHover?.(this.hover,this.projectPart(this.hover));
     if(active)this.wake();else this.lastTime=0;
   }

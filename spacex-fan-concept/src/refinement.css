@@ -23,3 +23,8 @@
 .hero-copy:not([hidden]),.detail-copy:not([hidden]){animation:copy-reveal .4s ease-out both}
 @keyframes copy-reveal{from{opacity:0;translate:0 7px}to{opacity:var(--carousel-copy-opacity,1);translate:0 0}}
 @media(prefers-reduced-motion:reduce){.hero-copy:not([hidden]),.detail-copy:not([hidden]){animation:none}}
+
+.assembly-source{display:inline-block;margin:0 0 12px;font-size:8px;letter-spacing:.10em;pointer-events:auto}
+.assembly-source[hidden]{display:none!important}
+.inspection-controls{gap:16px;flex-wrap:wrap}
+.inspection-controls button{font-size:9px}
