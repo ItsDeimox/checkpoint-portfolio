@@ -10,7 +10,7 @@ export function rotateInView(q,dx,dy,cameraQ,extent,parentQ=null){
  delta.setFromAxisAngle(axis,length*Math.PI*1.25/Math.max(160,extent));return q.premultiply(delta).normalize();
 }
 export function componentPose(part,coverage){
- if(part==='fairing'&&coverage?.features.includes('fairing-inner-wall'))return new T.Quaternion().setFromEuler(new T.Euler(.24,-.73,0));
+ if(part==='fairing'&&coverage?.features.includes('fairing-inner-wall'))return new T.Quaternion().setFromEuler(new T.Euler(.22,1.36,0));
  if(part==='interstage'&&coverage?.features.includes('hotstage-base-sleeve'))return new T.Quaternion().setFromEuler(new T.Euler(.43,.28,0));
  if(part==='tanks'&&coverage?.features.some(id=>id==='first-stage-open-panel'||id==='heavy-core-cover'))return new T.Quaternion().setFromEuler(new T.Euler(.12,1.07,0));
  if(part==='tanks'&&coverage?.features.includes('booster-dome-downcomer'))return new T.Quaternion().setFromEuler(new T.Euler(.20,.30,0));

@@ -51,6 +51,22 @@ export function createInspection(model,index,part,payload='fairing',sharedFalcon
  const coverage=assemblyCoverage(model.family,part,features),internalMeshes=new Set(exterior.children.filter(m=>coverage.features.includes(m.userData.assemblyFeature)));
  const ghostShell=sourceModel.family==='starship'&&['tanks','fairing'].includes(part);
  const fade=createAssemblyFade(group,internalMeshes,{coverOpacity:ghostShell?.10:0}),fullBounds=bounds.clone(),innerBounds=new T.Box3();
+ // Translate the real second fairing half outward during inspection rather
+ // than keeping its painted convex face over the payload adapter. This is
+ // exclusively motion of the existing authored mesh, never new interior geometry.
+ const openHalf=[...internalMeshes].find(m=>m.userData.assemblyFeature==='fairing-inner-wall');
+ const payloadDeck=[...internalMeshes].find(m=>m.userData.assemblyFeature==='payload-adapter');
+ const halfPose=openHalf?{position:openHalf.position.clone(),yaw:openHalf.rotation.y}:null;
+ const openingAxis=new T.Vector3();
+ let openingTravel=0,openingYaw=0;
+ if(openHalf&&payloadDeck){
+  const wallBox=new T.Box3().setFromObject(openHalf),deckBox=new T.Box3().setFromObject(payloadDeck);
+  openingAxis.copy(wallBox.getCenter(new T.Vector3())).sub(deckBox.getCenter(new T.Vector3())).setY(0);
+  if(openingAxis.lengthSq()<1e-6)openingAxis.set(1,0,0);
+  openingAxis.normalize();
+  openingTravel=Math.max(fullBounds.getSize(new T.Vector3()).x,fullBounds.getSize(new T.Vector3()).z)*.42;
+  openingYaw=(openingAxis.x>=0?1:-1)*.22;
+ }
  // In the Falcon tank cutaway the original front shell is hidden rather than
  // displaced as a detached tube. No missing bulkhead/plumbing is synthesized.
  // Lift only the artist-authored Starship cage clear of its mounting sleeve.
@@ -61,6 +77,11 @@ export function createInspection(model,index,part,payload='fairing',sharedFalcon
   for(const {mesh,y} of frames){
    mesh.position.y=y+frameLift*t;
    mesh.updateMatrixWorld(true);
+  }
+  if(openHalf&&halfPose){
+   openHalf.position.copy(halfPose.position).addScaledVector(openingAxis,openingTravel*t);
+   openHalf.rotation.y=halfPose.yaw+openingYaw*t;
+   openHalf.updateMatrixWorld(true);
   }
   // Tank covers are handled by the fade; original end decks stay registered.
  }

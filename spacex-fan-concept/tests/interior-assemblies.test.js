@@ -94,5 +94,23 @@ test('default fairing inspection faces the concave opening instead of the painte
  const features=new Set(['fairing-inner-wall','payload-adapter']);
  const q=componentPose('fairing',assemblyCoverage('falcon','fairing',features));
  const e=new T.Euler().setFromQuaternion(q);
- assert.ok(e.y<-.6&&e.y>-.9);
+ assert.ok(e.y>1.2&&e.y<1.5);
+});
+
+test('opening the licensed fairing separates only its existing curved half, leaving the adapter registered',()=>{
+ const group=new T.Group();
+ const far=new T.Mesh(new T.BoxGeometry(.6,3,.7),new T.MeshStandardMaterial({map:new T.Texture()}));
+ far.position.x=.6;far.userData={part:'fairing',assemblyFeature:'fairing-inner-wall'};
+ const adapter=new T.Mesh(new T.BoxGeometry(.8,.2,.8),new T.MeshStandardMaterial());
+ adapter.userData={part:'fairing',assemblyFeature:'payload-adapter'};
+ group.add(far,adapter);const view=createInspection({group,family:'falcon'},1,'fairing');
+ const wall=view.exterior.children.find(m=>m.userData.assemblyFeature==='fairing-inner-wall');
+ const deck=view.exterior.children.find(m=>m.userData.assemblyFeature==='payload-adapter');
+ const wallPose=wall.position.clone(),deckPose=deck.position.clone(),geometry=wall.geometry;
+ view.setCutaway(true);view.step(1,true);
+ assert.ok(wall.position.distanceTo(wallPose)>.3);
+ assert.deepEqual(deck.position.toArray(),deckPose.toArray());
+ assert.equal(wall.geometry,geometry);
+ view.setCutaway(false);view.step(1,true);
+ assert.deepEqual(wall.position.toArray(),wallPose.toArray());view.dispose();
 });
