@@ -1,0 +1,62 @@
+name: Prepare standalone DXRKTHS repository with its own history
+on:
+  push:
+    branches: [migration-prep-dxrkths]
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Extract only the DXRKTHS subtree, preserving project history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git subtree split --prefix=dxrkths --branch dxrkths-standalone
+          test "$(git rev-parse HEAD:dxrkths)" = "$(git rev-parse dxrkths-standalone^{tree})"
+          git ls-tree --name-only dxrkths-standalone
+          if git ls-tree -r --name-only dxrkths-standalone | grep -E '^((portfolio/)|(heinem/)|(deimoxportfolios/)|(editor\.js$)|(main\.js$))'; then
+            echo 'ERROR: Checkpoint or another project leaked into standalone tree'
+            exit 1
+          fi
+      - name: Verify isolated site builds and runs its complete test suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/dxrkths-export/site
+          git archive dxrkths-standalone | tar -xf - -C /tmp/dxrkths-export/site
+          cd /tmp/dxrkths-export/site
+          npm ci
+          npm run build
+          test -f dist/index.html
+          test -f vercel.json
+          test -f package.json
+      - name: Preserve Git history as a portable Git bundle and zip
+        shell: bash
+        run: |
+          set -euo pipefail
+          git bundle create /tmp/dxrkths-export/dxrkths-history.bundle dxrkths-standalone
+          git bundle verify /tmp/dxrkths-export/dxrkths-history.bundle
+          git archive --format=zip --output=/tmp/dxrkths-export/dxrkths-source.zip dxrkths-standalone
+          sha256sum /tmp/dxrkths-export/dxrkths-history.bundle /tmp/dxrkths-export/dxrkths-source.zip > /tmp/dxrkths-export/SHA256SUMS.txt
+          printf '%s\n' 'DXRKTHS portable repository' 'The history bundle includes only the filtered dxrkths subtree.' 'This is a copy; the live Checkpoint repository and Vercel project remain untouched.' 'After a dedicated GitHub repository exists, push dxrkths-standalone to its main branch and link the existing dxrkths Vercel project.' > /tmp/dxrkths-export/MIGRATION.txt
+      - name: Publish a safe standalone source branch without touching main
+        run: git push origin dxrkths-standalone:refs/heads/dxrkths-standalone
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dxrkths-standalone-source-and-history
+          path: |
+            /tmp/dxrkths-export/dxrkths-history.bundle
+            /tmp/dxrkths-export/dxrkths-source.zip
+            /tmp/dxrkths-export/SHA256SUMS.txt
+            /tmp/dxrkths-export/MIGRATION.txt
+          retention-days: 7
