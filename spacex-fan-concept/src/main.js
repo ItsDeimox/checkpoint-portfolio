@@ -5,6 +5,7 @@ import {startProductLayer} from './platform/runtime.js';
 import {siteConfig} from './platform/site-config.js';
 import {vehicles,partOrder,partLabels,getPart} from './data.js';
 import {initialState,reduce} from './state.js';
+import {engineFor} from './engine-details.js';
 
 const $=id=>document.getElementById(id);let state=initialState(),viewer,product,ready=false;
 const dialogs=['search-dialog','menu-dialog','about-dialog'].map($);
@@ -16,15 +17,17 @@ function render(){
   const vehicle=vehicles[state.index],detail=state.part?getPart(vehicle,state.part,state.payload):null;
   $('app').classList.toggle('is-detail',Boolean(detail));$('hero-copy').hidden=Boolean(detail);$('detail-copy').hidden=!detail;$('back').hidden=!detail;$('parts-nav').hidden=!detail;
   $('vehicle-title').textContent=vehicle.name;format($('vehicle-subtitle'),vehicle.subtitle);$('explore').replaceChildren(document.createTextNode(`EXPLORE ${vehicle.name} `),Object.assign(document.createElement('span'),{className:'chevron'}));$('back-name').textContent=vehicle.name;
-  const assetKey=state.payload==='dragon'?'dragon':state.index,assetStatus=viewer?.assetStates[assetKey];
-  const hasModel=state.payload==='dragon'?Boolean(viewer?.dragonModel):viewer?.models[state.index]?.source==='licensed';
+  const engine=engineFor(vehicle.id,state.part),engineView=state.payload==='engine';
+  const assetKey=engineView?engine?.family:state.payload==='dragon'?'dragon':state.index,assetStatus=viewer?.assetStates[assetKey];
+  const hasModel=engineView?Boolean(viewer?.engineModels.has(engine?.family)):state.payload==='dragon'?Boolean(viewer?.dragonModel):viewer?.models[state.index]?.source==='licensed';
   $('model-status').textContent=assetStatus==='loading'?'LOADING AUTHORED MODEL':'';$('asset-notice').hidden=hasModel||!ready;
   $('asset-notice-text').textContent=assetStatus==='unavailable'?'THE SOURCE MODEL COULD NOT BE LOADED.':'LOADING SOURCE GEOMETRY';$('retry-model').hidden=assetStatus!=='unavailable';$('explore').disabled=!hasModel;
   const coverage=viewer?.inspection?.coverage,supported=Boolean(detail&&coverage?.supported),internal=Boolean(viewer?.cutaway&&supported);
-  document.querySelector('.inspection-controls').hidden=!supported;$('view-cutaway').disabled=!supported;
-  $('view-exterior').setAttribute('aria-pressed',String(!internal));$('view-cutaway').setAttribute('aria-pressed',String(internal));
-  $('interior-note').hidden=false;$('interior-note').textContent=supported?coverage.summary:state.payload==='dragon'?'AUTHORED DOCKING HARDWARE AND HEAT SHIELD · CABIN NOT INCLUDED':viewer?.inspection?.contextual?'CONTINUOUS SOURCE SHELL RETAINED · NO ARTIFICIAL CUTS OR INTERNALS':'INTERNAL ASSEMBLY NOT AVAILABLE IN THIS SOURCE MODEL';
-  const source=supported?coverage:state.payload==='dragon'?{url:'https://sketchfab.com/3d-models/spacex-dragon-2-1b125e30a2cb442288580290536fbe5d',author:'KUBAHA'}:null;
+  document.querySelector('.inspection-controls').hidden=!detail||(!supported&&!engine);$('view-cutaway').disabled=!supported;$('view-cutaway').hidden=!supported;
+  $('view-engine').hidden=!engine;$('view-engine').setAttribute('aria-pressed',String(engineView));
+  $('view-exterior').setAttribute('aria-pressed',String(!internal&&!engineView));$('view-cutaway').setAttribute('aria-pressed',String(internal));
+  $('interior-note').hidden=false;$('interior-note').textContent=engineView?'INDIVIDUAL ARTIST MODEL · INTERNAL CUTAWAY NOT SUPPLIED':supported?coverage.summary:state.payload==='dragon'?'AUTHORED DOCKING HARDWARE AND HEAT SHIELD · CABIN NOT INCLUDED':viewer?.inspection?.contextual?'CONTINUOUS SOURCE SHELL RETAINED · NO ARTIFICIAL CUTS OR INTERNALS':'INTERNAL ASSEMBLY NOT AVAILABLE IN THIS SOURCE MODEL';
+  const source=engineView?engine:supported?coverage:state.payload==='dragon'?{url:'https://sketchfab.com/3d-models/spacex-dragon-2-1b125e30a2cb442288580290536fbe5d',author:'KUBAHA'}:null;
   $('assembly-source').hidden=!source;if(source){$('assembly-source').href=source.url;$('assembly-source').textContent=`MODEL SOURCE · ${source.author} ↗`;}
   $('configuration').hidden=!vehicle.reference;$('configuration').textContent=vehicle.reference??'';
   for(const [id,offset] of [['previous',-1],['next',1]]){const candidate=vehicles[state.index+offset],neighbor=candidate?.available===false?null:candidate,button=$(id);button.disabled=!neighbor;button.setAttribute('aria-label',neighbor?`Explore ${neighbor.name}`:offset<0?'First rocket':'Last rocket');button.querySelector('.neighbor-name').textContent=neighbor?.name??'';button.querySelector('.neighbor-years').textContent=neighbor?.years??'';}
@@ -34,7 +37,7 @@ function render(){
   $('interaction-hint').textContent=detail?'DRAG X/Y · SCROLL / PINCH TO ZOOM · DOUBLE-CLICK TO RESET':'DRAG TO BROWSE · SELECT A PART · SHIFT + DRAG TO ROTATE';
   document.querySelectorAll('.primary-nav button').forEach(button=>button.classList.toggle('active',button.dataset.action===(state.payload==='dragon'?'dragon':state.index===3?'starship':'rockets')));
   if(detail){
-    $('detail-parent').textContent=`${vehicle.name} / ${viewer?.inspection?.contextual?'ASSEMBLY VIEW':'COMPONENT VIEW'}`;$('detail-title').textContent=detail.title;$('detail-kicker').textContent=detail.kicker;$('detail-description').textContent=detail.description;
+    $('detail-parent').textContent=`${vehicle.name} / ${engineView?'ENGINE DETAIL':viewer?.inspection?.contextual?'ASSEMBLY VIEW':'COMPONENT VIEW'}`;$('detail-title').textContent=detail.title;$('detail-kicker').textContent=detail.kicker;$('detail-description').textContent=detail.description;
     $('detail-specs').replaceChildren(...detail.specs.map(([label,value])=>{const div=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;div.append(dt,dd);return div;}));
     $('detail-source').href=state.payload==='dragon'&&state.part==='fairing'?'https://www.spacex.com/vehicles/dragon/':vehicle.source;
     $('detail-copy').scrollTop=0;
@@ -68,7 +71,8 @@ document.querySelectorAll('[data-action]').forEach(button=>button.addEventListen
 $('previous').addEventListener('click',()=>action({type:'NAVIGATE',index:state.index-1}));$('next').addEventListener('click',()=>action({type:'NAVIGATE',index:state.index+1}));
 $('explore').addEventListener('click',()=>action({type:'FOCUS',part:'engines'}));$('rotate').addEventListener('click',()=>action({type:'ROTATE'}));
 $('quality').addEventListener('change',event=>{if(ready){viewer.autoCap=null;viewer.frameBudget.reset();viewer.applyQuality(event.target.value);}});
-for(const [id,enabled] of [['view-exterior',false],['view-cutaway',true]])$(id).addEventListener('click',()=>{if(!ready)return;if(viewer.setCutaway(enabled))render();});
+for(const [id,enabled] of [['view-exterior',false],['view-cutaway',true]])$(id).addEventListener('click',()=>{if(!ready)return;if(!enabled&&state.payload==='engine'){action({type:'ENGINE_DETAIL',enabled:false});return;}if(viewer.setCutaway(enabled))render();});
+$('view-engine').addEventListener('click',()=>action({type:'ENGINE_DETAIL',enabled:true}));
 $('reload').addEventListener('click',()=>location.reload());$('retry-model').addEventListener('click',()=>viewer?.retryModel());
 window.addEventListener('keydown',event=>{
   if(dialogs.some(dialog=>dialog.open)||/INPUT|SELECT|TEXTAREA/.test(event.target.tagName))return;

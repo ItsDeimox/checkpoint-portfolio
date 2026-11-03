@@ -1,8 +1,9 @@
 import {createHash} from 'node:crypto';
 export const escapeHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const https=v=>{try{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}};
+export function assetBudget(file){return /-high-[a-f0-9]+\.glb$/.test(file?.url??'')?{bytes:10000000,triangles:1000000}:{bytes:8000000,triangles:700000};}
 export function validateAsset(file,bytes,author){
- if(!file||!/^\/assets\/[\w.-]+$/.test(file.url)||!Number.isSafeInteger(file.bytes)||file.bytes<1||file.bytes>8_000_000||bytes.length!==file.bytes)throw Error('Invalid asset path or size');
+ if(!file||!/^\/assets\/[\w.-]+$/.test(file.url)||!Number.isSafeInteger(file.bytes)||file.bytes<1||file.bytes>assetBudget(file).bytes||bytes.length!==file.bytes)throw Error('Invalid asset path or size');
  if(!/^[a-f0-9]{64}$/.test(file.sha256)||createHash('sha256').update(bytes).digest('hex')!==file.sha256)throw Error('Asset hash mismatch');
  if(!author||!['CC-BY-4.0','CC0-1.0'].includes(author.license)||!author.author||!https(author.source))throw Error('Missing source/author/reusable license');
  return true;

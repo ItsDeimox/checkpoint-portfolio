@@ -1,0 +1,155 @@
+[
+  {
+    "key": "falcon9-high",
+    "oldBytes": 1122592,
+    "bytes": 3601276,
+    "oldTriangles": 147215,
+    "triangles": 157889,
+    "unchanged": false,
+    "sourceDetail": {
+      "geometry": true,
+      "textures": true,
+      "triangles": 157889,
+      "geometrySha256": "eed2c1ab048d232e010799dd2bb9a1bec61dc740ba7837a75b5b53c60c5c2900",
+      "textureSha256": "6f09f75d2a42ba63d253aec6f4a713f84db85684df46f700396e4518623b37cb"
+    }
+  },
+  {
+    "key": "falcon9-eco",
+    "oldBytes": 742980,
+    "bytes": 742980,
+    "oldTriangles": 94093,
+    "triangles": 94093,
+    "unchanged": true,
+    "sourceDetail": null
+  },
+  {
+    "key": "falconheavy-high",
+    "oldBytes": 1928616,
+    "bytes": 8979476,
+    "oldTriangles": 15670,
+    "triangles": 15670,
+    "unchanged": false,
+    "sourceDetail": {
+      "geometry": true,
+      "textures": true,
+      "triangles": 15670,
+      "geometrySha256": "ff197929b7c4523f9a4bac9f10057470f803fbb55a002d0d1985ec62d5ee4fa4",
+      "textureSha256": "7a470d2c53f8382451f420be072abfb9709ef36ddf052b984d377e7269579580"
+    }
+  },
+  {
+    "key": "falconheavy-eco",
+    "oldBytes": 382248,
+    "bytes": 382248,
+    "oldTriangles": 15670,
+    "triangles": 15670,
+    "unchanged": true,
+    "sourceDetail": null
+  },
+  {
+    "key": "dragon-high",
+    "oldBytes": 244232,
+    "bytes": 706740,
+    "oldTriangles": 42974,
+    "triangles": 42974,
+    "unchanged": false,
+    "sourceDetail": {
+      "geometry": true,
+      "textures": true,
+      "triangles": 42974,
+      "geometrySha256": "8c8db8c355d910d4a098b9caf9de5972d1c3a744b9e84766c921f55f92035e73",
+      "textureSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  {
+    "key": "dragon-eco",
+    "oldBytes": 177860,
+    "bytes": 177860,
+    "oldTriangles": 27230,
+    "triangles": 27230,
+    "unchanged": true,
+    "sourceDetail": null
+  },
+  {
+    "key": "starship-high",
+    "oldBytes": 6437352,
+    "bytes": 8554532,
+    "oldTriangles": 608667,
+    "triangles": 912852,
+    "unchanged": false,
+    "sourceDetail": {
+      "geometry": true,
+      "textures": true,
+      "triangles": 912852,
+      "geometrySha256": "42d5a8bf3f6dd971ede1371b374924a5cc1e9ba9937ab76d201cc28af2b9ff60",
+      "textureSha256": "b4aaee3eef82d7806e5d4a64f9453c28a8ad807c96f180bbfd729aeb36aa84fc"
+    }
+  },
+  {
+    "key": "starship-eco",
+    "oldBytes": 2788164,
+    "bytes": 2788164,
+    "oldTriangles": 196758,
+    "triangles": 196758,
+    "unchanged": true,
+    "sourceDetail": null
+  },
+  {
+    "key": "merlin-high",
+    "oldBytes": null,
+    "bytes": 1061156,
+    "oldTriangles": null,
+    "triangles": 10380,
+    "unchanged": false,
+    "sourceDetail": {
+      "geometry": true,
+      "textures": true,
+      "triangles": 10380,
+      "geometrySha256": "ffde1b65f3d9a43bb5300573f175c61b99602c04824795ea91d72f58f6b14cde",
+      "textureSha256": "1391df10a325d57bc4f6864f57e46df8d1b34fabc47e667b135b4f9ffbc447b5"
+    }
+  },
+  {
+    "key": "merlin-eco",
+    "oldBytes": null,
+    "bytes": 160744,
+    "oldTriangles": null,
+    "triangles": 10380,
+    "unchanged": false,
+    "sourceDetail": null
+  },
+  {
+    "key": "merlinvac-high",
+    "oldBytes": null,
+    "bytes": 627968,
+    "oldTriangles": null,
+    "triangles": 13422,
+    "unchanged": false,
+    "sourceDetail": {
+      "geometry": true,
+      "textures": true,
+      "triangles": 13422,
+      "geometrySha256": "ec393962bb3072dacbf78a295f4379e0b0520b7927ea9534f4c90f8effb1ffa9",
+      "textureSha256": "461dce66b2166360b7cc338969cb18c020980aa785cd5a39d974ab46e379251d"
+    }
+  },
+  {
+    "key": "merlinvac-eco",
+    "oldBytes": null,
+    "bytes": 133648,
+    "oldTriangles": null,
+    "triangles": 13422,
+    "unchanged": false,
+    "sourceDetail": null
+  },
+  {
+    "key": "studio",
+    "oldBytes": 1680234,
+    "bytes": 1680234,
+    "oldTriangles": null,
+    "triangles": null,
+    "unchanged": true,
+    "sourceDetail": null
+  }
+]

@@ -29,7 +29,7 @@ for(const [engineName,engine]of Object.entries({chromium,firefox,webkit})){
    }
    await p.screenshot({path:`/tmp/${engineName}-recovered.png`});
   });
-  await check('source identities validated in built GLBs',async()=>{const r=await(await p.request.get(base+'release/readiness.json')).json();assert.equal(r.checks.sourceIdentity,true);const models=r.assets.filter(a=>a.id!=='studio');assert.equal(models.length,8);assert.ok(models.every(a=>a.sourceReview.identityMatched&&!a.sourceReview.engineeringVerified));});
+  await check('source identities validated in built GLBs',async()=>{const r=await(await p.request.get(base+'release/readiness.json')).json();assert.equal(r.checks.sourceIdentity,true);const models=r.assets.filter(a=>a.id!=='studio');assert.equal(models.length,12);assert.ok(models.every(a=>a.sourceReview.identityMatched&&!a.sourceReview.engineeringVerified));});
   await check('no page/shader errors',async()=>assert.deepEqual(errors,[]));
   report.push({engine:engineName,version:browser.version(),passed:passed.length,failed:failed.length,checks:passed,failures:failed,errors,environment:{headless:engineName!=='firefox',softwareRendering:true,physicalDevice:false}});
  }catch(e){report.push({engine:engineName,fatal:e.message,passed:passed.length,failures:failed,errors});console.log('FATAL',engineName,e.message.slice(0,300));}finally{await browser?.close();}

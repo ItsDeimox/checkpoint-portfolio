@@ -28,5 +28,15 @@
     "dragon.glb",
     "https://raw.githubusercontent.com/crgonzales/docking-sim/0fe4b483ba080a15d51389e43f12c31447f0b566/apps/web/public/assets/models/dragon/crew-dragon.glb",
     "541d3f21952f910bf0764f46db6e08a8a737882cc1d5b2b942afc9543204185f"
+  ],
+  [
+    "merlin.glb",
+    "https://huggingface.co/datasets/allenai/objaverse/resolve/556637099bf4fa79ea7b239d0d9c328b8a2e9ac8/glbs/000-010/088a207cae57488f876bbc16daf2148d.glb",
+    "88d1a95eab6abc8ba35205a7e61f1e526cd65f468f6615e63bdcf58f20fe84a4"
+  ],
+  [
+    "merlinvac.glb",
+    "https://huggingface.co/datasets/allenai/objaverse/resolve/556637099bf4fa79ea7b239d0d9c328b8a2e9ac8/glbs/000-057/f20ebb6e857b405cbdc66568d48d2fcb.glb",
+    "3eb0d4f875fd1de77f6a3480ffa4b0989e8d47bde6b6450b92c91f3f5a100dc7"
   ]
 ]

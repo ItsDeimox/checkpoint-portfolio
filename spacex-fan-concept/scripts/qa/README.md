@@ -18,3 +18,7 @@ The host needs Chromium shared libraries (NSS, GBM, ALSA, Pango and X11). Report
 `node scripts/qa/source-interiors.mjs` checks source-only assembly capabilities, restored Falcon interstage hardware, the Starship cargo rack, per-module missing-coverage messages, internal/assembled controls, quality refresh, camera framing, idle rendering and interruption. It deliberately does not assert that artist geometry is certified flight hardware or that unavailable tank interiors exist.
 
 `npm --prefix scripts/qa run commercial` verifies keyboard inspection, same-origin embedding, the HTML-only catalogue, save-data behavior, third-party notices and automated accessibility in six UI/page states. It injects axe-core only for testing and never adds it to the application bundle. Run with `BASE_URL` pointing to the compiled preview or public deployment. Manual assistive-technology and physical-device review remain required.
+
+`node scripts/qa/max-detail.mjs` verifies the source-preserving high assets, opt-in Merlin/Merlin Vacuum inspection, all three supported entry points, high/low replacement, portrait framing, original interior mode and runtime errors. It uses the same optional QA dependencies. These checks do not certify hidden internals or real-phone frame rates.
+
+`node scripts/qa/engine-edge.mjs` additionally checks failed-request retry without generated fallback, fast quality changes, idle pause and automated accessibility in an individual engine view.

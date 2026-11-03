@@ -42,3 +42,9 @@ Models are artistic references, not official engineering CAD. Heavy's source is 
 ## Commercial-readiness work
 
 The current phase adds a vendor-neutral command adapter, keyboard inspection, a static HTML catalogue, third-party notices and build integrity/size gates. It does not establish legal clearance or complete engineering fidelity. See [commercial preparation](docs/commercial/README.md), [executed validation](docs/commercial/validation.md) and [integration protocol](docs/commercial/integration.md). No outreach was sent.
+
+## Source detail and individual engines
+
+High quality preserves the pinned sources' vertex attributes and original image files, with lossless Meshopt encoding. Source triangles and winding are conserved; the codec may cyclically rotate face indices. Low/Medium retain the previous lighter assets. This maximizes the available source detail, not manufacturer accuracy or missing interiors.
+
+Select Falcon 9 or Falcon Heavy engines, then **FULL ENGINE**, to inspect a separate authored Merlin 1D. Falcon 9's interstage also offers a separate Merlin Vacuum model. These files are by MartianDays, CC BY 4.0, pinned through the public Objaverse mirror with original source metadata. They show their supplied upper assembly/nozzle; hidden combustion and turbine internals are not modeled. ASSEMBLED returns to the original rocket component. No new fleet vehicle passed the fidelity/internal-coverage review in this update.

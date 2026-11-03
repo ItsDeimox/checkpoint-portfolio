@@ -8,7 +8,7 @@ import {assemblyFeature} from './source-assemblies.js';
 import {bakeSourceRange,partitionAuthoredRegions} from './source-geometry.js';
 import {partOrder,vehicles} from './data.js';
 export const sourceFamilies={1:'falcon',2:'heavy',3:'starship'};
-const sourceKeys={falcon:'falcon9',heavy:'falconheavy',starship:'starship',dragon:'dragon'},sourceHeights={falcon:14,heavy:14,starship:24,dragon:1.62};
+const sourceKeys={falcon:'falcon9',heavy:'falconheavy',starship:'starship',dragon:'dragon',merlin:'merlin',merlinvac:'merlinvac'},sourceHeights={falcon:14,heavy:14,starship:24,dragon:1.62,merlin:.8,merlinvac:1.1};
 export function isEffectivelyVisible(o){for(let n=o;n;n=n.parent)if(!n.visible)return false;return true;}
 function chainName(o){let name=o.name;for(let n=o.parent,d=0;n&&d<3;n=n.parent,d++)name+=' '+n.name;return name;}
 function uniforms(){return Object.fromEntries(partOrder.map(p=>[p,{highlight:{value:0},brightness:{value:1}}]));}
@@ -31,7 +31,7 @@ export function prepareTemplate(source,family,height){
     const geometry=bakeSourceRange(g,range.start,range.count,matrix);geometry.computeBoundingBox();const y=geometry.boundingBox.getCenter(new T.Vector3()).y/height,name=chainName(o);
     const role=family==='dragon'&&/\bCircle\.?002_0\b/.test(name)?'cargo-trunk':/landing.?leg/i.test(name)?'landing-gear':'component',feature=assemblyFeature(family,name,material.name,y);
     const stage=family==='falcon'&&(/second.?stage|engine.?holder/i.test(name)||geometry.boundingBox.min.y>height*.65)?'upper':'booster';
-    const parts=family==='heavy'?partitionAuthoredRegions(geometry,height):[{geometry,part:family==='dragon'?'fairing':classifyPart(family,name,y)}];if(family==='heavy')geometry.dispose();
+    const parts=family==='heavy'?partitionAuthoredRegions(geometry,height):[{geometry,part:family==='dragon'?'fairing':family.startsWith('merlin')?'engines':classifyPart(family,name,y),...(family.startsWith('merlin')?{inspectionParts:['engines','interstage']}:{})}];if(family==='heavy')geometry.dispose();
     for(const item of parts){const layout=Object.keys(item.geometry.attributes).sort().map(n=>n+item.geometry.getAttribute(n).itemSize).join(','),key=`${item.part}|${material.uuid}|${stage}|${role}|${feature??''}|${item.inspectionParts?.join(',')??item.part}|${Boolean(item.assemblyContext)}|${layout}`;if(!bins.has(key))bins.set(key,{part:item.part,stage,role,assemblyFeature:feature,inspectionParts:item.inspectionParts,assemblyContext:item.assemblyContext,material,geometries:[],sourceNames:new Set()});const bin=bins.get(key);bin.geometries.push(item.geometry);bin.sourceNames.add(name);}
    }
   }

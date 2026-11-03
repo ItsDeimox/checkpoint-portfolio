@@ -1,13 +1,15 @@
 import { vehicles } from './data.js';
+import {engineFor} from './engine-details.js';
 export const initialState=()=>({index:1,part:null,payload:'fairing',rotating:false});
 export function reduce(state,event) {
   switch(event.type) {
     case 'NAVIGATE':
       if(!Number.isFinite(event.index)) return state;
       return {...state,index:Math.max(vehicles.findIndex(v=>v.available!==false),Math.min(vehicles.length-1,Math.round(event.index))),part:null,payload:'fairing',rotating:false};
-    case 'FOCUS': return Object.hasOwn(vehicles[state.index].parts,event.part) ? {...state,part:event.part,payload:event.part==='fairing'?state.payload:'fairing',rotating:false} : state;
+    case 'FOCUS': return Object.hasOwn(vehicles[state.index].parts,event.part) ? {...state,part:event.part,payload:event.part==='fairing'&&state.payload==='dragon'?'dragon':'fairing',rotating:false} : state;
     case 'BACK': return {...state,part:null,payload:'fairing',rotating:false};
     case 'DRAGON': return {...state,index:1,part:'fairing',payload:'dragon',rotating:false};
+    case 'ENGINE_DETAIL': return typeof event.enabled==='boolean'&&engineFor(vehicles[state.index].id,state.part)?{...state,payload:event.enabled?'engine':'fairing',rotating:false}:state;
     case 'ROTATE': return {...state,rotating:!state.rotating};
     default: return state;
   }

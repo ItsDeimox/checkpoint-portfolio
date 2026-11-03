@@ -1,3 +1,4 @@
+import {engineFor} from './engine-details.js';
 const part = (title, kicker, description, specs, focus) => ({ title, kicker, description, specs, focus });
 const falconParts = {
   engines: part('MERLIN 1D', 'NINE ENGINES. ONE PURPOSE.', 'Nine sea-level Merlin engines power the first stage. After separation, a subset reignites to guide the booster back to Earth.', [['ENGINES', '9 MERLIN 1D'], ['PROPELLANT', 'RP-1 / LOX'], ['FIRST STAGE', 'REUSABLE']], { y: .65, span: 1.55, angle: .18, elevation: -.20 }),
@@ -29,4 +30,4 @@ export const vehicles = [
 ];
 export const partOrder=['engines','tanks','interstage','fairing'];
 export const partLabels={engines:'ENGINES',tanks:'TANKS',interstage:'INTERSTAGE',fairing:'PAYLOAD'};
-export function getPart(vehicle,key,payload='fairing') { return vehicle.id==='falcon-9' && key==='fairing' && payload==='dragon' ? dragonPart : vehicle.parts[key]; }
+export function getPart(vehicle,key,payload='fairing') { const engine=payload==='engine'?engineFor(vehicle.id,key):null;if(engine)return {...engine,focus:vehicle.parts[key].focus};return vehicle.id==='falcon-9' && key==='fairing' && payload==='dragon' ? dragonPart : vehicle.parts[key]; }
