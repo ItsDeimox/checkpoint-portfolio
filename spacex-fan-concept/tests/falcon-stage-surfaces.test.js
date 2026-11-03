@@ -79,7 +79,12 @@ for(const [quality,hash] of variants){
   assert.equal(wall.feature,'first-stage-barrel-section');assert.ok(cover.geometry.attributes.position.count>0);
   wall.geometry.computeBoundingBox();cover.geometry.computeBoundingBox();
   assert.ok(wall.geometry.boundingBox.max.z < cover.geometry.boundingBox.max.z*.5);
-  const [,deck]=partition('Interstage_F9 Black_0');deck.geometry.computeBoundingBox();
+  const [front,rear,deck]=partition('Interstage_F9 Black_0');
+  assert.equal(front.feature,'interstage-front-cover');
+  assert.equal(rear.feature,'interstage-rear-shell');
+  assert.ok(front.geometry.attributes.position.count>0);
+  assert.ok(rear.geometry.attributes.position.count>0);
+  deck.geometry.computeBoundingBox();
   assert.ok(deck.inspectionParts.includes('tanks'));const box=deck.geometry.boundingBox;
   assert.ok(box.max.y-box.min.y < (box.max.x-box.min.x)*.06);
   assert.equal(assemblyFeature('falcon','First_Stage_F9_Octaweb_Black_0','',0),'first-stage-thrust-deck');
@@ -87,7 +92,7 @@ for(const [quality,hash] of variants){
  });
 }
 
-test('opening the first-stage tank visibly moves its panel, and assembled restores the original transform',()=>{
+test('opening Falcon tanks hides only the original front skin and restoring assembles it without moving its geometry',()=>{
  const group=new Group();
  for(const feature of ['first-stage-open-panel','first-stage-barrel-section','first-stage-forward-deck','first-stage-thrust-deck']){
   const m=new Mesh(new BoxGeometry(1,10,.5),new MeshStandardMaterial());
@@ -95,10 +100,13 @@ test('opening the first-stage tank visibly moves its panel, and assembled restor
  }
  const v=createInspection({group,family:'falcon'},1,'tanks');
  const panel=v.exterior.children.find(m=>m.userData.assemblyFeature==='first-stage-open-panel');
+ const wall=v.exterior.children.find(m=>m.userData.assemblyFeature==='first-stage-barrel-section');
  const assembled=panel.matrix.clone();
  assert.ok(v.setCutaway(true));v.step(1,true);v.update();
- assert.ok(panel.position.x>1);assert.ok(panel.rotation.y>.8);assert.ok(panel.visible);
+ assert.equal(panel.visible,false);assert.equal(wall.visible,true);
+ assert.deepEqual(panel.matrix.elements,assembled.elements);
  assert.ok(v.setCutaway(false));v.step(1,true);v.update();
+ assert.equal(panel.visible,true);
  assert.deepEqual(panel.matrix.elements,assembled.elements);
  assert.equal(group.children[0].position.x,0);v.dispose();
 });
