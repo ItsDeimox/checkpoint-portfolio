@@ -274,8 +274,8 @@ export class RocketViewer {
     // The cover and the hardware can have the same bounds. Light the reveal
     // independently of scale so the front fill tracks the opening shell.
     const reveal=this.inspection?.fade.progress??0,engine=this.state.part==='engines';
-    this.fill.intensity=.10+2.5*reveal;
-    this.rim.intensity=T.MathUtils.lerp(engine?7:12,6,reveal);
+    this.fill.intensity=.10+.85*reveal;
+    this.rim.intensity=T.MathUtils.lerp(engine?7:12,4.5,reveal);
     this.uplight.intensity=engine?2.5:6;
     if(Math.abs(h-this.lastLightScale)<.00001)return;
     this.lastLightScale=h;this.stageScale=h;
@@ -351,6 +351,7 @@ export class RocketViewer {
     if(Math.abs(this.zoom-this.zoomTarget)>.0002){this.zoom=T.MathUtils.lerp(this.zoom,this.zoomTarget,1-Math.exp(-dt*14));active=true;}else this.zoom=this.zoomTarget;
     if(this.inspection){if(!this.animation)active=this.inspection.step(rawDelta/1000,this.reduced.matches)||active;if(!this.animation){this.inspection.group.position.y=this.inspection.radius+.08;this.updateStudio(Math.max(this.inspection.radius*3,.3)/14);}}
     if(this.inspection&&!this.animation){const c=this.desiredCamera(this.state);this.camera.position.set(...c.position);this.target.set(...c.target);}
+    this.practicals.group.visible=!this.inspection&&!this.retiring.length;
     this.layoutCarousel();this.camera.lookAt(this.target);this.camera.updateMatrixWorld();
     if(this.rotationDelta.lengthSq()){if(this.inspection)rotateInView(this.inspection.group.quaternion,this.rotationDelta.x,this.rotationDelta.y,this.camera.quaternion,Math.min(this.width,this.height));else this.models[this.state.index].group.rotateY(this.rotationDelta.x*.006);this.rotationDelta.set(0,0);}
     if(this.state.rotating&&!this.reduced.matches){if(this.inspection)rotateInView(this.inspection.group.quaternion,dt*22,0,this.camera.quaternion,Math.min(this.width,this.height));else this.displayGroup().rotateY(dt*.15);active=true;}
