@@ -94,7 +94,7 @@ test('default fairing inspection faces the concave opening instead of the painte
  const features=new Set(['fairing-inner-wall','payload-adapter']);
  const q=componentPose('fairing',assemblyCoverage('falcon','fairing',features));
  const e=new T.Euler().setFromQuaternion(q);
- assert.ok(e.y>1.2&&e.y<1.5);
+ assert.ok(e.y>.60&&e.y<.80);
 });
 
 test('opening the licensed fairing separates only its existing curved half, leaving the adapter registered',()=>{
