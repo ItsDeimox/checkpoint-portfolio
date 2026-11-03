@@ -6,12 +6,16 @@ import {siteConfig} from './platform/site-config.js';
 import {vehicles,partOrder,partLabels,getPart} from './data.js';
 import {initialState,reduce} from './state.js';
 import {engineFor} from './engine-details.js';
+import {usesSharedFalconHardware} from './source-assemblies.js';
 
-const $=id=>document.getElementById(id);let state=initialState(),viewer,product,ready=false;
-const dialogs=['search-dialog','menu-dialog','about-dialog'].map($);
+const $=id=>document.getElementById(id),query=new URLSearchParams(location.search);
+const cabinLink=query.get('reference')==='crew-dragon-cabin';
+let state=cabinLink?reduce(initialState(),{type:'DRAGON'}):initialState(query.get('inside')),viewer,product,ready=false;
+let openLinkedInterior=!cabinLink&&Boolean(state.part);
+const dialogs=['search-dialog','menu-dialog','about-dialog','cabin-dialog'].map($);
 const format=(node,text)=>{node.replaceChildren(...text.split('\n').flatMap((line,i)=>i?[document.createElement('br'),document.createTextNode(line)]:[document.createTextNode(line)]));};
 const action=(event)=>{
-  const next=reduce(state,event);if(next===state)return;state=next;if(ready)viewer.applyState(state);render();
+  const next=reduce(state,event);if(next===state)return;openLinkedInterior=false;state=next;if(ready)viewer.applyState(state);render();
 };
 function render(){
   const vehicle=vehicles[state.index],detail=state.part?getPart(vehicle,state.part,state.payload):null;
@@ -22,11 +26,21 @@ function render(){
   const hasModel=engineView?Boolean(viewer?.engineModels.has(engine?.family)):state.payload==='dragon'?Boolean(viewer?.dragonModel):viewer?.models[state.index]?.source==='licensed';
   $('model-status').textContent=assetStatus==='loading'?'LOADING AUTHORED MODEL':'';$('asset-notice').hidden=hasModel||!ready;
   $('asset-notice-text').textContent=assetStatus==='unavailable'?'THE SOURCE MODEL COULD NOT BE LOADED.':'LOADING SOURCE GEOMETRY';$('retry-model').hidden=assetStatus!=='unavailable';$('explore').disabled=!hasModel;
+  if(openLinkedInterior&&ready&&viewer.inspection?.supportsInterior){
+    openLinkedInterior=false;
+    viewer.setCutaway(true);
+  }
   const coverage=viewer?.inspection?.coverage,supported=Boolean(detail&&coverage?.supported),internal=Boolean(viewer?.cutaway&&supported);
-  document.querySelector('.inspection-controls').hidden=!detail||(!supported&&!engine);$('view-cutaway').disabled=!supported;$('view-cutaway').hidden=!supported;
+  const sharedPending=usesSharedFalconHardware(state)&&!supported&&!viewer?.assetStates[1]?.startsWith('licensed');
+  const retryShared=sharedPending&&viewer?.assetStates[1]==='unavailable';
+  document.querySelector('.inspection-controls').hidden=!detail||(!supported&&!engine&&!sharedPending);
+  $('view-cutaway').hidden=!supported&&!sharedPending;
+  $('view-cutaway').disabled=!supported&&!retryShared;
+  $('view-cutaway').textContent=retryShared?'RETRY INTERIOR':sharedPending?'LOADING INTERIOR':'INTERNAL STRUCTURE';
   $('view-engine').hidden=!engine;$('view-engine').setAttribute('aria-pressed',String(engineView));
   $('view-exterior').setAttribute('aria-pressed',String(!internal&&!engineView));$('view-cutaway').setAttribute('aria-pressed',String(internal));
-  $('interior-note').hidden=false;$('interior-note').textContent=engineView?'INDIVIDUAL ARTIST MODEL · INTERNAL CUTAWAY NOT SUPPLIED':supported?coverage.summary:state.payload==='dragon'?'AUTHORED DOCKING HARDWARE AND HEAT SHIELD · CABIN NOT INCLUDED':viewer?.inspection?.contextual?'CONTINUOUS SOURCE SHELL RETAINED · NO ARTIFICIAL CUTS OR INTERNALS':'INTERNAL ASSEMBLY NOT AVAILABLE IN THIS SOURCE MODEL';
+  $('cabin-reference').hidden=state.payload!=='dragon'||state.part!=='fairing';
+  $('interior-note').hidden=false;$('interior-note').textContent=engineView?'INDIVIDUAL ARTIST MODEL · INTERNAL CUTAWAY NOT SUPPLIED':sharedPending?(retryShared?'Shared Falcon hardware could not be loaded.':'Loading shared Falcon hardware…'):supported?coverage.summary:state.payload==='dragon'?'AUTHORED DOCKING HARDWARE AND HEAT SHIELD · CABIN NOT INCLUDED':viewer?.inspection?.contextual?'CONTINUOUS SOURCE SHELL RETAINED · NO ARTIFICIAL CUTS OR INTERNALS':'INTERNAL ASSEMBLY NOT AVAILABLE IN THIS SOURCE MODEL';
   const source=engineView?engine:supported?coverage:state.payload==='dragon'?{url:'https://sketchfab.com/3d-models/spacex-dragon-2-1b125e30a2cb442288580290536fbe5d',author:'KUBAHA'}:null;
   $('assembly-source').hidden=!source;if(source){$('assembly-source').href=source.url;$('assembly-source').textContent=`MODEL SOURCE · ${source.author} ↗`;}
   $('configuration').hidden=!vehicle.reference;$('configuration').textContent=vehicle.reference??'';
@@ -50,6 +64,28 @@ for(const [i,vehicle] of vehicles.entries()){
   const source=document.createElement('a');source.href=vehicle.source;source.target='_blank';source.rel='noopener noreferrer';source.textContent=`${vehicle.name} ↗`;$('source-list').append(source);
 }
 for(const key of partOrder){const button=document.createElement('button');button.dataset.part=key;button.textContent=partLabels[key];button.addEventListener('click',()=>action({type:'FOCUS',part:key}));$('parts-nav').append(button);}
+function showCabinReference(film){
+  $('cabin-photo').hidden=film;
+  $('cabin-film').hidden=!film;
+  $('cabin-photo-tab').setAttribute('aria-pressed',String(!film));
+  $('cabin-film-tab').setAttribute('aria-pressed',String(film));
+  const player=$('cabin-player'),photo=$('cabin-photo').querySelector('img');
+  if(!film){
+    player.replaceChildren();
+    if(!photo.hasAttribute('src'))photo.src='/references/crew-8-cabin-eafda7f3.jpg';
+  }else if(!player.firstChild){
+    const frame=document.createElement('iframe');
+    frame.title='Inside Crew Dragon Endurance in orbit, ESA and NASA 360-degree video';
+    frame.allow='fullscreen; encrypted-media; accelerometer; gyroscope';
+    frame.allowFullscreen=true;
+    frame.referrerPolicy='strict-origin-when-cross-origin';
+    frame.src='https://www.youtube-nocookie.com/embed/INHctrVOoQw?start=326&playsinline=1';
+    player.append(frame);
+  }
+}
+$('cabin-photo-tab').addEventListener('click',()=>showCabinReference(false));
+$('cabin-film-tab').addEventListener('click',()=>showCabinReference(true));
+$('cabin-dialog').addEventListener('close',()=>$('cabin-player').replaceChildren());
 function closeDialogs(){dialogs.forEach(dialog=>dialog.open&&dialog.close());}
 function openDialog(id){closeDialogs();$(id).showModal();if(id==='search-dialog'){$('search-input').value='';search('');$('search-input').focus();}}
 for(const dialog of dialogs){
@@ -63,6 +99,7 @@ document.querySelectorAll('[data-action]').forEach(button=>button.addEventListen
     case 'starship':action({type:'NAVIGATE',index:3});break;
     case 'dragon':action({type:'DRAGON'});break;
     case 'back':action({type:'BACK'});break;
+    case 'cabin-reference':showCabinReference(false);openDialog('cabin-dialog');break;
     case 'about':openDialog('about-dialog');break;
     case 'search':openDialog('search-dialog');break;
     case 'menu':openDialog('menu-dialog');break;
@@ -71,7 +108,7 @@ document.querySelectorAll('[data-action]').forEach(button=>button.addEventListen
 $('previous').addEventListener('click',()=>action({type:'NAVIGATE',index:state.index-1}));$('next').addEventListener('click',()=>action({type:'NAVIGATE',index:state.index+1}));
 $('explore').addEventListener('click',()=>action({type:'FOCUS',part:'engines'}));$('rotate').addEventListener('click',()=>action({type:'ROTATE'}));
 $('quality').addEventListener('change',event=>{if(ready){viewer.autoCap=null;viewer.frameBudget.reset();viewer.applyQuality(event.target.value);}});
-for(const [id,enabled] of [['view-exterior',false],['view-cutaway',true]])$(id).addEventListener('click',()=>{if(!ready)return;if(!enabled&&state.payload==='engine'){action({type:'ENGINE_DETAIL',enabled:false});return;}if(viewer.setCutaway(enabled))render();});
+for(const [id,enabled] of [['view-exterior',false],['view-cutaway',true]])$(id).addEventListener('click',()=>{if(!ready)return;openLinkedInterior=false;if(enabled&&usesSharedFalconHardware(state)&&!viewer.inspection?.supportsInterior){openLinkedInterior=true;viewer.loadLicensed(1);return;}if(!enabled&&state.payload==='engine'){action({type:'ENGINE_DETAIL',enabled:false});return;}if(viewer.setCutaway(enabled))render();});
 $('view-engine').addEventListener('click',()=>action({type:'ENGINE_DETAIL',enabled:true}));
 $('reload').addEventListener('click',()=>location.reload());$('retry-model').addEventListener('click',()=>viewer?.retryModel());
 window.addEventListener('keydown',event=>{
@@ -103,6 +140,7 @@ function hover(part,point){
   if(point)$('hotspot').style.transform=`translate(${point.x-32}px, ${point.y-98}px)`;
 }
 render();
+if(cabinLink){showCabinReference(false);openDialog('cabin-dialog');}
 (async()=>{
   try{
     const {RocketViewer}=await import('./scene.js');

@@ -9,7 +9,8 @@ export function rotateInView(q,dx,dy,cameraQ,extent,parentQ=null){
  if(parentQ)axis.applyQuaternion(inverse.copy(parentQ).invert());
  delta.setFromAxisAngle(axis,length*Math.PI*1.25/Math.max(160,extent));return q.premultiply(delta).normalize();
 }
-export function componentPose(part){
+export function componentPose(part,coverage){
+ if(part==='fairing'&&coverage?.features.includes('fairing-inner-wall'))return new T.Quaternion().setFromEuler(new T.Euler(.24,.67,0));
  if(part==='engines')return new T.Quaternion().setFromUnitVectors(new T.Vector3(0,-1,0),new T.Vector3(.30,-.45,1).normalize());
  return new T.Quaternion().setFromEuler(new T.Euler(-.08,.24,0));
 }

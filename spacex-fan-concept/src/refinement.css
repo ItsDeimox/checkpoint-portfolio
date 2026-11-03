@@ -1,10 +1,10 @@
 .model-status{position:absolute;left:var(--gutter);bottom:24px;z-index:8;color:#85858b;font-size:9px;letter-spacing:.16em;pointer-events:none}@media(max-width:759px){.model-status{bottom:66px;font-size:8px}}
 
 /* Keep the approved layout; add compact controls inside the existing information panel. */
-.inspection-controls{display:flex;gap:20px;margin:22px 0 12px;align-items:center}
-.inspection-controls button{font-size:10px;letter-spacing:.16em;color:#777b82;padding:9px 0;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
-.inspection-controls button[aria-pressed=true]{color:#f4f4f4;border-color:#bfc4cd}
-.inspection-controls button:hover{color:#fff}
+.inspection-controls,.cabin-controls{display:flex;gap:20px;margin:22px 0 12px;align-items:center}
+.inspection-controls button,.cabin-controls button{font-size:10px;letter-spacing:.16em;color:#777b82;padding:9px 0;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.inspection-controls button[aria-pressed=true],.cabin-controls button[aria-pressed=true]{color:#f4f4f4;border-color:#bfc4cd}
+.inspection-controls button:hover,.cabin-controls button:hover{color:#fff}
 .interior-note{font-size:8px!important;line-height:1.6!important;letter-spacing:.12em!important;color:#747981!important;margin:0 0 18px!important;max-width:320px}
 @media(max-width:759px){.inspection-controls{margin:8px 0 5px;gap:22px}.inspection-controls button{font-size:9px;padding:7px 0}.interior-note{font-size:7px!important;margin-bottom:10px!important}.is-detail .detail-copy{max-height:39svh;overflow-y:auto;scrollbar-width:thin}}
 @media(prefers-reduced-motion:reduce){.inspection-controls button{transition:none}}
@@ -26,5 +26,15 @@
 
 .assembly-source{display:inline-block;margin:0 0 12px;font-size:8px;letter-spacing:.10em;pointer-events:auto}
 .assembly-source[hidden]{display:none!important}
-.inspection-controls{gap:16px;flex-wrap:wrap}
+.inspection-controls,.cabin-controls{gap:16px;flex-wrap:wrap}
 .inspection-controls button{font-size:9px}
+
+#cabin-reference{pointer-events:auto;margin:0 0 12px}
+#cabin-reference[hidden],#cabin-dialog [hidden]{display:none!important}
+#cabin-dialog{width:min(660px,calc(100vw - 32px))}
+#cabin-dialog h2{font-size:clamp(20px,4vw,30px);letter-spacing:.04em}
+#cabin-dialog figure{margin:0}
+#cabin-photo img{width:100%;height:auto;max-height:52svh;object-fit:contain;background:#090a0c}
+#cabin-dialog figcaption,#cabin-film p{font-size:14px;line-height:1.5;color:#c6c9cf;margin:10px 0 0}
+#cabin-dialog a{text-decoration:underline;text-underline-offset:.15em}
+#cabin-player iframe{display:block;width:100%;aspect-ratio:16/9;border:0}

@@ -4,19 +4,47 @@ import {assemblyCoverage,createAssemblyFade} from './source-assemblies.js';
 export const inspectionCamera=inspectionFit;
 
 function visibleWithin(o,root){for(let n=o;n&&n!==root;n=n.parent)if(!n.visible)return false;return true;}
-export function createInspection(model,index,part,payload='fairing'){
+function copySurface(mesh,materials){
+ const copy=mesh.clone(false);
+ const clone=m=>{
+  const c=cloneSurface(m);c.onBeforeCompile=()=>{};c.customProgramCacheKey=()=>'authored-inspection';
+  if(mesh.userData.assemblyFeature==='fairing-inner-wall'&&c.map){
+   // The source reuses the painted outside UV island on the lining. Sample its
+   // unmarked swatch on inward faces only, preserving the exterior and PBR map.
+   c.onBeforeCompile=shader=>{shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
+    '#include <uv_vertex>\nif (dot(normal.xz, position.xz) < 0.0) vMapUv = vec2(0.99, 0.01);');};
+   c.customProgramCacheKey=()=>'falcon-fairing-lining';
+  }
+  c.dithering=true;materials.add(c);return c;
+ };
+ copy.material=Array.isArray(mesh.material)?mesh.material.map(clone):clone(mesh.material);
+ return copy;
+}
+
+export function createInspection(model,index,part,payload='fairing',sharedFalcon=null){
  const group=new T.Group(),exterior=new T.Group();group.name='inspection-'+part;group.add(exterior);const materials=new Set(),sourceMeshes=[];model.group.updateMatrixWorld(true);const inverse=model.group.matrixWorld.clone().invert();
  model.group.traverse(o=>{
   if(!o.isMesh||!(o.userData.inspectionParts??[o.userData.part]).includes(part)||!visibleWithin(o,model.group))return;
   if(model.family==='dragon'&&o.userData.role==='cargo-trunk')return;
   if(part==='engines'&&o.userData.role==='landing-gear')return;
   if(part==='interstage'&&model.family==='falcon'&&o.userData.stage==='upper'&&!o.userData.assemblyFeature)return;
-  sourceMeshes.push(o);const mesh=o.clone();mesh.children=[];mesh.geometry=o.geometry;
-  const source=Array.isArray(o.material)?o.material:[o.material],copies=source.map(m=>{const c=cloneSurface(m);c.onBeforeCompile=()=>{};c.customProgramCacheKey=()=> 'authored-inspection';c.dithering=true;materials.add(c);return c;});mesh.material=Array.isArray(o.material)?copies:copies[0];inverse.clone().multiply(o.matrixWorld).decompose(mesh.position,mesh.quaternion,mesh.scale);exterior.add(mesh);
+  sourceMeshes.push(o);const mesh=copySurface(o,materials);inverse.clone().multiply(o.matrixWorld).decompose(mesh.position,mesh.quaternion,mesh.scale);exterior.add(mesh);
  });
  const raw=new T.Box3().setFromObject(exterior);if(raw.isEmpty()){materials.forEach(m=>m.dispose());throw Error('No authored geometry for '+part);}
  const sourceCenter=raw.getCenter(new T.Vector3());exterior.position.copy(sourceCenter).negate();group.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(exterior);
  const sphere=bounds.getBoundingSphere(new T.Sphere()),features=new Set(exterior.children.map(m=>m.userData.assemblyFeature).filter(Boolean));
+ // Both rockets use the same normalized scale. Donor meshes are direct children
+ // with baked model-space coordinates, independent of their carousel position.
+ if(model.family==='heavy'&&sharedFalcon?.family==='falcon'){
+  const candidates=sharedFalcon.group.children.filter(m=>m.isMesh&&m.userData.part===part&&m.userData.assemblyFeature);
+  const shared=assemblyCoverage('heavy',part,new Set(candidates.map(m=>m.userData.assemblyFeature)));
+  if(shared.supported)for(const m of candidates){
+   if(!shared.features.includes(m.userData.assemblyFeature))continue;
+   const mesh=copySurface(m,materials);mesh.userData.sharedHardware=true;mesh.visible=false;
+   exterior.add(mesh);features.add(m.userData.assemblyFeature);
+  }
+  group.updateMatrixWorld(true);
+ }
  const coverage=assemblyCoverage(model.family,part,features),internalMeshes=new Set(exterior.children.filter(m=>coverage.features.includes(m.userData.assemblyFeature)));
  const fade=createAssemblyFade(group,internalMeshes),fullBounds=bounds.clone(),innerBounds=new T.Box3();
  for(const mesh of internalMeshes)innerBounds.union(new T.Box3().setFromObject(mesh));

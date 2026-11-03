@@ -14,6 +14,25 @@ if(existsSync(url)){
  test('inspection never copies in a generated internal geometry',()=>{const group=new T.Group(),geometries=new Set();for(const feature of['separation-pusher','vacuum-engine',null]){const m=new T.Mesh(new T.BoxGeometry(),new T.MeshStandardMaterial());m.userData={part:'interstage',stage:feature?'upper':'booster',assemblyFeature:feature};group.add(m);geometries.add(m.geometry);}const v=createInspection({group,family:'falcon'},1,'interstage');assert.equal(v.supportsInterior,true);assert.ok(v.exterior.children.every(m=>geometries.has(m.geometry)));v.setCutaway(true);for(let i=0;i<100;i++)v.step(1/60);assert.equal(group.children.length,3);v.dispose();});
 }
 test('inner focus recenters actual hardware rather than leaving it tiny at the tip',()=>{
- const group=new T.Group(),shell=new T.Mesh(new T.BoxGeometry(2,10,2),new T.MeshStandardMaterial()),rack=new T.Mesh(new T.BoxGeometry(.8,2,.8),new T.MeshStandardMaterial());shell.userData={part:'fairing'};rack.position.y=3;rack.userData={part:'fairing',assemblyFeature:'cargo-rack'};group.add(shell,rack);
+ const group=new T.Group(),shell=new T.Mesh(new T.BoxGeometry(2,10,2),new T.MeshStandardMaterial()),rack=new T.Mesh(new T.BoxGeometry(.8,2,.8),new T.MeshStandardMaterial());shell.userData={part:'fairing'};rack.position.y=3;rack.userData={part:'fairing',assemblyFeature:'cargo-rack'};const fittings=rack.clone();fittings.userData.assemblyFeature='ship-tank-hardware';group.add(shell,rack,fittings);
  const v=createInspection({group,family:'starship'},3,'fairing'),originalRadius=v.radius;v.setCutaway(true);v.step(1,true);assert.ok(v.radius<originalRadius*.5);v.group.updateMatrixWorld(true);const b=new T.Box3().setFromObject([...v.internalMeshes][0]);assert.ok(Math.abs(b.getCenter(new T.Vector3()).y)<1e-5);v.setCutaway(false);v.step(1,true);assert.equal(v.radius,originalRadius);v.dispose();
+});
+
+test('Heavy reveals only common upper-stage hardware and restores its own authored shell',()=>{
+ const asset=family=>({group:new T.Group(),family});
+ const add=(model,feature)=>{const mesh=new T.Mesh(new T.BoxGeometry(),new T.MeshStandardMaterial());mesh.userData={part:'interstage',assemblyFeature:feature};model.group.add(mesh);return mesh;};
+ const heavy=asset('heavy'),falcon=asset('falcon');
+ const shell=add(heavy,null),dome=add(falcon,'upper-stage-aft-dome');
+ add(falcon,'vacuum-engine');add(falcon,'separation-pusher');
+ const view=createInspection(heavy,2,'interstage','fairing',falcon);
+ assert.equal(view.internalMeshes.size,2);
+ assert.ok([...view.internalMeshes].every(m=>!m.visible));
+ assert.ok([...view.internalMeshes].some(m=>m.geometry===dome.geometry));
+ view.setCutaway(true);view.step(1,true);
+ assert.ok([...view.internalMeshes].every(m=>m.visible));
+ assert.equal(view.exterior.children.find(m=>m.geometry===shell.geometry).visible,false);
+ view.setCutaway(false);view.step(1,true);
+ assert.ok([...view.internalMeshes].every(m=>!m.visible));
+ assert.equal(dome.visible,true);
+ view.dispose();
 });

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {usesSharedFalconHardware} from './source-assemblies.js';
 import {createInspection,inspectionCamera} from './inspection.js';
 import {CarouselMotion,createFade,componentPose,rotateInView,depthRange,clamp,smooth} from './viewer-motion.js';
 import {bindViewerControls} from './viewer-controls.js';
@@ -96,6 +97,7 @@ export class RocketViewer {
   }
   async loadLicensed(index){
     if(index===0||this.disposed)return;
+    if(index===2&&usesSharedFalconHardware(this.state))this.loadLicensed(1);
     if(this.state.payload==='dragon'&&index===this.state.index)this.loadDragon();
     if(this.state.payload==='engine'&&index===this.state.index)loadEngineDetail(this,this.currentEngine()?.family);
     const quality=this.quality.tier==='high'?'high':'eco',key=`${index}-${quality}`;
@@ -110,7 +112,7 @@ export class RocketViewer {
         const previous=this.models[index],model=createModel(template,index);
         model.assetKey=key;model.fade=createFade(model.group);model.fade.set(previous.fade?.value??1);model.sphere=new T.Box3().setFromObject(model.group).getBoundingSphere(new T.Sphere());this.applyTextureBudget(model);model.group.position.copy(previous.group.position);model.group.quaternion.copy(previous.group.quaternion);model.group.scale.copy(previous.group.scale);model.group.visible=previous.group.visible;
         for(const part of Object.keys(model.uniforms)){model.uniforms[part].brightness.value=previous.uniforms[part].brightness.value;model.uniforms[part].highlight.value=previous.uniforms[part].highlight.value;}
-        model.payload(index===1?this.state.payload:'fairing');this.scene.remove(previous.group);this.scene.add(model.group);this.models[index]=model;previous.dispose();if(this.state.part&&this.state.index===index&&this.floor)this.applyState(this.state,false,true);
+        model.payload(index===1?this.state.payload:'fairing');this.scene.remove(previous.group);this.scene.add(model.group);this.models[index]=model;previous.dispose();if(this.state.part&&this.floor&&(this.state.index===index||(index===1&&usesSharedFalconHardware(this.state))))this.applyState(this.state,false,true);
         this.assetStates[index]=`licensed-${quality}`;this.onAssetStatus?.(index,this.assetStates[index]);this.wake();
       }catch(error){
         if(this.disposed)return;
@@ -197,10 +199,10 @@ export class RocketViewer {
     if(!key)return null;
     const model=this.inspectionModel();if(!model||model.source!=='licensed')return null;
     model.payload('fairing');if(!model.group.children.some(o=>(o.userData.inspectionParts??[o.userData.part]).includes(state.part)))return null;
-    const view=createInspection(model,state.index,state.part,state.payload);this.inspection=view;this.inspectionKey=key;this.scene.add(view.group);
+    const view=createInspection(model,state.index,state.part,state.payload,usesSharedFalconHardware(state)?this.models[1]:null);this.inspection=view;this.inspectionKey=key;this.scene.add(view.group);
     const initial=state.payload==='fairing'&&!previous&&this.contextAlpha>.85;
     if(initial){model.group.updateMatrixWorld(true);view.group.position.copy(view.sourceCenter).applyMatrix4(model.group.matrixWorld);model.group.getWorldQuaternion(view.group.quaternion);model.group.getWorldScale(view.group.scale);}
-    else {view.group.position.set(0,view.radius+.08,0);view.group.quaternion.copy(previous?.group.quaternion??componentPose(state.payload==='engine'?'fairing':state.part));view.fade.set(0);}
+    else {view.group.position.set(0,view.radius+.08,0);view.group.quaternion.copy(previous?.group.quaternion??componentPose(state.payload==='engine'?'fairing':state.part,view?.coverage));view.fade.set(0);}
     if(preserveMode&&view.setCutaway(true)){this.cutaway=true;view.step(1,true);view.group.position.copy(previous.group.position);view.group.scale.copy(previous.group.scale);}
     for(const mesh of view.sourceMeshes){this.hiddenSources.push([mesh,mesh.visible]);mesh.visible=false;}
     return view;
@@ -243,7 +245,7 @@ export class RocketViewer {
     if(!state.part){this.restoreSources();for(const m of this.models)m.payload('fairing');}
     const view=this.syncInspection(state,force),desired=this.desiredCamera(state),duration=instant||this.reduced.matches?0:force?420:950;
     if(state.part||wasPart){
-      this.animation={start:performance.now(),elapsed:0,duration,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),fromContext:this.contextAlpha,toContext:state.part?0:1,view,fromPose:view?.group.position.clone(),fromScale:view?.group.scale.clone(),fromQuat:view?.group.quaternion.clone(),fromFade:view?.fade.value??0,toQuat:retainedOrientation??componentPose(state.payload==='engine'?'fairing':state.part),fromLight:this.stageScale,toLight:view?Math.max(view.radius*3,.3)/14:vehicles[state.index].height/14};
+      this.animation={start:performance.now(),elapsed:0,duration,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),fromContext:this.contextAlpha,toContext:state.part?0:1,view,fromPose:view?.group.position.clone(),fromScale:view?.group.scale.clone(),fromQuat:view?.group.quaternion.clone(),fromFade:view?.fade.value??0,toQuat:retainedOrientation??componentPose(state.payload==='engine'?'fairing':state.part,view?.coverage),fromLight:this.stageScale,toLight:view?Math.max(view.radius*3,.3)/14:vehicles[state.index].height/14};
     }else {this.animation=null;this.contextAlpha=1;}
     if(instant||this.reduced.matches){this.updateAnimation(performance.now());for(const x of this.retiring)x.view.dispose();this.retiring.length=0;}
     this.loadLicensed(state.index);this.wake();

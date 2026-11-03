@@ -10,6 +10,11 @@ if (ready) {
     assert.deepEqual(vehicles.map(v=>v.id), ['falcon-1','falcon-9','falcon-heavy','starship']);
     assert.equal(initialState().index,1); assert.equal(initialState().part,null);
   });
+  test('interior links open the specified flight hardware and reject unavailable or unknown parts',()=>{
+    assert.deepEqual(initialState('starship/tanks'),{index:3,part:'tanks',payload:'fairing',rotating:false});
+    for(const link of ['falcon-1/tanks','unknown/fairing','starship/__proto__','falcon-9/tanks/extra'])
+      assert.deepEqual(initialState(link),initialState());
+  });
   test('bounded carousel clears focus and does not wrap unexpectedly', () => {
     let s=reduce(initialState(),{type:'FOCUS',part:'engines'});
     assert.equal(s.part,'engines'); s=reduce(s,{type:'NAVIGATE',index:2});

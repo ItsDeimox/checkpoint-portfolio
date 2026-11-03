@@ -1,6 +1,13 @@
 import { vehicles } from './data.js';
 import {engineFor} from './engine-details.js';
-export const initialState=()=>({index:1,part:null,payload:'fairing',rotating:false});
+export function initialState(interiorLink) {
+  const state={index:1,part:null,payload:'fairing',rotating:false};
+  if(!interiorLink)return state;
+  const [id,part,...rest]=interiorLink.split('/');
+  const index=vehicles.findIndex(v=>v.id===id&&v.available!==false);
+  if(rest.length||index<0||!Object.hasOwn(vehicles[index].parts,part))return state;
+  return {...state,index,part};
+}
 export function reduce(state,event) {
   switch(event.type) {
     case 'NAVIGATE':

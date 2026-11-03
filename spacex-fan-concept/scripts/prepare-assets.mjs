@@ -7,6 +7,7 @@ import {ALL_EXTENSIONS} from '@gltf-transform/extensions';
 import {dedup,prune,weld,simplify,textureCompress,meshopt} from '@gltf-transform/functions';
 import {MeshoptEncoder,MeshoptDecoder,MeshoptSimplifier} from 'meshoptimizer';
 import sharp from 'sharp';
+import {partitionStarshipInteriors} from './starship-interiors.mjs';
 import {applyDragonSourcePose} from './dragon-pose.mjs';
 import {enableLosslessGeometry,sourceDetail,assertSourceDetail} from './high-detail.mjs';
 const cache=path.resolve('.cache/3d'),out=path.resolve('public/assets');
@@ -32,7 +33,7 @@ const authors={
  studio:{title:'Studio Small 03',author:'Greg Zaal / Poly Haven',license:'CC0-1.0',source:'https://polyhaven.com/a/studio_small_03',mirror:'pmndrs/drei-assets'},
 };
 await mkdir(out,{recursive:true});await mkdir(cache,{recursive:true});
-const fingerprint=sha(Buffer.concat([await readFile(new URL(import.meta.url)),await readFile('package.json'),await readFile(new URL('./authored-assets.json',import.meta.url)),await readFile(new URL('./dragon-pose.mjs',import.meta.url)),await readFile(new URL('./high-detail.mjs',import.meta.url))]));
+const fingerprint=sha(Buffer.concat([await readFile(new URL(import.meta.url)),await readFile('package.json'),await readFile(new URL('./authored-assets.json',import.meta.url)),await readFile(new URL('./dragon-pose.mjs',import.meta.url)),await readFile(new URL('./starship-interiors.mjs',import.meta.url)),await readFile(new URL('./high-detail.mjs',import.meta.url))]));
 try{const old=JSON.parse(await readFile(path.join(out,'manifest.json'),'utf8'));if(old.fingerprint===fingerprint){await Promise.all(Object.values(old.files).map(f=>stat(path.join('public',f.url))));console.log('Verified asset build already exists.');process.exit(0);}}catch{}
 async function acquire([name,url,expected]) {
  const dest=path.join(cache,name);await mkdir(path.dirname(dest),{recursive:true});
@@ -48,6 +49,7 @@ const files={};
 for(const family of ['falcon9','falconheavy','dragon','starship','merlin','merlinvac'])for(const quality of ['high','eco']){
  const doc=await io.read(path.join(cache,['starship','dragon','merlin','merlinvac'].includes(family)?`${family}.glb`:`${family}/scene.gltf`));
  if(family==='dragon')applyDragonSourcePose(doc);
+ if(family==='starship')partitionStarshipInteriors(doc);
  const eco=quality==='eco',source=eco?null:sourceDetail(doc);
  if(eco){
   const steps=[dedup(),weld()];

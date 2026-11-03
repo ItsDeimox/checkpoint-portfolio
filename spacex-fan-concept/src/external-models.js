@@ -4,6 +4,7 @@ import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {classifyPart,normalization} from './asset-parts.js';
 import {installHighlight} from './materials.js';
+import {falconStageSurfaces} from './falcon-stage-surfaces.js';
 import {assemblyFeature} from './source-assemblies.js';
 import {bakeSourceRange,partitionAuthoredRegions} from './source-geometry.js';
 import {partOrder,vehicles} from './data.js';
@@ -13,7 +14,7 @@ export function isEffectivelyVisible(o){for(let n=o;n;n=n.parent)if(!n.visible)r
 function chainName(o){let name=o.name;for(let n=o.parent,d=0;n&&d<3;n=n.parent,d++)name+=' '+n.name;return name;}
 function uniforms(){return Object.fromEntries(partOrder.map(p=>[p,{highlight:{value:0},brightness:{value:1}}]));}
 export function createEmptyModel(index){const group=new T.Group();group.name=vehicles[index]?.id??'pending';return {group,uniforms:uniforms(),source:'unavailable',payload(){},dispose(){}};}
-export function prepareTemplate(source,family,height){
+export function prepareTemplate(source,family,height,assetHash){
  source.updateMatrixWorld(true);
  const objects=[],sourceMaterials=new Set(),textures=new Set(),sourceGeometry=new Set();
  source.traverse(o=>{if(!o.isMesh)return;sourceGeometry.add(o.geometry);const materials=Array.isArray(o.material)?o.material:[o.material];for(const m of materials){sourceMaterials.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}if(!isEffectivelyVisible(o)||family==='dragon'&&materials.every(m=>/^ground$/i.test(m.name)))return;objects.push(o);});
@@ -29,10 +30,12 @@ export function prepareTemplate(source,family,height){
    for(const range of ranges){
     const material=materials[range.materialIndex]??materials[0];if(family==='dragon'&&/^ground$/i.test(material.name))continue;
     const geometry=bakeSourceRange(g,range.start,range.count,matrix);geometry.computeBoundingBox();const y=geometry.boundingBox.getCenter(new T.Vector3()).y/height,name=chainName(o);
-    const role=family==='dragon'&&/\bCircle\.?002_0\b/.test(name)?'cargo-trunk':/landing.?leg/i.test(name)?'landing-gear':'component',feature=assemblyFeature(family,name,material.name,y);
+    const role=family==='dragon'&&/\bCircle\.?002_0\b/.test(name)?'cargo-trunk':/landing.?leg/i.test(name)?'landing-gear':'component';
+    const sourceFeature=(family==='starship'&&o.userData.sourceAssembly)||assemblyFeature(family,name,material.name,y);
     const stage=family==='falcon'&&(/second.?stage|engine.?holder/i.test(name)||geometry.boundingBox.min.y>height*.65)?'upper':'booster';
-    const parts=family==='heavy'?partitionAuthoredRegions(geometry,height):[{geometry,part:family==='dragon'?'fairing':family.startsWith('merlin')?'engines':classifyPart(family,name,y),...(family.startsWith('merlin')?{inspectionParts:['engines','interstage']}:{})}];if(family==='heavy')geometry.dispose();
-    for(const item of parts){const layout=Object.keys(item.geometry.attributes).sort().map(n=>n+item.geometry.getAttribute(n).itemSize).join(','),key=`${item.part}|${material.uuid}|${stage}|${role}|${feature??''}|${item.inspectionParts?.join(',')??item.part}|${Boolean(item.assemblyContext)}|${layout}`;if(!bins.has(key))bins.set(key,{part:item.part,stage,role,assemblyFeature:feature,inspectionParts:item.inspectionParts,assemblyContext:item.assemblyContext,material,geometries:[],sourceNames:new Set()});const bin=bins.get(key);bin.geometries.push(item.geometry);bin.sourceNames.add(name);}
+    const upperSurfaces=family==='falcon'?falconStageSurfaces(name,geometry,assetHash):null;
+    const parts=upperSurfaces??(family==='heavy'?partitionAuthoredRegions(geometry,height):[{geometry,part:family==='dragon'?'fairing':family.startsWith('merlin')?'engines':(family==='starship'&&o.userData.sourcePart)||classifyPart(family,name,y),inspectionParts:family.startsWith('merlin')?['engines','interstage']:family==='starship'?o.userData.inspectionParts:undefined}]);if(upperSurfaces||family==='heavy')geometry.dispose();
+    for(const item of parts){const feature=item.feature??sourceFeature,layout=Object.keys(item.geometry.attributes).sort().map(n=>n+item.geometry.getAttribute(n).itemSize).join(','),key=`${item.part}|${material.uuid}|${stage}|${role}|${feature??''}|${item.inspectionParts?.join(',')??item.part}|${Boolean(item.assemblyContext)}|${layout}`;if(!bins.has(key))bins.set(key,{part:item.part,stage,role,assemblyFeature:feature,inspectionParts:item.inspectionParts,assemblyContext:item.assemblyContext,material,geometries:[],sourceNames:new Set()});const bin=bins.get(key);bin.geometries.push(item.geometry);bin.sourceNames.add(name);}
    }
   }
  }
@@ -53,7 +56,7 @@ export class AssetLibrary{
  async manifest(){if(!this.manifestPromise)this.manifestPromise=fetch('/assets/manifest.json',{cache:'no-cache',signal:AbortSignal.any([this.abort.signal,AbortSignal.timeout(12000)])}).then(r=>{if(!r.ok)throw Error('Asset manifest unavailable');return r.json();}).catch(e=>{this.manifestPromise=null;throw e;});return this.manifestPromise;}
  async template(family,quality){
   if(!sourceKeys[family])throw Error('No verified authored asset for this vehicle');const key=`${sourceKeys[family]}-${quality}`;
-  if(!this.templates.has(key)){const promise=(async()=>{const manifest=await this.manifest(),url=manifest.files[key]?.url;if(!url)throw Error(`Missing authored model ${key}`);const r=await fetch(url,{signal:AbortSignal.any([this.abort.signal,AbortSignal.timeout(30000)])});if(!r.ok)throw Error(`Model unavailable: ${r.status}`);const buffer=await r.arrayBuffer();if(this.disposed)throw Error('Viewer disposed');const gltf=await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(buffer,'/assets/');const t=prepareTemplate(gltf.scene,family,sourceHeights[family]);t.attribution=manifest.authors?.[sourceKeys[family]];if(this.disposed){disposeTemplate(t);throw Error('Viewer disposed');}return t;})().catch(e=>{this.templates.delete(key);throw e;});this.templates.set(key,promise);return promise;}return this.templates.get(key);
+  if(!this.templates.has(key)){const promise=(async()=>{const manifest=await this.manifest(),url=manifest.files[key]?.url;if(!url)throw Error(`Missing authored model ${key}`);const r=await fetch(url,{signal:AbortSignal.any([this.abort.signal,AbortSignal.timeout(30000)])});if(!r.ok)throw Error(`Model unavailable: ${r.status}`);const buffer=await r.arrayBuffer();if(this.disposed)throw Error('Viewer disposed');const gltf=await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(buffer,'/assets/');const t=prepareTemplate(gltf.scene,family,sourceHeights[family],manifest.files[key].sha256);t.attribution=manifest.authors?.[sourceKeys[family]];if(this.disposed){disposeTemplate(t);throw Error('Viewer disposed');}return t;})().catch(e=>{this.templates.delete(key);throw e;});this.templates.set(key,promise);return promise;}return this.templates.get(key);
  }
  dispose(){this.disposed=true;this.abort.abort();for(const p of this.templates.values())p.then(disposeTemplate).catch(()=>{});this.templates.clear();}
 }
