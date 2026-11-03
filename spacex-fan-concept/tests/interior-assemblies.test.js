@@ -72,3 +72,27 @@ test('opening a shell progresses by elapsed time even when no intermediate frame
  fade.setInterior(false);fade.step(1);
  assert.equal(fade.progress,0);
 });
+
+test('licensed fairing liner renders its actual backface without changing the source material',()=>{
+ const group=new T.Group(),surface=new T.MeshStandardMaterial({map:new T.Texture()});
+ const far=new T.Mesh(new T.BoxGeometry(1,3,.2),surface);
+ far.userData={part:'fairing',assemblyFeature:'fairing-inner-wall'};
+ const adapter=new T.Mesh(new T.BoxGeometry(1,.1,1),new T.MeshStandardMaterial());
+ adapter.userData={part:'fairing',assemblyFeature:'payload-adapter'};
+ group.add(far,adapter);
+ const view=createInspection({group,family:'falcon'},1,'fairing');
+ const lining=view.exterior.children.find(m=>m.userData.assemblyFeature==='fairing-inner-wall');
+ assert.equal(view.supportsInterior,true);
+ assert.equal(surface.side,T.FrontSide);
+ assert.equal(lining.material.side,T.DoubleSide);
+ view.setCutaway(true);view.step(1,true);assert.equal(lining.visible,true);view.dispose();
+});
+
+test('default fairing inspection faces the concave opening instead of the painted hull',async()=>{
+ const {componentPose}=await import('../src/viewer-motion.js');
+ const {assemblyCoverage}=await import('../src/source-assemblies.js');
+ const features=new Set(['fairing-inner-wall','payload-adapter']);
+ const q=componentPose('fairing',assemblyCoverage('falcon','fairing',features));
+ const e=new T.Euler().setFromQuaternion(q);
+ assert.ok(e.y<-.6&&e.y>-.9);
+});

@@ -20,11 +20,12 @@ function copySurface(mesh,materials){
    // The interior lining is physically the reverse side of the licensed fairing wall.
    // Rendering only outward-facing triangles incorrectly hides it in open mode.
    c.side=T.DoubleSide;
-   // The source reuses the painted outside UV island on the lining. Sample its
-   // unmarked swatch on inward faces only, preserving the exterior and PBR map.
-   c.onBeforeCompile=shader=>{shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
-    '#include <uv_vertex>\nif (dot(normal.xz, position.xz) < 0.0) vMapUv = vec2(0.99, 0.01);');};
-   c.customProgramCacheKey=()=>'falcon-fairing-lining';
+   // The source shell shares its painted UV atlas front and back. The reverse
+   // face is the actual existing wall, not a generated liner. Give that reverse
+   // a neutral unpainted composite response without touching exterior artwork.
+   c.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',
+    '#include <map_fragment>\nif (!gl_FrontFacing) diffuseColor.rgb=vec3(.18,.19,.21);');};
+   c.customProgramCacheKey=()=>'falcon-fairing-lining-v2';
   }
   c.dithering=true;materials.add(c);return c;
  };
