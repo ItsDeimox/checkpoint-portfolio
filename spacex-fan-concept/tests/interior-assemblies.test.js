@@ -39,3 +39,12 @@ test('Heavy assembles only the common bounded stage section and uncovers its har
  assert.equal(view.exterior.children.find(m=>m.geometry===cover.geometry).visible,true);
  assert.equal(dome.visible,true);view.dispose();
 });
+
+test('opening a shell progresses by elapsed time even when no intermediate frame paints',async()=>{
+ const {createAssemblyFade}=await import('../src/source-assemblies.js');
+ const fade=createAssemblyFade(new T.Group(),new Set());
+ fade.setInterior(true);fade.step(1);
+ assert.equal(fade.progress,1);
+ fade.setInterior(false);fade.step(1);
+ assert.equal(fade.progress,0);
+});

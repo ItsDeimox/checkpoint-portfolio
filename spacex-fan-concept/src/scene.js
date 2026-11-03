@@ -195,7 +195,7 @@ export class RocketViewer {
     if(key===this.inspectionKey&&!force&&this.inspection)return this.inspection;
     const preserveMode=force&&key===this.inspectionKey&&this.cutaway;
     const previous=this.inspection;this.restoreSources();this.inspection=null;this.inspectionKey=null;this.cutaway=false;
-    if(previous){this.retiring.push({view:previous,from:previous.fade.value,elapsed:0});if(this.retiring.length>2)this.retiring.shift().view.dispose();}
+    if(previous){this.retiring.push({view:previous,from:previous.fade.value,start:performance.now()});if(this.retiring.length>2)this.retiring.shift().view.dispose();}
     if(!key)return null;
     const model=this.inspectionModel();if(!model||model.source!=='licensed')return null;
     const shared=usesSharedFalconHardware(state)?this.models[1]:null;
@@ -247,7 +247,7 @@ export class RocketViewer {
     if(!state.part){this.restoreSources();for(const m of this.models)m.payload('fairing');}
     const view=this.syncInspection(state,force),desired=this.desiredCamera(state),duration=instant||this.reduced.matches?0:force?420:950;
     if(state.part||wasPart){
-      this.animation={start:performance.now(),elapsed:0,duration,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),fromContext:this.contextAlpha,toContext:view?0:1,view,fromPose:view?.group.position.clone(),fromScale:view?.group.scale.clone(),fromQuat:view?.group.quaternion.clone(),fromFade:view?.fade.value??0,toQuat:retainedOrientation??componentPose(state.payload==='engine'?'fairing':state.part,view?.coverage),fromLight:this.stageScale,toLight:view?Math.max(view.radius*3,.3)/14:vehicles[state.index].height/14};
+      this.animation={start:performance.now(),duration,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),fromContext:this.contextAlpha,toContext:view?0:1,view,fromPose:view?.group.position.clone(),fromScale:view?.group.scale.clone(),fromQuat:view?.group.quaternion.clone(),fromFade:view?.fade.value??0,toQuat:retainedOrientation??componentPose(state.payload==='engine'?'fairing':state.part,view?.coverage),fromLight:this.stageScale,toLight:view?Math.max(view.radius*3,.3)/14:vehicles[state.index].height/14};
     }else {this.animation=null;this.contextAlpha=1;}
     if(instant||this.reduced.matches){this.updateAnimation(performance.now());for(const x of this.retiring)x.view.dispose();this.retiring.length=0;}
     this.loadLicensed(state.index);this.wake();
@@ -274,8 +274,8 @@ export class RocketViewer {
     this.uplight.position.set(-.6*h,.25*h,2.4*h);this.uplight.width=3*h;this.uplight.height=1.2*h;this.uplight.lookAt(0,6*h,0);
     this.fill.position.set(3*h,9*h,6*h);this.fill.width=4*h;this.fill.height=16*h;this.fill.lookAt(0,7*h,0);
   }
-  updateAnimation(time,delta=0){
-    const a=this.animation;if(!a)return false;a.elapsed+=Math.min(64,Math.max(0,delta));const p=a.duration===0?1:clamp(a.elapsed/a.duration,0,1),t=ease(p);
+  updateAnimation(time){
+    const a=this.animation;if(!a)return false;const p=a.duration===0?1:clamp((time-a.start)/a.duration,0,1),t=ease(p);
     const contextT=a.toContext>a.fromContext?smooth((p-.30)/.70):smooth(p*1.45);
     this.contextAlpha=T.MathUtils.lerp(a.fromContext,a.toContext,contextT);
     this.camera.position.lerpVectors(a.fromPosition,a.position,t);this.target.lerpVectors(a.fromTarget,a.target,t);this.updateStudio(T.MathUtils.lerp(a.fromLight,a.toLight,t));
@@ -322,14 +322,14 @@ export class RocketViewer {
   frame(time){
     this.frameId=0;if(this.disposed||this.recovery.blocked||document.hidden||!this.floor)return;
     const rawDelta=this.lastTime?time-this.lastTime:16.67,dt=Math.min(.05,rawDelta/1000);this.lastTime=time;
-    let active=this.carousel.step(dt);active=this.updateAnimation(time,rawDelta)||active;
+    let active=this.carousel.step(dt);active=this.updateAnimation(time)||active;
     if(Math.abs(this.zoom-this.zoomTarget)>.0002){this.zoom=T.MathUtils.lerp(this.zoom,this.zoomTarget,1-Math.exp(-dt*14));active=true;}else this.zoom=this.zoomTarget;
-    if(this.inspection){if(!this.animation)active=this.inspection.step(dt,this.reduced.matches)||active;if(!this.animation){this.inspection.group.position.y=this.inspection.radius+.08;this.updateStudio(Math.max(this.inspection.radius*3,.3)/14);}}
+    if(this.inspection){if(!this.animation)active=this.inspection.step(rawDelta/1000,this.reduced.matches)||active;if(!this.animation){this.inspection.group.position.y=this.inspection.radius+.08;this.updateStudio(Math.max(this.inspection.radius*3,.3)/14);}}
     if(this.inspection&&!this.animation){const c=this.desiredCamera(this.state);this.camera.position.set(...c.position);this.target.set(...c.target);}
     this.layoutCarousel();this.camera.lookAt(this.target);this.camera.updateMatrixWorld();
     if(this.rotationDelta.lengthSq()){if(this.inspection)rotateInView(this.inspection.group.quaternion,this.rotationDelta.x,this.rotationDelta.y,this.camera.quaternion,Math.min(this.width,this.height));else this.models[this.state.index].group.rotateY(this.rotationDelta.x*.006);this.rotationDelta.set(0,0);}
     if(this.state.rotating&&!this.reduced.matches){if(this.inspection)rotateInView(this.inspection.group.quaternion,dt*22,0,this.camera.quaternion,Math.min(this.width,this.height));else this.displayGroup().rotateY(dt*.15);active=true;}
-    for(let i=this.retiring.length-1;i>=0;i--){const x=this.retiring[i];x.elapsed+=Math.min(rawDelta,64);const p=this.reduced.matches?1:clamp(x.elapsed/420,0,1);x.view.fade.set(x.from*(1-smooth(p)));if(p===1){x.view.dispose();this.retiring.splice(i,1);}else active=true;}
+    for(let i=this.retiring.length-1;i>=0;i--){const x=this.retiring[i];const p=this.reduced.matches?1:clamp((time-x.start)/420,0,1);x.view.fade.set(x.from*(1-smooth(p)));if(p===1){x.view.dispose();this.retiring.splice(i,1);}else active=true;}
     this.scene.updateMatrixWorld();this.updateDepth();
     if(this.pendingPointer){if(time-this.lastPick>=32){this.setHover(this.pick(this.pendingPointer.x,this.pendingPointer.y));this.pendingPointer=null;this.lastPick=time;}else active=true;}
     for(const [i,m]of this.models.entries())for(const [part,u]of Object.entries(m.uniforms)){const target=i===this.state.index&&part===this.hover?1:0;if(this.reduced.matches)u.highlight.value=target;else if(Math.abs(u.highlight.value-target)>.002){u.highlight.value=T.MathUtils.lerp(u.highlight.value,target,1-Math.exp(-dt*15));active=true;}else u.highlight.value=target;}

@@ -57,6 +57,6 @@ export function createAssemblyFade(group,internalMeshes){
  }
  return {group,get value(){return alpha;},get interior(){return target===1;},get progress(){return progress;},set(value){alpha=Math.max(0,Math.min(1,value));apply();},restore(){alpha=1;target=progress=0;apply();},setInterior(enabled){target=enabled?1:0;},step(dt,reduced=false){
   if(progress===target)return false;
-  progress=reduced?target:progress+(target-progress)*(1-Math.exp(-Math.min(.05,dt)*11));if(Math.abs(progress-target)<.002)progress=target;apply();return progress!==target;
+  progress=reduced?target:progress+(target-progress)*(1-Math.exp(-Math.max(0,dt)*11));if(Math.abs(progress-target)<.002)progress=target;apply();return progress!==target;
  }};
 }

@@ -4,6 +4,16 @@ function harness(){
  const viewer=Object.assign(Object.create(RocketViewer.prototype),{state,floor:{},models:[{payload(){}}],inspection:view,retiring:[],carousel:{snap(){},position:1},reduced:{matches:false},contextAlpha:0,camera:new T.PerspectiveCamera(),target:new T.Vector3(),poseTarget:new T.Vector3(),unitScale:new T.Vector3(1,1,1),stageScale:1,zoom:.7,zoomTarget:.7,rotationDelta:new T.Vector2(),syncInspection(){return view;},desiredCamera(){return{position:[0,1,6],target:[0,1,0]};},setHover(){},updateStudio(){},loadLicensed(){},wake(){},restoreSources(){},cancelGesture(){}});
  return{viewer,view,state};
 }
-for(const [name,instant,force]of[['quality replacement',false,true],['viewport resize',true,false]])test(name+' preserves the current component orientation',()=>{const{viewer,view,state}=harness(),before=view.group.quaternion.clone();viewer.applyState(state,instant,force);if(!instant)viewer.updateAnimation(performance.now(),10000);assert.ok(view.group.quaternion.angleTo(before)<1e-7);if(viewer.animation)assert.ok(viewer.animation.toQuat.angleTo(before)<1e-7);assert.equal(viewer.zoom,.7);});
+for(const [name,instant,force]of[['quality replacement',false,true],['viewport resize',true,false]])test(name+' preserves the current component orientation',()=>{const{viewer,view,state}=harness(),before=view.group.quaternion.clone();viewer.applyState(state,instant,force);if(!instant)viewer.updateAnimation(viewer.animation.start+viewer.animation.duration);assert.ok(view.group.quaternion.angleTo(before)<1e-7);if(viewer.animation)assert.ok(viewer.animation.toQuat.angleTo(before)<1e-7);assert.equal(viewer.zoom,.7);});
 test('changing components still chooses the new component preset',()=>{const{viewer}=harness();viewer.applyState({...viewer.state,part:'fairing'});assert.ok(viewer.animation.toQuat.angleTo(componentPose('fairing'))<1e-7);assert.equal(viewer.zoom,1);});
 test('explicit reset restores zoom, pose and pending rotation without changing the selected module',()=>{const{viewer,view,state}=harness();viewer.rotationDelta.set(25,16);assert.equal(typeof viewer.resetView,'function');viewer.resetView();assert.equal(viewer.zoomTarget,1);assert.equal(viewer.zoom,1);assert.equal(viewer.rotationDelta.lengthSq(),0);assert.equal(viewer.state,state);assert.ok(viewer.animation.toQuat.angleTo(componentPose('engines'))<1e-7);});
+
+test('a delayed render frame completes the timed section transition',()=>{
+ const {viewer}=harness();
+ viewer.applyState({...viewer.state,part:'interstage'});
+ const duration=viewer.animation.duration;
+ assert.ok(duration>0);
+ viewer.updateAnimation(viewer.animation.start+duration+20);
+ assert.equal(viewer.animation,null);
+ assert.equal(viewer.contextAlpha,0);
+});
