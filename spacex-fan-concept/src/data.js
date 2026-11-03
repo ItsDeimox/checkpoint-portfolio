@@ -17,6 +17,7 @@ export const vehicles = [
   { id:'falcon-9', name:'FALCON 9', years:'2010 – PRESENT', height:14, subtitle:'RELIABLE ACCESS\nTO A BRIGHTER TOMORROW', source:'https://www.spacex.com/vehicles/falcon-9/', sourceLabel:'SpaceX Falcon 9', specs:[['HEIGHT','70 M'],['DIAMETER','3.7 M']], parts:falconParts },
   { id:'falcon-heavy', name:'FALCON HEAVY', years:'2018 – PRESENT', height:14, subtitle:'THREE CORES\nEXTRAORDINARY CAPABILITY', source:'https://www.spacex.com/vehicles/falcon-heavy/', sourceLabel:'SpaceX Falcon Heavy', specs:[['HEIGHT','70 M'],['WIDTH','12.2 M']], parts:{
     ...falconParts,
+    upperstage:part('SECOND STAGE', 'TANK AND VACUUM ENGINE.', 'Open the two outer covers of this Falcon Heavy model to inspect its upper-stage tank and the vacuum engine beneath it.', [['STAGE','SECOND'],['ENGINE','MERLIN VACUUM'],['MODEL','GIROO']], {y:10.55,span:3.1,angle:.3,elevation:.15}),
     engines:part('MERLIN ENGINE CLUSTER', 'TWENTY-SEVEN ENGINES.', 'Three Falcon-derived cores bring together 27 Merlin engines. The side boosters separate before the center core completes its burn.', [['ENGINES','27 MERLIN 1D'],['PROPELLANT','RP-1 / LOX'],['FIRST STAGE','3 CORES']], {y:.16,span:4.9,angle:.22,elevation:.05}),
     tanks:part('THREE-CORE BOOSTER', 'POWER, MULTIPLIED.', 'The side boosters connect to the center core and contribute thrust during the first phase of flight. Each core carries its own propellant.', [['CORES','3'],['WIDTH','12.2 M'],['PROPELLANT','RP-1 / LOX']], {y:5,span:7.8,angle:.3,elevation:.2}),
     interstage:part('INTERSTAGE', 'STRUCTURE AND CONTROL.', 'The central composite interstage joins the first and second stages. Grid fins on the three cores guide the boosters during atmospheric return.', [['GRID FINS','12 TOTAL'],['CONTROL','AERODYNAMIC'],['CORES','3']], {y:8.7,span:4.7,angle:.36,elevation:.25})
@@ -28,6 +29,6 @@ export const vehicles = [
     fairing:part('STARSHIP', 'THE UPPER STAGE.', 'The Starship spacecraft combines a payload section, propellant tanks, heat shielding and aerodynamic flaps in a single reusable upper stage.', [['REFERENCE ENGINES','6 RAPTOR'],['STRUCTURE','STAINLESS STEEL'],['CONTROL','4 BODY FLAPS']], {y:19.2,span:10.7,angle:.28,elevation:.3})
   } }
 ];
-export const partOrder=['engines','tanks','interstage','fairing'];
-export const partLabels={engines:'ENGINES',tanks:'TANKS',interstage:'INTERSTAGE',fairing:'PAYLOAD'};
+export const partOrder=['engines','tanks','interstage','upperstage','fairing'];
+export const partLabels={engines:'ENGINES',tanks:'TANKS',interstage:'INTERSTAGE',upperstage:'STAGE 2',fairing:'PAYLOAD'};
 export function getPart(vehicle,key,payload='fairing') { const engine=payload==='engine'?engineFor(vehicle.id,key):null;if(engine)return {...engine,focus:vehicle.parts[key].focus};return vehicle.id==='falcon-9' && key==='fairing' && payload==='dragon' ? dragonPart : vehicle.parts[key]; }

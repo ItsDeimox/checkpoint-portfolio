@@ -19,14 +19,14 @@ The build fetches pinned, SHA-256-verified source files, optimizes copies and se
 
 Falcon 9, the complete Falcon Heavy, Starship Block 3 and the Dragon 2 capsule use preauthored licensed files. Falcon 1 remains in the historical catalog but is unavailable until a suitable reusable asset is verified. No spacecraft generator, synthetic fallback or invented internal assembly is used.
 
-Select a module to isolate its geometry. **Tanks** opens a tank section on the first click or tap. Select **Assembled** to close it. Falcon 9 exposes the barrel and structural end decks. Falcon Heavy shows Giroo’s center barrel and the side booster bodies from Antonio_Adams’ model. Its standard fairing and second-stage hardware use the shared Falcon reference. On Starship, the hot-staging collar and cage are selectable separately from the booster grid fins. The artist models omit the Falcon first-stage propellant divider and transfer pipe. Coverage and direct links are in [the interior inventory](docs/2026-11-03-interior-coverage.md).
+Select a module to isolate its geometry. **Tanks** opens a tank section on the first click or tap. Select **Assembled** to close it. Falcon 9 exposes the barrel and structural end decks. Falcon Heavy shows Giroo’s center barrel and the side booster bodies from Antonio_Adams’ model. Its standard fairing and interstage use the shared Falcon reference. Select **Stage 2** above the Heavy interstage to load Giroo’s separate upper-stage model. The cutaway shows its modeled fuel tank and vacuum engine. On Starship, **Lift vent frame** raises the cage above the fixed forward dome and collar. The grid fins stay with the booster. The artist models omit the Falcon first-stage propellant divider and transfer pipe. Coverage and direct links are in [the interior inventory](docs/2026-11-03-interior-coverage.md).
 
 The studio retains HDR reflections, restrained bloom, floor reflection, Fresnel hover and adaptive low/medium/high budgets. Rendering pauses while idle. Import preserves original PBR maps, material groups, UV channels, normals and tangents. Mobile variants reduce geometry and texture size; detailed assets load only when needed. Failed requests show retry rather than replacement geometry.
 
 ## Sources and licenses
 
 - Falcon 9, Stanley Creative, CC BY 4.0: https://sketchfab.com/3d-models/falcon-9-spacex-394f7cf52d124bbd9db69f24d1ff2f08
-- Falcon Heavy center-core inspection mesh by Giroo, CC BY 4.0. https://sketchfab.com/3d-models/falcon-heavy-60030e62373547fa9364171e6095f31e
+- Falcon Heavy center-core and upper-stage inspection meshes by Giroo, CC BY 4.0. https://sketchfab.com/3d-models/falcon-heavy-60030e62373547fa9364171e6095f31e
 - Falcon Heavy (Low Poly), Antonio_Adams, CC BY 4.0: https://sketchfab.com/3d-models/spacex-falcon-heavylow-poly-0dc068a462e34258b3872085a7f592c8
 - Starship Block 3, Clarence365, CC BY 4.0: https://sketchfab.com/3d-models/spacex-starship-block-3-6f6c6f88a3eb4b4d822fdca66733fbb2
 - Dragon 2, KUBAHA, CC BY 4.0: https://sketchfab.com/3d-models/spacex-dragon-2-1b125e30a2cb442288580290536fbe5d

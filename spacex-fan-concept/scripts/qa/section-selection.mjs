@@ -18,7 +18,12 @@ try{
  page.on('pageerror',e=>errors.push(e.message));
  page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  const press=selector=>mobile?page.locator(selector).tap():page.locator(selector).click();
- const settled=()=>page.waitForFunction(()=>!__SPACEX_QA__.stats().transition&&!__SPACEX_QA__.stats().retiring);
+ const settled=()=>page.waitForFunction(()=>{
+  const {index,part,payload}=__SPACEX_QA__.state(),frame=__SPACEX_QA__.stats();
+  const expected=part?`${index}:${part}:${payload}`:null;
+  return (frame.inspection??null)===expected&&Math.abs(frame.carousel-index)<.001&&
+   frame.contextAlpha===(part?0:1)&&!frame.transition&&!frame.retiring;
+ });
  async function pick(part,point){
   const {x,y}=point??await page.evaluate(k=>__SPACEX_QA__.point(k),part);
   assert.equal(await page.evaluate(([x,y])=>document.elementFromPoint(x,y)?.id,[x,y]),'viewer','model must be reachable from the viewport');
@@ -61,12 +66,18 @@ try{
   await pick('tanks');
   const open=await view(1);
   assert.ok(open.internalMeshes>0);
+  const diagram=page.getByRole('link',{name:/Falcon 9 tank diagram/i});
+  if(index===1||index===2){
+   assert.ok(await diagram.isVisible(),'Falcon tanks provide the official reference for the missing interior');
+   assert.equal(await diagram.getAttribute('href'),'https://www.spacex.com/assets/media/falcon-users-guide-2025-05-09.pdf#page=13');
+  }else assert.equal(await diagram.count(),0);
   const tankOpen=await capture(index+'-tanks-open');
   await press('#view-exterior');const tanks=await view(0);
   const tankClosed=await capture(index+'-tanks-assembled');
   visiblyDifferent(tankOpen,tankClosed,index+' tanks open/assembled');
   await press('#view-cutaway');await view(1);
   await press('#parts-nav [data-part="interstage"]');await settled();
+  assert.equal(await diagram.count(),0,'tank diagram leaked into interstage');
   const ring=await view(0);
   const dy=b=>b.max[1]-b.min[1];
   assert.ok(dy(ring.bounds)<dy(tanks.bounds)*.65,'interstage retains a tank-sized body');
@@ -78,7 +89,7 @@ try{
   visiblyDifferent(tankClosed,stage,index+' tanks/interstage');
   await press('#back');await settled();await pick('interstage');
   if(index===3){
-   await press('#view-cutaway');await view(1);const inner=await capture(index+'-interstage-open');
+   await press('#view-cutaway');const opened=await view(1);assert.ok(dy(opened.bounds)>dy(ring.bounds)*1.45,'vent frame must lift clear above the dome');const inner=await capture(index+'-interstage-open');
    visiblyDifferent(stage,inner,'Starship assembled/open ring');
    await press('#view-exterior');await view(0);
   }
@@ -90,6 +101,13 @@ try{
     return {x:coupling.x+.13*(qa.point('tanks').y-qa.point('fairing').y),y:coupling.y};
    });
    await pick('tanks',nose);await view(1);await press('#back');await settled();
+   await pick('upperstage');
+   await page.waitForFunction(()=>window.__SPACEX_QA__.inspection()?.supportsInterior);
+   const upperClosed=await capture('2-upperstage-assembled');
+   await press('#view-cutaway');const upper=await view(1);
+   assert.ok(['heavy-upper-tank','heavy-upper-engine','heavy-upper-cover'].every(id=>upper.features.includes(id)));
+   visiblyDifferent(upperClosed,await capture('2-upperstage-open'),'Heavy second-stage covers/tank and engine');
+   await press('#view-exterior');await view(0);await press('#back');await settled();
    for(const part of ['engines','fairing']){
     await pick(part);const section=await view(0);
     assert.ok(dy(section.bounds)<4.0,part+' retains a whole core');

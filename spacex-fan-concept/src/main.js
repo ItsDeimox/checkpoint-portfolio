@@ -29,8 +29,8 @@ function render(){
   $('app').classList.toggle('is-detail',Boolean(detail));$('hero-copy').hidden=Boolean(detail);$('detail-copy').hidden=!detail;$('back').hidden=!detail;$('parts-nav').hidden=!detail;
   $('vehicle-title').textContent=vehicle.name;format($('vehicle-subtitle'),vehicle.subtitle);$('explore').replaceChildren(document.createTextNode(`EXPLORE ${vehicle.name} `),Object.assign(document.createElement('span'),{className:'chevron'}));$('back-name').textContent=vehicle.name;
   const engine=engineFor(vehicle.id,state.part),engineView=state.payload==='engine';
-  const assetKey=engineView?engine?.family:state.payload==='dragon'?'dragon':state.index,assetStatus=viewer?.assetStates[assetKey];
-  const hasModel=engineView?Boolean(viewer?.engineModels.has(engine?.family)):state.payload==='dragon'?Boolean(viewer?.dragonModel):viewer?.models[state.index]?.source==='licensed';
+  const assetKey=viewer?.detailFamily()??(state.payload==='dragon'?'dragon':state.index),assetStatus=viewer?.assetStates[assetKey];
+  const hasModel=viewer?.detailFamily()?viewer.detailModels.has(assetKey):state.payload==='dragon'?Boolean(viewer?.dragonModel):viewer?.models[state.index]?.source==='licensed';
   $('model-status').textContent=assetStatus==='loading'?'LOADING AUTHORED MODEL':'';$('asset-notice').hidden=hasModel||!ready;
   $('asset-notice-text').textContent=assetStatus==='unavailable'?'THE SOURCE MODEL COULD NOT BE LOADED.':'LOADING SOURCE GEOMETRY';$('retry-model').hidden=assetStatus!=='unavailable';$('explore').disabled=!hasModel;
   if(pendingInterior&&ready&&viewer.inspection?.supportsInterior){
@@ -43,7 +43,7 @@ function render(){
   document.querySelector('.inspection-controls').hidden=!detail||(!supported&&!engine&&!sharedPending);
   $('view-cutaway').hidden=!supported&&!sharedPending;
   $('view-cutaway').disabled=!supported&&!retryShared;
-  $('view-cutaway').textContent=retryShared?'RETRY INTERIOR':sharedPending?'LOADING INTERIOR':state.part==='tanks'?'OPEN TANKS':'INTERNAL STRUCTURE';
+  $('view-cutaway').textContent=retryShared?'RETRY INTERIOR':sharedPending?'LOADING INTERIOR':state.part==='tanks'?'OPEN TANKS':state.index===3&&state.part==='interstage'?'LIFT VENT FRAME':'INTERNAL STRUCTURE';
   $('view-engine').hidden=!engine;$('view-engine').setAttribute('aria-pressed',String(engineView));
   $('view-exterior').setAttribute('aria-pressed',String(!internal&&!engineView));$('view-cutaway').setAttribute('aria-pressed',String(internal));
   $('cabin-reference').hidden=state.payload!=='dragon'||state.part!=='fairing';
@@ -53,14 +53,17 @@ function render(){
   $('configuration').hidden=!vehicle.reference;$('configuration').textContent=vehicle.reference??'';
   for(const [id,offset] of [['previous',-1],['next',1]]){const candidate=vehicles[state.index+offset],neighbor=candidate?.available===false?null:candidate,button=$(id);button.disabled=!neighbor;button.setAttribute('aria-label',neighbor?`Explore ${neighbor.name}`:offset<0?'First rocket':'Last rocket');button.querySelector('.neighbor-name').textContent=neighbor?.name??'';button.querySelector('.neighbor-years').textContent=neighbor?.years??'';}
   [...$('pagination').children].forEach((button,i)=>button.setAttribute('aria-current',String(i===state.index)));
-  [...$('parts-nav').children].forEach(button=>button.setAttribute('aria-current',String(button.dataset.part===state.part)));
+  for(const button of $('parts-nav').children){button.hidden=!vehicle.parts[button.dataset.part];button.setAttribute('aria-current',String(button.dataset.part===state.part));}
   $('rotate').setAttribute('aria-pressed',String(state.rotating));$('rotate').setAttribute('aria-label',state.rotating?'Pause automatic rotation':'Enable automatic rotation');
   $('interaction-hint').textContent=detail?'DRAG X/Y · SCROLL / PINCH TO ZOOM · DOUBLE-CLICK TO RESET':'DRAG TO BROWSE · SELECT A PART · SHIFT + DRAG TO ROTATE';
   document.querySelectorAll('.primary-nav button').forEach(button=>button.classList.toggle('active',button.dataset.action===(state.payload==='dragon'?'dragon':state.index===3?'starship':'rockets')));
   if(detail){
-    $('detail-parent').textContent=`${vehicle.name} / ${engineView?'ENGINE DETAIL':viewer?.inspection?.contextual?'ASSEMBLY VIEW':'COMPONENT VIEW'}`;$('detail-title').textContent=detail.title;$('detail-kicker').textContent=detail.kicker;$('detail-description').textContent=detail.description;
+    $('detail-parent').textContent=`${vehicle.name} / ${engineView?'ENGINE DETAIL':viewer?.inspection?.contextual?'ASSEMBLY VIEW':'COMPONENT VIEW'}`;$('detail-title').textContent=detail.title;$('detail-kicker').textContent=internal?coverage.label:detail.kicker;$('detail-description').textContent=detail.description;
     $('detail-specs').replaceChildren(...detail.specs.map(([label,value])=>{const div=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;div.append(dt,dd);return div;}));
-    $('detail-source').href=state.payload==='dragon'&&state.part==='fairing'?'https://www.spacex.com/vehicles/dragon/':vehicle.source;
+    const falconTankDiagram=state.part==='tanks'&&(vehicle.id==='falcon-9'||vehicle.id==='falcon-heavy');
+    $('detail-source-label').textContent=falconTankDiagram?'SPACEX · FALCON 9 TANK DIAGRAM (PDF, FIG. 2-1)':'TECHNICAL REFERENCE';
+    const sourceUrl=state.payload==='dragon'&&state.part==='fairing'?'https://www.spacex.com/vehicles/dragon/':vehicle.source;
+    $('detail-source').href=falconTankDiagram?'https://www.spacex.com/assets/media/falcon-users-guide-2025-05-09.pdf#page=13':sourceUrl;
   }
   document.title=`${detail?.title??vehicle.name} | ${siteConfig.demoTitle}`;product?.sync();
 }
@@ -129,7 +132,7 @@ function search(query){
   for(const [i,v] of vehicles.entries()){
     if(v.available===false)continue;
     if(!q||v.name.toLowerCase().includes(q))results.push({name:v.name,label:'VEHICLE',index:i});
-    if(q)for(const key of partOrder){const p=v.parts[key];if(`${v.name} ${p.title} ${partLabels[key]}`.toLowerCase().includes(q))results.push({name:p.title,label:v.name,index:i,part:key});}
+    if(q)for(const key of partOrder){const p=v.parts[key];if(p&&`${v.name} ${p.title} ${partLabels[key]}`.toLowerCase().includes(q))results.push({name:p.title,label:v.name,index:i,part:key});}
   }
   if(q&&'crew dragon 2 human spaceflight'.includes(q))results.push({name:'DRAGON 2',label:'CAPSULE / DOCKING',dragon:true});
   $('search-results').replaceChildren(...results.slice(0,20).map(result=>{

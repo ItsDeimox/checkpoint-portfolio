@@ -60,11 +60,29 @@ test('the reviewed booster engine bank excludes the heat shield, shell and upper
   assert.equal(assemblyCoverage('starship','tanks',new Set(['booster-forward-dome','booster-dome-downcomer'])).supported,true);
 });
 
-test('assembled ring exposes the dome and removes its vent frame when opened',()=>{
+test('exploded ring keeps its vent frame and exposes the dome below it',()=>{
   const features=new Set(['hotstage-frame','hotstage-attachments','booster-forward-dome','hotstage-base-sleeve']);
   const view=assemblyCoverage('starship','interstage',features);
   assert.ok(view.supported);
   assert.ok(view.features.includes('booster-forward-dome'));
-  assert.ok(!view.features.includes('hotstage-frame'));
+  assert.ok(view.features.includes('hotstage-frame'));
   assert.ok(view.features.includes('hotstage-base-sleeve'));
+});
+
+test('the authored vent frame clears the dome and returns to its exact mounted position',async()=>{
+ const {Group,Mesh,BoxGeometry,MeshStandardMaterial,Box3}=await import('three');
+ const {createInspection}=await import('../src/inspection.js');
+ const group=new Group();
+ for(const [feature,height] of [['booster-forward-dome',0],['hotstage-base-sleeve',-.1],['hotstage-frame',.2]]){
+  const mesh=new Mesh(new BoxGeometry(1,.5,1),new MeshStandardMaterial());
+  mesh.position.y=height;mesh.userData={part:'interstage',assemblyFeature:feature};group.add(mesh);
+ }
+ const view=createInspection({group,family:'starship'},3,'interstage');
+ const [dome,,frame]=view.exterior.children,rest=frame.position.clone();
+ view.setCutaway(true);view.step(1,true);view.update();
+ assert.equal(frame.visible,true);
+ assert.ok(new Box3().setFromObject(frame).min.y>new Box3().setFromObject(dome).max.y);
+ assert.deepEqual(frame.geometry,group.children[2].geometry);
+ view.setCutaway(false);view.step(1,true);view.update();
+ assert.deepEqual(frame.position,rest);view.dispose();
 });

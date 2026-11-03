@@ -38,7 +38,7 @@ export function bindViewerControls(v){
  on(v.canvas,'pointermove',e=>{
   if(points.has(e.pointerId))points.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(points.size>1&&v.state.part){const p=[...points.values()],distance=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);if(pinch>0&&distance>0)v.setZoom(v.zoomTarget*pinch/distance);pinch=distance;return;}
-  const d=v.drag;if(!d){if(e.pointerType!=='touch'){v.pendingPointer={x:e.clientX,y:e.clientY};v.wake();}return;}
+  const d=v.drag;if(!d){if(!v.state.part&&e.pointerType!=='touch'){v.pendingPointer={x:e.clientX,y:e.clientY};v.wake(true);}return;}
   if(d.id!==e.pointerId||suppress)return;
   const dx=e.clientX-d.x,dy=e.clientY-d.y;d.moved=d.moved||Math.hypot(dx,dy)>6;
   if(d.mode==='pending'&&d.moved){d.mode=Math.abs(dx)>Math.abs(dy)*.8?'carousel':'rotate';if(d.mode==='carousel'){v.carousel.dragging=true;for(const i of [v.state.index-1,v.state.index+1])if(i>=1&&i<=3)v.loadLicensed(i);}}

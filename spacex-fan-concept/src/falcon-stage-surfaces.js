@@ -19,13 +19,15 @@ const layouts = {
 export function falconStageSurfaces(name, baked, assetHash) {
   const layout = layouts[assetHash];
   if (!layout) return null;
+  const cornerCount = baked.index?.count ?? baked.attributes.position.count;
+  const vertex = i => baked.index ? baked.index.getX(i) : i;
   if (/^(First_Stage_F9_First_Stage_0|Interstage_F9_Black_0)\b/.test(name)) {
     const barrel = name.startsWith('First_Stage_');
-    if (baked.getAttribute('position').count !== (barrel ? layout.barrel : layout.interstage) * 3) return null;
+    if (cornerCount !== (barrel ? layout.barrel : layout.interstage) * 3) return null;
     if (!baked.boundingBox) baked.computeBoundingBox();
     const position = baked.getAttribute('position');
     const box = baked.boundingBox;
-    const membership = new Uint8Array(position.count / 3);
+    const membership = new Uint8Array(cornerCount / 3);
     const centerZ = (box.min.z + box.max.z) / 2;
     const centerX = (box.min.x + box.max.x) / 2;
     // Both rows of faces across the lower interstage deck sit in the first
@@ -36,11 +38,11 @@ export function falconStageSurfaces(name, baked, assetHash) {
       if (barrel) {
         // Retain the rear half of the original circumferential panels. Whole
         // triangles follow the authored axial seams; no cut caps are created.
-        const x = (position.getX(i) + position.getX(i+1) + position.getX(i+2)) / 3 - centerX;
-        const z = (position.getZ(i) + position.getZ(i+1) + position.getZ(i+2)) / 3 - centerZ;
+        const x = (position.getX(vertex(i)) + position.getX(vertex(i+1)) + position.getX(vertex(i+2))) / 3 - centerX;
+        const z = (position.getZ(vertex(i)) + position.getZ(vertex(i+1)) + position.getZ(vertex(i+2))) / 3 - centerZ;
         membership[face] = z + x * .2 <= 0 ? 1 : 0;
       } else {
-        membership[face] = Math.max(position.getY(i), position.getY(i+1), position.getY(i+2)) <= deckTop ? 1 : 0;
+        membership[face] = Math.max(position.getY(vertex(i)), position.getY(vertex(i+1)), position.getY(vertex(i+2))) <= deckTop ? 1 : 0;
       }
     }
     if (!membership.includes(1) || !membership.includes(0)) return null;
@@ -51,7 +53,7 @@ export function falconStageSurfaces(name, baked, assetHash) {
     ]);
   }
   if (!/^Second_Stage_F9_Second_Stage_0\b/.test(name) ||
-      baked.getAttribute('position').count !== layout.count * 3) return null;
+      cornerCount !== layout.count * 3) return null;
 
   const groups = [
     {part: 'interstage', feature: null},
@@ -74,7 +76,11 @@ function partitionFaces(baked, membership, groups) {
       const stride = 3 * attribute.itemSize;
       const values = new Float32Array(faces.length * stride);
       for (const [i, face] of faces.entries()) {
-        values.set(attribute.array.subarray(face * stride, (face + 1) * stride), i * stride);
+        for (let corner = 0; corner < 3; corner++) {
+          const source = baked.index ? baked.index.getX(face * 3 + corner) : face * 3 + corner;
+          const offset = source * attribute.itemSize;
+          values.set(attribute.array.subarray(offset, offset + attribute.itemSize), i * stride + corner * attribute.itemSize);
+        }
       }
       geometry.setAttribute(name, new BufferAttribute(values, attribute.itemSize));
     }

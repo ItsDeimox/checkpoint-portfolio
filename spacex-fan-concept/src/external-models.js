@@ -9,11 +9,27 @@ import {assemblyFeature} from './source-assemblies.js';
 import {bakeSourceRange,partitionAuthoredRegions} from './source-geometry.js';
 import {partOrder,vehicles} from './data.js';
 export const sourceFamilies={1:'falcon',2:'heavy',3:'starship'};
-const sourceKeys={falcon:'falcon9',heavy:'falconheavy',starship:'starship',dragon:'dragon',merlin:'merlin',merlinvac:'merlinvac'},sourceHeights={falcon:14,heavy:14,starship:24,dragon:1.62,merlin:.8,merlinvac:1.1};
+const sourceKeys={falcon:'falcon9',heavy:'falconheavy',heavyupper:'heavyupper',starship:'starship',dragon:'dragon',merlin:'merlin',merlinvac:'merlinvac'},sourceHeights={falcon:14,heavy:14,heavyupper:3.2,starship:24,dragon:1.62,merlin:.8,merlinvac:1.1};
 export function isEffectivelyVisible(o){for(let n=o;n;n=n.parent)if(!n.visible)return false;return true;}
 function chainName(o){let name=o.name;for(let n=o.parent,d=0;n&&d<3;n=n.parent,d++)name+=' '+n.name;return name;}
 function uniforms(){return Object.fromEntries(partOrder.map(p=>[p,{highlight:{value:0},brightness:{value:1}}]));}
 export function createEmptyModel(index){const group=new T.Group();group.name=vehicles[index]?.id??'pending';return {group,uniforms:uniforms(),source:'unavailable',payload(){},dispose(){}};}
+function mergeSourceBatch(geometries){
+ if(geometries.length===1)return geometries[0];
+ // Audited face partitions and flat-shaded primitives can share a material batch
+ // with indexed meshes. An identity index preserves their original corner order.
+ if(geometries.some(g=>g.index))for(const g of geometries){
+  if(g.index)continue;
+  const count=g.attributes.position.count,IndexArray=count<65535?Uint16Array:Uint32Array;
+  const indices=new IndexArray(count);
+  for(let i=0;i<count;i++)indices[i]=i;
+  g.setIndex(new T.BufferAttribute(indices,1));
+ }
+ const merged=mergeGeometries(geometries,false);
+ geometries.forEach(g=>g.dispose());
+ if(!merged)throw Error('Incompatible authored attributes');
+ return merged;
+}
 export function prepareTemplate(source,family,height,assetHash){
  source.updateMatrixWorld(true);
  const objects=[],sourceMaterials=new Set(),textures=new Set(),sourceGeometry=new Set();
@@ -29,18 +45,18 @@ export function prepareTemplate(source,family,height,assetHash){
    const matrix=transform.clone().multiply(o.matrixWorld);if(o.isInstancedMesh){const pose=new T.Matrix4();o.getMatrixAt(instance,pose);matrix.multiply(pose);}
    for(const range of ranges){
     const material=materials[range.materialIndex]??materials[0];if(family==='dragon'&&/^ground$/i.test(material.name))continue;
-    const geometry=bakeSourceRange(g,range.start,range.count,matrix);geometry.computeBoundingBox();const y=geometry.boundingBox.getCenter(new T.Vector3()).y/height,name=chainName(o);
+    const geometry=bakeSourceRange(g,range.start,range.count,matrix,family!=='heavy');geometry.computeBoundingBox();const y=geometry.boundingBox.getCenter(new T.Vector3()).y/height,name=chainName(o);
     const heavyCore=family==='heavy'&&o.userData.heavyCore;
     const sourceRole=heavyCore?'inspection-core':family==='dragon'&&/\bCircle\.?002_0\b/.test(name)?'cargo-trunk':/landing.?leg/i.test(name)?'landing-gear':'component';
-    const sourceFeature=(family==='starship'&&o.userData.sourceAssembly)||assemblyFeature(family,name,material.name,y);
+    const sourceFeature=((family==='starship'||family==='heavyupper')&&o.userData.sourceAssembly)||assemblyFeature(family,name,material.name,y);
     const stage=family==='falcon'&&(/second.?stage|engine.?holder/i.test(name)||geometry.boundingBox.min.y>height*.65)?'upper':'booster';
     const stageSurfaces=family==='falcon'?falconStageSurfaces(name,geometry,assetHash):null;
-    const parts=stageSurfaces??(heavyCore?[{geometry,part:'tanks',feature:'heavy-core-'+heavyCore}]:family==='heavy'?partitionAuthoredRegions(geometry,height):[{geometry,part:family==='dragon'?'fairing':family.startsWith('merlin')?'engines':(family==='starship'&&o.userData.sourcePart)||classifyPart(family,name,y),inspectionParts:sourceFeature==='first-stage-thrust-deck'?['engines','tanks']:family.startsWith('merlin')?['engines','interstage']:family==='starship'?o.userData.inspectionParts:undefined}]);if(stageSurfaces||(family==='heavy'&&!heavyCore))geometry.dispose();
+    const parts=stageSurfaces??(heavyCore?[{geometry,part:'tanks',feature:'heavy-core-'+heavyCore}]:family==='heavy'?partitionAuthoredRegions(geometry,height):[{geometry,part:family==='heavyupper'?'upperstage':family==='dragon'?'fairing':family.startsWith('merlin')?'engines':(family==='starship'&&o.userData.sourcePart)||classifyPart(family,name,y),inspectionParts:sourceFeature==='first-stage-thrust-deck'?['engines','tanks']:family.startsWith('merlin')?['engines','interstage']:family==='starship'?o.userData.inspectionParts:undefined}]);if(stageSurfaces||(family==='heavy'&&!heavyCore))geometry.dispose();
     for(const item of parts){const role=item.role??sourceRole,feature=item.feature??sourceFeature,layout=Object.keys(item.geometry.attributes).sort().map(n=>n+item.geometry.getAttribute(n).itemSize).join(','),key=`${item.part}|${material.uuid}|${stage}|${role}|${feature??''}|${item.inspectionParts?.join(',')??item.part}|${Boolean(item.assemblyContext)}|${layout}`;if(!bins.has(key))bins.set(key,{part:item.part,stage,role,assemblyFeature:feature,inspectionParts:item.inspectionParts,assemblyContext:item.assemblyContext,material,geometries:[],sourceNames:new Set()});const bin=bins.get(key);bin.geometries.push(item.geometry);bin.sourceNames.add(name);}
    }
   }
  }
- const entries=[];for(const bin of bins.values()){const geometry=mergeGeometries(bin.geometries,false);bin.geometries.forEach(g=>g.dispose());if(!geometry)throw Error('Incompatible authored attributes');geometry.computeBoundingBox();geometry.computeBoundingSphere();entries.push({geometry,material:bin.material,part:bin.part,stage:bin.stage,role:bin.role,assemblyFeature:bin.assemblyFeature,inspectionParts:bin.inspectionParts,assemblyContext:bin.assemblyContext,sourceNames:[...bin.sourceNames]});}
+ const entries=[];for(const bin of bins.values()){const geometry=mergeSourceBatch(bin.geometries);geometry.computeBoundingBox();geometry.computeBoundingSphere();entries.push({geometry,material:bin.material,part:bin.part,stage:bin.stage,role:bin.role,assemblyFeature:bin.assemblyFeature,inspectionParts:bin.inspectionParts,assemblyContext:bin.assemblyContext,sourceNames:[...bin.sourceNames]});}
  sourceGeometry.forEach(g=>g.dispose());return {family,height,entries,sourceMaterials,textures,supportsInterior:false};
 }
 /** Preserve authored paint, cloth, foil and metal responses. Never flatten source PBR maps. */

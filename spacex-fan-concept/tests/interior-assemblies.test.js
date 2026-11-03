@@ -29,12 +29,15 @@ test('Heavy assembles only the common bounded stage section and uncovers its har
  const fullCore=add(heavy,null,'booster'),dome=add(falcon,'upper-stage-aft-dome','upper');
  const cover=add(falcon,null,'booster',['Interstage_F9_Black_0 Interstage']);
  add(falcon,'vacuum-engine','upper');
+ const pusher=add(falcon,'separation-pusher','upper');
+ const attachment=add(falcon,'separation-attachments','upper');
  const view=createInspection(heavy,2,'interstage','fairing',falcon);
- assert.equal(view.internalMeshes.size,2);
+ assert.equal(view.internalMeshes.size,4);
  assert.ok(view.exterior.children.every(m=>m.geometry!==fullCore.geometry));
  assert.ok([...view.internalMeshes].some(m=>m.geometry===dome.geometry));
  view.setCutaway(true);view.step(1,true);
  assert.equal(view.exterior.children.find(m=>m.geometry===cover.geometry).visible,false);
+ for(const hardware of [pusher,attachment])assert.equal(view.exterior.children.find(m=>m.geometry===hardware.geometry).visible,true);
  view.setCutaway(false);view.step(1,true);
  assert.equal(view.exterior.children.find(m=>m.geometry===cover.geometry).visible,true);
  assert.equal(dome.visible,true);view.dispose();

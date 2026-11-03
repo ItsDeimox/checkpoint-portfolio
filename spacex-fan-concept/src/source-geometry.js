@@ -1,15 +1,33 @@
 import * as T from 'three';
 import {heavyCorePart} from './heavy-regions.js';
 /** Copy existing source triangles without losing material boundaries or vertex attributes. */
-export function bakeSourceRange(source,start,count,matrix){
+export function bakeSourceRange(source,start,count,matrix,keepIndex=false){
  const index=source.index,total=index?.count??source.getAttribute('position').count,length=Math.min(total,start+count)-start;
  if(length<=0||length%3)throw Error('Invalid authored triangle range');
  const mirrored=matrix.determinant()<0,result=new T.BufferGeometry();
+ // Keep only vertices referenced by this material range. Source IDs (including
+ // UV and normal seams) stay distinct even when adjacent positions coincide.
+ const compact=keepIndex&&index&&source.hasAttribute('normal');
+ const maxVertices=compact?Math.min(length,source.attributes.position.count):length;
+ const vertices=new Uint32Array(maxVertices);
+ let vertexCount=0;
+ const remap=compact?new Uint32Array(source.attributes.position.count):null;
+ const IndexArray=maxVertices<65535?Uint16Array:Uint32Array;
+ const corners=compact?new IndexArray(length):null;
+ const winding=mirrored?[0,2,1]:[0,1,2];
+ for(let i=0;i<length;i++){
+  const corner=i-i%3+winding[i%3];
+  const sourceId=index?index.getX(start+corner):start+corner;
+  if(compact){
+   if(!remap[sourceId]){vertices[vertexCount]=sourceId;remap[sourceId]=++vertexCount;}
+   corners[i]=remap[sourceId]-1;
+  }else vertices[vertexCount++]=sourceId;
+ }
+ if(compact)result.setIndex(new T.BufferAttribute(corners,1));
  for(const [name,a] of Object.entries(source.attributes)){
-  const values=new Float32Array(length*a.itemSize);
-  for(let i=0;i<length;i++){
-   const local=mirrored?i-i%3+[0,2,1][i%3]:i,vertex=index?index.getX(start+local):start+local;
-   for(let c=0;c<a.itemSize;c++)values[i*a.itemSize+c]=a.getComponent(vertex,c);
+  const values=new Float32Array(vertexCount*a.itemSize);
+  for(let i=0;i<vertexCount;i++){
+   for(let c=0;c<a.itemSize;c++)values[i*a.itemSize+c]=a.getComponent(vertices[i],c);
    if(mirrored&&name==='tangent')values[i*a.itemSize+3]*=-1;
   }
   result.setAttribute(name,new T.BufferAttribute(values,a.itemSize));

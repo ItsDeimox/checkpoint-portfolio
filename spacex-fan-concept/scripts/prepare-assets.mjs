@@ -7,6 +7,7 @@ import {ALL_EXTENSIONS} from '@gltf-transform/extensions';
 import {dedup,prune,weld,simplify,textureCompress,meshopt} from '@gltf-transform/functions';
 import {MeshoptEncoder,MeshoptDecoder,MeshoptSimplifier} from 'meshoptimizer';
 import sharp from 'sharp';
+import {isolateHeavyUpperStage} from './heavy-upper-stage.mjs';
 import {addHeavyCenterCore,packHeavyMaps} from './heavy-center-core.mjs';
 import {partitionStarshipInteriors} from './starship-interiors.mjs';
 import {applyDragonSourcePose} from './dragon-pose.mjs';
@@ -25,6 +26,7 @@ const sources=[
 ];
 sources.push(...JSON.parse(await readFile(new URL('./authored-assets.json',import.meta.url),'utf8')));
 const authors={
+ heavyupper:{title:'Falcon Heavy – upper stage',author:'Giroo',license:'CC-BY-4.0',source:'https://sketchfab.com/3d-models/falcon-heavy-60030e62373547fa9364171e6095f31e',mirror:'allenai/objaverse'},
  heavycore:{title:'Falcon Heavy – center-core inspection geometry',author:'Giroo',license:'CC-BY-4.0',source:'https://sketchfab.com/3d-models/falcon-heavy-60030e62373547fa9364171e6095f31e',mirror:'allenai/objaverse'},
  merlin:{title:'Merlin 1D',author:'MartianDays',license:'CC-BY-4.0',source:'https://sketchfab.com/3d-models/merlin-1d-088a207cae57488f876bbc16daf2148d',mirror:'allenai/objaverse',reference:'Individual artist-authored exterior engine; no certified internals'},
  merlinvac:{title:'Merlin 1D Vacuum',author:'MartianDays',license:'CC-BY-4.0',source:'https://sketchfab.com/3d-models/merlin-1d-vacuum-f20ebb6e857b405cbdc66568d48d2fcb',mirror:'allenai/objaverse',reference:'Minimalist exterior interpretation; no certified internals'},
@@ -35,7 +37,7 @@ const authors={
  studio:{title:'Studio Small 03',author:'Greg Zaal / Poly Haven',license:'CC0-1.0',source:'https://polyhaven.com/a/studio_small_03',mirror:'pmndrs/drei-assets'},
 };
 await mkdir(out,{recursive:true});await mkdir(cache,{recursive:true});
-const fingerprint=sha(Buffer.concat([await readFile(new URL(import.meta.url)),await readFile('package.json'),await readFile(new URL('./authored-assets.json',import.meta.url)),await readFile(new URL('./dragon-pose.mjs',import.meta.url)),await readFile(new URL('./starship-interiors.mjs',import.meta.url)),await readFile(new URL('./heavy-center-core.mjs',import.meta.url)),await readFile(new URL('./high-detail.mjs',import.meta.url))]));
+const fingerprint=sha(Buffer.concat([await readFile(new URL(import.meta.url)),await readFile('package.json'),await readFile(new URL('./authored-assets.json',import.meta.url)),await readFile(new URL('./dragon-pose.mjs',import.meta.url)),await readFile(new URL('./starship-interiors.mjs',import.meta.url)),await readFile(new URL('./heavy-center-core.mjs',import.meta.url)),await readFile(new URL('./heavy-upper-stage.mjs',import.meta.url)),await readFile(new URL('./high-detail.mjs',import.meta.url))]));
 try{const old=JSON.parse(await readFile(path.join(out,'manifest.json'),'utf8'));if(old.fingerprint===fingerprint){await Promise.all(Object.values(old.files).map(f=>stat(path.join('public',f.url))));console.log('Verified asset build already exists.');process.exit(0);}}catch{}
 async function acquire([name,url,expected]) {
  const dest=path.join(cache,name);await mkdir(path.dirname(dest),{recursive:true});
@@ -48,18 +50,19 @@ await Promise.all(sources.map(acquire));
 await Promise.all([MeshoptEncoder.ready,MeshoptDecoder.ready,MeshoptSimplifier.ready]);
 const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.encoder':MeshoptEncoder,'meshopt.decoder':MeshoptDecoder});
 const files={};
-for(const family of ['falcon9','falconheavy','dragon','starship','merlin','merlinvac'])for(const quality of ['high','eco']){
- const doc=await io.read(path.join(cache,['starship','dragon','merlin','merlinvac'].includes(family)?`${family}.glb`:`${family}/scene.gltf`));
+for(const family of ['falcon9','falconheavy','heavyupper','dragon','starship','merlin','merlinvac'])for(const quality of ['high','eco']){
+ const doc=await io.read(path.join(cache,family==='heavyupper'?'heavy-reference.glb':['starship','dragon','merlin','merlinvac'].includes(family)?`${family}.glb`:`${family}/scene.gltf`));
  if(family==='falconheavy'){
   addHeavyCenterCore(doc,await io.read(path.join(cache,'heavy-reference.glb')));
   await packHeavyMaps(doc,quality);
  }
+ if(family==='heavyupper')await isolateHeavyUpperStage(doc);
  if(family==='dragon')applyDragonSourcePose(doc);
  if(family==='starship')partitionStarshipInteriors(doc);
  const eco=quality==='eco',source=eco?null:sourceDetail(doc);
  if(eco){
   const steps=[dedup(),weld()];
-  if(!['falconheavy','merlin','merlinvac'].includes(family))steps.push(simplify({simplifier:MeshoptSimplifier,ratio:family==='starship'?.10:.62,error:family==='starship'?.008:.002,lockBorder:family!=='starship'}));
+  if(!['falconheavy','heavyupper','merlin','merlinvac'].includes(family))steps.push(simplify({simplifier:MeshoptSimplifier,ratio:family==='starship'?.10:.62,error:family==='starship'?.008:.002,lockBorder:family!=='starship'}));
   steps.push(prune(),textureCompress({encoder:sharp,targetFormat:'webp',resize:[1024,1024],quality:88}),meshopt({encoder:MeshoptEncoder,level:'high'}));
   await doc.transform(...steps);
  }else enableLosslessGeometry(doc);
@@ -69,8 +72,8 @@ for(const family of ['falcon9','falconheavy','dragon','starship','merlin','merli
  files[`${family}-${quality}`]={url:`/assets/${filename}`,bytes:b.byteLength,triangles,sha256:hash,...(preserved?{sourceDetail:preserved}:{})};console.log(family,quality,Math.round(b.byteLength/1024)+'KB',triangles+' triangles');
 }
 const hdrName='studio-small-03-29267a4aa8c1.hdr';await copyFile(path.join(cache,'studio.hdr'),path.join(out,hdrName));files.studio={url:'/assets/'+hdrName,bytes:1680234,sha256:sources.find(s=>s[0]==='studio.hdr')[2]};
-const manifest={version:3,fingerprint,files,authors,modifications:'Deimox: high quality preserves source vertex attributes, images, triangles and winding through lossless Meshopt (triangle indices may rotate cyclically); eco uses geometry simplification, texture resizing/WebP and Meshopt compression, source PBR preservation and grouping of existing source triangles for selection. No generated spacecraft or invented internals. Falcon Heavy retains its complete original overview. Its inspected first stage includes the original side cores and a separate center core extracted from Giroo’s Falcon Heavy model. The reference core is scaled uniformly and partitioned along existing face edges for sectioning. Some Heavy maps are stored in lossless WebP after verifying identical decoded RGBA pixels. Dragon by KUBAHA uses the original authored open-nose keyframe at the original 100/24-second keyframe; capsule inspection omits the separate cargo trunk while retaining the supplied heat shield. No cabin is supplied. Falcon 1 is unavailable pending a verified reusable source.'};
+const manifest={version:3,fingerprint,files,authors,modifications:'Deimox: high quality preserves source vertex attributes, images, triangles and winding through lossless Meshopt (triangle indices may rotate cyclically); eco uses geometry simplification, texture resizing/WebP and Meshopt compression, source PBR preservation and grouping of existing source triangles for selection. No generated spacecraft or invented internals. Falcon Heavy retains its complete original overview. Its inspected first stage includes the original side cores and a separate center core extracted from Giroo’s Falcon Heavy model. Its separate upper-stage inspection uses Giroo’s two native stage covers, fuel tank and vacuum engine in their original relative placement. The reference core is scaled uniformly and partitioned along existing face edges for sectioning. Some Heavy maps are stored in lossless WebP after verifying identical decoded RGBA pixels. Dragon by KUBAHA uses the original authored open-nose keyframe at the original 100/24-second keyframe; capsule inspection omits the separate cargo trunk while retaining the supplied heat shield. No cabin is supplied. Falcon 1 is unavailable pending a verified reusable source.'};
 await writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2));await writeFile(path.join(out,'ATTRIBUTION.json'),JSON.stringify({authors,modifications:manifest.modifications,inputs:sources},null,2));
 
 const keep=new Set(Object.values(files).map(f=>path.basename(f.url)));
-for(const file of await readdir(out))if(/^(falcon9|falconheavy|dragon|starship|merlin|merlinvac)-(high|eco)-[a-f0-9]+\.glb$/.test(file)&&!keep.has(file))await unlink(path.join(out,file));
+for(const file of await readdir(out))if(/^(falcon9|falconheavy|heavyupper|dragon|starship|merlin|merlinvac)-(high|eco)-[a-f0-9]+\.glb$/.test(file)&&!keep.has(file))await unlink(path.join(out,file));

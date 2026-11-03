@@ -36,3 +36,25 @@ test('the inspected Heavy center core contains only original face triplets and a
   assert.equal(combined.length,412);
   assert.deepEqual(combined.sort(),faces(original).sort());
  });
+
+test('the central upper-stage barrel above the shared sleeve has its own inspection',()=>{
+ assert.equal(heavyCorePart(.625),'interstage');
+ assert.equal(heavyCorePart(.75),'upperstage');
+ assert.equal(heavyCorePart(.75,true),'tanks');
+ assert.equal(heavyCorePart(.83),'fairing');
+});
+
+test('Heavy upper stage preserves the four native meshes, their materials and their relative transforms',
+ {skip:!existsSync(source)},async()=>{
+ const {isolateHeavyUpperStage}=await import('../scripts/heavy-upper-stage.mjs');
+ const {Matrix4}=await import('three'),io=new NodeIO(),doc=await io.read(source.pathname);
+ const names=['Stage_2_Engine','Stage_2_FuelTank','Stage_2_Cover_Left','Stage_2_Cover_Right'];
+ const nodes=names.map(name=>doc.getRoot().listNodes().find(n=>n.getParentNode()?.getName()===name));
+ const relatives=()=>nodes.map(n=>new Matrix4().fromArray(nodes[0].getWorldMatrix()).invert().multiply(new Matrix4().fromArray(n.getWorldMatrix())).toArray());
+ const initial=relatives(),primitives=nodes.map(n=>n.getMesh().listPrimitives()[0]);
+ await isolateHeavyUpperStage(doc);
+ assert.equal(doc.getRoot().listNodes().length,4);
+ assert.deepEqual(nodes.map(n=>n.getMesh().listPrimitives()[0]),primitives);
+ assert.deepEqual(nodes.map(n=>n.getExtras().sourceAssembly),['heavy-upper-engine','heavy-upper-tank','heavy-upper-cover','heavy-upper-cover']);
+ for(const [i,relative]of relatives().entries())for(const [j,value] of relative.entries())assert.ok(Math.abs(value-initial[i][j])<1e-5);
+});

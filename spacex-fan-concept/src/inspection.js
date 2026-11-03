@@ -54,7 +54,15 @@ export function createInspection(model,index,part,payload='fairing',sharedFalcon
  })):[];
  const panelX=panel?.position.x, panelYaw=panel?.rotation.y;
  const panelTravel=panel?(panel.geometry.boundingBox.max.x-panel.geometry.boundingBox.min.x)*1.35:0;
- function openPanel(t){
+ // Lift the authored cage clear of its mounting sleeve; keep both in view.
+ const frames=[...internalMeshes].filter(m=>m.userData.assemblyFeature==='hotstage-frame')
+  .map(mesh=>({mesh,y:mesh.position.y}));
+ const frameLift=frames.length?(fullBounds.max.y-fullBounds.min.y)*1.05:0;
+ function poseSection(t){
+  for(const {mesh,y} of frames){
+   mesh.position.y=y+frameLift*t;
+   mesh.updateMatrixWorld(true);
+  }
   if(!panel)return;
   panel.position.x=panelX+panelTravel*t;
   panel.rotation.y=panelYaw+.97*t;
@@ -64,9 +72,9 @@ export function createInspection(model,index,part,payload='fairing',sharedFalcon
    deck.mesh.updateMatrixWorld(true);
   }
  }
- openPanel(1);
+ poseSection(1);
  for(const mesh of internalMeshes)innerBounds.union(new T.Box3().setFromObject(mesh));
- openPanel(0);
+ poseSection(0);
  const innerCenter=coverage.supported?innerBounds.getCenter(new T.Vector3()):new T.Vector3();
  if(coverage.supported)innerBounds.translate(innerCenter.clone().negate());
  let lastFocus=-1;
@@ -75,7 +83,7 @@ export function createInspection(model,index,part,payload='fairing',sharedFalcon
   step(dt,reduced){
    const active=fade.step(dt,reduced),x=Math.max(0,(fade.progress-.5)*2),t=x*x*(3-2*x);
    if(coverage.supported&&t!==lastFocus){
-    lastFocus=t;openPanel(t);exterior.position.copy(sourceCenter).negate().addScaledVector(innerCenter,-t);
+    lastFocus=t;poseSection(t);exterior.position.copy(sourceCenter).negate().addScaledVector(innerCenter,-t);
     bounds.min.lerpVectors(fullBounds.min,innerBounds.min,t);bounds.max.lerpVectors(fullBounds.max,innerBounds.max,t);
     bounds.getBoundingSphere(sphere);view.radius=sphere.radius;
    }

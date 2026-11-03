@@ -10,3 +10,13 @@ test('authored Heavy never clones Falcon 9 cores',()=>{const t={family:'heavy',h
 test('region selection conserves all original triangles and vertices',()=>{const g=new T.BoxGeometry(1,14,1).toNonIndexed(),p=partitionAuthoredRegions(g,14);assert.equal(p.reduce((n,x)=>n+x.geometry.getAttribute('position').count,0),g.getAttribute('position').count);const original=new Set(Array.from({length:g.getAttribute('position').count},(_,i)=>[g.getAttribute('position').getX(i),g.getAttribute('position').getY(i),g.getAttribute('position').getZ(i)].join(',')));for(const {geometry}of p){const a=geometry.getAttribute('position');for(let i=0;i<a.count;i++)assert.ok(original.has([a.getX(i),a.getY(i),a.getZ(i)].join(',')));}});
 test('mirrored source transforms preserve front-face winding',()=>{const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute([0,0,0,1,0,0,0,1,0],3));g.setAttribute('normal',new T.Float32BufferAttribute([0,0,1,0,0,1,0,0,1],3));const baked=bakeSourceRange(g,0,3,new T.Matrix4().makeScale(-1,1,1)),p=baked.getAttribute('position'),a=new T.Vector3().fromBufferAttribute(p,0),b=new T.Vector3().fromBufferAttribute(p,1),c=new T.Vector3().fromBufferAttribute(p,2);assert.ok(b.sub(a).cross(c.sub(a)).z>0);});
 test('engine inspection excludes landing gear without removing it from the overview',()=>{const group=new T.Group();for(const role of ['component','landing-gear']){const mesh=new T.Mesh(new T.BoxGeometry(1,role==='component'?1:10,1),new T.MeshStandardMaterial());mesh.userData={part:'engines',role};group.add(mesh);}const v=createInspection({group,family:'falcon'},1,'engines');assert.equal(v.exterior.children.length,1);assert.equal(group.children.length,2);v.dispose();});
+test('indexed baking retains shared vertices and the exact authored corner attributes',()=>{
+ const g=new T.BoxGeometry(1,2,3);g.computeTangents();
+ const matrix=new T.Matrix4().makeScale(-2,3,4);
+ const flat=bakeSourceRange(g,0,6,matrix);
+ const compact=bakeSourceRange(g,0,6,matrix,true);
+ assert.equal(compact.index?.count,6);
+ assert.equal(compact.attributes.position.count,4);
+ const expanded=compact.toNonIndexed();
+ for(const name of Object.keys(flat.attributes))assert.deepEqual(expanded.attributes[name].array,flat.attributes[name].array,name);
+});

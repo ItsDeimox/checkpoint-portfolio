@@ -36,10 +36,15 @@ for(const target of ['starship/tanks','falcon-9/fairing','falcon-heavy/interstag
  });
 }
 await check('direct section link opens the assembled ring with the interior toggle available',async()=>{
+ const modelRequests=[];
+ const record=request=>{if(new URL(request.url()).pathname.endsWith('.glb'))modelRequests.push(request.url());};
+ p.on('request',record);
  await p.goto((process.env.BASE_URL||'http://localhost:4173/')+'?qa&section=starship/interstage');
  await p.waitForFunction(()=>window.__SPACEX_QA__?.inspection()?.key==='3:interstage:fairing');
  assert.equal(await p.locator('#view-exterior').getAttribute('aria-pressed'),'true');
  assert.equal(await p.locator('#view-cutaway').isEnabled(),true);
+ p.off('request',record);
+ assert.ok(modelRequests.every(url=>!url.includes('/falconheavy-')),'isolated Starship loaded the Heavy');
 });
 await check('return to assembled during a Heavy interior retry cancels automatic opening',async()=>{
  const tab=await p.context().newPage();

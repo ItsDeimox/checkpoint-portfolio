@@ -13,6 +13,7 @@ export function componentPose(part,coverage){
  if(part==='fairing'&&coverage?.features.includes('fairing-inner-wall'))return new T.Quaternion().setFromEuler(new T.Euler(.24,.67,0));
  if(part==='interstage'&&coverage?.features.includes('hotstage-base-sleeve'))return new T.Quaternion().setFromEuler(new T.Euler(.43,.28,0));
  if(part==='tanks'&&coverage?.features.some(id=>id==='first-stage-open-panel'||id==='heavy-core-cover'))return new T.Quaternion().setFromEuler(new T.Euler(.55,.42,-.32));
+ if(part==='tanks'&&coverage?.features.includes('booster-dome-downcomer'))return new T.Quaternion().setFromEuler(new T.Euler(.45,.28,-.22));
  if(part==='engines')return new T.Quaternion().setFromUnitVectors(new T.Vector3(0,-1,0),new T.Vector3(.30,-.45,1).normalize());
  return new T.Quaternion().setFromEuler(new T.Euler(-.08,.24,0));
 }
