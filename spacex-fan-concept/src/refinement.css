@@ -38,3 +38,12 @@
 #cabin-dialog figcaption,#cabin-film p{font-size:14px;line-height:1.5;color:#c6c9cf;margin:10px 0 0}
 #cabin-dialog a{text-decoration:underline;text-underline-offset:.15em}
 #cabin-player iframe{display:block;width:100%;aspect-ratio:16/9;border:0}
+
+/* Short desktop viewports: keep module controls and source notes readable above the footer. */
+@media (min-width:760px) and (max-height:800px){
+ .is-detail .detail-copy{top:clamp(106px,20svh,165px);max-height:calc(100svh - 206px);overflow-y:auto;scrollbar-width:thin;overscroll-behavior:contain;padding-bottom:12px;pointer-events:auto}
+ .is-detail .detail-copy::-webkit-scrollbar{width:3px}
+ .is-detail .detail-copy::-webkit-scrollbar-thumb{background:#555963}
+ .is-detail .inspection-controls{margin:15px 0 10px}
+ .is-detail .specs{gap:16px}
+}
