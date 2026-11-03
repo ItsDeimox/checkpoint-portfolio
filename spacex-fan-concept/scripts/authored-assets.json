@@ -38,5 +38,10 @@
     "merlinvac.glb",
     "https://huggingface.co/datasets/allenai/objaverse/resolve/556637099bf4fa79ea7b239d0d9c328b8a2e9ac8/glbs/000-057/f20ebb6e857b405cbdc66568d48d2fcb.glb",
     "3eb0d4f875fd1de77f6a3480ffa4b0989e8d47bde6b6450b92c91f3f5a100dc7"
+  ],
+  [
+    "heavy-reference.glb",
+    "https://huggingface.co/datasets/allenai/objaverse/resolve/556637099bf4fa79ea7b239d0d9c328b8a2e9ac8/glbs/000-152/60030e62373547fa9364171e6095f31e.glb",
+    "44a51cc3dcf96e0349de0f892de5c7584885fc89419dc9f87b987194e8d2d5b6"
   ]
 ]

@@ -1,5 +1,5 @@
 import {chromium as pw} from 'playwright-core';import chromium from '@sparticuz/chromium';import fs from 'node:fs';import assert from 'node:assert/strict';
-const browser=await pw.launch({executablePath:await chromium.executablePath(),args:[...chromium.args,'--enable-unsafe-swiftshader'],headless:true}),base=process.env.BASE_URL||'http://localhost:4173/';
+const browser=await pw.launch({executablePath:process.env.CHROMIUM_PATH||await chromium.executablePath(),args:[...chromium.args,'--enable-unsafe-swiftshader'],headless:true}),base=process.env.BASE_URL||'http://localhost:4173/';
 const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'}),errors=[],passed=[],failed=[];page.setDefaultTimeout(20000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
 async function check(name,fn){try{await fn();passed.push(name);console.log('PASS',name);}catch(e){failed.push({name,error:e.message});console.log('FAIL',name,e.message.slice(0,400));}}
 const stats=()=>page.evaluate(()=>window.__SPACEX_QA__.stats());
@@ -12,8 +12,8 @@ for(const index of [1,2,3]){
  await act({type:'NAVIGATE',index});await page.waitForFunction(i=>window.__SPACEX_QA__.assets()[i]==='licensed-high',index,{timeout:90000});await page.waitForTimeout(500);await page.screenshot({path:`/tmp/fidelity-${index}-overview.png`});
  for(const part of ['engines','tanks','interstage','fairing'])await check(`authored/${index}/${part}`,async()=>{
   await act({type:'FOCUS',part});await page.waitForFunction(({index,part})=>window.__SPACEX_QA__.inspection()?.key===`${index}:${part}:fairing`,{index,part});
-  const i=await page.evaluate(()=>window.__SPACEX_QA__.inspection());assert.equal(i.originalsVisible,0);assert.equal(i.interiorVisible,false);assert.equal(i.supportsInterior,false);assert.ok(i.exteriorCount>0);
-  const p=await page.evaluate(()=>window.__SPACEX_QA__.framing());assert.ok(p.every(([x,y])=>x>0&&x<1010&&y>60&&y<850),JSON.stringify(p));assert.equal(await page.locator('.inspection-controls').isVisible(),false);
+  const i=await page.evaluate(()=>window.__SPACEX_QA__.inspection());assert.equal(i.originalsVisible,0);assert.equal(i.interiorVisible,part==='tanks');assert.equal(i.supportsInterior,i.internalMeshes>0);assert.ok(i.exteriorCount>0);
+  const p=await page.evaluate(()=>window.__SPACEX_QA__.framing());assert.ok(p.every(([x,y])=>x>0&&x<1010&&y>60&&y<850),JSON.stringify(p));assert.equal(await page.locator('#view-cutaway').isVisible(),i.supportsInterior);
   if(['engines','fairing'].includes(part))await page.screenshot({path:`/tmp/fidelity-${index}-${part}.png`});
  });
 }

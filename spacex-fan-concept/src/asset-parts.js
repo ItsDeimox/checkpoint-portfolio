@@ -4,7 +4,8 @@ export function classifyPart(family, name, normalizedY) {
   if(family==='starship') {
     if(y>.585||(/starship block/.test(n)&&!/superheavy/.test(n)))return 'fairing';
     if(/raptor|engine|thrust puck/.test(n)||y<.085)return 'engines';
-    if(/grid fin|hot.?stag|interstage/.test(n)||y>.525)return 'interstage';
+    // The grid fins move with the booster, below its hot-staging interface.
+    if(/hot.?stag|interstage/.test(n))return 'interstage';
     return 'tanks';
   }
   if(/fairing/.test(n)||y>.81)return 'fairing';

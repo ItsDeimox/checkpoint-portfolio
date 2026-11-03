@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {heavyCorePart} from './heavy-regions.js';
 /** Copy existing source triangles without losing material boundaries or vertex attributes. */
 export function bakeSourceRange(source,start,count,matrix){
  const index=source.index,total=index?.count??source.getAttribute('position').count,length=Math.min(total,start+count)-start;
@@ -15,8 +16,6 @@ export function bakeSourceRange(source,start,count,matrix){
  }
  result.applyMatrix4(matrix);if(!result.getAttribute('normal'))result.computeVertexNormals();return result;
 }
-/** Pick a region without ever cutting the source surface at that height. */
-export function authoredRegion(y){return y>.805?'fairing':y>.535?'interstage':y<.095?'engines':'tanks';}
 /** Recover whole connected surfaces from a flattened source. UV seams are not physical seams.
  * The position map is adjacency-only: every original attribute/triangle is copied unchanged.
  */
@@ -43,15 +42,23 @@ export function partitionAuthoredRegions(geometry,height){
   for(let j=0;j<3;j++){c.indices.push(i+j);c.min=Math.min(c.min,a.getY(i+j));c.max=Math.max(c.max,a.getY(i+j));}
  }
  return [...components.values()].map(c=>{
-  const assemblyContext=(c.max-c.min)>height*.25;
-  const part=assemblyContext?'tanks':authoredRegion((c.min+c.max)/(2*height));
-  const inspectionParts=assemblyContext?['tanks',...(c.max>height*.535?['interstage']:[]),...(c.max>height*.805?['fairing']:[])]:[part];
+  // Only the central body spans nearly the whole vehicle. Side booster noses
+  // remain part of their own cores, even at the center interstage's height.
+  const length=(c.max-c.min)/height;
+  const assemblyContext=length>.85;
+  const sideBody=length>.55&&!assemblyContext;
+  const engine=c.max/height<.04;
+  let minX=Infinity,maxX=-Infinity;
+  for(const i of c.indices){minX=Math.min(minX,a.getX(i));maxX=Math.max(maxX,a.getX(i));}
+  const central=Math.abs((minX+maxX)/2)<height*.035;
+  const part=engine?'engines':sideBody||assemblyContext||!central?'tanks':heavyCorePart((c.max+c.min)/(2*height));
+  const inspectionParts=engine||sideBody?[part]:[];
   const result=new T.BufferGeometry();
   for(const [name,a]of Object.entries(geometry.attributes)){
    const values=new Float32Array(c.indices.length*a.itemSize);
    for(let i=0;i<c.indices.length;i++)for(let k=0;k<a.itemSize;k++)values[i*a.itemSize+k]=a.getComponent(c.indices[i],k);
    result.setAttribute(name,new T.BufferAttribute(values,a.itemSize));
   }
-  return {part,geometry:result,inspectionParts,assemblyContext};
+  return {part,geometry:result,inspectionParts,assemblyContext,role:sideBody?'booster-shell':undefined};
  });
 }

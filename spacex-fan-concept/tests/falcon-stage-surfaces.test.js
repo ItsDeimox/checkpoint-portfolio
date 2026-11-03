@@ -1,8 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BufferAttribute, BufferGeometry} from 'three';
+import {BoxGeometry,BufferAttribute,BufferGeometry,Float32BufferAttribute,Group,Matrix4,Mesh,MeshStandardMaterial} from 'three';
+import {createInspection} from '../src/inspection.js';
 import {falconStageSurfaces} from '../src/falcon-stage-surfaces.js';
 import {assemblyCoverage, assemblyFeature} from '../src/source-assemblies.js';
+
+import {existsSync,readFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {NodeIO} from '@gltf-transform/core';
+import {ALL_EXTENSIONS} from '@gltf-transform/extensions';
+import {MeshoptDecoder} from 'meshoptimizer';
+import {bakeSourceRange} from '../src/source-geometry.js';
 
 const name = 'Second_Stage_F9_Second_Stage_0 Second_Stage';
 const variants = [
@@ -43,4 +51,54 @@ test('only the far-side authored fairing half and its own fittings stay inside',
   assert.equal(assemblyFeature('falcon','Fairing_1_F9_Fairing_0','F9_Fairing',.9),null);
   assert.equal(assemblyCoverage('falcon','fairing',new Set(['fairing-inner-wall'])).supported,false);
   assert.equal(assemblyCoverage('falcon','fairing',new Set(['fairing-inner-wall','payload-adapter'])).supported,true);
+});
+
+const publicRoot=new URL('../public/',import.meta.url),manifestPath=new URL('assets/manifest.json',publicRoot);
+for(const [quality,hash] of variants){
+ test(`Falcon 9 ${quality} open barrel keeps original back panels and both physical end decks`,{skip:!existsSync(manifestPath)},async()=>{
+  await MeshoptDecoder.ready;
+  const manifest=JSON.parse(readFileSync(manifestPath)),file=manifest.files['falcon9-'+quality];
+  assert.equal(file.sha256,hash);
+  const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.decoder':MeshoptDecoder});
+  const doc=await io.read(fileURLToPath(new URL(file.url.slice(1),publicRoot)));
+  function partition(sourceName){
+   const node=doc.getRoot().listNodes().find(n=>n.getName()===sourceName);
+   const prim=node.getMesh().listPrimitives()[0],original=new BufferGeometry();
+   original.setAttribute('position',new Float32BufferAttribute(prim.getAttribute('POSITION').getArray(),3));
+   original.setIndex(new BufferAttribute(prim.getIndices().getArray(),1));
+   // glTF mesh quantization can use normalized integer vertex positions.
+   const attr=original.attributes.position;
+   const positions=prim.getAttribute('POSITION');
+   if(positions.getNormalized())for(let i=0;i<attr.count;i++)attr.setXYZ(i,...positions.getElement(i,[]));
+   const baked=bakeSourceRange(original,0,original.index.count,new Matrix4().fromArray(node.getWorldMatrix()));
+   const sections=falconStageSurfaces(sourceName.replaceAll(' ','_'),baked,hash);
+   assert.equal(sections.reduce((n,p)=>n+p.geometry.attributes.position.count,0),baked.attributes.position.count);
+   return sections;
+  }
+  const [cover,wall]=partition('First Stage_F9 First Stage_0');
+  assert.equal(wall.feature,'first-stage-barrel-section');assert.ok(cover.geometry.attributes.position.count>0);
+  wall.geometry.computeBoundingBox();cover.geometry.computeBoundingBox();
+  assert.ok(wall.geometry.boundingBox.max.z < cover.geometry.boundingBox.max.z*.5);
+  const [,deck]=partition('Interstage_F9 Black_0');deck.geometry.computeBoundingBox();
+  assert.ok(deck.inspectionParts.includes('tanks'));const box=deck.geometry.boundingBox;
+  assert.ok(box.max.y-box.min.y < (box.max.x-box.min.x)*.06);
+  assert.equal(assemblyFeature('falcon','First_Stage_F9_Octaweb_Black_0','',0),'first-stage-thrust-deck');
+  assert.equal(assemblyCoverage('falcon','tanks',new Set([deck.feature,wall.feature,cover.feature,'first-stage-thrust-deck'])).supported,true);
+ });
+}
+
+test('opening the first-stage tank visibly moves its panel, and assembled restores the original transform',()=>{
+ const group=new Group();
+ for(const feature of ['first-stage-open-panel','first-stage-barrel-section','first-stage-forward-deck','first-stage-thrust-deck']){
+  const m=new Mesh(new BoxGeometry(1,10,.5),new MeshStandardMaterial());
+  m.userData={part:'tanks',assemblyFeature:feature};group.add(m);
+ }
+ const v=createInspection({group,family:'falcon'},1,'tanks');
+ const panel=v.exterior.children.find(m=>m.userData.assemblyFeature==='first-stage-open-panel');
+ const assembled=panel.matrix.clone();
+ assert.ok(v.setCutaway(true));v.step(1,true);v.update();
+ assert.ok(panel.position.x>1);assert.ok(panel.rotation.y>.8);assert.ok(panel.visible);
+ assert.ok(v.setCutaway(false));v.step(1,true);v.update();
+ assert.deepEqual(panel.matrix.elements,assembled.elements);
+ assert.equal(group.children[0].position.x,0);v.dispose();
 });

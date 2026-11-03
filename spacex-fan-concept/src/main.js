@@ -9,13 +9,20 @@ import {engineFor} from './engine-details.js';
 import {usesSharedFalconHardware} from './source-assemblies.js';
 
 const $=id=>document.getElementById(id),query=new URLSearchParams(location.search);
-const cabinLink=query.get('reference')==='crew-dragon-cabin';
-let state=cabinLink?reduce(initialState(),{type:'DRAGON'}):initialState(query.get('inside')),viewer,product,ready=false;
-let openLinkedInterior=!cabinLink&&Boolean(state.part);
+const cabinLink=query.get('reference')==='crew-dragon-cabin',insideLink=query.get('inside');
+let state=cabinLink?reduce(initialState(),{type:'DRAGON'}):initialState(insideLink??query.get('section')),viewer,product,ready=false;
+let pendingInterior=!cabinLink&&Boolean(insideLink&&state.part);
 const dialogs=['search-dialog','menu-dialog','about-dialog','cabin-dialog'].map($);
 const format=(node,text)=>{node.replaceChildren(...text.split('\n').flatMap((line,i)=>i?[document.createElement('br'),document.createTextNode(line)]:[document.createTextNode(line)]));};
 const action=(event)=>{
-  const next=reduce(state,event);if(next===state)return;openLinkedInterior=false;state=next;if(ready)viewer.applyState(state);render();
+  const next=reduce(state,event);
+  if(next===state)return;
+  const changedModule=next.index!==state.index||next.part!==state.part||next.payload!==state.payload;
+  if(changedModule)pendingInterior=next.part==='tanks';
+  state=next;
+  if(ready)viewer.applyState(state);
+  render();
+  if(changedModule)$('detail-copy').scrollTop=0;
 };
 function render(){
   const vehicle=vehicles[state.index],detail=state.part?getPart(vehicle,state.part,state.payload):null;
@@ -26,8 +33,8 @@ function render(){
   const hasModel=engineView?Boolean(viewer?.engineModels.has(engine?.family)):state.payload==='dragon'?Boolean(viewer?.dragonModel):viewer?.models[state.index]?.source==='licensed';
   $('model-status').textContent=assetStatus==='loading'?'LOADING AUTHORED MODEL':'';$('asset-notice').hidden=hasModel||!ready;
   $('asset-notice-text').textContent=assetStatus==='unavailable'?'THE SOURCE MODEL COULD NOT BE LOADED.':'LOADING SOURCE GEOMETRY';$('retry-model').hidden=assetStatus!=='unavailable';$('explore').disabled=!hasModel;
-  if(openLinkedInterior&&ready&&viewer.inspection?.supportsInterior){
-    openLinkedInterior=false;
+  if(pendingInterior&&ready&&viewer.inspection?.supportsInterior){
+    pendingInterior=false;
     viewer.setCutaway(true);
   }
   const coverage=viewer?.inspection?.coverage,supported=Boolean(detail&&coverage?.supported),internal=Boolean(viewer?.cutaway&&supported);
@@ -36,7 +43,7 @@ function render(){
   document.querySelector('.inspection-controls').hidden=!detail||(!supported&&!engine&&!sharedPending);
   $('view-cutaway').hidden=!supported&&!sharedPending;
   $('view-cutaway').disabled=!supported&&!retryShared;
-  $('view-cutaway').textContent=retryShared?'RETRY INTERIOR':sharedPending?'LOADING INTERIOR':'INTERNAL STRUCTURE';
+  $('view-cutaway').textContent=retryShared?'RETRY INTERIOR':sharedPending?'LOADING INTERIOR':state.part==='tanks'?'OPEN TANKS':'INTERNAL STRUCTURE';
   $('view-engine').hidden=!engine;$('view-engine').setAttribute('aria-pressed',String(engineView));
   $('view-exterior').setAttribute('aria-pressed',String(!internal&&!engineView));$('view-cutaway').setAttribute('aria-pressed',String(internal));
   $('cabin-reference').hidden=state.payload!=='dragon'||state.part!=='fairing';
@@ -54,7 +61,6 @@ function render(){
     $('detail-parent').textContent=`${vehicle.name} / ${engineView?'ENGINE DETAIL':viewer?.inspection?.contextual?'ASSEMBLY VIEW':'COMPONENT VIEW'}`;$('detail-title').textContent=detail.title;$('detail-kicker').textContent=detail.kicker;$('detail-description').textContent=detail.description;
     $('detail-specs').replaceChildren(...detail.specs.map(([label,value])=>{const div=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;div.append(dt,dd);return div;}));
     $('detail-source').href=state.payload==='dragon'&&state.part==='fairing'?'https://www.spacex.com/vehicles/dragon/':vehicle.source;
-    $('detail-copy').scrollTop=0;
   }
   document.title=`${detail?.title??vehicle.name} | ${siteConfig.demoTitle}`;product?.sync();
 }
@@ -108,7 +114,7 @@ document.querySelectorAll('[data-action]').forEach(button=>button.addEventListen
 $('previous').addEventListener('click',()=>action({type:'NAVIGATE',index:state.index-1}));$('next').addEventListener('click',()=>action({type:'NAVIGATE',index:state.index+1}));
 $('explore').addEventListener('click',()=>action({type:'FOCUS',part:'engines'}));$('rotate').addEventListener('click',()=>action({type:'ROTATE'}));
 $('quality').addEventListener('change',event=>{if(ready){viewer.autoCap=null;viewer.frameBudget.reset();viewer.applyQuality(event.target.value);}});
-for(const [id,enabled] of [['view-exterior',false],['view-cutaway',true]])$(id).addEventListener('click',()=>{if(!ready)return;openLinkedInterior=false;if(enabled&&usesSharedFalconHardware(state)&&!viewer.inspection?.supportsInterior){openLinkedInterior=true;viewer.loadLicensed(1);return;}if(!enabled&&state.payload==='engine'){action({type:'ENGINE_DETAIL',enabled:false});return;}if(viewer.setCutaway(enabled))render();});
+for(const [id,enabled] of [['view-exterior',false],['view-cutaway',true]])$(id).addEventListener('click',()=>{if(!ready)return;pendingInterior=false;if(enabled&&usesSharedFalconHardware(state)&&!viewer.inspection?.supportsInterior){pendingInterior=true;viewer.loadLicensed(1);return;}if(!enabled&&state.payload==='engine'){action({type:'ENGINE_DETAIL',enabled:false});return;}if(viewer.setCutaway(enabled))render();});
 $('view-engine').addEventListener('click',()=>action({type:'ENGINE_DETAIL',enabled:true}));
 $('reload').addEventListener('click',()=>location.reload());$('retry-model').addEventListener('click',()=>viewer?.retryModel());
 window.addEventListener('keydown',event=>{

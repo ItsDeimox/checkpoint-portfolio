@@ -12,9 +12,11 @@ const file=fileURLToPath(new URL('../.cache/3d/starship.glb',import.meta.url));
 const assemblies=[
   ['Object_8','ship-tank-hardware',17506],
   ['Object_98','booster-forward-dome',724],
+  ['Object_98','hotstage-base-sleeve',946],
   ['Object_99','booster-dome-downcomer',14492],
   ['Object_99','hotstage-frame',4744],
   ['Object_100','hotstage-attachments',1496],
+  ['Object_101','hotstage-collar-inserts',228],
 ];
 
 function triangles(primitive){
@@ -56,4 +58,13 @@ test('the reviewed booster engine bank excludes the heat shield, shell and upper
   assert.equal(assemblyCoverage('starship','fairing',new Set(['cargo-rack'])).supported,false);
   assert.equal(assemblyCoverage('starship','tanks',new Set(['booster-forward-dome'])).supported,false);
   assert.equal(assemblyCoverage('starship','tanks',new Set(['booster-forward-dome','booster-dome-downcomer'])).supported,true);
+});
+
+test('assembled ring exposes the dome and removes its vent frame when opened',()=>{
+  const features=new Set(['hotstage-frame','hotstage-attachments','booster-forward-dome','hotstage-base-sleeve']);
+  const view=assemblyCoverage('starship','interstage',features);
+  assert.ok(view.supported);
+  assert.ok(view.features.includes('booster-forward-dome'));
+  assert.ok(!view.features.includes('hotstage-frame'));
+  assert.ok(view.features.includes('hotstage-base-sleeve'));
 });

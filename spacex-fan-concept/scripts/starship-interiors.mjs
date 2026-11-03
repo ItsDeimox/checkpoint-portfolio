@@ -8,11 +8,16 @@ const selections = [
       [15930,26366],[26942,27006],[27336,27366],[27576,27636]],
   },
   {
-    node: 'Object_98', material: 'Cryo_Section3', triangles: 2278, feature: 'booster-forward-dome', part:'tanks', inspectionParts:['tanks','interstage'],
+    node: 'Object_98', material: 'Cryo_Section3', triangles: 2278, feature: 'booster-forward-dome', part:'interstage', inspectionParts:['tanks','interstage'],
     ranges: [[308,324],[336,344],[370,386],[387,398],[410,411],[422,430],[431,438],
       [450,451],[462,470],[471,478],[505,518],[519,530],[585,1049],[1093,1097],
       [1159,1180],[1192,1227],[1253,1262],[1263,1270],[1319,1327],[1335,1343],
       [1367,1374],[1377,1391],[1392,1399],[1414,1422],[1615,1616],[1621,1630],[1634,1642],[1645,1652]],
+  },
+  {
+    node: 'Object_98', material: 'Cryo_Section3', triangles: 2278, feature: 'hotstage-base-sleeve',
+    part:'interstage', inspectionParts:['tanks','interstage'],
+    seams:[0.85497604,0.92004151],
   },
   {
     node: 'Object_99', material: 'Material.003', triangles: 30824, feature: 'booster-dome-downcomer', part:'tanks',
@@ -26,7 +31,27 @@ const selections = [
     node: 'Object_100', material: 'Material.055', triangles: 9572, feature: 'hotstage-attachments', part:'interstage',
     ranges: [[2872,4368]],
   },
+  {
+    node: 'Object_101', material: 'Material.053', triangles: 3456, feature: 'hotstage-collar-inserts',
+    part:'interstage', inspectionParts:['tanks','interstage'], ranges:[[48,276]],
+  },
 ];
+
+// This sleeve shares its original boundary loops with the tank wall and forward
+// dome. Each face must lie entirely to one side of each loop. Never slice a face.
+function markBetweenSeams(primitive,indices,labels,label,[lower,upper]){
+  const position=primitive.getAttribute('POSITION'),heights=new Float64Array(position.getCount());
+  const point=[];
+  for(let i=0;i<heights.length;i++)heights[i]=position.getElement(i,point)[1];
+  const epsilon=1e-6;
+  for(let i=0;i<indices.length;i+=3){
+    const a=heights[indices[i]],b=heights[indices[i+1]],c=heights[indices[i+2]];
+    const min=Math.min(a,b,c),max=Math.max(a,b,c);
+    if((min<lower-epsilon&&max>lower+epsilon)||(min<upper-epsilon&&max>upper+epsilon))
+      throw Error('Starship sleeve boundary crosses an authored triangle');
+    if(min>=lower-epsilon&&max<=upper+epsilon)labels[i/3]=label;
+  }
+}
 
 // Partition the index stream before either tier's compression. The second primitive
 // shares every original attribute accessor and material. Its child node inherits the
@@ -44,7 +69,8 @@ export function partitionStarshipInteriors(doc) {
     const original=indices.getArray(), labels=new Uint8Array(triangles);
     const partitions=[[],...groups.map(()=>[])];
     for (const [i,group] of groups.entries()) {
-      for (const [start,end] of group.ranges) labels.fill(i+1,start,end);
+      if(group.seams)markBetweenSeams(primitive,original,labels,i+1,group.seams);
+      else for (const [start,end] of group.ranges) labels.fill(i+1,start,end);
     }
     for (let face=0;face<triangles;face++) {
       partitions[labels[face]].push(original[face*3],original[face*3+1],original[face*3+2]);

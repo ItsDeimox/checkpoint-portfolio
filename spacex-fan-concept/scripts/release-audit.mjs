@@ -6,7 +6,9 @@ const root=path.resolve('dist'),manifest=JSON.parse(await fs.readFile(path.join(
 const inventory=[];for(const [key,file]of Object.entries(manifest.files)){
  const family=key==='studio'?'studio':key.replace(/-(high|eco)$/,''),bytes=await fs.readFile(path.join(root,file.url));validateAsset(file,bytes,manifest.authors[family]);
  if(file.triangles>assetBudget(file).triangles)throw Error(`Triangle review budget exceeded: ${key}`);
- const sourceReview=key==='studio'?null:reviewSource(readSourceJSON(bytes),manifest.authors[family]);
+ const json=key==='studio'?null:readSourceJSON(bytes);
+ const sourceReview=json?reviewSource(json,manifest.authors[family]):null;
+ if(family==='falconheavy')sourceReview.centerCore=reviewSource({asset:{version:json.asset.version,extras:json.extras?.centerCoreSource}},manifest.authors.heavycore);
  inventory.push({id:key,sourceReview,...file,author:manifest.authors[family].author,license:manifest.authors[family].license,source:manifest.authors[family].source});
 }
 const files=await fs.readdir(path.join(root,'assets'));let jsRaw=0,jsGzip=0;for(const file of files.filter(f=>f.endsWith('.js'))){const b=await fs.readFile(path.join(root,'assets',file));jsRaw+=b.length;jsGzip+=gzipSync(b).length;}

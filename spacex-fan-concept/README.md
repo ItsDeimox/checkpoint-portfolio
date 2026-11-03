@@ -19,13 +19,14 @@ The build fetches pinned, SHA-256-verified source files, optimizes copies and se
 
 Falcon 9, the complete Falcon Heavy, Starship Block 3 and the Dragon 2 capsule use preauthored licensed files. Falcon 1 remains in the historical catalog but is unavailable until a suitable reusable asset is verified. No spacecraft generator, synthetic fallback or invented internal assembly is used.
 
-Select a module to isolate its supplied geometry; drag to rotate and click outside or press Escape to return. INTERNAL STRUCTURE reveals the Falcon fairing wall and payload adapter, Falcon 9 engine and interstage hardware, and the Block 3 artist model’s tank domes, transfer tubes, cargo rack and Raptor bank. The Heavy uses the Falcon model’s common standard fairing and second-stage hardware. Outer meshes fade before the camera recenters on the original internal assembly. This is partial artist-model coverage, not certified manufacturer CAD; the first-stage tank partitions of Falcon 9 and Heavy remain unavailable. Single-mesh regions use existing triangles only, without fabricated caps or surfaces.
+Select a module to isolate its geometry. **Tanks** opens a tank section on the first click or tap. Select **Assembled** to close it. Falcon 9 exposes the barrel and structural end decks. Falcon Heavy shows Giroo’s center barrel and the side booster bodies from Antonio_Adams’ model. Its standard fairing and second-stage hardware use the shared Falcon reference. On Starship, the hot-staging collar and cage are selectable separately from the booster grid fins. The artist models omit the Falcon first-stage propellant divider and transfer pipe. Coverage and direct links are in [the interior inventory](docs/2026-11-03-interior-coverage.md).
 
 The studio retains HDR reflections, restrained bloom, floor reflection, Fresnel hover and adaptive low/medium/high budgets. Rendering pauses while idle. Import preserves original PBR maps, material groups, UV channels, normals and tangents. Mobile variants reduce geometry and texture size; detailed assets load only when needed. Failed requests show retry rather than replacement geometry.
 
 ## Sources and licenses
 
 - Falcon 9, Stanley Creative, CC BY 4.0: https://sketchfab.com/3d-models/falcon-9-spacex-394f7cf52d124bbd9db69f24d1ff2f08
+- Falcon Heavy center-core inspection mesh by Giroo, CC BY 4.0. https://sketchfab.com/3d-models/falcon-heavy-60030e62373547fa9364171e6095f31e
 - Falcon Heavy (Low Poly), Antonio_Adams, CC BY 4.0: https://sketchfab.com/3d-models/spacex-falcon-heavylow-poly-0dc068a462e34258b3872085a7f592c8
 - Starship Block 3, Clarence365, CC BY 4.0: https://sketchfab.com/3d-models/spacex-starship-block-3-6f6c6f88a3eb4b4d822fdca66733fbb2
 - Dragon 2, KUBAHA, CC BY 4.0: https://sketchfab.com/3d-models/spacex-dragon-2-1b125e30a2cb442288580290536fbe5d
@@ -45,6 +46,6 @@ The current phase adds a vendor-neutral command adapter, keyboard inspection, a 
 
 ## Source detail and individual engines
 
-High quality preserves the pinned sources' vertex attributes and original image files, with lossless Meshopt encoding. Source triangles and winding are conserved; the codec may cyclically rotate face indices. Low and Medium use the lighter geometry and texture budgets. This maximizes the available source detail, not manufacturer accuracy or missing interiors.
+High quality preserves source vertex attributes and uses lossless Meshopt encoding. In the Heavy, the losslessly repacked texture maps are checked pixel for pixel. Source triangles and winding are conserved; the codec may cyclically rotate face indices. Low and Medium use the lighter geometry and texture budgets. This maximizes the available source detail, not manufacturer accuracy or missing interiors.
 
 Select Falcon 9 or Falcon Heavy engines, then **FULL ENGINE**, to inspect a separate authored Merlin 1D. Falcon 9's interstage also offers a separate Merlin Vacuum model. These files are by MartianDays, CC BY 4.0, pinned through the public Objaverse mirror with original source metadata. They show their supplied upper assembly/nozzle; hidden combustion and turbine internals are not modeled. ASSEMBLED returns to the original rocket component. No new fleet vehicle passed the fidelity/internal-coverage review in this update.

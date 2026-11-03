@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {heavyCorePart} from './heavy-regions.js';
 import {usesSharedFalconHardware} from './source-assemblies.js';
 import {createInspection,inspectionCamera} from './inspection.js';
 import {CarouselMotion,createFade,componentPose,rotateInView,depthRange,clamp,smooth} from './viewer-motion.js';
@@ -14,7 +15,6 @@ import {Reflector} from 'three/addons/objects/Reflector.js';
 import {vehicles,getPart} from './data.js';
 import {engineFor} from './engine-details.js';
 import {loadEngineDetail} from './engine-library.js';
-import {authoredRegion} from './source-geometry.js';
 import {fitView,getQuality,ease} from './state.js';
 
 const floorShader={
@@ -198,8 +198,10 @@ export class RocketViewer {
     if(previous){this.retiring.push({view:previous,from:previous.fade.value,elapsed:0});if(this.retiring.length>2)this.retiring.shift().view.dispose();}
     if(!key)return null;
     const model=this.inspectionModel();if(!model||model.source!=='licensed')return null;
-    model.payload('fairing');if(!model.group.children.some(o=>(o.userData.inspectionParts??[o.userData.part]).includes(state.part)))return null;
-    const view=createInspection(model,state.index,state.part,state.payload,usesSharedFalconHardware(state)?this.models[1]:null);this.inspection=view;this.inspectionKey=key;this.scene.add(view.group);
+    const shared=usesSharedFalconHardware(state)?this.models[1]:null;
+    if(usesSharedFalconHardware(state)&&shared?.source!=='licensed')return null;
+    const sourceModel=shared||model;sourceModel.payload('fairing');if(!sourceModel.group.children.some(o=>(o.userData.inspectionParts??[o.userData.part]).includes(state.part)))return null;
+    const view=createInspection(model,state.index,state.part,state.payload,shared);this.inspection=view;this.inspectionKey=key;this.scene.add(view.group);
     const initial=state.payload==='fairing'&&!previous&&this.contextAlpha>.85;
     if(initial){model.group.updateMatrixWorld(true);view.group.position.copy(view.sourceCenter).applyMatrix4(model.group.matrixWorld);model.group.getWorldQuaternion(view.group.quaternion);model.group.getWorldScale(view.group.scale);}
     else {view.group.position.set(0,view.radius+.08,0);view.group.quaternion.copy(previous?.group.quaternion??componentPose(state.payload==='engine'?'fairing':state.part,view?.coverage));view.fade.set(0);}
@@ -245,7 +247,7 @@ export class RocketViewer {
     if(!state.part){this.restoreSources();for(const m of this.models)m.payload('fairing');}
     const view=this.syncInspection(state,force),desired=this.desiredCamera(state),duration=instant||this.reduced.matches?0:force?420:950;
     if(state.part||wasPart){
-      this.animation={start:performance.now(),elapsed:0,duration,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),fromContext:this.contextAlpha,toContext:state.part?0:1,view,fromPose:view?.group.position.clone(),fromScale:view?.group.scale.clone(),fromQuat:view?.group.quaternion.clone(),fromFade:view?.fade.value??0,toQuat:retainedOrientation??componentPose(state.payload==='engine'?'fairing':state.part,view?.coverage),fromLight:this.stageScale,toLight:view?Math.max(view.radius*3,.3)/14:vehicles[state.index].height/14};
+      this.animation={start:performance.now(),elapsed:0,duration,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),fromContext:this.contextAlpha,toContext:view?0:1,view,fromPose:view?.group.position.clone(),fromScale:view?.group.scale.clone(),fromQuat:view?.group.quaternion.clone(),fromFade:view?.fade.value??0,toQuat:retainedOrientation??componentPose(state.payload==='engine'?'fairing':state.part,view?.coverage),fromLight:this.stageScale,toLight:view?Math.max(view.radius*3,.3)/14:vehicles[state.index].height/14};
     }else {this.animation=null;this.contextAlpha=1;}
     if(instant||this.reduced.matches){this.updateAnimation(performance.now());for(const x of this.retiring)x.view.dispose();this.retiring.length=0;}
     this.loadLicensed(state.index);this.wake();
@@ -260,7 +262,7 @@ export class RocketViewer {
       m.fade.set(m.source==='licensed'?this.contextAlpha*edge*budget:0);
     }
     const copy=1-.75*smooth(Math.abs(p-this.state.index));if(Math.abs(copy-this.lastCopyOpacity)>.003||this.lastCopyOpacity===undefined){this.lastCopyOpacity=copy;this.canvas.parentElement?.style.setProperty('--carousel-copy-opacity',copy.toFixed(3));}
-    if(!this.animation&&!this.state.part){this.camera.position.set(...overview.position);this.target.set(...overview.target);this.updateStudio(h/14);}
+    if(!this.animation&&!this.inspection){this.camera.position.set(...overview.position);this.target.set(...overview.target);this.updateStudio(h/14);}
   }
   updateStudio(h){
     if(!this.haze||Math.abs(h-this.lastLightScale)<.00001)return;this.lastLightScale=h;this.stageScale=h;
@@ -297,15 +299,19 @@ export class RocketViewer {
       if(Math.abs(i-this.state.index)>1||!this.models[i].group.visible)continue;
       const model=this.models[i];if(model.sphere&&!this.raycaster.ray.intersectsSphere(this.scratchSphere.copy(model.sphere).applyMatrix4(model.group.matrixWorld)))continue;
       const hit=picker.pick(this.raycaster,model.group,true);
-      if(hit&&(!best||hit.distance<best.distance)){const part=hit.object.userData.assemblyContext?authoredRegion(model.group.worldToLocal(hit.point.clone()).y/vehicles[i].height):hit.object.userData.part;best={...hit,index:i,part};}
+      if(hit&&(!best||hit.distance<best.distance)){const data=hit.object.userData,side=data.role==='booster-shell';
+        const part=data.assemblyContext||side?heavyCorePart(model.group.worldToLocal(hit.point.clone()).y/vehicles[i].height,side):data.part;best={...hit,index:i,part};}
     }
     return best;
   }
   setHover(hit){
     const part=hit?.index===this.state.index&&!this.state.part?hit.part:null;
+    // Anchor the marker to the viewport ray that selected the surface.
+    if(part)this.onHover?.(part,{x:(this.pointer.x+1)*this.width/2,y:(1-this.pointer.y)*this.height/2});
     if(this.hover===part)return;
     this.hover=part;this.canvas.style.cursor=part?'pointer':'grab';
-    this.onHover?.(part);this.wake();
+    if(!part)this.onHover?.(null);
+    this.wake();
   }
   projectPart(part){
     const f=getPart(vehicles[this.state.index],part,this.state.payload).focus;
@@ -330,7 +336,6 @@ export class RocketViewer {
     this.renderer.info.reset();this.pipeline.render();this.frames++;
     if(this.qualityMode==='auto'&&active&&!this.animation){const next=this.frameBudget.sample(rawDelta,this.quality.tier,time);if(next){this.autoCap=next;this.applyQuality('auto',false);}}
     this.lastStats={quality:this.quality.tier,bloom:Boolean(this.pipeline.composer),bloomResolution:this.pipeline.bloom?[this.pipeline.bloom.renderTargetBright.width,this.pipeline.bloom.renderTargetBright.height]:null,inspection:this.inspectionKey,cutaway:this.cutaway,internalProgress:this.inspection?.fade.progress??0,frames:this.frames,triangles:this.renderer.info.render.triangles,drawCalls:this.renderer.info.render.calls,dpr:this.renderer.getPixelRatio(),geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,assets:{...this.assetStates},studio:this.studioSource,carousel:this.carousel.position,contextAlpha:this.contextAlpha,near:this.camera.near,far:this.camera.far,clearance:this.clearance,transition:Boolean(this.animation),retiring:this.retiring.length,zoom:this.zoom};
-    if(this.hover)this.onHover?.(this.hover,this.projectPart(this.hover));
     if(active)this.wake();else this.lastTime=0;
   }
   dispose(){

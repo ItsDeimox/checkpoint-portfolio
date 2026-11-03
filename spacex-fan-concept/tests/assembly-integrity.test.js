@@ -1,7 +1,14 @@
 import test from 'node:test';import assert from 'node:assert/strict';import * as T from 'three';import {mergeGeometries}from'three/addons/utils/BufferGeometryUtils.js';
 import{partitionAuthoredRegions}from'../src/source-geometry.js';import{createInspection}from'../src/inspection.js';
 const closedBody=()=>new T.BoxGeometry(1,13.7,1).translate(0,7.1,0).toNonIndexed();
-test('a connected closed body must never be torn into centroid height bands',()=>{const g=closedBody(),parts=partitionAuthoredRegions(g,14);assert.equal(parts.length,1);assert.equal(parts[0].geometry.attributes.position.count,g.attributes.position.count);assert.deepEqual(parts[0].inspectionParts,['tanks','interstage','fairing']);assert.equal(parts[0].assemblyContext,true);});
+test('a connected closed body must never be torn into centroid height bands',()=>{const g=closedBody(),parts=partitionAuthoredRegions(g,14);assert.equal(parts.length,1);assert.equal(parts[0].geometry.attributes.position.count,g.attributes.position.count);assert.deepEqual(parts[0].inspectionParts,[]);assert.equal(parts[0].assemblyContext,true);});
 test('UV seams cannot make a watertight source body fall apart',()=>{const g=closedBody(),a=g.attributes.uv;for(let i=0;i<a.count;i++)a.setXY(i,i*.1,i*.2);const parts=partitionAuthoredRegions(g,14);assert.equal(parts.length,1);assert.deepEqual([...parts[0].geometry.attributes.uv.array],[...a.array]);});
 test('separate engine hardware stays independently selectable without adding any triangles',()=>{const body=closedBody(),engine=new T.BoxGeometry(.3,.2,.3).translate(0,.1,0).toNonIndexed(),g=mergeGeometries([body,engine]);const parts=partitionAuthoredRegions(g,14);assert.equal(parts.length,2);assert.ok(parts.some(p=>p.part==='engines'&&!p.assemblyContext));assert.equal(parts.reduce((n,p)=>n+p.geometry.attributes.position.count,0),g.attributes.position.count);});
-test('interstage inspection retains its complete connected context instead of a ribbon subset',()=>{const group=new T.Group(),body=new T.Mesh(closedBody(),new T.MeshStandardMaterial());body.userData={part:'tanks',inspectionParts:['tanks','interstage','fairing'],assemblyContext:true};group.add(body);const v=createInspection({group,family:'heavy'},2,'interstage');assert.equal(v.exterior.children.length,1);assert.equal(v.exterior.children[0].geometry,body.geometry);assert.equal(v.contextual,true);assert.equal(v.supportsInterior,false);v.dispose();});
+test('the unsegmented Heavy center shell is overview-only and cannot masquerade as a selected stage',()=>{
+ const group=new T.Group(),[surface]=partitionAuthoredRegions(closedBody(),14);
+ const body=new T.Mesh(surface.geometry,new T.MeshStandardMaterial());
+ body.userData={part:surface.part,inspectionParts:surface.inspectionParts,assemblyContext:surface.assemblyContext};
+ group.add(body);
+ for(const part of ['interstage','fairing','tanks'])
+  assert.throws(()=>createInspection({group,family:'heavy'},2,part),/No authored geometry/);
+});

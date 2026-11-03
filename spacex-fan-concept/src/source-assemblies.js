@@ -3,6 +3,7 @@ const clean=s=>String(s??'').replace(/[_.]/g,' ').replace(/\s+/g,' ').trim().toL
 export function assemblyFeature(family,name,material,y){
  const n=clean(name),m=clean(material);
  if(family==='falcon'){
+  if(/^first stage f9 octaweb black 0\b/.test(n))return 'first-stage-thrust-deck';
   if(/^fairing 2 f9 fairing 0\b/.test(n))return 'fairing-inner-wall';
   if(/^fairing 2 detail f9 fairing 0\b/.test(n))return 'fairing-fittings';
   if(/^second stage f9 black 0\b/.test(n))return 'adapter-collar';
@@ -27,13 +28,15 @@ export function usesSharedFalconHardware(state){
 }
 const falconSource={author:'Stanley Creative',url:'https://sketchfab.com/3d-models/falcon-9-spacex-394f7cf52d124bbd9db69f24d1ff2f08'};
 const catalog={
+ 'falcon:tanks':{...falconSource,required:['first-stage-barrel-section','first-stage-open-panel','first-stage-forward-deck','first-stage-thrust-deck'],features:['first-stage-barrel-section','first-stage-open-panel','first-stage-forward-deck','first-stage-thrust-deck'],label:'FIRST-STAGE BARREL',summary:'An exploded longitudinal section separates the barrel panels to expose the interstage base and the thrust deck. The common propellant dome and transfer tube are absent from this model.'},
+ 'heavy:tanks':{required:['heavy-core-cover','heavy-core-shell','heavy-core-ends'],features:['heavy-core-cover','heavy-core-shell','heavy-core-ends'],label:'CENTER CORE SECTION',summary:'The front half moves aside to expose the center barrel and its two structural end decks. The first-stage common bulkhead and feed tube are not present in this model.',author:'Giroo',url:'https://sketchfab.com/3d-models/falcon-heavy-60030e62373547fa9364171e6095f31e'},
  'heavy:fairing':{...falconSource,required:['fairing-inner-wall','payload-adapter'],features:['fairing-inner-wall','fairing-fittings','payload-adapter','adapter-collar'],label:'STANDARD FAIRING',summary:'Shared Falcon standard fairing. One half is open to reveal the inner wall, fittings and payload adapter from Stanley Creative’s Falcon 9 model.'},
  'heavy:interstage':{...falconSource,required:['upper-stage-aft-dome','vacuum-engine'],features:['upper-stage-aft-dome','vacuum-engine'],label:'SECOND STAGE',summary:'The Heavy uses the Falcon 9 second stage. This view shows its aft tank dome and vacuum engine from Stanley Creative’s model.'},
  'falcon:fairing':{required:['fairing-inner-wall','payload-adapter'],features:['fairing-inner-wall','fairing-fittings','payload-adapter','adapter-collar'],label:'OPEN FAIRING',summary:'One fairing half opens the view onto the modeled inner wall, attachment fittings and upper-stage payload adapter. The payload bay is empty.',author:'Stanley Creative',url:'https://sketchfab.com/3d-models/falcon-9-spacex-394f7cf52d124bbd9db69f24d1ff2f08'},
  'falcon:interstage':{required:['separation-pusher','vacuum-engine'],features:['separation-pusher','separation-attachments','vacuum-engine','upper-stage-aft-dome'],label:'INTERSTAGE HARDWARE',summary:'The vacuum engine sits under the second-stage aft tank dome, beside the separation pusher and attachments.',author:'Stanley Creative',url:'https://sketchfab.com/3d-models/falcon-9-spacex-394f7cf52d124bbd9db69f24d1ff2f08'},
  'falcon:engines':{required:['merlin-assemblies','octaweb'],features:['merlin-assemblies','octaweb'],label:'ENGINE ASSEMBLY',summary:'Original-model Merlin assemblies and Octaweb structure. No invented plumbing or combustion-chamber cutaway.',author:'Stanley Creative',url:'https://sketchfab.com/3d-models/falcon-9-spacex-394f7cf52d124bbd9db69f24d1ff2f08'},
  'starship:tanks':{required:['booster-forward-dome','booster-dome-downcomer'],features:['booster-forward-dome','booster-dome-downcomer'],label:'BOOSTER TANK HARDWARE',summary:'Forward and common domes, inner wall rings and central transfer tube from the Block 3 model.',author:'Clarence365',url:'https://sketchfab.com/3d-models/spacex-starship-block-3-6f6c6f88a3eb4b4d822fdca66733fbb2'},
- 'starship:interstage':{required:['hotstage-frame','booster-forward-dome'],features:['booster-forward-dome','hotstage-frame','hotstage-attachments'],label:'HOT-STAGING HARDWARE',summary:'The vent posts, top ring and attachments surround the booster forward dome in the Block 3 artist model.',author:'Clarence365',url:'https://sketchfab.com/3d-models/spacex-starship-block-3-6f6c6f88a3eb4b4d822fdca66733fbb2'},
+ 'starship:interstage':{required:['hotstage-frame','hotstage-base-sleeve','booster-forward-dome'],features:['booster-forward-dome','hotstage-base-sleeve','hotstage-attachments','hotstage-collar-inserts'],label:'HOT-STAGING HARDWARE',summary:'The vent frame sits on the booster’s upper collar. Open it to inspect the forward dome and its surrounding attachment hardware.',author:'Clarence365',url:'https://sketchfab.com/3d-models/spacex-starship-block-3-6f6c6f88a3eb4b4d822fdca66733fbb2'},
  'starship:engines':{required:['booster-raptors'],features:['booster-raptors'],label:'RAPTOR ENGINE BAY',summary:'The source model’s Raptor bank with its outer heat shield removed. Internal engine passages are not supplied.',author:'Clarence365',url:'https://sketchfab.com/3d-models/spacex-starship-block-3-6f6c6f88a3eb4b4d822fdca66733fbb2'},
  'starship:fairing':{required:['cargo-rack','ship-tank-hardware'],features:['cargo-rack','ship-tank-hardware'],label:'UPPER-STAGE STRUCTURE',summary:'The original upper-stage assembly includes the payload rack, tank domes, inner wall rings and central transfer tube.',author:'Clarence365',url:'https://sketchfab.com/3d-models/spacex-starship-block-3-6f6c6f88a3eb4b4d822fdca66733fbb2'}
 };
@@ -47,7 +50,7 @@ export function createAssemblyFade(group,internalMeshes){
  let alpha=1,progress=0,target=0;
  function apply(){
   group.visible=alpha>.0001;
-  for(const r of records){const fade=Math.min(1,progress*2),cover=1-fade*fade*(3-2*fade);const factor=alpha*(r.mesh.userData.sharedHardware?1-cover:r.inside?1:cover),partial=factor>.0001&&factor<.9999;
+  for(const r of records){const fade=Math.min(1,progress*2),cover=1-fade*fade*(3-2*fade);const factor=alpha*(r.inside?1:cover),partial=factor>.0001&&factor<.9999;
    if(partial!==r.partial){r.m.transparent=partial?true:r.transparent;r.m.depthWrite=partial?false:r.depthWrite;r.m.forceSinglePass=partial?true:r.forceSinglePass;r.m.needsUpdate=true;r.partial=partial;}
    r.m.opacity=r.opacity*factor;r.mesh.visible=factor>.0001;
   }

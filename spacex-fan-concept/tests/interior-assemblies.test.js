@@ -18,21 +18,24 @@ test('inner focus recenters actual hardware rather than leaving it tiny at the t
  const v=createInspection({group,family:'starship'},3,'fairing'),originalRadius=v.radius;v.setCutaway(true);v.step(1,true);assert.ok(v.radius<originalRadius*.5);v.group.updateMatrixWorld(true);const b=new T.Box3().setFromObject([...v.internalMeshes][0]);assert.ok(Math.abs(b.getCenter(new T.Vector3()).y)<1e-5);v.setCutaway(false);v.step(1,true);assert.equal(v.radius,originalRadius);v.dispose();
 });
 
-test('Heavy reveals only common upper-stage hardware and restores its own authored shell',()=>{
+test('Heavy assembles only the common bounded stage section and uncovers its hardware',()=>{
  const asset=family=>({group:new T.Group(),family});
- const add=(model,feature)=>{const mesh=new T.Mesh(new T.BoxGeometry(),new T.MeshStandardMaterial());mesh.userData={part:'interstage',assemblyFeature:feature};model.group.add(mesh);return mesh;};
+ const add=(model,feature,stage,sourceNames=[])=>{
+  const mesh=new T.Mesh(new T.BoxGeometry(),new T.MeshStandardMaterial());
+  mesh.userData={part:'interstage',assemblyFeature:feature,stage,sourceNames};
+  model.group.add(mesh);return mesh;
+ };
  const heavy=asset('heavy'),falcon=asset('falcon');
- const shell=add(heavy,null),dome=add(falcon,'upper-stage-aft-dome');
- add(falcon,'vacuum-engine');add(falcon,'separation-pusher');
+ const fullCore=add(heavy,null,'booster'),dome=add(falcon,'upper-stage-aft-dome','upper');
+ const cover=add(falcon,null,'booster',['Interstage_F9_Black_0 Interstage']);
+ add(falcon,'vacuum-engine','upper');
  const view=createInspection(heavy,2,'interstage','fairing',falcon);
  assert.equal(view.internalMeshes.size,2);
- assert.ok([...view.internalMeshes].every(m=>!m.visible));
+ assert.ok(view.exterior.children.every(m=>m.geometry!==fullCore.geometry));
  assert.ok([...view.internalMeshes].some(m=>m.geometry===dome.geometry));
  view.setCutaway(true);view.step(1,true);
- assert.ok([...view.internalMeshes].every(m=>m.visible));
- assert.equal(view.exterior.children.find(m=>m.geometry===shell.geometry).visible,false);
+ assert.equal(view.exterior.children.find(m=>m.geometry===cover.geometry).visible,false);
  view.setCutaway(false);view.step(1,true);
- assert.ok([...view.internalMeshes].every(m=>!m.visible));
- assert.equal(dome.visible,true);
- view.dispose();
+ assert.equal(view.exterior.children.find(m=>m.geometry===cover.geometry).visible,true);
+ assert.equal(dome.visible,true);view.dispose();
 });
