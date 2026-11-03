@@ -1,0 +1,90 @@
+name: SpaceX visual and geometry QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'spacex-fan-concept/**'
+      - '.github/workflows/spacex-qa.yml'
+  pull_request:
+    paths:
+      - 'spacex-fan-concept/**'
+      - '.github/workflows/spacex-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spacex-visual-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: spacex-fan-concept
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: spacex-fan-concept/package-lock.json
+      - name: Install verified dependencies
+        run: npm ci
+      - name: Build pinned models and verify release
+        run: npm run build
+      - name: Run SpaceX module and geometry tests
+        run: npm test
+      - name: Install separate browser QA dependencies
+        run: npm --prefix scripts/qa install --no-audit --no-fund
+      - name: Start tested 3D preview
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/spacex-preview.log 2>&1 &
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/spacex-preview.log
+          exit 1
+      - name: Capture each section with actual pointer selection (desktop)
+        env:
+          BASE_URL: http://127.0.0.1:4173/
+          SECTION_IMAGES: /tmp/spacex-gallery/desktop
+          TIER: high
+        run: node scripts/qa/section-selection.mjs
+      - name: Capture each section with touch selection (portrait)
+        env:
+          BASE_URL: http://127.0.0.1:4173/
+          SECTION_IMAGES: /tmp/spacex-gallery/mobile
+          SCREEN: touch
+          TIER: low
+        run: node scripts/qa/section-selection.mjs
+      - name: Verify assembled and revealed source interiors
+        env:
+          BASE_URL: http://127.0.0.1:4173/
+        run: node scripts/qa/source-interiors.mjs
+      - name: Verify licensed individual engines
+        env:
+          BASE_URL: http://127.0.0.1:4173/
+        run: node scripts/qa/max-detail.mjs
+      - name: Verify Dragon geometry and portrait rendering
+        env:
+          BASE_URL: http://127.0.0.1:4173/
+        run: node scripts/qa/dragon-source.mjs
+      - name: Keep visual evidence for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spacex-render-review-${{ github.run_number }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            /tmp/spacex-gallery/
+            /tmp/interior-*.png
+            /tmp/maximum-*.png
+            /tmp/dragon-final-*.png
+            /tmp/*-report.json
