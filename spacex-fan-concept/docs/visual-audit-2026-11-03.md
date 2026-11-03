@@ -32,3 +32,11 @@ Captured directly from the production WebGL viewer at 1280×720, assembled and c
 ## Validation boundary
 
 These screenshots are from the live browser, not model-source verification or a benchmark of physical GPU FPS. The goal is a legible honest cutaway; missing physical hardware requires a separately licensed and vetted preauthored 3D model.
+
+## Verified post-change WebGL captures
+
+GitHub Actions [SpaceX visual QA run 41722336920](https://github.com/ItsDeimox/checkpoint-portfolio/actions/runs/41722336920) completed successfully: source-geometry checks, desktop click-and-cutaway captures, portrait touch captures, original interior modes, individual Merlin/Merlin Vacuum and Dragon. Download the [render-gallery ZIP](https://nightly.link/ItsDeimox/checkpoint-portfolio/actions/runs/41722336920/spacex-render-review-2.zip) to compare the actual rendered images.
+
+The reviewed **new-build** Falcon 9 and Heavy tank screenshots show one intact rear half-shell and its end decks, rather than a second floating tube. The shared Falcon interstage now visibly holds the vacuum engine against the original rear sleeve. The Starship engine bank, upper stage, sparse tank domes, and hot-staging frame all render, but **are not approved as complete spacecraft internals**. The standalone Merlin and Merlin Vacuum renders show only the artist-authored motors. Dragon's source-authored docking assembly is clear at desktop and portrait, with the cabin still absent. A further portrait-specific CSS correction prevents the information panel from overlapping the module tabs.
+
+**Publication:** Vercel's project is at its daily free build quota (HTTP 402, `api-deployments-free-per-day`). Consequently the public domain may still show the previous build and screenshots before these corrections. The GitHub commit and CI artifact verify the unpromoted new code and renders, not a successful production deploy.

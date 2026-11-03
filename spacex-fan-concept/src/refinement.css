@@ -47,3 +47,16 @@
  .is-detail .inspection-controls{margin:15px 0 10px}
  .is-detail .specs{gap:16px}
 }
+
+/* Portrait component inspection: the scrollable metadata panel must end well
+   above the part tabs. Mobile reflections must not obscure text or controls. */
+@media (max-width:759px){
+  .is-detail .detail-copy{
+    bottom:max(127px, calc(env(safe-area-inset-bottom) + 127px));
+    max-height:none;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-width:thin;
+    background:linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.87));
+  }
+}
