@@ -46,15 +46,9 @@ export function createInspection(model,index,part,payload='fairing',sharedFalcon
  const sphere=bounds.getBoundingSphere(new T.Sphere()),features=new Set(exterior.children.map(m=>m.userData.assemblyFeature).filter(Boolean));
  const coverage=assemblyCoverage(model.family,part,features),internalMeshes=new Set(exterior.children.filter(m=>coverage.features.includes(m.userData.assemblyFeature)));
  const fade=createAssemblyFade(group,internalMeshes),fullBounds=bounds.clone(),innerBounds=new T.Box3();
- // Slide and turn the front longitudinal section around its authored barrel axis.
- // Sample its final pose once for camera fitting, then restore the assembled pose.
- const panel=[...internalMeshes].find(m=>['first-stage-open-panel','heavy-core-cover'].includes(m.userData.assemblyFeature));
- const endDecks=panel?[...internalMeshes].filter(m=>['first-stage-forward-deck','first-stage-thrust-deck'].includes(m.userData.assemblyFeature)).map(mesh=>({
-  mesh,y:mesh.position.y,direction:mesh.userData.assemblyFeature==='first-stage-forward-deck'?1:-1
- })):[];
- const panelX=panel?.position.x, panelYaw=panel?.rotation.y;
- const panelTravel=panel?(panel.geometry.boundingBox.max.x-panel.geometry.boundingBox.min.x)*1.35:0;
- // Lift the authored cage clear of its mounting sleeve; keep both in view.
+ // In the Falcon tank cutaway the original front shell is hidden rather than
+ // displaced as a detached tube. No missing bulkhead/plumbing is synthesized.
+ // Lift only the artist-authored Starship cage clear of its mounting sleeve.
  const frames=[...internalMeshes].filter(m=>m.userData.assemblyFeature==='hotstage-frame')
   .map(mesh=>({mesh,y:mesh.position.y}));
  const frameLift=frames.length?(fullBounds.max.y-fullBounds.min.y)*1.05:0;
@@ -63,14 +57,7 @@ export function createInspection(model,index,part,payload='fairing',sharedFalcon
    mesh.position.y=y+frameLift*t;
    mesh.updateMatrixWorld(true);
   }
-  if(!panel)return;
-  panel.position.x=panelX+panelTravel*t;
-  panel.rotation.y=panelYaw+.97*t;
-  panel.updateMatrixWorld(true);
-  for(const deck of endDecks){
-   deck.mesh.position.y=deck.y+deck.direction*panelTravel*.34*t;
-   deck.mesh.updateMatrixWorld(true);
-  }
+  // Tank covers are handled by the fade; original end decks stay registered.
  }
  poseSection(1);
  for(const mesh of internalMeshes)innerBounds.union(new T.Box3().setFromObject(mesh));

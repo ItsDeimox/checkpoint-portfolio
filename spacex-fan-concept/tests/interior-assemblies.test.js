@@ -43,6 +43,27 @@ test('Heavy assembles only the common bounded stage section and uncovers its har
  assert.equal(dome.visible,true);view.dispose();
 });
 
+test('Falcon tank cutaway hides the detached-looking front skin and keeps the original rear wall',()=>{
+ const group=new T.Group(),ids=['first-stage-open-panel','first-stage-barrel-section','first-stage-forward-deck','first-stage-thrust-deck'];
+ for(const [i,id] of ids.entries()){
+  const mesh=new T.Mesh(new T.BoxGeometry(1,2,1),new T.MeshStandardMaterial());
+  mesh.position.x=i%2;mesh.userData={part:'tanks',assemblyFeature:id};group.add(mesh);
+ }
+ const view=createInspection({group,family:'falcon'},1,'tanks');
+ assert.equal(view.supportsInterior,true);view.setCutaway(true);view.step(1,true);
+ const front=view.exterior.children.find(m=>m.userData.assemblyFeature==='first-stage-open-panel');
+ const back=view.exterior.children.find(m=>m.userData.assemblyFeature==='first-stage-barrel-section');
+ assert.equal(front.visible,false);assert.equal(back.visible,true);
+ view.setCutaway(false);view.step(1,true);assert.equal(front.visible,true);view.dispose();
+});
+test('Falcon interstage retains its authored rear shell in the internal view',async()=>{
+ const {assemblyCoverage}=await import('../src/source-assemblies.js');
+ for(const family of ['falcon','heavy']){
+  const hardware=new Set(['interstage-rear-shell','vacuum-engine','separation-pusher','upper-stage-aft-dome']);
+  const coverage=assemblyCoverage(family,'interstage',hardware);
+  assert.equal(coverage.supported,true);assert.ok(coverage.features.includes('interstage-rear-shell'));
+ }
+});
 test('opening a shell progresses by elapsed time even when no intermediate frame paints',async()=>{
  const {createAssemblyFade}=await import('../src/source-assemblies.js');
  const fade=createAssemblyFade(new T.Group(),new Set());

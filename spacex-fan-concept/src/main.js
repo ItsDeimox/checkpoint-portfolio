@@ -10,8 +10,10 @@ import {usesSharedFalconHardware} from './source-assemblies.js';
 
 const $=id=>document.getElementById(id),query=new URLSearchParams(location.search);
 const cabinLink=query.get('reference')==='crew-dragon-cabin',insideLink=query.get('inside');
-let state=cabinLink?reduce(initialState(),{type:'DRAGON'}):initialState(insideLink??query.get('section')),viewer,product,ready=false;
-let pendingInterior=!cabinLink&&Boolean(insideLink&&state.part);
+const dragonLink=query.get('capsule')==='dragon',engineLink=query.get('engine');
+let state=(cabinLink||dragonLink)?reduce(initialState(),{type:'DRAGON'}):initialState(engineLink??insideLink??query.get('section')),viewer,product,ready=false;
+if(engineLink&&state.part&&!cabinLink)state=reduce(state,{type:'ENGINE_DETAIL',enabled:true});
+let pendingInterior=!cabinLink&&!engineLink&&Boolean(insideLink&&state.part);
 const dialogs=['search-dialog','menu-dialog','about-dialog','cabin-dialog'].map($);
 const format=(node,text)=>{node.replaceChildren(...text.split('\n').flatMap((line,i)=>i?[document.createElement('br'),document.createTextNode(line)]:[document.createTextNode(line)]));};
 const action=(event)=>{

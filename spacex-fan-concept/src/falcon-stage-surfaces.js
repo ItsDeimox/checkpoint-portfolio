@@ -30,26 +30,26 @@ export function falconStageSurfaces(name, baked, assetHash) {
     const membership = new Uint8Array(cornerCount / 3);
     const centerZ = (box.min.z + box.max.z) / 2;
     const centerX = (box.min.x + box.max.x) / 2;
-    // Both rows of faces across the lower interstage deck sit in the first
-    // 1.6% of its height. The long side-wall triangles extend far above it.
+    // Classify only whole source triangles. The interstage is split into a
+    // rear half-shell, a removable front cover and the source's forward deck.
+    // Retaining the rear half gives the vacuum engine a real spatial reference.
     const deckTop = box.min.y + (box.max.y - box.min.y) * .02;
     for (let face = 0; face < membership.length; face++) {
       const i = face * 3;
-      if (barrel) {
-        // Retain the rear half of the original circumferential panels. Whole
-        // triangles follow the authored axial seams; no cut caps are created.
-        const x = (position.getX(vertex(i)) + position.getX(vertex(i+1)) + position.getX(vertex(i+2))) / 3 - centerX;
-        const z = (position.getZ(vertex(i)) + position.getZ(vertex(i+1)) + position.getZ(vertex(i+2))) / 3 - centerZ;
-        membership[face] = z + x * .2 <= 0 ? 1 : 0;
-      } else {
-        membership[face] = Math.max(position.getY(vertex(i)), position.getY(vertex(i+1)), position.getY(vertex(i+2))) <= deckTop ? 1 : 0;
-      }
+      const x = (position.getX(vertex(i)) + position.getX(vertex(i+1)) + position.getX(vertex(i+2))) / 3 - centerX;
+      const z = (position.getZ(vertex(i)) + position.getZ(vertex(i+1)) + position.getZ(vertex(i+2))) / 3 - centerZ;
+      if (barrel) membership[face] = z + x * .2 <= 0 ? 1 : 0;
+      else membership[face] =
+        Math.max(position.getY(vertex(i)), position.getY(vertex(i+1)), position.getY(vertex(i+2))) <= deckTop
+          ? 2 : z + x * .2 <= 0 ? 1 : 0;
     }
-    if (!membership.includes(1) || !membership.includes(0)) return null;
+    if (!membership.includes(1) || !membership.includes(0) || (!barrel&&!membership.includes(2))) return null;
     return partitionFaces(baked, membership, barrel ? [
       {part:'tanks', feature:'first-stage-open-panel'}, {part:'tanks', feature:'first-stage-barrel-section'}
     ] : [
-      {part:'interstage'}, {part:'interstage', feature:'first-stage-forward-deck', inspectionParts:['interstage','tanks']}
+      {part:'interstage',feature:'interstage-front-cover'},
+      {part:'interstage',feature:'interstage-rear-shell'},
+      {part:'interstage',feature:'first-stage-forward-deck', inspectionParts:['interstage','tanks']}
     ]);
   }
   if (!/^Second_Stage_F9_Second_Stage_0\b/.test(name) ||
