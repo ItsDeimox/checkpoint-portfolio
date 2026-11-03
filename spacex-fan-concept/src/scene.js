@@ -205,6 +205,11 @@ export class RocketViewer {
     for(const mesh of view.sourceMeshes){this.hiddenSources.push([mesh,mesh.visible]);mesh.visible=false;}
     return view;
   }
+  resetView(){
+    if(!this.state.part)return;
+    this.cancelGesture?.();this.zoom=this.zoomTarget=1;this.rotationDelta.set(0,0);
+    this.applyState(this.state,false,true,true);
+  }
   setZoom(value){this.zoomTarget=clamp(value,.7,1.8);this.wake();}
   applyQuality(mode=this.qualityMode,reset=true){
     if(reset&&mode!==this.qualityMode){this.autoCap=null;this.frameBudget.reset();}
@@ -227,9 +232,10 @@ export class RocketViewer {
     if(state.part&&this.inspection)return inspectionCamera(this.inspection.bounds,this.width,this.height,this.zoom);
     return this.overviewCamera(state.index);
   }
-  applyState(state,instant=false,force=false){
+  applyState(state,instant=false,force=false,resetPose=false){
     if(!this.floor||!this.models.length)return;
     const same=this.state?.index===state.index&&this.state?.part===state.part&&this.state?.payload===state.payload,wasPart=this.inspection||this.retiring.length;
+    const retainedOrientation=same&&!resetPose?this.inspection?.group.quaternion.clone():null;
     this.state=state;this.setHover(null);this.pendingPointer=null;
     if(same&&!instant&&!force){this.wake();return;}
     if(!same){this.zoom=this.zoomTarget=1;this.rotationDelta.set(0,0);}
@@ -237,7 +243,7 @@ export class RocketViewer {
     if(!state.part){this.restoreSources();for(const m of this.models)m.payload('fairing');}
     const view=this.syncInspection(state,force),desired=this.desiredCamera(state),duration=instant||this.reduced.matches?0:force?420:950;
     if(state.part||wasPart){
-      this.animation={start:performance.now(),elapsed:0,duration,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),fromContext:this.contextAlpha,toContext:state.part?0:1,view,fromPose:view?.group.position.clone(),fromScale:view?.group.scale.clone(),fromQuat:view?.group.quaternion.clone(),fromFade:view?.fade.value??0,toQuat:componentPose(state.payload==='engine'?'fairing':state.part),fromLight:this.stageScale,toLight:view?Math.max(view.radius*3,.3)/14:vehicles[state.index].height/14};
+      this.animation={start:performance.now(),elapsed:0,duration,fromPosition:this.camera.position.clone(),fromTarget:this.target.clone(),position:new T.Vector3(...desired.position),target:new T.Vector3(...desired.target),fromContext:this.contextAlpha,toContext:state.part?0:1,view,fromPose:view?.group.position.clone(),fromScale:view?.group.scale.clone(),fromQuat:view?.group.quaternion.clone(),fromFade:view?.fade.value??0,toQuat:retainedOrientation??componentPose(state.payload==='engine'?'fairing':state.part),fromLight:this.stageScale,toLight:view?Math.max(view.radius*3,.3)/14:vehicles[state.index].height/14};
     }else {this.animation=null;this.contextAlpha=1;}
     if(instant||this.reduced.matches){this.updateAnimation(performance.now());for(const x of this.retiring)x.view.dispose();this.retiring.length=0;}
     this.loadLicensed(state.index);this.wake();
@@ -331,4 +337,3 @@ export class RocketViewer {
     for(const mesh of [this.haze,this.wideHaze]){mesh?.geometry.dispose();mesh?.material.dispose();}this.renderer?.dispose();
   }
 }
-

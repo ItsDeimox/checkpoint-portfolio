@@ -52,6 +52,6 @@ export function bindViewerControls(v){
  on(v.canvas,'lostpointercapture',e=>{if(v.drag?.id===e.pointerId)finish(e,true);});
  on(v.canvas,'pointerleave',()=>{if(!v.drag){v.pendingPointer=null;v.setHover(null);}});
  on(v.canvas,'wheel',e=>{if(!v.state.part)return;e.preventDefault();v.setZoom(v.zoomTarget*Math.exp(clamp(e.deltaY*(e.deltaMode===1?16:1),-200,200)*.0015));},{passive:false});
- on(v.canvas,'dblclick',()=>{if(v.state.part)v.applyState(v.state,false,true);});
+ on(v.canvas,'dblclick',()=>v.resetView());
  v.cancelGesture=()=>{if(v.drag)finish({pointerId:v.drag.id},true);points.clear();pinch=0;suppress=false;};
 }

@@ -5,10 +5,13 @@
   "dependencies": {
     "playwright-core": "1.56.1",
     "@sparticuz/chromium": "141.0.0",
-    "axe-core": "4.11.0"
+    "axe-core": "4.11.0",
+    "gltf-validator": "2.0.0-dev.3.10"
   },
   "scripts": {
     "test": "node authored-browser.mjs && node authored-edge.mjs",
-    "commercial": "node commercial.mjs"
+    "commercial": "node commercial.mjs",
+    "assets": "node assets.mjs",
+    "retention": "node view-retention.mjs"
   }
 }

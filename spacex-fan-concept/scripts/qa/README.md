@@ -22,3 +22,7 @@ The host needs Chromium shared libraries (NSS, GBM, ALSA, Pango and X11). Report
 `node scripts/qa/max-detail.mjs` verifies the source-preserving high assets, opt-in Merlin/Merlin Vacuum inspection, all three supported entry points, high/low replacement, portrait framing, original interior mode and runtime errors. It uses the same optional QA dependencies. These checks do not certify hidden internals or real-phone frame rates.
 
 `node scripts/qa/engine-edge.mjs` additionally checks failed-request retry without generated fallback, fast quality changes, idle pause and automated accessibility in an individual engine view.
+
+`BASE_URL=http://localhost:4173/ npm --prefix scripts/qa run retention` checks that source-asset quality replacement and portrait/landscape resizing preserve the inspected orientation, while double-click and keyboard reset restore zoom/pose consistently. Covers capsule, standalone engine, engine assembly and supported internal mode.
+
+`npm --prefix scripts/qa run assets` runs the Khronos glTF Validator on losslessly decoded copies of every GLB in the local manifest, checking each original hash first. Install the optional QA dependencies and prepare assets first. It exits nonzero on errors, warnings or truncated output and writes `/tmp/spacex-gltf-validation.json` (override with `ASSET_REPORT`). It never edits source/published models. These are file-format checks, not approval of missing interiors, real-vehicle accuracy or redistribution rights.
