@@ -2,12 +2,13 @@ import * as T from 'three';
 import {createInspection,inspectionCamera} from './inspection.js';
 import {CarouselMotion,createFade,componentPose,rotateInView,depthRange,clamp,smooth} from './viewer-motion.js';
 import {bindViewerControls} from './viewer-controls.js';
+import {createVisiblePicker} from './visible-picking.js';
 import {CinematicPipeline,buildPracticals} from './cinematic.js';
 import {FrameBudget} from './quality.js';
 import {createGraphicsRecovery} from './platform/graphics-recovery.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
-import {AssetLibrary,createModel,createEmptyModel,sourceFamilies,isEffectivelyVisible} from './external-models.js';
+import {AssetLibrary,createModel,createEmptyModel,sourceFamilies} from './external-models.js';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 import {vehicles,getPart} from './data.js';
 import {engineFor} from './engine-details.js';
@@ -282,13 +283,13 @@ export class RocketViewer {
   }
   pick(x,y){
     const rect=this.canvas.getBoundingClientRect();this.pointer.set(((x-rect.left)/rect.width)*2-1,-((y-rect.top)/rect.height)*2+1);this.raycaster.setFromCamera(this.pointer,this.camera);
-    let best=null;
-    if(this.inspection){const hits=this.raycaster.intersectObject(this.inspection.group,true).filter(h=>isEffectivelyVisible(h.object));return hits[0]?{...hits[0],index:this.state.index,part:this.state.part}:null;}
+    const picker=this.visiblePicker??=createVisiblePicker();let best=null;
+    if(this.inspection){const hit=picker.pick(this.raycaster,this.inspection.group);return hit?{...hit,index:this.state.index,part:this.state.part}:null;}
     for(let i=0;i<this.models.length;i++){
       if(Math.abs(i-this.state.index)>1||!this.models[i].group.visible)continue;
       const model=this.models[i];if(model.sphere&&!this.raycaster.ray.intersectsSphere(this.scratchSphere.copy(model.sphere).applyMatrix4(model.group.matrixWorld)))continue;
-      const hits=this.raycaster.intersectObject(model.group,true).filter(hit=>isEffectivelyVisible(hit.object)&&hit.object.userData.part);
-      if(hits[0]&&(!best||hits[0].distance<best.distance)){const hit=hits[0],part=hit.object.userData.assemblyContext?authoredRegion(model.group.worldToLocal(hit.point.clone()).y/vehicles[i].height):hit.object.userData.part;best={...hit,index:i,part};}
+      const hit=picker.pick(this.raycaster,model.group,true);
+      if(hit&&(!best||hit.distance<best.distance)){const part=hit.object.userData.assemblyContext?authoredRegion(model.group.worldToLocal(hit.point.clone()).y/vehicles[i].height):hit.object.userData.part;best={...hit,index:i,part};}
     }
     return best;
   }
@@ -330,3 +331,4 @@ export class RocketViewer {
     for(const mesh of [this.haze,this.wideHaze]){mesh?.geometry.dispose();mesh?.material.dispose();}this.renderer?.dispose();
   }
 }
+
