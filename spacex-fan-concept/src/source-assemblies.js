@@ -46,12 +46,13 @@ export function assemblyCoverage(family,part,features){
  return supported?{...entry,supported:true,complete:false}:{supported:false,complete:false,features:[],label:'EXTERIOR ONLY',summary:'This source does not provide a validated internal assembly for this module. Missing parts have not been generated.'};
 }
 /** Compose cover visibility and whole-module transitions without changing source geometry or sidedness. */
-export function createAssemblyFade(group,internalMeshes){
+export function createAssemblyFade(group,internalMeshes,{coverOpacity=0}={}){
+ coverOpacity=Math.min(.4,Math.max(0,coverOpacity));
  const records=[];group.traverse(mesh=>{if(!mesh.isMesh)return;const inside=internalMeshes.has(mesh);for(const m of Array.isArray(mesh.material)?mesh.material:[mesh.material])records.push({mesh,m,inside,opacity:m.opacity,transparent:m.transparent,depthWrite:m.depthWrite,forceSinglePass:m.forceSinglePass,partial:false});});
  let alpha=1,progress=0,target=0;
  function apply(){
   group.visible=alpha>.0001;
-  for(const r of records){const fade=Math.min(1,progress*2),cover=1-fade*fade*(3-2*fade);const factor=alpha*(r.inside?1:cover),partial=factor>.0001&&factor<.9999;
+  for(const r of records){const fade=Math.min(1,progress*2),cover=1-fade*fade*(3-2*fade);const factor=alpha*(r.inside?1:cover+(1-cover)*coverOpacity),partial=factor>.0001&&factor<.9999;
    if(partial!==r.partial){r.m.transparent=partial?true:r.transparent;r.m.depthWrite=partial?false:r.depthWrite;r.m.forceSinglePass=partial?true:r.forceSinglePass;r.m.needsUpdate=true;r.partial=partial;}
    r.m.opacity=r.opacity*factor;r.mesh.visible=factor>.0001;
   }

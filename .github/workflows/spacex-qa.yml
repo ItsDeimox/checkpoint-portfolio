@@ -75,6 +75,10 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:4173/
         run: node scripts/qa/dragon-source.mjs
+      - name: Compare interior camera angles on real authored meshes
+        env:
+          BASE_URL: http://127.0.0.1:4173/
+        run: node scripts/qa/angle-sweep.mjs
       - name: Keep visual evidence for review
         if: always()
         uses: actions/upload-artifact@v4
@@ -84,6 +88,7 @@ jobs:
           if-no-files-found: warn
           path: |
             /tmp/spacex-gallery/
+            /tmp/spacex-angle-sweep/
             /tmp/interior-*.png
             /tmp/maximum-*.png
             /tmp/dragon-final-*.png

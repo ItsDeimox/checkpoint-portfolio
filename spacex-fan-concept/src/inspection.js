@@ -17,6 +17,9 @@ function copySurface(mesh,materials){
    c.customProgramCacheKey=()=>'falcon-barrel-section';
   }
   if(mesh.userData.assemblyFeature==='fairing-inner-wall'&&c.map){
+   // The interior lining is physically the reverse side of the licensed fairing wall.
+   // Rendering only outward-facing triangles incorrectly hides it in open mode.
+   c.side=T.DoubleSide;
    // The source reuses the painted outside UV island on the lining. Sample its
    // unmarked swatch on inward faces only, preserving the exterior and PBR map.
    c.onBeforeCompile=shader=>{shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
@@ -45,13 +48,14 @@ export function createInspection(model,index,part,payload='fairing',sharedFalcon
  const sourceCenter=raw.getCenter(new T.Vector3());exterior.position.copy(sourceCenter).negate();group.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(exterior);
  const sphere=bounds.getBoundingSphere(new T.Sphere()),features=new Set(exterior.children.map(m=>m.userData.assemblyFeature).filter(Boolean));
  const coverage=assemblyCoverage(model.family,part,features),internalMeshes=new Set(exterior.children.filter(m=>coverage.features.includes(m.userData.assemblyFeature)));
- const fade=createAssemblyFade(group,internalMeshes),fullBounds=bounds.clone(),innerBounds=new T.Box3();
+ const ghostShell=sourceModel.family==='starship'&&['tanks','fairing'].includes(part);
+ const fade=createAssemblyFade(group,internalMeshes,{coverOpacity:ghostShell?.10:0}),fullBounds=bounds.clone(),innerBounds=new T.Box3();
  // In the Falcon tank cutaway the original front shell is hidden rather than
  // displaced as a detached tube. No missing bulkhead/plumbing is synthesized.
  // Lift only the artist-authored Starship cage clear of its mounting sleeve.
  const frames=[...internalMeshes].filter(m=>m.userData.assemblyFeature==='hotstage-frame')
   .map(mesh=>({mesh,y:mesh.position.y}));
- const frameLift=frames.length?(fullBounds.max.y-fullBounds.min.y)*1.05:0;
+ const frameLift=frames.length?(fullBounds.max.y-fullBounds.min.y)*.55:0;
  function poseSection(t){
   for(const {mesh,y} of frames){
    mesh.position.y=y+frameLift*t;
